@@ -1,0 +1,832 @@
+MAGNet: Multi-agent Graph Network for Deep
+Multi-agent Reinforcement Learning
+
+Aleksandra Malysheva
+JetBrains Research
+National Research University
+Higher School of Economics
+St Petersburg, Russia
+malyshevasasha777@gmail.com
+
+Daniel Kudenko
+JetBrains Research
+L3S Research Center
+Leibniz University Hannover
+Hannover, Germany
+daniel.kudenko@york.ac.uk
+
+Aleksei Shpilman
+JetBrains Research
+National Research University
+Higher School of Economics
+St Petersburg, Russia
+aleksei@shpilman.com
+
+0
+2
+0
+2
+
+c
+e
+D
+7
+1
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+2
+6
+7
+9
+0
+.
+2
+1
+0
+2
+:
+v
+i
+X
+r
+a
+
+AbstractâOver recent years, deep reinforcement learning has
+shown strong successes in complex single-agent tasks, and more
+recently this approach has also been applied to multi-agent
+domains. In this paper, we propose a novel approach, called
+MAGNet, to multi-agent reinforcement learning that utilizes a
+relevance graph representation of the environment obtained by
+a self-attention mechanism, and a message-generation technique.
+We applied our MAGnet approach to the synthetic predator-
+prey multi-agent environment and the Pommerman game and
+the results show that it signiï¬cantly outperforms state-of-the-
+art MARL solutions, including Multi-agent Deep Q-Networks
+(MADQN), Multi-agent Deep Deterministic Policy Gradient
+(MADDPG), and QMIX.
+
+Index Termsâmulti-agent system, relevance graphs, deep-
+
+learning
+
+I. INTRODUCTION
+
+A common difï¬culty of reinforcement learning in a multi-
+agent environment (MARL) is that in order to achieve suc-
+cessful coordination, agents require information about the rel-
+evance of environment objects to themselves and other agents.
+For example, in the game of Pommerman [1] it is important to
+know how relevant bombs placed in the environment are for
+teammates, e.g. whether or not the bombs can threaten them.
+While such information can be hand-crafted into the state
+representation for well-understood environments,
+in lesser-
+known environments it is preferable to derive it as part of
+the learning process.
+
+In this paper, we propose a novel method, named MAGNet
+(Multi-Agent Graph Network), to learn such relevance infor-
+mation in form of a relevance graph and incorporate this into
+the reinforcement learning process. The method works in two
+stages. In the ï¬rst stage, a relevance graph is learned. In
+the second stage, this graph together with state information
+is fed to an actor-critic reinforcement learning network that
+is responsible for the decision making of the agent and
+incorporates message passing techniques along the relevance
+graph.
+
+We applied MAGNet to the synthetic predator-prey game,
+commonly used to evaluate multi-agent systems [2], and
+the popular Pommerman [1] multi-agent environment. We
+achieved signiï¬cantly better performance than state-of-the-
+art MARL techniques including MADQN [3], MADDPG [4]
+and QMIX [5]. Additionally, we empirically demonstrate the
+effectiveness of utilized self-attention [6], graph sharing and
+message passing system.
+
+II. DEEP MULTI-AGENT REINFORCEMENT LEARNING
+
+In this section we describe the state-of-the-art deep re-
+inforcement learning techniques that were applied to multi-
+agent domains. The algorithms introduced below (MADQN,
+MADDPG, and QMIX) were also used as evaluation baselines
+in our experiments.
+
+A. Multi-agent Deep Q-Networks
+
+Deep Q-learning utilizes a neural network to predict Q-
+values of state-action pairs [7]. This so-called deep Q-network
+is trained to minimize the following loss function:
+
+L(Î¸) = Es,aâ¼Ï(s)[y â Q(s, a|Î¸)]2
+
+y = r + Î³ max
+
+a(cid:48)
+
+Qpast(s(cid:48), a(cid:48))
+
+(1)
+
+(2)
+
+where s(cid:48) is the state we transition into by taking action a
+in state s and r is the reward of that action, Î¸ is the parameter
+vector of the current Q-function approximation. a â¼ Ï(s)
+denotes all actions that are permitted in state s.
+
+The Multi-agent Deep Q-Networks (MADQN, [3]) ap-
+proach modiï¬es this process for multi-agent systems by per-
+forming training in two repeated steps. First, they train agents
+one at a time, while keeping the policies of other agents ï¬xed.
+When the agent is ï¬nished training, it distributes its policy to
+all of its allies as an additional environmental variable.
+
+B. Multi-agent Deep Deterministic Policy Gradient
+
+The contribution of this work is a novel
+
+technique to
+learn object and agent relevance information in a multi-agent
+environment, and incorporate this information in deep multi-
+agent reinforcement learning.
+
+When dealing with continuous action spaces, the MADQN
+method described above can not be applied. To overcome this
+limitation, the actor-critic approach to reinforcement learning
+was proposed [8]. In this approach an actor algorithm tries to
+
+ 
+ 
+ 
+ 
+ 
+ 
+output the best action vector and a critic tries to predict the
+value function for this action.
+
+Speciï¬cally,
+
+in the Deep Deterministic Policy Gradient
+(DDPG [9]) algorithm two neural networks are used: Âµ(s) is
+the actor network that returns the action vector. Q(s, a) is the
+critic network, that returns the Q value, i.e. the value estimate
+of the action of a in state s.
+
+The gradient for the critic network can be calculated in
+the same way as the gradient for Deep Q-Networks described
+above (Equation 1). Knowing the critic gradient âaQ we can
+then compute the gradient for the actor as follows:
+
+âÎ¸ÂµJ = Es[âaQ(s, a|Î¸q)|s = st, a = Âµ(s|Î¸Âµ)]
+
+(3)
+
+where Î¸q and Î¸Âµ are parameters of critic and actor neural
+networks respectively, and ÏÏ(s) is the probability of reaching
+state s with policy Ï.
+
+The authors of [10] proposed an extension of this method by
+creating multiple actors, each with its own critic, where each
+critic takes in the respective agentâs observations and actions
+of all agents. This then constitutes the following value function
+for actor i:
+
+âÎ¸iJ = Es,aâ¼ÏÎ¸ [âÎ¸ilogÏi(ai|oi)QÏ
+
+i (oi, a1, . . . , aN )]
+
+(4)
+
+This Multi-agent Deep Deterministic Policy Gradient
+method showed the best results among widely used deep
+learning techniques in continuous state and
+reinforcement
+action space.
+
+C. QMIX
+
+Another recent promising approach to deep multi-agent
+reinforcement learning is the QMIX [5] method. It utilizes
+individual Q-functions for every agent and joint Q-function
+for a team of agents. The QMIX architecture consists of three
+types of neural networks. Agent networks evaluate individual
+Q-functions for agents taking in the current observation and
+the previous action. Mixing network takes as input individual
+Q-functions from agent networks and a current state and then
+calculates a joint Q-function for all agents. Hyper networks
+add an additional layer of complexity to the mixing network.
+Instead of passing the current state to the mixing network
+directly, hyper networks use it as input and calculate weight
+multipliers at each level of the mixing network. We refer the
+reader to the original paper for a more complete explanation
+[5].
+
+The authors empirically demonstrated on a number of RL
+domains that this approach outperforms both MADQN and
+MADDPG methods.
+
+III. MAGNET APPROACH AND ARCHITECTURE
+
+Figure 1 shows the overall network architecture of our
+MAGNet approach. The whole process can be divided into
+a relevance graph generation stage (shown in the left part)
+and a decision making stages (shown in the right part). In
+this architecture, the concatenation of the current state and the
+
+previous action forms the input of the model, and the output is
+the next action. The details of the two processes are described
+below.
+
+A. Relevance graph generation stage
+
+In the ï¬rst part of our MAGNet approach, a neural network
+is trained to produce a relevance graph, which is represented
+as a numerical matrix |A| Ã (|A| + |O|), where |A| is the
+number of agents and |O| is a given maximum number of
+environment objects, e.g., bombs and walls in Pommerman.
+Weights for objects that are not present at the current time
+are set to 0. The relevance graph represents the relationship
+between agents and between agents and environment objects.
+The higher the absolute weight of an edge between an agent
+a and another agent b or object o is, the more important b or
+o are for the achievement of agent aâs task. Every vertex v
+of the graph has a type b(v), deï¬ned by the user. Example
+types are âwallâ, âbombâ, and âagentâ. Types are user-deï¬ned
+and are used in the message generation step (see below). The
+graph is generated by MAGNet from the current and previous
+state together with the respective actions.
+
+IV. RELEVANCE GRAPH VISUALIZATION
+
+To generate this relevance graph, we train a neural network
+via back-propagation to output a graph representation matrix.
+The input to the network are the current and the two previous
+states (denoted by X(t), X(t â 1), and X(t â 2) in Figure 1),
+the two previous actions (denoted by a(t â 1) and a(t â 2)),
+and the relevance graph produced at the previous time step
+(denoted by graph(t â 1)). For the ï¬rst learning step (i.e. t =
+0), the input consists out of three copies of the initial state, no
+actions, and a random relevance graph. The inputs are passed
+into a convolution and pooling layer, followed by a padding
+layer, and then concatenated and passed into fully connected
+layer and ï¬nally into the graph generation network (GGN). In
+this work we implement GGN as either a multilayer perceptron
+(MLP) or a self-attention network, which uses an attention
+mechanism to catch long and short term time-dependencies.
+We present the results of both implementations in Table I. The
+self-attention network is an analogue to a recurrent network,
+such as an LSTM, but takes much less time to compute [6].
+The result of the GGN is fed into a two-layer fully connected
+network with dropout, which produces the relevance graph
+matrix.
+
+The loss function for the back-propagation training is de-
+
+ï¬nes as follows:
+
+L = ||W t â W tâ1||2
+2
+
+(5)
+
+The loss function is based on the squared difference between
+weights of edges in the current graph W t and the one
+generated in the previous state W tâ1. We could train the
+graph without this loss function, and instead with just the loss
+function of the decision making stage backpropagated to the
+graph generation stage. However, we found that this lowers the
+performance (see Figure 3). Both Pommerman and predator-
+prey environments have these default agents. However, we
+
+Fig. 1. The overall network architecture of MAGNet. Left section shows the graph generation stage. Right part shows the decision making stage. X(t)
+denotes the state of the environment at step t. a(t) denotes the action taken by the agent at step t. GGN refers to Graph Generation Network.
+
+found out that the better way to train MAGNet is to ï¬rst pre-
+train the graph generation and then add the agent networks
+(see also Section V-E). There are two alternatives for training
+relevance graphs: (1) train individual relevance graphs for
+every agent, or (2) train one shared graph (GS) that is the
+same for all agents on the team. We performed experiments
+to determine which way is better (see Table I).
+
+message received by the agent, together with the current state
+information is mapped by a trained decision making network
+into an action.
+
+Since the message passing system outputs an action, we
+view it as an actor in the DDPG actor-critic approach [9], and
+train it accordingly. A more formal description of this decision
+making stage is as follows.
+
+A. Decision making stage
+
+The agent AI responsible for decision making is represented
+as a neural network whose inputs are accumulated messages
+and the current state of the environment. The output of the
+network is an action to be executed. This action is computed
+in 4 steps through a message passing system.
+
+In the ï¬rst step, individual (i.e. location-speciï¬c) obser-
+vations of agents and objects are pre-processed by a neural
+network into an information vector (represented as a numerical
+vector). This neural network is initialized randomly and trained
+during the overall learning process using the same global loss
+function.
+
+In the second step, a neural network (also trained) is taking
+the information vector of an agent, and maps it into a message
+(also a numerical vector), one for each connected vertex type
+in the relevance graph. This message is multiplied by the
+weight of the corresponding edge and passed to the respective
+vertices.
+
+In the third step, each agent or object in the relevance graph
+updates its information vector, also using a trained network,
+based on the incoming messages and the previous information
+vector. Steps 2 and 3 are repeated a given number of times, in
+our experiments ï¬ve times. Finally, in the last step, the ï¬nal
+
+1) Initialization of information vector. Each vertex v
+has an initialization network MLPb(v)
+init associated with it
+according to its type b(v) that takes as input the current
+individual observation Ov and outputs initial information
+vector Âµ0
+
+v for each vertex.
+
+(6)
+
+init(Ov)
+
+v = MLPb(v)
+Âµ0
+2) Message generation. Message generation performs in
+iterative steps. At message generation step Ï + 1 (not
+to be confused with environmental time t) the message
+networks MLPc(v,u)
+compute output messages for every
+edge (v, u) â E based on the type of the edge c(v, u),
+which are then multiplied by the weight of the corre-
+sponding edge in the relevant graph.
+
+msg
+
+msgÏ
+
+(v,u) = w(v,u)MLPc(v,u)
+
+msg (ÂµÏ
+v)
+
+(7)
+
+3) Message processing. The information vector ÂµÏ +1
+
+at the
+message propagation step Ï is updated by an associated
+update network LSTMb(v)
+up , according to its type b(v).
+incoming
+The network takes as input a sum of all
+message vectors and the information vector ÂµÏ
+v at the
+previous step.
+
+v
+
+v = LSTMb(v)
+ÂµÏ +1
+
+up (ÂµÏ
+v,
+
+(cid:88)
+
+msgÏ
+
+(â,v))
+
+(8)
+
+4) Choice of action. All vertices that are associated with
+choice which takes
+v and computes
+
+agents have a decision network MLPb(v)
+as an input its ï¬nal information vector ÂµT
+the mean of the action of the Gaussian policy.
+
+av = MLPchoice(ÂµT
+v )
+
+(9)
+
+V. EXPERIMENTS
+
+A. Environments
+
+In this paper, we use two popular multi-agent benchmark
+environments for testing, the synthetic multi-agent predator-
+prey game [2], and the Pommerman game [1].
+
+In the predator-prey environment, the aim of the predators
+is to kill faster moving prey in 500 iterations. The predator
+agents must learn to cooperate in order to surround and kill
+the prey. Every prey has a health of 10. A predator moving
+within a given range of the prey lowers the preyâs health by
+1 point per time step. Lowering the prey health to 0 kills the
+prey. If even one prey survives after 500 iterations, the prey
+team wins. Random obstacles are placed in the environment
+at the start of the game.
+
+The Pommerman game is a popular environment which
+can be played by up to 4 players. The multi-agent variant
+has 2 teams of 2 players each. This game has been used in
+recent competitions for multi-agent algorithms, and therefore
+is especially suitable for a comparison to state-of-the-art
+techniques.
+
+In Pommerman, the environment is a grid-world where each
+agent can move in one of four directions, place a bomb, or do
+nothing. A grid square is either empty (which means that an
+agent can enter it), wooden, or rigid. Wooden grid squares can
+not be entered, but can be destroyed by a bomb (i.e. turned into
+clear squares). Rigid squares are indestructible and impassable.
+When a wooden square is destroyed, there is a probability of
+items appearing, e.g., an extra bomb, a bomb range increase, or
+a kick ability. Once a bomb has been placed in a grid square
+it explodes after 10 time steps. The explosion destroys any
+wooden square within range 1 and kills any agent within range
+4. If both agents of one team die, the team loses the game
+and the opposing team wins. The map of the environment is
+randomly generated for every episode.
+
+The game has two different modes: free for all and team
+match. Our experiments were carried out in the team match
+mode in order to evaluate the ability of MAGnet to exploit
+the discovered relationships between agents (e.g. being on the
+same team).
+
+We represent states in both environments as a D Ã D Ã M
+tensor S, where D Ã D are the dimensions of the ï¬eld and M
+is the maximum possible number of objects. S[i, j, k] = 1 if
+object k is present in the [i, j] space and is 0 otherwise. The
+predator-prey state is a 64Ã64Ã20 tensor, and the Pommerman
+state is 11 Ã 11 Ã 30.
+
+Figure 2 shows both test environments.
+
+Fig. 2. The synthetic predator-prey (left) and the Pommerman game environ-
+ment (right).
+
+B. Evaluation Baselines
+
+In our experiments, we compare the proposed method with
+state-of-the-art reinforcement learning algorithms in the two
+environments described above. Figure 3 shows a comparison
+with the MADQN [3], MADDPG [4] and QMIX [5] algo-
+rithms. Each of these algorithms were trained by playing
+a number of games (i.e. episodes) against
+the default AI
+provided with the games, and the respective win rates are
+shown. All graphs display a 95% conï¬dence interval over 20
+runs to show statistical signiï¬cance.
+
+The parameters for the MADQN the baselines were set
+as follows through parameter exploration. The network for
+the predator-prey environment consists of seven convolutional
+layers with 64 5x5 ï¬lters in each layer followed by ï¬ve
+fully connected layers with 512 neurons each with residual
+connections [11] and batch normalization [12] that takes an
+input an 128x128x6 environment state tensor and one-hot
+encoded action vector (a padded 1x5 vector) and outputs a
+Q-function for that state-action pair. Since the output of a
+DQN is discrete, but the predator-prey environment requires
+a continuous action,
+the agents employ only two speeds
+and 10 directions. The network for Pommerman consists of
+ï¬ve convolutional layers with 64 3x3 ï¬lters in each layer
+followed by three fully connected layers with 128 neurons
+each with residual connections and batch normalization that
+takes an input an 11x11x4 environment state tensor and one-
+hot encoded action vector (a padded 1x6 vector) that are
+provided by the Pommerman environment and outputs a Q-
+function for that state-action pair.
+
+For our implementation of MADDPG we used a multilayer
+perceptron (MLP) with 3 fully connected layers with 512-128-
+64 neurons for both the actor and critic for the predator-prey
+game, and 5 fully connected layer with 128 neurons in each
+layer for the critic and a 3 layer network with 128 neurons in
+each layer for the actor in Pommerman.
+
+Parameter exploration for QMIX led to the following set-
+tings for both environments. All agent networks are DQNs
+with a recurrent layer of a Gated Recurrent Unit (GRU [13])
+with a 64-dimensional hidden state. The mixing network con-
+sists of a single hidden layer of 32 neurons. Since the output of
+MADDPG and QMIX is continuous, but Pommerman expects
+
+Fig. 3. MAGNet variants compared to state-of-the-art MARL techniques in the predator-prey (left) and Pommerman (right) environments. MAGNet-DSH refers
+to MAGNet with domain speciï¬c heuristics (Section V-F). MAGNet-NoGL refers to MAGNet trained without the graph generation loss function (Equation 5),
+but only with the ï¬nal loss function of the decision making stage. MAGNet-NO-PT refers to MAGNet with no pre-training for the graph generating network
+(Section V-E ). Every algorithm trained by playing against a default environment agent for a number of games (episodes) and a respective win percentage is
+shown. Default agents are provided by the environments. Shaded areas show the 95% conï¬dence interval from 20 runs.
+
+a discrete action, we discretized it.
+
+As in the original QMIX paper [5], we decrease learning
+rate linearly from 1.0 to 0.05 over the ï¬rst 50k time steps
+and than keep it constant. As can be seen from Figure 3, our
+MAGnet approach signiï¬cantly outperforms current state-of-
+the-art algorithms.
+
+C. MagNet network training
+
+In both environments we ï¬rst trained the graph generating
+network on 50,000 episodes with the same parameters and
+with the default AI as the decision making agents. Both
+predator-prey and Pommerman environments provide these
+default agents. After this initial training, the default AI was
+replaced with the learning decision making AI described in
+section III. All learning graphs show the training episodes
+starting after this replacement.
+
+Table
+
+I shows results for different MAGNet variants in
+terms of achieved win percentage against a default agent after
+600,000 episodes in the predator-prey game and a 1,000,000
+episodes in the game of Pommerman. The MAGNet variants
+are differing in the complexity of the approach, starting from
+the simplest version which takes the learned relevance graph
+as a direct addition to the input, to the version incorporating
+message generation, graph sharing, and self-attention. The
+table clearly shows the beneï¬t of each extension.
+
+Each of the three extensions with their hyper-parameters are
+
+described below:
+
+â¢ Self-attention (SA). We can train the Graph Generating
+Network (GGN) as a simple multi-layer perceptron (num-
+ber of layers and neurons was varied, and a network with
+3 fully connected layers 512-128-128 neurons achieved
+the best result). Alternatively, we can train it as a self-
+attention encoder part of the Transformer network (SA)
+layer [6] with default parameters.
+
+TABLE I
+INFLUENCE OF DIFFERENT MODULES ON THE PERFORMANCE OF THE
+MAGNET MODEL.
+
+MAGnet modules
+
+Win % PP Win % PM
+
+SA
++
++
++
++
+-
+-
+-
+-
+
+GS
++
++
+-
+-
++
++
+-
+-
+
+MG
++
+-
++
+-
++
+-
++
+-
+
+74.2 Â± 1.2
+61.3 Â± 0.9
+63.2 Â± 1.3
+43.3 Â± 1.5
+69.3 Â± 1.5
+39.3 Â± 2.0
+41.5 Â± 1.4
+25.1 Â± 2.3
+
+76.3 Â± 0.7
+56.7 Â± 1.8
+62.4 Â± 1.7
+54.5 Â± 2.6
+67.1 Â± 1.9
+52.0 Â± 1.7
+45.2 Â± 3.6
+32.7 Â± 5.9
+
+â¢ Graph Sharing (GS): relevance graphs were trained indi-
+vidually for agents, or in form of a shared graph for all
+agents on one team.
+
+â¢ Message Generation (MG): the message generation mod-
+ule was implemented as either an MLP or a message
+generation (MG) architecture, as described in Section
+IV-A.
+
+D. MAGNet parameters
+
+We deï¬ne vertex types b(v) and edge types c(e) in relevance
+
+graph as follows:
+
+b(v) â {0, 1, 2, 3} in case of predator-prey game that
+corresponds to: âpredator on team 1 (1, 2, 3)â, âpredator on
+team 2 (4, 5, 6)â, âpreyâ, âwallâ. Every edge has a type as
+well: c(e) â {0, 1, 2}, that corresponds to âedge between
+predators within one teamâ, âedge between predators from
+different teamsâ and âedge between the predator and the object
+in the environment or preyâ.
+
+b(v) â {0, 1, 2, 3, 4, 5, 6} in case of Pommerman game
+that corresponds to: âallyâ, âenemyâ, âplaced bombâ (about
+to explode), âincrease kick abilityâ, âincrease blast powerâ,
+âextra bombâ (can be picked up). Every edge has a type as
+
+well: c(e) â {0, 1}, that corresponds to âedge between the
+agentsâ and âedge between the agent and the object in the
+environmentâ.
+
+We tested the MLP and message generation network with
+a range of hyper-parameters, choosing the best one. In the
+predator-prey game, the MLP has 3 fully connected layers
+with 512-512-128 neurons, while the message generation
+network has 5 layers with 512-512-128-128-32 neurons. For
+the Pommerman environment, the MLP has 3 fully connected
+layers 1024-256-64 neurons, while the message generation
+network has 2 layers with 128-32 neurons. In both domains 5
+message passing iterations showed the best result.
+
+Dropout layers were individually optimized by grid search
+in the [0, 0.2, 0.4] space. We tested two convolution sizes:
+[3x3] and [5x5]. [5x5] convolutions showed the best result. A
+Rectiï¬ed Linear Unit (ReLU) transformation was used for all
+connections.
+
+E. No pre-training
+
+With regards to pre-training of the graph generating network
+we need to answer the following questions. First, we need to
+determine whether or not it is feasible to train the network
+without an external agent for pre-training. In other words, can
+we simultaneously train both the graph generating network
+and the decision making networks from the start. Second, we
+need to demonstrate whether pre-training of a graph network
+improves the result.
+
+To answer this question, we performed experiments without
+the pre-training of the graph network. Figure 3 shows the
+results of those experiments (MAGNet-NO-PT). As can be
+seen, the network indeed can learn without pre-training, but
+pre-training signiï¬cantly improves the results. This may be
+due to decision making error inï¬uencing the graph generator
+network in a negative way.
+
+F. Domain speciï¬c heuristics
+
+We also performed experiments to see whether or not
+additional knowledge about the environment can improve the
+results of our method. To incorporate this knowledge, we
+change the loss function for graph generation in the following
+manner.
+
+L = ||W t â W tâ1||2
+
+2 +
+
+(cid:88)
+
+Î¾(v,u)âÎt
+
+(wt
+
+(v,u) â s(Î¾(v,u)))2
+
+(10)
+
+The ï¬rst component is the same: it is based on the squared
+difference between weights of edges in the current graph W t
+and the one generated in the previous state W tâ1. The second
+iterates through events Ît at time t and calculates the square
+difference between the weight of edge (v, u) that is involved
+in event Î¾(v,u) and the event weight s(Î¾(v,u)).
+
+For example, in the Pommerman environment we set s(Î¾)
+corresponding to our team agent killing an agent from the
+opposite team to 100, and the s(Î¾) corresponding to an agent
+picking up a bomb to 25. In the predator-prey environment,
+if a predator kills a prey, we set the eventâs weight to 100. If
+
+a predator only wounds the prey, the weight for that event is
+set to 50.
+
+As can be seen in Figure 3 (line MAGNet-DSH), the model
+that uses this domain knowledge about the environment trains
+faster and performs better. It is however important to note that
+the MAGNet network without any heuristics still outperforms
+current state-of-the-art methods. For future research we con-
+sider creating a method for automatic assignment of the event
+weights.
+
+VI. CONCLUSION
+
+In this paper we presented a novel method, MAGNet, for
+deep multi-agent reinforcement learning incorporating infor-
+mation on the relevance of other agents and environment
+objects to the RL agent. We also extended this basic approach
+with various optimizations, namely self-attention, shared rele-
+vance graphs, and message generation. The MAGNet variants
+were evaluated on the popular predator-prey and Pommerman
+game environments, and compared to state-of-the-art MARL
+techniques. Our results show that MAGNet signiï¬cantly out-
+performs all competitors.
+
+REFERENCES
+
+[1] Tambet Matiisen. Pommerman baselines, 2018.
+[2] Igor Mordatch and Pieter Abbeel. Emergence of grounded compositional
+language in multi-agent populations. In AAAI Conference on Artiï¬cial
+Intelligence, 2018.
+
+[3] Maxim Egorov. Multi-agent deep reinforcement learning, 2016.
+[4] Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, OpenAI Pieter Abbeel,
+and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-
+competitive environments. In Advances in Neural Information Process-
+ing Systems, pages 6379â6390, 2017.
+
+[5] Tabish Rashid, Mikayel Samvelyan, Christian Schroeder de Witt, Gre-
+gory Farquhar, Jakob Foerster, and Shimon Whiteson. Qmix: monotonic
+value function factorisation for deep multi-agent reinforcement learning.
+arXiv preprint arXiv:1803.11485, 2018.
+
+[6] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion
+Jones, Aidan N Gomez, Åukasz Kaiser, and Illia Polosukhin. Attention
+is all you need. In Advances in Neural Information Processing Systems,
+pages 5998â6008, 2017.
+
+[7] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves,
+Ioannis Antonoglou, Daan Wierstra, and Martin Riedmiller. Playing
+atari with deep reinforcement learning. arXiv preprint arXiv:1312.5602,
+2013.
+
+[8] Richard S Sutton, David A McAllester, Satinder P Singh, and Yishay
+Mansour. Policy gradient methods for reinforcement learning with
+function approximation. In Advances in neural information processing
+systems, pages 1057â1063, 2000.
+
+[9] Timothy P Lillicrap, Jonathan J Hunt, Alexander Pritzel, Nicolas
+Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra.
+Continuous control with deep reinforcement learning. arXiv preprint
+arXiv:1509.02971, 2015.
+
+[10] Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, OpenAI Pieter Abbeel,
+and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-
+competitive environments. In Advances in Neural Information Process-
+ing Systems, pages 6379â6390, 2017.
+
+[11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep
+In Proceedings of the IEEE
+residual learning for image recognition.
+conference on computer vision and pattern recognition, pages 770â778,
+2016.
+
+[12] Sergey Ioffe and Christian Szegedy. Batch normalization: Accelerating
+deep network training by reducing internal covariate shift. arXiv preprint
+arXiv:1502.03167, 2015.
+
+[13] Junyoung Chung, Caglar Gulcehre, Kyunghyun Cho, and Yoshua Ben-
+In International
+
+gio. Gated feedback recurrent neural networks.
+Conference on Machine Learning, pages 2067â2075, 2015.
+
+

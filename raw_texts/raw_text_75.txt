@@ -1,0 +1,5170 @@
+3
+2
+0
+2
+
+l
+u
+J
+
+0
+2
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+4
+4
+0
+1
+1
+.
+7
+0
+3
+2
+:
+v
+i
+X
+r
+a
+
+On the Convergence of Bounded Agents
+
+David Abel
+DeepMind
+
+AndrÃ© Barreto
+DeepMind
+
+Hado van Hasselt
+DeepMind
+
+Benjamin Van Roy
+DeepMind
+
+Doina Precup
+DeepMind
+
+Satinder Singh
+DeepMind
+
+dmabel@deepmind.com
+
+andrebarreto@deepmind.com
+
+hado@deepmind.com
+
+benvanroy@deepmind.com
+
+doinap@deepmind.com
+
+baveja@deepmind.com
+
+Abstract
+
+When has an agent converged? Standard models of the reinforcement learning problem give
+rise to a straightforward definition of convergence: An agent converges when its behavior or
+performance in each environment state stops changing. However, as we shift the focus of our
+learning problem from the environmentâs state to the agentâs state, the concept of an agentâs
+convergence becomes significantly less clear. In this paper, we propose two complementary
+accounts of agent convergence in a framing of the reinforcement learning problem that centers
+around bounded agents. The first view says that a bounded agent has converged when the
+minimal number of states needed to describe the agentâs future behavior cannot decrease.
+The second view says that a bounded agent has converged just when the agentâs performance
+only changes if the agentâs internal state changes. We establish basic properties of these two
+definitions, show that they accommodate typical views of convergence in standard settings,
+and prove several facts about their nature and relationship. We take these perspectives,
+definitions, and analysis to bring clarity to a central idea of the field.
+
+1 Introduction
+
+The study of artificial intelligence (AI) is centered around agents. In reinforcement learning (RL, Kaelbling
+et al., 1996; Sutton & Barto, 2018), focus has traditionally concentrated on agents that interact with a
+Markov decision process (MDP, Bellman, 1957; Puterman, 2014) or a partially observable MDP (POMDP,
+Cassandra et al., 1994). Effective agents are often viewed as those that can efficiently converge to optimal
+behavior (Puterman & Brumelle, 1979; Kearns & Singh, 1998; SzepesvÃ¡ri, 1997), minimize regret (Auer
+et al., 2008; Jaksch et al., 2010; Azar et al., 2017), or make a small number of mistakes before identifying a
+near-optimal behavior (Fiechter, 1994; Kearns & Singh, 2002; Brafman & Tennenholtz, 2002; Strehl et al.,
+2009). Indeed, proving that a particular learning algorithm (quickly) converges in MDPs has long stood
+as a desirable property of RL agents (Watkins & Dayan, 1992; Bradtke & Barto, 1996; Singh et al., 2000;
+Gordon, 2000). This goal has shaped many aspects of the RL research agenda: We are often most interested
+in understanding whetherâor how quicklyâvarious learning algorithms converge, such as policy gradient
+methods (Sutton et al., 1999; Singh et al., 2000; Fazel et al., 2018). In this sense, convergence plays a central
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+role to our understanding of learning itself, and has served as a guiding principle in the design and analysis
+of agents.
+
+In the settings we have tended to study it is easy to think about convergence. For example, when the problem
+of interest is described by an MDP or POMDP, we can think of an agentâs convergence in terms of the series
+of functions that vary according to the environmentâs state, such as the agentâs ð-function (Watkins & Dayan,
+1992; Majeed & Hutter, 2018).
+
+Agents and RL. However, RL has historically been committed to a modeling imbalance: Despite the
+iconic two box diagram of the RL problem,1 our notation and modeling tools tend to focus primarily on the
+environment, while largely ignoring the agent. For instance, when we talk about RL in terms of an agent
+interacting with an MDP, we begin by fully defining the contents of the MDP. As a consequence, we orient
+our thinking and research pathways around the MDP, rather than the agent: We might study what happens
+when structure is present in the MDPâs reward or transition function (Bradtke & Barto, 1996; Calandriello
+et al., 2014; Jin et al., 2020; Icarte et al., 2022), or in the MDPâs state space (Kearns & Koller, 1999; Sallans &
+Hinton, 2004; Diuk et al., 2008). However, because MDPs rely on variables associated with the environment,
+they do not emphasize the conceptual tools for scrutinizing agents, despite the central role of agency in AI.
+We suggest that, to fully understand intelligent agents, it is useful to also consider a version of RL in which
+attention is on the agent, rather than the environment.
+
+To these ends, we draw inspiration from Dong et al. (2022), Lu et al. (2021), Konidaris (2006), and the
+work on universal AI by Hutter (2000; 2002; 2004), and study a variant of the RL problem that gives up
+reference to environment state and introduces agent state. This view does two things. First, it removes
+explicit reference to the environment state space in favour of an agent state space. After all, the agent (and
+often us as agent designers) do not have access to environment state. Second, it allows us to emphasize the
+role that boundedness plays in the nature of the agents we study, as in work by Ortega (2011). That is, we
+can more sharply characterize the kinds of agents we are interested in by modelling the constraints facing real
+agents. This view draws from the long line of literature going back to Simonâs bounded rationality (1955) and
+its kin (Cherniak, 1990; Todd & Gigerenzer, 2012; Lewis et al., 2014; Griffiths et al., 2015)âthe relationship
+between intelligence and resource constraints is indeed fundamental (Russell & Subramanian, 1994; Ortega,
+2011), and one that should feature directly in the agents we study. To this end, we build around bounded
+agents (Definition 2.14).
+
+Paper Overview. This paper inspects the concept of agent convergence in a framing of RL focused on
+bounded agents. We ask: Given a bounded agent interacting with an environment, what does it mean for
+the agent to converge in that environment? We propose two notions of convergence based on an agentâs
+behavior and performance, visualized in Figure 1. Our first account roughly says that an agentâs behavior
+has converged in an environment when the minimum number of states needed to produce the agentâs future
+behavior can no longer decrease. The second account roughly says that an agentâs performance has converged
+in an environment when the agentâs performance can only change if the agentâs internal state changes. These
+definitions are based on two new quantities that capture objective properties of an agent-environment pair:
+(i) The limiting size (Definition 3.2), and (ii) The limiting distortion (Definition 4.2). Moreover, we prove
+that both definitions accommodate standard views of convergence in traditional problem settings. We further
+establish connections between the two convergence types, and discuss their potential for opening new pathways
+to agent design and analysis.
+
+To summarize, this paper is about the following three points:
+
+1. To understand intelligent agents, it is important to study RL centered around bounded agents.
+
+2. In this framing of RL, it is prudent to recover definitions of our central concepts, such as convergence.
+
+3. We offer two definitions of the convergence of bounded agents: in behavior (Definition 3.2), and in
+
+performance (Definition 4.2), and analyse their properties.
+
+1See, for example, Figure 1 of the RL survey (Kaelbling et al., 1996) or Figure 3.1 of the RL textbook (Sutton & Barto, 2018).
+
+2
+
+2 Preliminaries: Agents and Environments
+
+We begin by introducing key concepts and notation of RL, including agents, environments, and their kin.
+Much of our notation and conventions draw directly from recent work by Dong et al. (2022) and Lu et al.
+(2021), as well as the vast literature on general RL (Lattimore et al., 2013; Lattimore, 2014; Leike, 2016;
+Cohen et al., 2019; Majeed & Hutter, 2018; Majeed, 2021). We draw further inspiration from the concept of
+agent space proposed by Konidaris (2006) and Konidaris & Barto (2006; 2007), the disssertation by Ortega
+(2011) that first developed a formal view of resource-constrained agency, as well as What is an agent? by
+Harutyunyan (2020).
+
+Notation. Throughout, we let capital calligraphic letters denote sets (
+), lower case letters denote constants
+and functions (ð¥), italic capital letters denote random variables (ð), and blackboard capitals indicate the
+denote the probability simplex over
+natural and real numbers (N, R, N0 = N
+the countable set
+,
+)
+over
+as logical implication, as well
+as
+
+0
+âª {
+. That is, the function ð :
+. Lastly, we use
+
+(ðµ)
+â ð³
+to express logical quantification over a set
+
+as logical conjunction,
+.
+
+expresses a probability mass function ð
+
+). Additionally, we let Î
+
+}
+ð³ Ã ð´ â
+
+ð³
+, for each ð¥
+
+and ð¦
+
+â ð´
+
+and
+
+ð¥, ð¦
+
+(ð³)
+
+(Â· |
+
+â
+
+ð³
+
+Î
+
+â§
+
+ðµ
+ð¥
+âð³
+
+â
+
+ð¥
+
+â
+
+âð³
+
+We begin by defining environments and related artifacts.
+
+ð³
+
+Definition 2.1. An agent-environment interface is a pair,
+
+We refer to elements of
+
+Definition 2.2. For each ð¡
+actions and observations,
+
+â
+ð¡ =
+
+(ð
+as actions, denoted ð, and elements of
+N0, a history, âð¡ = ð0ð1ð1 . . . ðð¡
+
+ðª
+2ðð¡
+
+ð
+
+ð¡
+
+, with
+
+â
+
+= (cid:208)âð¡=0 â
+
+1
+ð¡ the set of all histories.
+
+â â
+
+â
+
+â
+
+,
+
+, containing finite sets
+
+and
+
+.
+
+ðª
+
+ð
+
+ðª)
+
+as observations, denoted ð.
+
+ð¡, is a sequence of alternating
+
+â
+
+(ð Ã ðª)
+,
+
+We use â to refer to any history in
+to denote the number of
+denote the history resulting from concatenating histories â, ââ² â â
+all histories of length ð or greater, for some ð
+Definition 2.3. An environment with respect to interface
+
+N0.
+
+â
+
+â
+
+â
+
+,
+
+|
+
+|
+
+ð, ð
+
+(
+
+. Lastly, we let
+
+)
+
+pairs contained in â, and â ââ² to
+ð¡ denote
+
+= (cid:208)âð¡=ð
+
+ð:
+
+â
+
+â
+
+â
+
+(ð
+
+ðª)
+
+is a function ð :
+
+â Ã ð â
+
+.
+
+Î
+
+(ðª)
+
+Note that this model of an environment is (i) general, in that it can express the same kinds of problems
+modeled by an infinite-state POMDP, and (ii) emphasizes online variations of learning. While the presence of
+environment states and episodes are interesting special cases, we emphasize that we do not want our results
+or insights to be specialized to them.
+
+Next, we consider an abstract notion of an agent that captures the mathematical way in which experience
+gives rise to action selection.
+
+Definition 2.4. An agent with respect to interface
+
+,
+
+is a function, ð :
+
+(ð
+This view of an agent ignores all of the mechanisms that might produce behavior at each history. Indeed, it is
+equivalent to how others define history-based policies (Leike et al., 2016; Majeed, 2021). We unpack this
+abstraction momentarily by limiting our focus to bounded agents (Definition 2.14).
+
+â â
+
+ðª)
+
+Î
+
+.
+(ð)
+
+We use Î to refer to the set of all agents, Î as any non-empty set of agents, and
+environments.
+
+â°
+
+to refer to the set of all
+
+An agent can interact with any environment that is defined with respect to the same interface
+interaction takes places in discrete steps in the following way: for each ð¡
+the environment, followed by the environment passing ðð¡
+outputs an action ðð¡
+histories as follows.
+Definition 2.5. The realizable histories of a given
+can occur with non-zero probability,
+
+. The
+(ð
+ðª)
+to
+â ð
+1, the agent
++
+, and so on. Each agent-environment pair induces a particular set of realizable
+
+,
+N0 the agent outputs ðð¡
+
+pair define the set of histories of any length that
+
+to the agent. In response to ðð¡
+
+ð, ð
+(
+
+â ð
+
+â ðª
+
+â
+
++
+
++
+
+)
+
+1
+
+1
+
+ð,ð =
+
+â
+
+=
+
+Â¯â
+
+â(cid:216)
+
+ð¡=0
+
+(cid:40)
+
+âð¡
+
+ð¡ :
+
+â â
+
+ð¡
+1
+(cid:214)
+â
+
+ð=0
+
+3
+
+ðð
+
+ð
+
+(
+
+|
+
+âð , ðð
+
+ðð
+
+ð
+)
+
+(
+
+|
+
+âð
+
+)
+
+(cid:41)
+
+> 0
+
+.
+
+(2.1)
+
+Lastly, given a realizable history â, we will regularly refer to the realizable history suffixes, ââ², which, when
+concatenated with â, produce a realizable history â ââ² â â
+Definition 2.6. The realizable history suffixes of a given
+define the set of histories that, when concatenated with prefix â, remain realizable,
+
+pair, relative to a history prefix â
+
+ð,ð . We define this set as follows.
+
+ð, ð
+(
+
+â â
+
+ð,ð ,
+
+)
+
+ð,ð
+â =
+
+â
+
+=
+
+ââ²
+
+{
+
+Â´â
+
+â â
+
+: â ââ²
+
+ð,ð
+
+.
+
+}
+
+â â
+
+(2.2)
+
+When clear from context, we abbreviate
+abbreviations. For instance, recall that
+
+, and
+
+ð,ð to
+denotes all histories of length ð¡ or greater, and that
+
+. Additionally, we occasionally combine
+denotes
+
+Â´â
+
+Â¯â
+
+â
+
+to
+
+ð,ð
+â
+
+the realizable history suffixes following â. We combine these two abbreviations and let
+realizable history suffixes of length ð¡ or greater, relative to a given â, which is obscured for brevity.
+
+ð¡:
+Â´â
+
+â
+
+ð,ð
+â
+refer to the
+
+â
+
+â
+ð¡:
+
+â
+
+â
+
+Supported by the arguments of Bowling et al. (2023), we assume that the agent agents goal is captured by a
+received scalar signal called the reward each time step, generated by a reward function.
+Definition 2.7. We call ð :
+
+R a reward function.
+
+â â
+
+We remain agnostic to how precisely the reward function is implemented; it could be a function inside of the
+agent, or the reward signal could be passed as a special scalar as part of each observation. Such commitments
+will not have an impact on our framing. When we refer to an environment we will implicitly mean that a
+reward function has been chosen, too. We will commit to the view that agents are evaluated based on some
+function of their received future reward, defined as follows.
+Definition 2.8. The performance, ð£ :
+arbitrary constants vmin, vmax
+â
+future (random) rewards ðð¡ = ð
+)
+as a shorthand, and will also adopt ð£
+
+is a bounded function for fixed but
+]
+R where vmin < vmax. The function ð£ expresses some statistic of the received
+ð, ð
+produced by the future interaction between ð and ð. We will use ð£
+ð»ð¡
+)
+(
+to refer to the performance of ð on ð after any history â
+ð, ð
+.
+â Â¯â
+(
+as the average reward received
+
+For concreteness, the reader may think of one choice of performance ð£
+by the agent,
+
+vmin, vmax
+
+Ã â° â [
+
+Â¯â Ã
+
+âð¡
+
+Î
+
+â
+
+)
+
+)
+
+(
+
+|
+
+|
+
+lim inf
+
+ð
+
+ââ
+
+Eð,ð
+
+1
+ð
+
+. . .
+
+ðð¡
+
+[
+
++
+
+ðð¡
+
+ð
+
++
+
+|
+
++
+
+ð, ð
+(
+ð»ð¡ = âð¡
+
+,
+
+]
+
+ð»ð¡ = âð¡
+
+where Eð,ð
+denotes expectation over the stochastic process induced by ð and ð following âð¡.
+[ Â· Â· Â· |
+Alternatively, we can measure performance based on the expected discounted reward received by the agent,
+is a discount factor. The discussion that follows is agnostic to
+ð0
+ð£
+the choice of ð£.
+
+, where ð¾
+
+ð, ð
+(
+
+= Eð,ð
+
+ð¾ð1
+
+0, 1
+
+â [
+
+. . .
+
++
+
++
+
+]
+
+[
+
+]
+
+)
+
+)
+
+From these basic components, we define a general form of the RL problem as follows.
+
+Definition 2.9. The tuple
+
+ð, Î, ð£
+
+(
+
+)
+
+defines an instance of the reinforcement-learning problem:
+
+arg max
+ð
+Î
+
+â
+
+ð£
+
+.
+
+ð, ð
+(
+
+)
+
+(2.3)
+
+The above definition is a general framing of RL without an explicit model of environment state: We are
+interested in designing agents
+that can achieve high-performance (ð£) on some chosen environment
+(ð
+
+ð
+(
+
+Î
+
+).
+
+â
+
+)
+
+â â°
+
+Now, given an agent ð and environment ð, our goal is to study the following question: What does it mean
+for ð to converge in ð? To ground this question, we will next introduce bounded agents (Definition 2.14), a
+mechanistic, resource-constrained view of the agents we have so far introduced. Then, using this notion of a
+bounded agent, we formalise our intuitions around what it means for an agent to converge in Sections 3 and 4.
+
+2.1 Bounded Agents
+
+One advantage of the perspective on RL that emphasizes agents is that it invites questions regarding the
+nature of the agents we are interested in. For example, all agents we build are ultimately bounded: They are
+implemented in computers with finite capacity. Consequently, such agents cannot memorize arbitrary-length
+
+4
+
+histories, or manipulate infinite precision real numbers. Thus, actual agents must do a minimum of two
+things: (1) maintain a finite summary of history that we call agent state, since the agents are bounded, and
+(2) produce some behavior given this agent state, since they are agents. We define agent state as follows.
+
+Definition 2.10. An agent state, ð 
+
+â ð®
+
+, denotes one possible configuration of a given agent.
+
+Unless unclear from context, we simply refer to the agent state as state throughout. Observe that the notion
+of state adopted here includes everything about the agent: Parameters, update rules, memory, weights, and
+so on. This is distinct from some other notions of state adopted in the literature, such as the environment
+state, which can be interpreted as containing everything needed by the environment to compute the next
+observation, but not necessarily the information needed to compute the agentâs next action. Using this
+concept, we model history-to-state mappings as follows.
+
+Definition 2.11. A history-to-state function,
+
+ð¢ :
+(cid:174)
+
+â â ð®
+
+, is a mapping from each history to a state.
+
+=
+
+Every agent ð can be decomposed into two functions: A mapping from histories to states and a mapping
+from states to distributions over actions. To see why, note that if we define
+ð¢ as the identity function and let
+(cid:174)
+ð¢ must be computed by the agent
+, we fully recover Definition 2.4. However, the fact that the function
+(cid:174)
+ð®
+restricts the class of functions that can be used, since bounded agents cannot retain histories of arbitrary sizes.
+We thus define bounded agents with respect to state-update functions that can be incrementally computed
+based on the current state plus the most recent observation and action, as follows.
+
+â
+
+Definition 2.12. A state-update function, ð¢ :
+state.
+
+ð® Ã ð Ã ðª â ð®
+
+, maintains state from experience and prior
+
+The set of state-update functions is strictly smaller than the set of history-to-state functions (McCallum,
+1996; Sutton & Barto, 2018). Despite this, we will occasionally make use of the
+ð¢ notation for brevity. Then,
+(cid:174)
+given that the agentâs state is updated through ð¢, the agentâs behavior is produced by a policy as follows.
+
+Definition 2.13. An agentâs policy is a function, ð :
+agent state.
+
+ð® â
+
+Î
+
+(ð)
+
+, that produces behavior given the current
+
+Then, we formally introduce the notion of a bounded agent as follows.
+Definition 2.14. An agent ð
+that
+
+â
+
+Î is said to be a bounded agent if there exists a tuple
+
+ð
+
+(Â· |
+
+âð¡
+
+)
+
+= ð
+
+ð ð¡
+
+,
+
+)
+
+(Â· |
+
+ð ð¡ =
+
+(cid:40)ð¢
+(
+ð 0
+
+ð ð¡
+
+1, ðð¡
+â
+
+â
+
+1, ðð¡
+
+)
+
+ð¡ > 0,
+ð¡ = 0,
+
+, ð 0, ð, ð¢
+
+, such
+)
+
+(ð®
+
+(2.4)
+
+for all ð¡
+and ð¢ is a state-update function.
+
+, where
+
+N0, âð¡
+
+â â
+
+ð®
+
+â
+
+is a finite agent state space, ð 0
+
+is the starting agent state, ð is a policy,
+
+â ð®
+
+We use
+ð
+|
+four states
+ð 0, ð 1, ð 2, ð 3
+=
+we mean a bounded agent.
+
+ð®
+
+{
+
+|
+
+}
+
+to refer to the size of a bounded agentâs state space. For instance, a bounded agent defined over
+= 4. Henceforth, when we refer to an agent ð,
+
+has size four, and thus,
+
+=
+
+ð
+
+|
+
+|
+
+|ð®|
+
+This decomposition of a bounded agent is general in the sense that it can nearly capture any agent defined over
+a state space of a given size. The only caveat is that we have required the state-update to be deterministic,
+which is in fact less expressive than a stochastic state-update. Although it may be convenient to think of
+an agent as computing several functionsâsuch as a function that updates the policy over timeâall of this
+structure can be folded in the state-update function. This means that any bounded agent without access to
+random bits can be described in terms of Definition 2.14, including all agents that have been implemented
+to date such as DQN (Mnih et al., 2015) and MuZero (Schrittwieser et al., 2020). While this may not be
+surprising, it does provide a simple formalism to analyze bounded agents of arbitrary complexity.
+
+2.2 The Convergence of Bounded Agents
+
+The notion of convergence underlies many fundamental concepts in RL, and is part of the scientific communityâs
+parlance. But what do we mean when we say that an agent has converged?
+
+5
+
+(a) Minimal Size
+
+(b) Minimal Distortion
+
+Figure 1: A cartoon visual of our two proposed definitions of convergence: (left) behavior convergence, and
+(right) performance convergence. Behavior convergence tracks the sequence,
+, measuring the
+minimum number of states needed to produce the agentâs behavior from the current time step across all
+outcomes that could occur in the environment. Performance convergence tracks the sequence,
+,
+âð¡=0
+measuring the maximum change in the agentâs performance across return visits to its agent states. The
+vertical dashed line indicates the time of convergence in each case: On the left, the agentâs minimal size has
+stopped decreasing, and on the right, the agentâs distortion has stopped decreasing.
+
+ð, ð
+(
+
+ð, ð
+(
+
+âð¡=0
+
+ð¿ð¡
+
+)}
+
+)}
+
+ðð¡
+
+{
+
+{
+
+When we say some object that evolves over time converges, we tend to mean that we can characterize the
+evolution of the object as approaching a specific point. For instance, when we speak about the convergence
+results of Q-learning by Watkins & Dayan (1992), we mean that the limiting sequence of Q-values maintained
+by the algorithm arrives at a fixed point with probability one. Indeed, this is borrowing directly from the
+well-defined notions of the convergence of a sequence: One classical definition says roughly that a sequence
+of random variables, ð1, ð2, . . . converges to a number ð§
+R>0, with probability
+< ð. Naturally, there is a plurality of such
+one there exists a ð¡ such that for all ð > ð¡, it holds that
+ð§
+notions, such as pointwise convergence or convergence in probability. We can apply these notions to any
+sequence generated by the interaction of the agent with the environment.
+
+R just when, for all ð
+ðð
+
+â
+â
+
+â
+
+|
+
+|
+
+In typical models of the RL problem such as ð-armed bandits or MDPs, the choice of the problem formulation
+immediately restricts our focus to sequences that are suggested by the presence of environment state: For
+instance, we might consider the agentâs choice of an action distribution over time (in the case of bandits,
+when there is only one environment state) or the agentâs choice of a policy over time (in the case of an MDP).
+We can imagine generalizing to POMDPs by simply asking whether the agentâs behavior or performance has
+converged relative to the POMDPâs hidden state. However, from the view focused on agents, it is less clear
+which sequence we might be interested in.
+
+Ultimately, we will introduce two new fundamental definitions of an agent-environment pair that induce
+sequences (pictured in Figure 1), whose limits reflect the convergence of a bounded agent from two perspectives:
+
+1. (Behavior) Minimal Size, ðð¡
+
+needed to produce the agentâs behavior across all realizable futures in the environment.
+
+, given by Definition 3.1: A measurement of the smallest state space
+)
+
+ð, ð
+(
+
+2. (Performance) Distortion, ð¿ð¡
+
+performance across future visits to the same agent state in the environment.
+
+ð, ð
+(
+
+, given by Definition 4.1: A measurement of the gap in the agentâs
+)
+
+We next motivate and define each of these quantities in more detail. Our analysis reveals that the limit of
+each sequence exists for every
+pair (Theorem 3.1, Theorem 4.2). In MDPs, we show these two measures
+are connected (Proposition 3.3, Proposition 4.3), which may explain why, historically, there was less pressure
+to draw the distinction between convergence in performance and behavior. However, in the most general
+settings, we show they are in fact distinct (Proposition 4.6).
+
+ð, ð
+(
+
+)
+
+6
+
+654321<latexit sha1_base64="S2aOS5gODyrIbPIhSvFR68HozDY=">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</latexit>ct( ,e)0<latexit sha1_base64="H1P9/+HdPnJt4rD/UkOFMADstso=">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</latexit> t( ,e)performanceagent stateperformanceagent statefuturesfutures<latexit sha1_base64="8pCmyj2PVM5E3CcTjbH3ALkZdV8=">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</latexit>t<latexit sha1_base64="8pCmyj2PVM5E3CcTjbH3ALkZdV8=">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</latexit>tSmallest equivalent agent<latexit sha1_base64="YUWCA9ppOKOIYTe6g7+gsDrQiS0=">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</latexit>vmax vmin654321<latexit sha1_base64="S2aOS5gODyrIbPIhSvFR68HozDY=">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</latexit>ct( ,e)0<latexit sha1_base64="H1P9/+HdPnJt4rD/UkOFMADstso=">AAAfyXicnVl7bxy3Eb+kr/T6cto/i9ZEhQMS96To1CR1Awiw6sh1UTt2JDkJolUE7i73jtG+tOTJpxAECuQr9Ev03/bT9Nt0Zsh93p1j5BLrljM/zg6H8yIvLFOp9P7+/9548wc//NGPf/LWT8c/+/kvfvmrO2//+jNVLKtIvIiKtKi+CLkSqczFCy11Kr4oK8GzMBWfh1cPkf/5jaiULPIzfVuKi4zPc5nIiGsgXd75XRCLVPNL/U7A5yLX00DkN7Iq8gwG717e2dnf26cPW3+Y+Yedkf88v3z79/8K4iJa4uwo5Uqdz2alvjC80jJKhR2Px5PmM56w5zy6gveqvXGwVKJ0o/OlTu5fGJmXSy3yyLIJ42lavGRA373PiN7Dn80uTFLkDgyfCQMmu78bSs3OZgxZqjvB8ExlXC/skEjINaq6zcI1ol5kfdoCrFtVIiENSAmiwMZc9V++rNIa44FKZmUq2IuTJwz3SAmtZT7vTQqL4krzULXSy6pIhMKN5enu9ZKnUt8ygKRiba1uWc3MMAVWWPAqZmgFhusr0v6sXEYiqXjUzoqKDJi6RoNVKzZ772DKhI5622cyGVUFLsTWc2tKMa94ubjtbV5YaF1kuIGFzqSK+lZNlmlawkOPep4vsxCc+sLkXIcSNmfS0128LFdarPSUntZ3uuSVupIleSPb3d1lxytd8cYZkdTHS7TglKllmMj5lEXqellooaYs5mpRLVMxZVpefTNlYZjBH/hHC5XRasqyZaohoF5OGcRhCGEHXFSpUgkI4Om8qCQ4Ez2WSiwhfIoYBGYx2D8TMRgYliu1yCAQXnJ1CxvgJPBw5R5C2BDQYOXdd8Ie4UN/U1AzLUvet0Q9G6gfCwjYSpzS9qKAo7SEVwhtAoey5ujpafg6yNQaFBo7Ax+lWlSwUfJGMF2gich3IKBFxSLIXR2H/KhZzzig8IFYWJZmjG5EyY7C6VBXSzElYgjJ7mpIhAgj8GGY1iSEDGkRGLWljfsuFvFSagiqb8Q0h22QOUq4MJDEYBshymFpkDoTSLskwsQZCrHm5G9/tWZ/+pc/TQ9m71tafwhK3khKuLgp4JQQSxnPY7BXZM8heZHdIp6anZm1A4RqESqqNiHCFgHG3YSoWkS1CSBKZU1wA5taKpkW+YAt81hGtn3D2vzwGLgKGHsHDcwc2yEMJENcWP8g5wvNK4iMDai0RqUi2QgiMdtF0PQtUz9BFUPzyVC7Lx39yyH9U0f/dEg/cfSTNWPmuirKW8d9bF0QnGZQwsi5u2Cw2fkBbIyCvRdhscKtwWnwBGLUshI4wwSxVGXKb5W+hTKxc2DRspPjFcey8RFDy+87y0fmC/9CXs0zmU/pm6/2mqh9CgKfQWBxXVT3TOBgFgr0PJji06uAfFUD4cnnzg0fYrBPjqGcfYwRIsnzmWdsnAGch0UOkQU9SCT2KLSCKDTRpQnRvjQscVg7MWiWoBlg5plQlO0QJMAoJtB8aduxIsOcecMct/1NM6klGWHXaMqQAOfPyItvISXISCXggovCBXlEi5yyZ6ES1Q33o1PNNdZjnMUdhGQd1aKKDpw4z2qOoqlEO21o6EU1g3b9A1sjnBpzt6yJeyOOTFDcUB71Mz6kCC2VLiwGCbSKMa/l+wmeOEkuW8Ckg4CXP/EQfPkje9lM6aDAOvTdlZ2QHk7IZvlpWr/C15IG7uUkciXiGuO+W68gpl2HeuQ2IBSRaIE2pYwC1V3OfeaobcoKCgXcJu8DAhsiCE3oAG6w5kK+4TFYdToUMmXBSZupYPQEElOPACMIZIWdQbCATgm6uhzajCCDRiAFLwqigsYL2Phr+L7Bl7aqkUPsbfIatgkCelZ5YhLbHdK+0F62a96lWawsUhnd+sncjUxQys3SPYDkPd+A6WbKGutLnB9eugKFapyIl9AUKAZo9hmH+oquTVUXDMSgHMpSs6rX0UAmTSVWmV4i63coDcacQb5tR5k1ufWxU9GrEzOoazXYVLbjPQ5a2YlLCDUd0qSpwOewFzWYM+0aQuYdBKTfNYSTXW/PSU2/QWsk5qYHQw2w6FRuEx/D8RGayzr/LOohSXpcS2rIsLLKtMOvOhmm1aIbMtAc4XEDZ3iRX5kNp0hSxqdwn+MTE5GGz+GICAdDOLk4ftmMIXlkdQ5vqVAHdUXvemov6/SyGYUHhyHyHZfGv4J6yrMCfCrIZMwWl/X63iWlHnLwpUalyI9qlfG48EwvoHV9CoeVPShb5Mzu0AB8qHhMXPsMbPCPuLbDHIw2pS0HNljUHPZ7iHvtPAib6KoSaS95UwbrTEVLLjXjLOF5dMugfYCyXyxhgXoBgTJsOmMAUMSNg1DMwQPro4adnNO0qKhyUR3uw8l9HNwoMIAwswzOuxiZY9jbuJ0ydiV4IQpoVvybtBsZ/w1h5h+63Hs1+95mvkmgYFrzCP/26KBdAVWiurXnnnRhHja0HlS4Fska3yv1uakAg1jzhL56HDhbl4WivqXzkucdag8eN12ONW3HM1htC7q3FQUgJWMsNBwxzfNg/fnXItLQHFpYd/Pc2Qbmz8fohe7xpURPMOJ6yZ2aSkTu7d+N6AOaPd0moWuMBkPZ/O85eBXrZAY6B4JVi0TRCrMYmOdwNtNFiRdahwlPFR3W3CVBn0YlFEnskDVEbPoz6FFlfni/1A3Mk/YdCQ//PISQPJx9CBSoUfBC5jDAlqgnUPqTiOr0aBljvKYCeomLcIGIT3VWoFV1u8vYASH4zgkIVc+FoKdTVggTlx2kNk4a/L8z27P2grms0Y1Jy7yEjh7WUIx2KDT2j93J362x+l4an14JHS22Kn7wfRQHZbtHJ+d04HLYBsaxLiJIXVpUHReeWTgJzEG1hWiI1p3bA+/HfAnVTiR4xO9kIV+rfGh1Md2A83UQvOGqCzkhSt2CQvrqMn06o4LVppMuop9l6Cjide+ijuv11G2zv0bqYo5qYn1saSKzi+qlIlr4gpdgx96qHalWnFe9NT2HsWfR/WPPpkho2vH5wJqPiFIfbpZhkhZcvxLwahGU0bvcOrfTdJeMuuzTJseREZVaZuUQc9RQa/ukXPbs/BAJlOMgmjJ+JehmSbMIutkrXH+vQRW6KFKswOMAsVynQoNtx2BWCJkowxuKo7MH0MVrDAfIa4wIedYb0u3YA1OzrIH/aokF9ifu7q0sIYDkivmoUb1KQnEWLaHhy9BL+mW4mwRaDOQByIXYEXZCEeT1RWGfEAyk0zRUZkDGLh8DZptmVGyamNqoGEJeQzEUPFCMVruuGJHxSsJ3Fdt0g1bEDnuPdfUQ9RrqAWyoHs7coB6RKXHXmWKbgphj7Hrjsq4jAV9DScQNtaS5G9R09AnDnLdNwWGTt64ZIV5DM8QNNaO5GzRz9Amj9LBNtRQdr9McrquWvp7fpet+l272O0/GwHX5hTm6b+hEzFy5Ue/ptuHGnNQPqu1FbWCDLZWpr9G2fNqPl60VsO+3/VraBs4Aia6ztShSYotjxnNGP74w7DyZKjLBqL3on3aIhDBbdy6RwD7BBov61xtzEMFWz0rt/lDP4UG+dYV8CsJlHsHLBMuwpWSxiKA/x580oGLmc3haCJYXmjcB2V500DVVIle2e2VV4S0UnOFYHwx87PoFXcmjimCerneZ+rrKbriv6h/0oLRj0QD+zfCSGkra7cKaxeX+gAOm/xomQXUpg4Vr13Znex9QtzhhCmwd4aGSJcs8qn/SaO6RgAGtCBhdzrPNF4gdGDRup1txPE370OY60M3ZOAl6TNg7EfeuJP5o7eWdndnwV+v1h88O9mYf7O1/+v7Ogxf/dL9ovzX67egPo3dGs9GfRw9Gj0fPRy9G0ejb0b9H/xn99+4/7l7fXd39xkHffMP/Cv6bUe9z99v/A7cs9R8=</latexit> t( ,e)performanceagent stateperformanceagent statefuturesfutures<latexit sha1_base64="8pCmyj2PVM5E3CcTjbH3ALkZdV8=">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</latexit>t<latexit sha1_base64="8pCmyj2PVM5E3CcTjbH3ALkZdV8=">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</latexit>tSmallest equivalent agent<latexit sha1_base64="YUWCA9ppOKOIYTe6g7+gsDrQiS0=">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</latexit>vmax vmin3 Convergence in Behavior
+
+We first explore convergence from the viewpoint of behavior.
+Intuitively, we might think an agent has
+converged in a bandit problem when the agent only pulls a single arm forever after. How might we generalize
+this intuition?
+
+3.1 Limiting Size: ð
+
+ð, ð
+
+â(
+
+)
+
+Our first definition is built around the following perspective: An agent has converged in behavior in an
+environment when the minimal number of states needed to describe the agentâs future behaviors can no longer
+decrease. We focus around uniform convergence, in which agents converge in an environment uniformly
+across all realizable histories
+, but note that alternative formulations are possible (and can be easily derived
+from ours).
+
+Â¯â
+
+To define this idea carefully, we introduce one new fundamental concept of an agent-environment pair: The
+number of states needed, in the limit, to reproduce the agentâs future behavior in the environment. First, let
+
+|
+denote the set of agents operating over a state space of size ð
+ð¡
+
+}
+N. We define an agentâs minimal size at time
+N0 in terms of the size of the smallest agent that produces identical future behavior to ð in ð as follows.
+
+â
+
+â
+
+{
+
+|
+
+Îð =
+
+ð
+
+Î :
+
+ð
+
+= ð
+
+,
+
+(3.1)
+
+Definition 3.1. The minimal size from time t of agent ð in environment ð is denoted
+
+â
+
+ðð¡
+
+ð, ð
+(
+
+)
+
+= min
+
+N :
+
+ð
+
+{
+
+â
+
+â
+
+â
+
+ð¡:
+â Â¯â
+
+ðð
+
+â â
+
+Îð
+
+â
+
+ââ
+
+â²â Â´â
+
+â ââ²
+
+ð
+
+(
+
+)
+
+= ðð
+
+â ââ²
+
+.
+
+)}
+
+(
+
+â
+
+N0, we measure the minimal number of states needed to reproduce the agentâs behavior
+So, given any time ð¡
+forever after in the environment. Intuitively, this number describes how compressed the agent could be,
+while still producing the same behavior in the current environment from the current time on. Notice that
+, as the agent cannot be both (i) minimal and, (ii) larger than its current size. Further observe
+ð, ð
+ðð¡
+(
+that ðð¡
+
+1 by definitionâwe suppose the smallest agent has a single state by convention.
+
+ð
+) â¤ |
+ð, ð
+(
+
+|
+) â¥
+
+The minimal size from time ð¡ produces a sequence,
+, with which we can sensibly discuss the
+{
+convergence of an agent. In particular, the limit of this sequence captures the minimal number of states
+needed to describe the agentâs behavior in the limit of interaction with ð.
+
+ð, ð
+(
+
+âð¡=0
+
+)}
+
+ðð¡
+
+Definition 3.2. The limiting size of agent ð interacting with environment ð is defined as
+
+We take the value of this limit to be capture to capture what it means for an agentâs behavior to converge.
+To see why, we next turn to the analysis of the limiting size.
+
+ð
+
+ð, ð
+
+â(
+
+= lim
+ð¡
+ââ
+
+)
+
+ðð¡
+
+.
+
+ð, ð
+(
+
+)
+
+(3.2)
+
+3.2 Analysis: Behavior Convergence
+
+The limiting size comes with several useful properties that strengthen its case as a convergence definition. All
+proofs are presented in the Appendix.
+
+Theorem 3.1. For every
+
+ð, ð
+(
+
+)
+
+pair:
+
+âð¡=0 is non-increasing.
+
+(a) The sequence
+
+ðð¡
+
+{
+
+(b) 1
+
+â¤
+
+(c) ð
+
+ð
+
+ðð¡
+
+ð, ð
+(
+ð, ð
+
+) â¤ |
+exists.
+
+ð, ð
+(
+,
+
+ð¡
+
+|
+
+â
+
+â¥
+
+)}
+0.
+
+â(
+
+)
+
+Hence, by point (c), we can sensibly talk about any agentâs limiting size in any given environment.
+
+7
+
+We further point out several special casesâwhen an agent is equivalent to a memoryless policy or a fixed
+ð-th order policy, its limiting size must obey certain bounds. To be precise, we let,
+
+ð :
+
+Î 
+
+=
+
+ðª
+
+{
+
+,
+
+Î
+
+(ð)}
+
+ðª â
+
+(3.3)
+
+denote the set of all memoryless policies.
+Remark 3.2. For every
+
+pair:
+
+ð, ð
+(
+
+)
+
+(a) If ð is equivalent to a memoryless policy, ð
+
+(b) If ð is equivalent to a ð-th order policy, ð :
+
+, then ð
+
+ð, ð
+
+, in every environment.
+
+Î 
+
+ðª â
+ð
+
+ðª
+Î
+
+â(
+, then ð
+
+) â¤ |ðª|
+ð, ð
+
+ðª
+
+â
+
+(ð)
+
+â(
+
+) â¤ |ðª|
+
+ð, in every environment.
+
+This remark notes that, when an agent is equivalent to a memoryless policy, its limiting size will be upper
+bounded by the size of the observation space. More specifically, we next establish that the limiting size
+accommodates at least one simple view of convergence in bandits and MDPs in which an agentâs behavior
+eventually becomes uniformly equivalent to a distribution over actions (in bandits) or a memoryless policy
+(in MDPs).
+
+Proposition 3.3. The following two statements hold:
+
+(a) (Bandits) If an agent ð uniformly converges in a ð-armed bandit ð in the sense that,
+
+ð¡
+
+ð
+
+N0 â
+
+â
+
+â
+
+â
+
+Î
+
+(ð)â
+
+â
+
+ð¡:
+â Â¯â
+
+â
+
+ð = ð
+
+â
+
+,
+
+)
+
+(
+
+= 1.
+
+then ð
+
+ð, ð
+
+â(
+
+)
+
+(b) (MDPs) If an agent ð uniformly converges in an MDP ð in the sense that,
+
+then ð
+
+ð, ð
+
+â(
+
+.
+
+) â¤ |ðª|
+
+ð¡
+
+N0 â
+
+â
+
+â
+
+ð
+
+ðª â
+
+Î 
+
+ðª â
+
+âðð
+
+ð¡:
+â Â¯â
+
+â
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+(3.4)
+
+(3.5)
+
+Thus, an agentâs minimal limiting size has an intuitive value in well-studied settings: In a bandit, a convergent
+agent eventually becomes a one-state agent; in an MDP, a convergent agent eventually becomes (at most) a
+-state agent. It is an open (and perhaps unanswerable) question as to what canonical agents converge to
+
+|ðª|
+in more general environments, but the measure ð
+
+ð, ð
+
+can give us some insight.
+
+To summarize, we have introduced an agentâs limiting size as a quantity that reflects the convergence of an
+agentâs behavior in a given environment. In bandits and MDPs, the measure indicates the agent converges to
+a particular choice of distribution over actions, and a mapping from each environment state to a distribution
+over actions, respectively. In general, an agentâs behavior converges when its minimal size stops decreasing.
+
+â(
+
+)
+
+4 Convergence in Performance
+
+We next explore the convergence of an agentâs performance, as studied in prior work in general RL (Lattimore
+& Hutter, 2011; Lattimore, 2014; Leike et al., 2016). Indeed, we are often interested in an agentâs asymptotic
+performance, or its rate of convergence to the asymptote (Fiechter, 1994; SzepesvÃ¡ri, 1997; Kearns & Singh,
+1998). As we inspect learning curves in practice, it is common to say an agent has converged when the
+learning curve levels off. Moreover, reward or performance sequences induce a series of numbers over time,
+and thus can be readily mapped to classical accounts of the convergence of sequences.
+
+4.1 Limiting Distortion: ð¿
+
+ð, ð
+
+â(
+
+)
+
+Recall that in an environment ð there is no explicit reference to stateâonly histories. How might we think of
+an agentâs performance converging? We could consider a strict approach that says an agentâs performance
+converges when it is constant across all future histories. This is much too strong, however, as it fails to
+
+8
+
+accommodate relevant changes in performance that occur solely due to the change in history. For example,
+in the case that ð can be captured by an MDP (and thus, the observation is a sufficient statistic of reward,
+transitions, and performance), then surely we want to allow changes in performance as the agent changes
+between environment state. What happens when we no longer have an explicit reference to environment
+state?
+
+As with the behavioral view, we find that bounded agents provide the needed structureâeach bounded
+agent is comprised of a finite state space,
+. We can then define performance convergence relative to agent
+state by inspecting whether the agentâs performance changes across return visits to each of its own agent
+states. Intuitively, if the agentâs performance is the same every time it returns to the same agent state,
+then we say the agent has converged. We formally capture this notion through the limiting distortion of an
+agent-environment pair, which serves as the basis for our second definition of agent convergence.
+
+ð®
+
+To introduce this concept, we require extra notation to capture return visits to the same agent state. We are
+interested in realizable histories that can be subdivided, â ââ², such that the agent maps â and â ââ² to the
+same internal agent state. We denote this set
+
+â¦ð¡ =
+
+â
+
+{(
+
+â, ââ²
+
+) â â
+
+: â ââ²
+
+ð¡:
+â Â¯â
+
+â â§ |
+
+â
+| â¥
+ââ²
+â§ |
+|
+â
+ð¢
+â§ (cid:174)
+
+ð¡,
+> 0,
+ð¢
+(cid:174)
+
+=
+
+)
+
+(
+
+(4.1)
+
+â ââ²
+
+.
+
+)}
+
+(
+
+â¦ð¡
+|â
+
+ð, ð
+(
+
+Note that for all bounded agents, this set is non-empty for all environments ð
+Lemma 4.1.
+
+pair and time ð¡
+
+> 0 for any
+
+N0.
+
+and all times ð¡
+
+N0.
+
+â
+
+â â°
+
+|
+
+)
+
+â
+We can then consider the gap in the agentâs performance conditioned on the fact that the agent occupies the
+same agent state at two different times. This quantity, called distortion, analysed recently by Dong et al.
+under a more detailed decomposition of agent state (2022, Equations 5 & 6), is closely related to the degree
+of value error in aggregating states (Van Roy, 2006; Li et al., 2006) or histories (Majeed & Hutter, 2018; 2019;
+Majeed, 2021). We adapt these quantities in our notation as follows.
+Definition 4.1. The distortion from time t of ð in ð is
+
+ð¿ð¡
+
+ð, ð
+(
+
+)
+
+=
+
+sup
+
+â,â
+
+(
+
+â²)ââ â¦ð¡
+
+ð£
+
+ð, ð
+(
+
+|
+
+|
+
+â
+
+) â
+
+ð£
+
+ð, ð
+(
+
+|
+
+â ââ²
+
+.
+
+)|
+
+(4.2)
+
+Intuitively, the distortion of an agent expresses the largest gap in performance across situations in which
+the agent is at the same agent state. An agent with high distortion is one in which the agent will produce
+very different performance as it returns to the same agent state. On the other extreme, an agent with zero
+distortion is one in which the performance is constant every time the agent is at the same agent state. In this
+way, the distortion captures whether the agent-environment interaction is non-stationary in a way that is
+relevant to performance.
+
+Using this measure, we introduce the limiting distortion, the central definition of this section.
+Definition 4.2. The limiting distortion of ð in ð is
+
+ð¿
+
+ð, ð
+
+â(
+
+= lim
+ð¡
+ââ
+
+)
+
+ð¿ð¡
+
+.
+
+ð, ð
+(
+
+)
+
+(4.3)
+
+â
+
+measures how well an agentâs state can predict the agentâs own performance across all subsequent
+Roughly, ð¿
+histories. This quantity will be zero just when, every time the agent visits one of its states, the factors of the
+environment that determine the agentâs performance are the same. Thus, the limiting distortion measures the
+degree of performance-relevant non-stationarity present in the indefinite interaction with the environment.
+
+4.2 Analysis: Performance Convergence
+
+To motivate this quantity as a meaningful reflection of an agentâs performance convergence, we show that the
+limiting distortion has the following properties.
+
+9
+
+Theorem 4.2. For every
+
+ð, ð
+(
+
+)
+
+pair:
+
+(a) The sequence
+
+(b) 0
+
+(c) ð¿
+
+â¤
+
+â(
+
+ð¿ð¡
+
+ð, ð
+(
+ð, ð
+
+) â¤ (
+exists.
+
+)
+
+{
+
+ð¿ð¡
+
+ð, ð
+(
+vmax
+
+âð¡=0 is non-increasing.
+)}
+vmin
+
+0.
+
+,
+
+ð¡
+
+â
+
+)
+
+â
+
+â¥
+
+Crucially, property (c) of Theorem 4.2 shows that the limiting distortion exists for every
+pair. The
+relevant questions, then, are (i) the rate at which the agent reaches ð¿
+ð, ð
+)
+actually is. We suggest that differing values of ð¿
+indicate a meaningful difference in the interaction
+ð, ð
+stream produced by ð and ðâand thus, reflect the convergence of ð in ð. We motivate this intuition with
+the following results.
+
+, and (ii) what the value ð¿
+
+ð, ð
+(
+
+ð, ð
+
+â(
+
+â(
+
+â(
+
+)
+
+)
+
+)
+
+In standard settings, behavior and performance convergence tend to co-occur. That is, in an MDP, given an
+agent whose behavior converges in the sense of Proposition 3.3, that same agentâs performance also converges,
+as follows.
+
+Proposition 4.3. The following two statements hold:
+
+(a) (Bandits) If an agent ð uniformly converges in a ð-armed bandit ð in the sense that,
+
+ð¡
+
+ð
+
+N0 â
+
+â
+
+â
+
+â
+
+Î
+
+(ð)â
+
+â
+
+ð¡:
+â Â¯â
+
+â
+
+ð = ð
+
+â
+
+,
+
+)
+
+(
+
+= 0.
+
+then ð¿
+
+ð, ð
+
+â(
+
+)
+
+(b) (MDPs) If an agent ð uniformly converges in an MDP ð in the sense that,
+
+then ð¿
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+ð¡
+
+N0 â
+
+â
+
+â
+
+ð
+
+ðª â
+
+Î 
+
+ðª â
+
+âðð
+
+ð¡:
+â Â¯â
+
+â
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+(4.4)
+
+(4.5)
+
+This result mirrors that of Proposition 3.3 on the behavioral side. Recall, however, that the style of convergence
+characterized by Equation 3.5 is restrictive, and will not necessarily accommodate the style of convergence
+of, say, tabular Q-learning; for many stochastic environments it is unlikely that there is a finite ð¡ at which
+Q-learning is equivalent to a memoryless policy uniformly over all histories. To this end, we next provide a
+general result about the performance convergence of agents with a particular form.
+Proposition 4.4. Any ð and MDP ð that satisfy
+
+ensure ð¿ð¡
+
+ð, ð
+(
+
+)
+
+= 0 for all ð¡
+
+â
+
+ð , ð, ð
+
+ð¢
+
+(
+
+= ð¢
+
+ð â², ðâ², ðâ²
+
+)
+(
+N0, and thus, ð¿
+
+) â
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+ð = ðâ²,
+
+,
+
+ð ,ð 
+
+â
+
+â²âð®
+
+ð,ð
+
+â
+
+â²âð
+
+,
+
+ð,ð
+
+â
+
+â²âðª
+
+,
+
+(4.6)
+
+Note that the condition of Equation 4.6 is satisfied for all bounded agents that always store the most recent
+observation in memory, as is typical of many agents we implement. In this sense, bounded implementations of
+= 0. It is an open question as to whether we can design a version of bounded
+Q-learning may ensure ð¿
+Q-learning that ensures convergence in MDPs in the sense of the main result of Watkins & Dayan (1992).
+For instance, it is unclear how to design an appropriate step-size annealing schedule with only finitely many
+agent states.
+
+ð, ð
+
+â(
+
+)
+
+Conversely, when we consider the same exact kind of environment but impose further constraints on the
+agent, we find that the limiting distortion can be greater than zero.
+Proposition 4.5. There is a choice of MDP ð and bounded Q-learning ð that yields ð¿
+
+> 0.
+
+ð, ð
+
+â(
+
+)
+
+The contrast of Proposition 4.4 with Proposition 4.5 draws a distinction between the convergence of different
+agent-environment pairs. In particular, when the environment models an MDP, we saw that bounded agents
+that memorize the last observation satisfy ð¿
+= 0. However, when we consider a Q-learning agent with
+limitations to its representational capacity, we find it may be the case that ð¿
+
+> 0.
+
+ð, ð
+
+ð, ð
+
+â(
+
+)
+
+â(
+
+)
+
+10
+
+Lastly, we recall that by Proposition 3.3 and Proposition 4.3, behavioral and performance convergence tend
+to co-occur in traditional problems like MDPs. As a final point, we show that, in general environments,
+there are
+pairs for which the time of behavior convergence is different from the time of performance
+convergence, thereby providing some formal support for treating these two views as distinct.
+pair and any choice of ð½, ð
+
+Proposition 4.6. For any
+
+ð, ð
+(
+
+R
+
+)
+
+0 let
+
+ð, ð
+(
+
+ð¡ð½
+ð¡ð
+
+)
+ð, ð
+(
+ð, ð
+(
+
+)
+
+)
+
+â
+
+â¥
+
+) â
+
+ð
+â(
+ð¿
+
+ð, ð
+ð, ð
+
+) â
+
+â(
+such that
+
+ð½
+
+,
+
+}
+ð
+
+.
+
+}
+
+)| â¤
+
+)| â¤
+
+= min
+= min
+
+ð¡
+
+ð¡
+
+{
+
+â
+
+N0 :
+N0 :
+
+{
+ð, ð
+(
+< ð¡ð½
+
+â
+and
+
+)
+ð, ð
+(
+
+,
+
+)
+
+|
+
+ð, ð
+ðð¡
+(
+ð¿ð¡
+ð, ð
+|
+(
+ðâ², ðâ²)
+(
+ð¡ð½
+
+Then, for ð½ = 0, ð = 0, there exists pairs
+
+ð¡ð
+
+ð, ð
+(
+
+)
+
+ðâ², ðâ²
+(
+
+< ð¡ð
+
+.
+
+ðâ², ðâ²
+(
+
+)
+
+)
+
+(4.7)
+
+This result indicates that, in general, even when an agentâs limiting distortion has been reached, it does not
+mean that its limiting size has been reached, and vice versa. This tells a partial story as to why it is prudent
+to draw the concept of convergence in behavior and performance apart in more general environments. It is
+further worth noting that, in some environments, we suspect it is possible that ð¡ð may not exist, though ð¡ð½ is
+guaranteed to exist by definition of ð
+
+.
+
+5 Conclusion
+
+â
+
+The notion of convergence is central to many aspects of agencyâfor example, we are often interested in
+designing agents that converge to some fixed high-quality behavior. Similarly, the notion of learning is
+intimately connected to how we think about convergence: An agent that eventually converges is, in many
+cases, one that stops learning. In this paper we have presented a careful examination of the concept of
+convergence for bounded agents in an of RL that emphasizes agents rather than environments. We explored
+two perspectives on how to think about the convergence of a bounded agent operating in a general environment:
+from behavior (Definition 3.2), and from performance (Definition 4.2). We established simple properties of
+both formalisms, proved that they reflect some standard notions of convergence, and bear interesting relation
+to one another. We take these formalisms, definitions, and results to bring new clarity to a central concept of
+RL, and hope that this work can help us to better design, analyse, and understand learning agents.
+
+The perspectives and definitions here introduced suggest a number of new pathways for the analysis and
+design of agents. For instance, both the limiting size and distortion of an agent can be useful guides for
+developing or evaluating the learning mechanisms that drive our agents; in some domains, we may explicitly
+want to build agents that converge in either sense, or to evaluate agents in environments that require a larger
+limiting size or distortion from its agents. Similarly, these quantities may suggest new ways to sharpen the
+problem we are ultimately interested in by focusing only on agents that have a minimal limiting size or
+distortionâas is likely the case of all agents of interest. Additionally, in future work, it would be useful to
+develop efficient algorithms that can estimate the limiting size or distortion of an actual agent-environment
+pair. Lastly, we emphasize that while behavior and performance are natural choices for a conception of
+convergence, we do not here discuss notions of convergence based around epistemic uncertainty (Lu et al.,
+2021), but acknowledge its potential significance for future work.
+
+Acknowledgments
+
+The authors are grateful to Mark Rowland for comments on a draft of the paper. We would also like to thank
+the attendees of the 2023 Barbados RL Workshop, as well as Elliot Catt, Will Dabney, Steven Hansen, Anna
+Harutyunyan, Joe Marino, Joseph Modayil, Remi Munos, Brendan OâDonoghue, Matt Overlan, Tom Schaul,
+Yunhao Tang, Shantanu Thakoor, and Zheng Wen for inspirational conversations.
+
+References
+Peter Auer, Thomas Jaksch, and Ronald Ortner. Near-optimal regret bounds for reinforcement learning.
+
+Advances in Neural Information Processing Systems, 2008.
+
+11
+
+Mohammad Gheshlaghi Azar, Ian Osband, and RÃ©mi Munos. Minimax regret bounds for reinforcement
+
+learning. In Proceedings of the International Conference on Machine Learning, 2017.
+
+Richard Bellman. A Markovian decision process. Journal of Mathematics and Mechanics, pp. 679â684, 1957.
+
+Michael Bowling, John D. Martin, David Abel, and Will Dabney. Settling the reward hypothesis.
+
+In
+
+Proceedings of the International Conference on Machine Learning, 2023.
+
+Steven J Bradtke and Andrew G Barto. Linear least-squares algorithms for temporal difference learning.
+
+Machine learning, 22(1):33â57, 1996.
+
+Ronen I Brafman and Moshe Tennenholtz. R-max-a general polynomial time algorithm for near-optimal
+
+reinforcement learning. Journal of Machine Learning Research, 3(Oct):213â231, 2002.
+
+Daniele Calandriello, Alessandro Lazaric, and Marcello Restelli. Sparse multi-task reinforcement learning.
+
+Advances in neural information processing systems, 2014.
+
+Anthony R. Cassandra, Leslie Pack Kaelbling, and Michael L. Littman. Acting optimally in partially
+observable stochastic domains. In Proceedings of the AAAI Conference on Artificiall Intelligence, 1994.
+
+Christopher Cherniak. Minimal rationality. MIT Press, 1990.
+
+Michael K Cohen, Elliot Catt, and Marcus Hutter. A strongly asymptotically optimal agent in general
+
+environments. arXiv preprint arXiv:1903.01021, 2019.
+
+Carlos Diuk, Andre Cohen, and Michael L Littman. An object-oriented representation for efficient reinforce-
+
+ment learning. In Proceedings of the International conference on Machine learning, 2008.
+
+Shi Dong, Benjamin Van Roy, and Zhengyuan Zhou. Simple agent, complex environment: Efficient reinforce-
+
+ment learning with agent states. Journal of Machine Learning Research, 23(255):1â54, 2022.
+
+Maryam Fazel, Rong Ge, Sham Kakade, and Mehran Mesbahi. Global convergence of policy gradient methods
+for the linear quadratic regulator. In Proceedings of the International Conference on Machine Learning,
+2018.
+
+Claude-Nicolas Fiechter. Efficient reinforcement learning. In Proceedings of the Conference on Computational
+
+Learning Theory, 1994.
+
+Geoffrey J Gordon. Reinforcement learning with function approximation converges to a region. In Advances
+
+in Neural Information Processing Systems, 2000.
+
+Thomas L Griffiths, Falk Lieder, and Noah D Goodman. Rational use of cognitive resources: Levels of
+analysis between the computational and the algorithmic. Topics in cognitive science, 7(2):217â229, 2015.
+
+Anna Harutyunyan. What is an agent? http://anna.harutyunyan.net/wp-content/uploads/2020/09/
+
+What_is_an_agent.pdf, 2020.
+
+Marcus Hutter. A theory of universal artificial intelligence based on algorithmic complexity. arXiv preprint
+
+cs/0004001, 2000.
+
+Marcus Hutter. Self-optimizing and Pareto-optimal policies in general environments based on Bayes-mixtures.
+
+In Proceedings of the International Conference on Computational Learning Theory, 2002.
+
+Marcus Hutter. Universal artificial intelligence: Sequential decisions based on algorithmic probability. Springer
+
+Science & Business Media, 2004.
+
+Rodrigo Toro Icarte, Toryn Q Klassen, Richard Valenzano, and Sheila A McIlraith. Reward machines:
+Exploiting reward function structure in reinforcement learning. Journal of Artificial Intelligence Research,
+73:173â208, 2022.
+
+Thomas Jaksch, Ronald Ortner, and Peter Auer. Near-optimal regret bounds for reinforcement learning.
+
+Journal of Machine Learning Research, 11(Apr):1563â1600, 2010.
+
+12
+
+Chi Jin, Zhuoran Yang, Zhaoran Wang, and Michael I Jordan. Provably efficient reinforcement learning with
+
+linear function approximation. In Proceedings of the Conference on Learning Theory, 2020.
+
+Leslie Pack Kaelbling, Michael L. Littman, and Andrew W. Moore. Reinforcement learning: A survey.
+
+Journal of Artificial Intelligence Research, pp. 237â285, 1996.
+
+Michael Kearns and Daphne Koller. Efficient reinforcement learning in factored MDPs. In Proceedings of the
+
+International Joint Conference on Artificial Intelligence, 1999.
+
+Michael Kearns and Satinder Singh. Finite-sample convergence rates for Q-learning and indirect algorithms.
+
+Advances in Neural Information Processing Systems, 1998.
+
+Michael Kearns and Satinder Singh. Near-optimal reinforcement learning in polynomial time. Machine
+
+learning, 49(2-3):209â232, 2002.
+
+George Konidaris. A framework for transfer in reinforcement learning. In ICML Workshop on Structural
+
+Knowledge Transfer for Machine Learning, 2006.
+
+George Konidaris and Andrew Barto. Autonomous shaping: Knowledge transfer in reinforcement learning.
+
+In Proceedings of the International Conference on Machine Learning, 2006.
+
+George Konidaris and Andrew Barto. Building portable options: Skill transfer in reinforcement learning. In
+
+Proceedings of the International Joint Conference on Artificial Intelligence, 2007.
+
+Tor Lattimore. Theory of general reinforcement learning. PhD thesis, The Australian National University,
+
+2014.
+
+Tor Lattimore and Marcus Hutter. Asymptotically optimal agents. In Proceedings of the International
+
+Conference on Algorithmic Learning Theory, 2011.
+
+Tor Lattimore, Marcus Hutter, and Peter Sunehag. The sample-complexity of general reinforcement learning.
+
+In Proceedings of the International Conference on Machine Learning, 2013.
+
+Jan Leike. Nonparametric general reinforcement learning. PhD thesis, The Australian National University,
+
+2016.
+
+Jan Leike, Tor Lattimore, Laurent Orseau, and Marcus Hutter. Thompson sampling is asymptotically optimal
+in general environments. In Proceedings of the Conference on Uncertainty in Artificial Intelligence, 2016.
+
+Richard L Lewis, Andrew Howes, and Satinder Singh. Computational rationality: Linking mechanism and
+
+behavior through bounded utility maximization. Topics in cognitive science, 6(2):279â311, 2014.
+
+Lihong Li, Thomas J. Walsh, and Michael L. Littman. Towards a unified theory of state abstraction for
+MDPs. In Proceedings of the International Symposium on Artificial Intelligence and Mathematics, 2006.
+
+Xiuyuan Lu, Benjamin Van Roy, Vikranth Dwaracherla, Morteza Ibrahimi, Ian Osband, and Zheng Wen.
+
+Reinforcement learning, bit by bit. arXiv preprint arXiv:2103.04047, 2021.
+
+Sultan J Majeed. Abstractions of general reinforcement Learning. PhD thesis, The Australian National
+
+University, 2021.
+
+Sultan J. Majeed and Marcus Hutter. On Q-learning convergence for non-Markov decision processes. In
+
+Proceedings of the International Joint Conference on Artificial Intelligence, 2018.
+
+Sultan Javed Majeed and Marcus Hutter. Performance guarantees for homomorphisms beyond Markov
+
+decision processes. In Proceedings of the AAAI Conference on Artificial Intelligence, 2019.
+
+Andrew Kachites McCallum. Reinforcement learning with selective perception and hidden state. PhD thesis,
+
+1996.
+
+13
+
+Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A. Rusu, Joel Veness, Marc G. Bellemare, Alex
+Graves, Martin Riedmiller, Andreas K. Fidjeland, Georg Ostrovski, Stig Petersen, Charles Beattie, Amir
+Sadik, Ioannis Antonoglou, Helen King, Dharshan Kumaran, Daan Wierstra, Shane Legg, and Demis
+Hassabis. Human-level control through deep reinforcement learning. Nature, 518(7540):529â533, 2015.
+
+Pedro Alejandro Ortega. A unified framework for resource-bounded autonomous agents interacting with
+
+unknown environments. PhD thesis, University of Cambridge, 2011.
+
+Martin L Puterman. Markov Decision Processes: Discrete Stochastic Dynamic Programming. John Wiley &
+
+Sons, 2014.
+
+Martin L. Puterman and Shelby L. Brumelle. On the convergence of policy iteration in stationary dynamic
+
+programming. Mathematics of Operations Research, 4(1):60â69, 1979.
+
+Stuart J Russell and Devika Subramanian. Provably bounded-optimal agents. Journal of Artificial Intelligence
+
+Research, 2:575â609, 1994.
+
+Brian Sallans and Geoffrey E Hinton. Reinforcement learning with factored states and actions. The Journal
+
+of Machine Learning Research, 5:1063â1088, 2004.
+
+Julian Schrittwieser, Ioannis Antonoglou, Thomas Hubert, Karen Simonyan, Laurent Sifre, Simon Schmitt,
+Arthur Guez, Edward Lockhart, Demis Hassabis, Thore Graepel, et al. Mastering atari, Go, chess and
+shogi by planning with a learned model. Nature, 588(7839):604â609, 2020.
+
+Herbert A Simon. A behavioral model of rational choice. The quarterly journal of economics, 69(1):99â118,
+
+1955.
+
+Satinder Singh, Tommi Jaakkola, Michael L. Littman, and Csaba SzepesvÃ¡ri. Convergence results for
+
+single-step on-policy reinforcement-learning algorithms. Machine learning, 38(3):287â308, 2000.
+
+Alexander L. Strehl, Lihong Li, and Michael L. Littman. Reinforcement learning in finite MDPs: PAC
+
+analysis. Journal of Machine Learning Research, 10:2413â2444, 2009.
+
+Richard S. Sutton and Andrew G. Barto. Reinforcement Learning: An Introduction. MIT Press, 2018.
+
+Richard S Sutton, David McAllester, Satinder Singh, and Yishay Mansour. Policy gradient methods for
+reinforcement learning with function approximation. Advances in neural information processing systems,
+1999.
+
+Csaba SzepesvÃ¡ri. The asymptotic convergence-rate of Q-learning. Advances in Neural Information Processing
+
+Systems, 1997.
+
+Peter M Todd and Gerd Ed Gigerenzer. Ecological rationality: Intelligence in the world. Oxford University
+
+Press, 2012.
+
+Benjamin Van Roy. Performance loss bounds for approximate value iteration with state aggregation.
+
+Mathematics of Operations Research, 31(2):234â244, 2006.
+
+Christopher J.C.H. Watkins and Peter Dayan. ð-learning. Machine learning, 8(3-4):279â292, 1992.
+
+A Appendix
+
+We present each result and its associated proof in full detail, beginning with proofs of results presented in
+Section 3.
+
+Theorem 3.1. For every
+
+ð, ð
+(
+
+)
+
+pair, the following properties hold:
+
+(a) The sequence
+
+ðð¡
+
+ð, ð
+(
+
+{
+
+)}
+
+âð¡=0 is non-increasing.
+
+14
+
+(b) 1
+
+â¤
+
+(c) ð
+
+ðð¡
+
+ð, ð
+(
+ð, ð
+
+) â¤ |
+exists.
+
+â(
+
+)
+
+ð
+
+,
+
+|
+
+0.
+
+ð¡
+
+â
+
+â¥
+
+Proof of Theorem 3.1.
+
+We prove each property separately.
+
+(a) The sequence
+
+Note that the set
+
+ðð¡
+
+{
+
+ð, ð
+(
+
+ð¡:
+
+â
+
+â
+
+âð¡=0 is non-increasing.
+)}
+induces a sequence of sets
+
+,
+
+0:
+
+â
+
+â
+
+â â â
+0. The non-increasing nature of the sequence
+
+for all ð¡
+of this subset relation, as the sup ensures that
+
+â
+
+â¥
+
++
+
+â
+ðð¡
+
+{
+
+ð¡
+
+1:
+
+ð¡:
+
+, . . . such that
+
+1:
+
+â
+
+â
+,
+
+(A.1)
+
+ð, ð
+(
+
+)}
+
+âð¡=0
+
+holds by immediate consequence
+
+for countable sets
+
+1 and
+
+ð¡
+ð³
+
++
+
+ð¡ where
+
+ð³
+
+1
+
+ð¡
+ð³
+
++
+
+â ð³
+
+sup
+
+1
+
+ð¡
+ð³
+
+sup
+
+ð¡ ,
+ð³
+
+â¤
+
++
+ð¡. Therefore, ðð¡
+
+ð, ð
+(
+
+1
+
++
+
+) â¤
+
+ðð¡
+
+ð, ð
+(
+
+)
+
+for all ð¡
+
+0. â.
+
+â¥
+
+(b) 1
+
+ðð¡
+
+ð, ð
+(
+
+â¤
+
+ð
+
+,
+
+) â¤ |
+
+|
+
+0.
+
+ð¡
+
+â
+
+â¥
+
+Second, note that the lower bound trivially holds since the smallest an agent can be is a single state
+(simply by conventionâwe could opt for the empty state space as the smallest agent, but this choice is
+arbitrary). Next, we note that the upper bound also holds in a straightforward way: The minimal
+state space size of the agent canât be larger than the agentâs actual state space. â
+
+(c) ð
+
+ð, ð
+
+â(
+
+)
+
+exists.
+
+The property follows directly by consequence of the agentâs boundedness: The actual agent ð uses
+a state space of some finite size, ð. Thus, for every time ð¡, in every environment, there is at least
+one ð
+N, and one bounded agent that produces the same behavior as the agent: The agent itself.
+Therefore, by the non-increasing nature of the sequence, there must exist a point at which ð
+stops decreasing, due to the floor at the minimum possible state-space size of one. â
+
+ð, ð
+
+â(
+
+â
+
+)
+
+This completes the argument for all three statements, and thus completes the proof.
+
+â¡
+
+Remark 3.2. For every
+
+ð, ð
+(
+
+)
+
+pair:
+
+(a) If ð is equivalent to a memoryless policy, ð
+
+(b) If ð is equivalent to a ð-th order policy, ð :
+
+Proof of Remark 3.2.
+
+, then ð
+
+ð, ð
+
+, in every environment.
+
+Î 
+
+ðª â
+ð
+
+ðª
+Î
+
+â(
+, then ð
+
+) â¤ |ðª|
+ð, ð
+
+ðª
+
+â
+
+(ð)
+
+â(
+
+) â¤ |ðª|
+
+ð, in every environment.
+
+While (a) is clearly a special case of (b), we provide a proof of each result for the sake of clarity.
+
+Î 
+
+ðª â
+
+(a) If ð is equivalent to a memoryless policy, then ð
+
+ð, ð
+
+, in every environment.
+
+â(
+
+) â¤ |ðª|
+
+To be precise, when we say an ð is equivalent to a memoryless policy, we mean there is a choice of
+ð
+
+such that,
+
+ðª
+
+ð
+
+â
+
+)
+
+(
+
+= ð
+
+â
+
+,
+
+)
+
+ðª(
+
+.
+
+ââ
+
+ââ
+
+(A.2)
+
+15
+
+Now that this term is clear, we see why the fact holds. The agentâs behavior can always be described by
+a process that sets its agent state to be the last observation, then acts according to the corresponding
+ð
+, (2) sets ð  = ð, and (3) acts according
+ðª
+to ðâ
+ðª
+
+from Equation A.2. That is, consider ðâ that (1) sets
+
+ðª
+
+ð®
+
+=
+
+,
+
+Clearly this agent only requires at most
+
+ð 
+
+= ð
+
+ðâ
+ðª(
+ðª(
+states, and thus, ð
+
+ð
+
+)
+
+)
+
+.
+
+|ðª|
+
+ð, ð
+
+â(
+
+) â¤ |ðª|
+
+. â
+
+ð
+
+(b) If
+
+ð is equivalent to a ð-th order policy, ð :
+(cid:174)
+
+ð, in every environment.
+The reasoning is similar to point (3.). Let us first be precise: When we say the agent ð is a ð-th
+, we mean the agentâs behavior can be described by some fixed function
+order policy, ð :
+(ð)
+ð
+operates over some finite state
+, ð 0, ð, ð¢
+ð(
+Î
+ð
+space, and uses a policy ð :
+such that, for any ð¡, for every âð¡ = ð0ð1, . . . , ðð¡
+
+)
+. But, this agent ensures there exists a ð-th order policy ð(
+
+â
+in every environment. That is, ð =
+
+ðª
+(ð)
+
+, then ð
+
+) â¤ |ðª|
+
+ð® â
+
+(ð)
+
+(ð)
+
+2ðð¡
+
+ð, ð
+
+) :
+
+â
+
+â
+
+(ð®
+
+â(
+
+1,
+
+ðª
+
+ðª
+
+Î
+
+Î
+
+Î
+
+ð
+
+ð
+
+)
+
+â
+
+â
+
+ð
+
+(Â· |
+
+âð¡
+
+)
+
+= ð(
+
+ð
+
+)
+
+ðð¡
+
+ð
+
+1, . . . , ðð¡
+â
+
+â
+
+â
+
+2, ðð¡
+
+.
+
+1
+
+)
+
+â
+
+(Â· |
+
+We note that handling the indices for the first observations where ð¡ < ð must be done carefully, but
+the reasoning remains the same.
+
+Hence, we can define a new agent, ðâ =
+
+ð
+
+(Â· |
+
+âð¡
+
+)
+
+, with
+
+(ð®â, ð â0
+= ðâ
+
+, ðâ, ð¢â)
+= ðâ
+âð¡
+
+(Â· |
+
+)
+
+ð, yielding:
+
+ð®â =
+ð âð¡
+1
+â
+(cid:124)(cid:123)(cid:122)(cid:125)
+1,...,ðð¡
+ð
+â
+
+ðª
+
+.
+
+)
+
+1
+
+â
+
+(Â· |
+
+ðð¡
+
+â
+
+By construction of ðâ, the most states ever needed to mimic the behavior of ð is
+ð, rather than a strict equality, as in some
+We note that the relation is an inequality, ð
+environments not every length ð sequence of observations may be required to produce the original
+agentâs behavior. â
+
+) â¤ |ðª|
+
+ð, ð
+
+|ðª|
+
+â(
+
+ð.
+
+â¡
+
+(A.3)
+
+(A.4)
+
+This completes the argument for both statements.
+
+Proposition 3.3. The following two statements hold:
+
+(a) (Bandits) If an agent ð converges in a ð-armed bandit ð in the sense that,
+
+ð¡
+
+ð
+
+N0 â
+
+â
+
+â
+
+â
+
+Î
+
+(ð)ââ
+
+ð¡:
+
+â
+
+ââ
+
+ð = ð
+
+â
+
+,
+
+)
+
+(
+
+= 1.
+
+then ð
+
+ð, ð
+
+â(
+
+)
+
+(b) (MDPs) If an agent ð converges in an MDP ð in the sense that,
+
+ð¡
+
+N0 â
+
+â
+
+â
+
+ð
+
+Î 
+
+ðª ââðð
+
+ðª â
+
+ð¡:
+
+â
+
+ââ
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+then ð
+
+ð, ð
+
+â(
+
+.
+
+) â¤ |ðª|
+
+Proof of Proposition 3.3.
+
+We prove the two properties separately.
+
+(a) (Bandits) If an agent ð converges in a ð-armed bandit ð in the sense that,
+
+then ð
+
+ð, ð
+
+â(
+
+= 1.
+
+)
+
+ð¡
+
+ð
+
+N0 â
+
+â
+
+â
+
+Î
+(ð)ââ
+
+â
+
+ð¡:
+
+â
+
+ââ
+
+ð = ð
+
+â
+
+,
+
+)
+
+(
+
+16
+
+We know by assumption that there is a time ð¡ such that the agentâs chosen action distribution for
+all realizable histories is identical. Note that a fixed choice of action distribution can be captured by
+. Since ð is a ð-armed bandit, we know there is only one observation,
+a memoryless policy ð
+
+ðª
+= 1. Thus, by point (a) of Remark 3.2, we conclude ð
+
+ð, ð
+
+|ðª|
+(b) (MDPs) If an agent ð converges in an MDP ð in the sense that,
+
+) â¤ |ðª|
+
+â(
+
+, where
+
+= 1. â
+
+|ðª|
+
+Î 
+
+ðª â
+
+ð¡
+
+N0 â
+
+â
+
+â
+
+ð
+
+Î 
+
+ðª ââðð
+
+ðª â
+
+ð¡:
+
+â
+
+ââ
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+.
+
+then ð
+
+ð, ð
+
+â(
+
+) â¤ |ðª|
+
+The argument is similar to the previous point: We know by assumption that there is a time ð¡ such
+that the agentâs behavior in all realizable histories is equivalent to some memoryless policy, ð
+.
+ðª
+By point (a) of Remark 3.2, we know that any agent that is equivalent to such a policy ensures
+ð
+
+. â
+
+ð, ð
+
+ðª â
+
+Î 
+
+â(
+
+) â¤ |ðª|
+
+This completes the proof of both statements, and thus concludes the argument.
+
+â¡
+
+B Section 4 Proofs: Convergence in Performance
+
+We now present proofs of results from Section 4.
+
+Lemma 4.1.
+
+â¦ð¡
+|â
+
+|
+
+> 0 for any
+
+ð, ð
+(
+
+)
+
+pair and time ð¡
+
+N0.
+
+â
+
+Proof of Lemma 4.1.
+
+The intuition is simple to state: All bounded agents must eventually return to at least one of their
+agent states.
+
+In more detail, recall that in Equation 4.1 we define
+the following four conditions hold:
+
+â¦ð¡ to contain all history pairs
+
+â
+
+such that
+
+â, ââ²)
+
+(
+
+,
+
+ð¡:
+
+â
+
+(i) â ââ² â â
+ð¡,
+(ii)
+â
+
+|
+
+| â¥
+
+(iii)
+
+(iv)
+
+â
+
+> 0.
+
+|
+â
+
+|
+ð¢
+(cid:174)
+
+(
+
+=
+
+ð¢
+(cid:174)
+
+(
+
+,
+â ââ²)
+
+)
+
+)
+
+ð, ð
+(
+
+pair and ð¡
+
+N0, there will always be a pair
+
+We now show that for any
+four properties.
+(i) â ââ² â â
+Let us consider the first property. Recall that
+contains histories of length ð¡ or greater that
+â
+occur with non-zero probability from the interaction between ð and ð. By definition of this set, it is
+non-empty. â
+
+that satisfies all
+
+â, ââ²)
+
+â
+
+â
+
+â
+
+ð¡:
+
+ð¡:
+
+(
+
+.
+
+|
+
+â
+
+| â¥
+
+(ii)
+
+> 0.
+
+ð¡ and (iii)
+
+ââ²|
+|
+Now, observe that by necessity some of the
+second and third conditions: Pick any realizable history from
+pieces â and ââ² such that
+ð¢
+(iv)
+(cid:174)
+
+â, ââ²)
+> 0. â
+
+â ââ²)
+
+ð¡ and
+
+| â¥
+
+ð¢
+(cid:174)
+
+=
+
+â
+
+â
+
+â
+
+(
+
+)
+
+(
+
+(
+
+.
+
+|
+
+|
+
+|
+
+ð¡:
+
+â
+
+â
+
+pairs that satisfy the first condition, also satisfy the
+and there is a way to divide into
+
+17
+
+â, ââ²)
+
+pairs that satisfy these three conditions must also ensure that
+Now, lastly, observe that some
+the agent occupies the same agent state after experiencing â and â ââ². That is, that
+. If
+this were not the case, then for all such history pairs â and ââ² that satisfy conditions (i, ii, iii), the
+agent would have to occupy a different agent state across â and â ââ². But then as the length of â and
+â ââ² go to infinity, the agent will occupy infinitely many different agent states, which contradicts its
+boundedness. â
+
+â ââ²)
+
+ð¢
+(cid:174)
+
+ð¢
+(cid:174)
+
+=
+
+â
+
+(
+
+(
+
+)
+
+(
+
+This completes the argument for each of the four properties, and thus completes the proof.
+
+â¡
+
+Theorem 4.2. For every
+
+ð, ð
+(
+
+)
+
+pair:
+
+(a) The sequence
+
+{
+
+(b) 0
+
+(c) ð¿
+
+â¤
+
+ð¿ð¡
+
+ð, ð
+(
+ð, ð
+
+) â¤ (
+exists.
+
+â(
+
+)
+
+âð¡=0 is non-increasing.
+
+ð¿ð¡
+
+ð, ð
+(
+vmax
+
+)}
+vmin
+
+â
+
+,
+
+)
+
+0.
+
+ð¡
+
+â
+
+â¥
+
+Proof of Theorem 4.2.
+
+We prove each property separately.
+
+(a) The sequence
+
+Note that the set
+
+{
+
+ð¿ð¡
+
+ð, ð
+(
+â¦ð¡
+â
+
+)}
+
+âð¡=0 is non-increasing.
+
+induces a sequence of non-empty sets
+
+â¦ð¡
+1 â â
+â
++
+
+â¦ð¡ ,
+
+,
+
+â¦0
+â
+
+â¦1
+â
+
+. . . such that
+
+(B.1)
+
+for all ð¡
+of the sequence
+that
+
+â¥
+
+ð¿ð¡
+
+ð, ð
+(
+
+{
+
+)}
+
+âð¡=0
+
+0. Further, Lemma 4.1 ensures each of these sets are non-empty. The non-increasing nature
+holds by immediate consequence of this subset relation, as the sup ensures
+
+for countable sets
+
+1 and
+
+ð¡
+ð³
+
++
+
+ð¡ where
+
+ð³
+
+1
+
+ð¡
+ð³
+
++
+
+â ð³
+
+sup
+
+1
+
+ð¡
+ð³
+
+sup
+
+ð¡ ,
+ð³
+
+â¤
+
++
+ð¡. Therefore, ð¿ð¡
+
+ð, ð
+(
+
+1
+
++
+
+) â¤
+
+ð¿ð¡
+
+ð, ð
+(
+
+)
+
+for all ð¡
+
+0. â.
+
+â¥
+
+(b) 0
+
+ð¿ð¡
+
+ð, ð
+(
+
+â¤
+
+vmax
+
+vmin
+
+,
+
+)
+
+â
+
+0.
+
+ð¡
+
+â
+
+â¥
+
+) â¤ (
+
+The lower bound holds as a direct consequence of the presence of the absolute value in Equation 4.2.
+The upper bound holds as a direct consequence of the boundedness of the function ð£. â
+
+(c) The quantity ð¿
+
+ð, ð
+
+exists for every agent-environment pair.
+
+First we expand the definition of ð¿
+
+ð, ð
+
+â(
+
+)
+
+,
+)
+
+(B.2)
+
+â(
+ð, ð
+ð¿
+â(
+= lim
+ð¡
+ââ
+= lim
+ð¡
+ââ
+
+)
+ð¿ð¡
+
+ð, ð
+(
+sup
+
+)
+
+â,â
+
+â²)ââ â¦ð¡
+
+(
+
+ð£
+
+ð, ð
+(
+
+|
+
+|
+
+â
+
+) â
+
+ð£
+
+ð, ð
+(
+
+|
+
+â ââ²
+
+.
+
+)|
+
+Note that the sequence
+by
+ð¿
+
+is bounded by property (b): It is bounded below by 0 and above
+{
+. Thus, since the lim sup of a bounded sequence always exists, we conclude that
+â
+)
+always exists. â
+
+ð, ð
+(
+
+vmin
+
+âð¡=0
+
+ð¿ð¡
+
+)}
+
+This completes the argument for all three statements, and thus completes the proof.
+
+â¡
+
+vmax
+(
+ð, ð
+â(
+
+)
+
+Proposition 4.3. The following two statements hold:
+
+18
+
+(a) (Bandits) If an agent ð uniformly converges in a ð-armed bandit ð in the sense that,
+
+ð¡
+
+ð
+
+N0 â
+
+â
+
+â
+
+â
+
+Î
+
+(ð)ââ
+
+ð¡:
+
+â
+
+ââ
+
+ð = ð
+
+â
+
+,
+
+)
+
+(
+
+then ð¿
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+(b) (MDPs) If an agent ð uniformly converges in an MDP ð in the sense that,
+
+ð¡
+
+N0 â
+
+â
+
+â
+
+ð
+
+Î 
+
+ðª ââðð
+
+ðª â
+
+ð¡:
+
+â
+
+ââ
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+(B.3)
+
+(B.4)
+
+then ð¿
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+Proof of Proposition 4.3.
+
+We prove the result for the MDP case, and since bandits are a clear instance of MDPs and the
+memoryless policies on
+= 0 for bandits,
+too.
+
+are equivalent to the set Î
+
+, it follows that ð¿
+
+(ð)
+
+ð, ð
+
+ð1
+
+â(
+
+ðª
+
+=
+
+{
+
+}
+
+)
+
+(b) (MDPs) If an agent ð converges in an MDP ð in the sense that,
+
+ð¡
+
+N0â
+
+â
+
+â
+
+ð
+
+Î 
+
+ðª ââðð
+
+ðª â
+
+ð¡:
+
+â
+
+ââ
+
+ð
+
+ð
+
+)
+
+ðª(
+
+= ð
+
+âðð
+
+,
+
+)
+
+(
+
+(B.5)
+
+= 0.
+
+then ð¿
+
+ð, ð
+
+â(
+
+)
+
+By Equation B.5, we know that there is a time ð¡ at which the agent will act according to a fixed
+memoryless policy forever after.
+
+Let us consider some time ð¡â² > ð¡, and recall that the distortion at time ð¡â² is given by,
+
+ð¿ð¡
+
+ð, ð
+
+â²(
+
+)
+
+= sup
+â,â
+
+(
+
+â²)ââ â¦ð¡
+â²
+
+ð£
+
+ð, ð
+(
+
+|
+
+|
+
+â
+
+) â
+
+ð£
+
+ð, ð
+(
+
+|
+
+â ââ²
+
+)|
+
+> 0.
+
+Let us consider what happens at the history pair, â and â ââ². Since
+, we know that the
+agent occupies the same agent state at both â and â ââ². Further, since ð¡â² > ð¡, we know that the agent is
+equivalent to some memoryless policy at both â and â ââ², and will thus make the same choice of action
+distribution at both â and â ââ². Therefore, the agent will act in an equivalent manner at both â and
+â ââ². But this is also true for all subsequent realizable histories, and thus, the agentâs performance must
+, and thus, for all ð¡â² > ð¡,
+be equivalent at both â and â ââ². We conclude that ð£
+
+â, ââ²) â â
+
+= ð£
+
+â¦ð¡
+â²
+
+â
+
+(
+
+ð, ð
+(
+
+â ââ²)
+
+|
+
+ð, ð
+(
+= 0.
+
+|
+
+)
+
+ð¿ð¡
+
+ð, ð
+(
+
+)
+, we conclude ð¿
+
+By the non-increasing nature of
+
+ð¿ð¡
+
+ð, ð
+(
+
+{
+
+)}
+
+âð¡=0
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+Proposition 4.4. Any ð and MDP ð that satisfy
+
+ð , ð, ð
+
+ð¢
+
+(
+
+= ð¢
+
+ð â², ðâ², ðâ²
+
+)
+(
+N0, and thus, ð¿
+
+) â
+
+ensure ð¿ð¡
+
+ð, ð
+(
+
+)
+
+= 0 for all ð¡
+
+â
+
+Proof of Proposition 4.4.
+
+Consider a fixed but arbitrary pair
+
+ð, ð
+(
+
+)
+
+ð = ðâ²,
+
+,
+
+ð ,ð 
+
+â
+
+â²âð®
+
+ð,ð
+
+â
+
+â²âð
+
+,
+
+ð,ð
+
+â
+
+â²âðª
+
+,
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+such that Equation B.7 is satisfied.
+
+(B.6)
+
+â¡
+
+(B.7)
+
+Then, for arbitrary ð¡, consider the performance of this agent at two histories â and â ââ², where
+â, ââ²) â â
+â¦ð¡
+â
+
+â¦ð¡ . Again we know such a pair exists by Lemma 4.1. Further, we know by definition of
+
+(
+
+19
+
+that the agent will occupy the same agent state after experiencing â and â ââ². That is, letting
+
+â = . . . ðð,
+ââ² = . . . ðâ²ðâ²,
+
+ð  =
+ð â² =
+
+it follows that
+
+â
+,
+)
+ââ²
+
+ð¢
+(cid:174)
+(
+ð¢
+(cid:174)
+
+(
+
+)
+
+,
+
+ð¢
+(cid:174)
+By assumption, we supposed that the given agent and environment satisfy Equation B.7, and therefore,
+together with Equation B.8, it follows that ð = ðâ². But, since ð is an MDP, anytime the MDP occupies
+the same MDP-state and the agent occupies the same agent-state, the resulting performance will be
+the same. Thus, ð£
+
+ð â², ðâ², ðâ²
+
+ð , ð, ð
+
+(B.8)
+
+ð¢
+(cid:174)
+
+=
+
+â
+
+)
+
+)
+
+(
+
+(
+
+.
+
+Since the time ð¡ and history pair
+
+were chosen arbitrarily, we know that
+
+ð, ð
+(
+
+= ð£
+
+ð, ð
+(
+
+|
+
+)
+
+.
+â ââ²)
+|
+â, ââ²)
+ð£
+
+(
+
+holds for all ð¡ and â, ââ² â â
+
+ð, ð
+(
+â¦ð¡ . Therefore, for all ð¡
+
+â
+
+)
+
+|
+
+= ð£
+
+ð, ð
+(
+N0
+
+â ââ²
+
+,
+
+)
+
+|
+
+â
+ð, ð
+(
+
+ð£
+
+ð£
+
+ð, ð
+(
+
+,
+
+|
+
+â
+
+â
+
+|
+
+|
+
+) â
+
+) â
+
+ð, ð
+ð£
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+|
+(
+(cid:123)(cid:122)
+(cid:124)
+ð,ð
+=ð£
+(
+ð, ð
+(
+
+ð£
+
+|
+
+â ââ²
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+)
+(cid:125)
+â
+
+|
+)
+â
+
+,
+
+)|
+
+ð¿ð¡
+
+ð, ð
+(
+
+)
+
+= sup
+â,â
+
+(
+
+â²)ââ â¦ð¡
+
+= sup
+â,â
+
+â²)ââ â¦ð¡
+
+(
+= 0,
+
+|
+
+|
+
+and hence, ð¿
+
+ð, ð
+
+â(
+
+= 0.
+
+)
+
+Proposition 4.5. There is a choice of MDP ð and bounded Q-learning ð that yields ð¿
+
+â¡
+
+ð, ð
+
+â(
+
+> 0.
+
+)
+
+Proof of Proposition 4.5.
+
+For concreteness, we describe the agent and environment in more detail, but note that there is a
+neighborhood of such choices for which the same result holds. For simplicity, we let ð£ capture the
+expected myopic reward (so discounted return with ð¾ = 0). The same result extends for other settings
+of ð¾, but the argument is simplest in the myopic case.
+
+The MDP ð is as follows.
+
+(ð.i) The interface is defined as:
+
+ð
+Thus, since the environment ð is an MDP, we understand the MDP to have two states defined
+by the two observations
+
+. We refer to these as MDP states throughout the proof.
+
+ðª
+
+{
+
+}
+
+{
+
+}
+
+=
+
+ð1, ð2
+
+,
+
+=
+
+ðmove, ðstay
+
+.
+
+ð1, ð2
+
+{
+
+}
+
+(ð.ii) The MDPâs transition function is defined as a deterministic function where ðmove moves the
+
+agent to the other state, while ðstay causes the agent to stay in the same state.
+
+(ð.iii) The MDPâs reward function is as follows:
+
+ðððâ²
+
+ð
+
+(
+
+)
+
+=
+
+1
+ð = ð1,
+1 otherwise.
+
+(cid:40)
+
+â
++
+
+(B.9)
+
+The agent is as follows.
+
+20
+
+(ð.i) The ð is an instance of tabular Q-Learning with ð-greedy exploration that experiences every
+
+pair infinitely often.
+
+ð, ð
+
+(
+
+)
+
+(ð.ii) Additionally, the agent ð is bounded in that it has finitely many agent states. While there is a
+vast space of ways to make such an agent bounded, we choose to consider the case where the
+vmin, vmax
+agent state is comprised of three quantities, ð  =
+]
+is the Q function, ð¼ð¡
+is the time-
+dependent exploration parameter. Note that due to the boundedness of the agent, it can only
+have finitely many choices of ð¼ð¡ and ðð¡. Notice that as a result of this boundedness, it is an
+open question as to whether the precise conditions needed for Q-learning convergence in the
+classical sense will go through.
+
+is the time-dependent step size, and ðð¡
+
+, where ðð¡ :
+)
+
+ðª Ã ð â [
+
+ðð¡ , ð¼ð¡ , ðð¡
+
+0, 1
+
+0, 1
+
+â [
+
+â [
+
+]
+
+]
+
+(
+
+(ð.iii) Lastly, the agent violates Equation B.7âThe agent does not store its Q function as an exact
+, but rather, the agentâs state-update function collapses ð1
+
+function of the MDPâs state, ð
+and ð2 to a single Q function expressing the expected discounted return of ðmove, ðstay.
+
+â ðª
+
+> 0. We do so through two points. First,
+â¦ð¡ where â ends in ð1 and
+
+â, ââ²) â â
+(
+.
+â ââ²)
+
+Now, we show that the pair defined above satisfies ð¿
+we show that for arbitrarily chosen ð¡, there is a valid history pair
+ââ² ends in ð2, and (2) that the performance ð£
+ð, ð
+(
+â, ââ²) â â
+(1) For any ð¡
+â¦ð¡ .
+â
+
+N, and a history pair,
+
+N, there is a valid
+
+)
+ð, ð
+(
+
+â(
+â
+
+â  ð£
+
+ð, ð
+
+â
+
+(
+
+)
+
+|
+
+|
+
+|
+
+| â¥
+
+â, ââ²) â â
+
+â¦ð¡ . Recall that this pair
+Consider a fixed but arbitrary time ð¡
+ensures that (1)
+ð¡, (2) Both â and â ââ² occur with non-zero probability via the interaction of ð
+â
+and ð, and (3) The agent occupies the same agent state in â and â ââ². Further, we require that â ends
+N, recall first
+in ð1, and ââ² ends in ð2. To see that such a history pair will exist for the chosen ð¡
+â
+pair infinitely often. By the
+that by assumption in point (ð.i), Q-learning will experience every
+agentâs boundedness in point (ð.i) together with Lemma 4.1 ensures that
+0. Next, by point
+(ð.ððð), the agent is insensitive to the latest observation emitted, and so can occupy the same agent
+state between â and â ââ², even when â ends in ð1 and ââ² ends in ð2. For example, let â = ð1ð . . . ð1ðð2,
+1. Therefore the
+and ââ² = ðð2. Note that ð
+(
+reward stream will not change the agentâs internal state, and thus
+
+1, and note that ð
+
+=
++
+. â
+
+ð1ðð1
+
+â¦ð¡
+|â
+
+= ð
+
+ð, ð
+
+| â¥
+
++
+
+=
+
+â
+
+)
+
+)
+
+(
+
+(
+
+(
+
+(
+
+)
+
+â ââ²)
+ð¢
+(cid:174)
+(
+
+= ð
+(
+â
+=
+
+)
+
+ð1ðð2
+)
+â ââ²)
+ð¢
+(cid:174)
+
+(
+
+(2) ð£
+
+ð, ð
+(
+
+â
+
+â  ð£
+
+|
+
+)
+
+ð, ð
+(
+
+â ââ²)
+.
+
+|
+
+.
+Next notice that for this chosen
+â ââ²)
+To see why, observe that in history â, the agent occupies MDP state ð1, and thus, the subsequent
+1 by Equation B.9. Conversely, in history â ââ², the agent occupies MDP
+reward is guaranteed to be
+state ð2, and so the next reward receives is guaranteed to be
+1 by Equation B.9. Since we assumed
+ð¾ = 0, it follows that ð£
+â
+
+pair from step (1), the performance ð£
+
+and consequently, ð¿ð¡
+
+â, ââ²)
+
+ð, ð
+(
+
+ð, ð
+(
+
+> 0. â
+
+â  ð£
+
+â  ð£
+
+â
+
++
+
+â
+
+)
+
+(
+
+|
+
+|
+
+ð, ð
+(
+
+|
+
+)
+
+ð, ð
+(
+
+â ââ²)
+
+|
+
+ð, ð
+(
+
+)
+
+Since ð¡ was chosen arbitrarily, we note that the above property holds for all ð¡
+
+N, and therefore,
+
+â
+
+â¡
+
+Proposition 4.6. For any
+
+pair and any choice of ð½, ð
+
+lim
+ð¡
+
+ââ
+
+ð¿ð¡
+
+ð, ð
+(
+
+)
+
+> 0.
+
+ð, ð
+(
+
+)
+ð, ð
+(
+ð, ð
+(
+
+)
+
+)
+
+ð¡ð½
+ð¡ð
+
+= min
+= min
+
+ð¡
+
+ð¡
+
+{
+
+â
+
+N0 :
+N0 :
+
+{
+ð, ð
+(
+< ð¡ð½
+
+â
+and
+
+)
+ð, ð
+(
+
+,
+
+)
+
+|
+
+ðð¡
+ð¿ð¡
+
+ð, ð
+(
+ð, ð
+|
+(
+ðâ², ðâ²)
+(
+ð¡ð½
+
+R
+
+â¥
+
+â
+
+0 let,
+
+) â
+
+ð
+â(
+ð¿
+
+ð, ð
+ð, ð
+
+) â
+
+â(
+such that
+
+ð½
+
+,
+
+}
+ð
+
+.
+
+}
+
+)| â¤
+
+)| â¤
+
+Then, for ð½ = 0, ð = 0, there exists pairs
+
+Proof of Proposition 4.6.
+
+ð¡ð
+
+ð, ð
+(
+
+)
+
+ðâ², ðâ²
+(
+
+< ð¡ð
+
+.
+
+ðâ², ðâ²
+(
+
+)
+
+)
+
+(B.10)
+
+21
+
+We construct two examples
+of behavior convergence.
+
+ð, ð
+(
+
+)
+
+where the time of performance convergence is different from the time
+
+(a) Example 1: There exists a
+
+ð, ð
+(
+
+)
+
+such that ð¡ð
+
+ð, ð
+(
+
+)
+
+< ð¡ð½
+
+.
+
+ð, ð
+(
+
+)
+
+We construct the example as follows. Let:
+
+â¢ ð denote a single state agent that plays the same action at every round of interaction,
+
+â¢ ð denote an environment that produces ð
+
+âð¡
+
+(
+
+)
+
+= 0 for any history when ð¡ > 10, but ð
+
+= 1
+
+âð¡
+
+(
+
+)
+
+for all histories where ð¡
+
+10,
+
+â¥
+â¢ And, the performance ð£
+following â, for any â.
+
+ð, ð
+(
+
+produces the reward received only in the next time step
+
+â
+
+)
+
+|
+
+Thus, since ð only has a single state, we know ð0
+Conversely, we can see that ð¿0
+)
+is zero at â0, but the agentâs performance will be 1 for any â0 ââ² where
+and ð¡ð½ = 10, we conclude ð¡ð < ð¡ð½. â
+
+= 1 whereas ð¿10
+
+)
+ð, ð
+(
+
+ð, ð
+(
+
+ð, ð
+(
+
+â(
+= ð¿
+
+)
+ð, ð
+
+= ð
+
+ð, ð
+
+â(
+
+)
+
+)
+
+= 1, and there ð¡ð = 0.
+
+= 0, as the agentâs performance
+10. Thus, since ð¡ð = 0
+
+ââ²| â¥
+
+|
+
+(b) Example 2: There exists a
+
+ð, ð
+(
+
+)
+
+such that ð¡ð½
+
+ð, ð
+(
+
+)
+
+< ð¡ð
+
+.
+
+ð, ð
+(
+
+)
+
+ð¡
+
+)
+
+)
+
+)
+
+â
+
+â(
+
+ð, ð
+
+= ð¿
+
+= 0,
+
+= ð¿ð¡
+
+= 0,
+
+ð, ð
+(
+
+ð, ð
+(
+
+. Then, by immediate
+Consider an environment with a constant reward function, ð
+ââ
+0. Thus, ð¡ð = 0 for any agent in this environment.
+consequence, ð¿0
+Now we construct an agent for which the time of behaviour convergence ð¡ð½
+> 0. Observe that
+this is true of an agent that switches between two agent states for the first ten time steps, choosing
+a different action in each state. Then, at time step ð¡ = 10, the agent sticks with a single state and
+choice of action forever after. Consequently, we see that the agent requires two states to produce its
+behavior up until time ð¡ = 10, at which time the agent only requires one state. Therefore, ð0
+= 2,
+but ð10
+This completes the proof of both conditions, and we conclude.
+
+= 0, and so ð¡ð < ð¡ð½. â
+
+= 10, whereas ð¡ð
+
+= 1. Hence, ð¡ð½
+
+ð, ð
+(
+
+ð, ð
+(
+
+ð, ð
+(
+
+ð, ð
+(
+
+ð, ð
+(
+
+= ð
+
+ð, ð
+
+â(
+
+â¡
+
+â
+
+â
+
+â¥
+
+(
+
+)
+
+)
+
+)
+
+)
+
+)
+
+)
+
+)
+
+â
+
+22
+
+

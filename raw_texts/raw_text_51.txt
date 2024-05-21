@@ -1,0 +1,2930 @@
+4
+2
+0
+2
+
+n
+a
+J
+
+5
+1
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+3
+v
+7
+6
+6
+5
+1
+.
+2
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+TAPE: Leveraging Agent Topology for Cooperative Multi-Agent Policy Gradient
+
+Xingzhou Lou1,2*, Junge Zhang1,2â , Timothy J. Norman3, Kaiqi Huang1,2, Yali Du4
+1School of Artificial Intelligence, University of Chinese Academy of Sciences
+2Institute of Automation, Chinese Academy of Sciences
+3University of Southampton
+4Kingâs College London
+louxingzhou2020@ia.ac.cn, jgzhang@nlpr.ia.ac.cn, t.j.norman@soton.ac.uk
+kqhuang@nlpr.ia.ac.cn, yali.du@kcl.ac.uk
+
+Abstract
+
+Multi-Agent Policy Gradient (MAPG) has made significant
+progress in recent years. However, centralized critics in
+state-of-the-art MAPG methods still face the centralized-
+decentralized mismatch (CDM) issue, which means sub-
+optimal actions by some agents will affect other agentâs policy
+learning. While using individual critics for policy updates
+can avoid this issue, they severely limit cooperation among
+agents. To address this issue, we propose an agent topology
+framework, which decides whether other agents should be con-
+sidered in policy gradient and achieves compromise between
+facilitating cooperation and alleviating the CDM issue. The
+agent topology allows agents to use coalition utility as learning
+objective instead of global utility by centralized critics or local
+utility by individual critics. To constitute the agent topology,
+various models are studied. We propose Topology-based multi-
+Agent Policy gradiEnt (TAPE) for both stochastic and deter-
+ministic MAPG methods. We prove the policy improvement
+theorem for stochastic TAPE and give a theoretical explana-
+tion for the improved cooperation among agents. Experiment
+results on several benchmarks show the agent topology is able
+to facilitate agent cooperation and alleviate CDM issue re-
+spectively to improve performance of TAPE. Finally, multiple
+ablation studies and a heuristic graph search algorithm are
+devised to show the efficacy of the agent topology.
+
+1
+
+Introduction
+
+Recent years has witnessed dramatic progress of reinforce-
+ment learning (RL) and multi-agent reinforcement learning
+(MARL) in real life applications, such as unmanned vehi-
+cles (Liu et al. 2022), traffic signal control (Noaeen et al.
+2022) and on-demand delivery (Wang et al. 2023). Taking
+advantage of the centralized training decentralized execution
+(CTDE) (Oliehoek, Spaan, and Vlassis 2008; Kraemer and
+Banerjee 2016) paradigm, current cooperative MARL meth-
+ods (Du et al. 2023; Wang et al. 2020a,b; Peng et al. 2021;
+Zhang et al. 2021; Zhou, Lan, and Aggarwal 2022) adopt
+value function factorization or a centralized critic to pro-
+vide centralized learning signals to promote cooperation and
+achieve implicit or explicit credit assignment. Multi-agent
+
+*Work done while visiting Kingâs College London
+â Correspondence
+
+Copyright Â© 2024, Association for the Advancement of Artificial
+Intelligence (www.aaai.org). All rights reserved.
+
+policy gradient (MAPG) (Lowe et al. 2017; Foerster et al.
+2018; Zhou et al. 2020; Zhang et al. 2021; Zhou, Lan, and
+Aggarwal 2022; Du et al. 2019) applies RL policy gradient
+techniques (Sutton and Barto 2018; Silver et al. 2014; Lilli-
+crap et al. 2015) to the multi-agent context. In CTDE, MAPG
+methods adopt centralized critics or value-mixing networks
+(Rashid et al. 2020b,a; Wang et al. 2020a) for individual
+critics so that agents can directly update their policies to max-
+imize the global Q value QÏ
+tot in their policy gradient. As a
+result, agents cooperate more effectively and obtain better
+expected team rewards.
+
+The centralized critic approach has an inherent problem
+known as centralized-decentralized mismatch (CDM) (Wang
+et al. 2020c; Chen et al. 2022). The CDM issue refers to
+sub-optimal, or explorative actions of some agents negatively
+affecting policy learning of others, causing catastrophic mis-
+coordination. The CDM issue arises because sub-optimal or
+explorative actions may lead to a small or negative central-
+ized global Q value QÏ
+tot, even if other agents take good or
+optimal actions. In turn, the small QÏ
+tot will make the other
+agents mistake their good actions as bad ones and interrupt
+their policy learning. The Decomposed Off-Policy (DOP) ap-
+proach (Wang et al. 2020c) deals with sub-optimal actions of
+other agents by linearly decomposed individual critics, which
+ignore the other agentsâ actions in the policy gradient. But
+the use of individual critics severely limits agent cooperation.
+We give an example to illustrate the issue of learn-
+ing with centralised critics and individual critics respec-
+tively. Consider an one-step matrix game with two agents
+A, B where each agent has two actions a0, a1. Reward
+R(a0, a0) = 2, R(a0, a1) = â4, R(a1, a0) = â1 and
+R(a1, a1) = 0. Assume agent A has a near-optimal pol-
+icy with probability Ïµ choosing non-optimal action a1
+and is using the COMA centralized critic (Foerster et al.
+2018) for policy learning. If agent A takes optimal ac-
+tion a0 and B takes the non-optimal action a1, agent Aâs
+counterfactual advantage AdvA(a0, a1) = QÏ
+tot(a0, a1) â
+[(1 â Ïµ) QÏ
+tot(a1, a1)] = â4Ïµ < 0, which
+means agent A will mistakenly think a0 as a bad action. Con-
+sequently, the sub-optimal action of agent B causes agent
+A to decrease the probability of taking optimal action a0
+and deviate from the optimal policy. Similar problems will
+occur with other centralized critics. If we employ individ-
+ual critics, however, cooperation will be limited. Assume
+
+tot(a0, a1) + ÏµQÏ
+
+ 
+ 
+ 
+ 
+ 
+ 
+both agentsâ policies are initialized as random policies and
+learning with individual critics. For agent A, QA(a0) =
+EaB â¼ÏB [QÏ
+tot(a0, aB)] = 0.5 Ã 2 â 0.5 Ã 4 = â1. Similarly,
+we can get QA(a1) = â0.5, QB(a0) = 0.5, QB(a1) = â2.
+The post-update joint-policy will be (a1, a0) and receive re-
+ward â1, which is clearly sub-optimal.
+
+In this paper, we aims to alleviate the CDM issue without
+hindering agentâs cooperation capacity by proposing an agent
+topology framework to describe the relationships between
+agentsâ policy updates. Under the agent topology framework,
+agents connected in the topology consider and maximize each
+otherâs utilities. Thus, the shared objective makes each indi-
+vidual agent forms a coalition with its connected neighbors.
+Agents only consider the utilities of agents in the same coali-
+tion, facilitating in-coalition cooperation and avoiding influ-
+ence of out-of-coalition agents. Based on the agent topology,
+we propose Topology-based multi-Agent Policy gradiEnt
+(TAPE) for both stochastic and deterministic MAPG, where
+the agent topology can alleviate the bad influence of other
+agentsâ sub-optimality without hindering cooperation among
+agents. Theoretically, we prove the policy improvement theo-
+rem for stochastic TAPE and give a theoretical explanation
+for improved cooperation by exploiting agent topology from
+the perspective of parameter-space exploration.
+
+Empirically, we use three prevalent random graph models
+(ErdËos, RÂ´enyi et al. 1960; Watts and Strogatz 1998; Albert
+and BarabÂ´asi 2002) to constitute the agent topology. Results
+show that the ErdËosâRÂ´enyi (ER) model (ErdËos, RÂ´enyi et al.
+1960) is able to generate the most diverse topologies. With
+diverse coalitions, agents are able to explore different coop-
+eration patterns and achieve strong cooperation performance.
+Evaluation results on a matrix game, Level-based foraging
+(Papoudakis et al. 2021) and SMAC (Samvelyan et al. 2019)
+show that TAPE outperforms all baselines and the agent
+topology is able to improve base methodsâ performance by
+both facilitating cooperation among agents and alleviating
+the CDM issue. Moreover, to show the efficacy of the agent
+topology, we conduct multiple studies and devise a heuristic
+graph search algorithm.
+
+Contributions of this paper are three-fold: Firstly, We pro-
+pose an agent topology framework and Topology-based multi-
+Agent Policy gradiEnt (TAPE) to achieve compromise be-
+tween facilitating cooperation and alleviating CDM issue;
+Secondly, we theoretically establish policy improvement the-
+orem for stochastic TAPE and elaborate the cause for im-
+proved cooperation by agent topology; Finally, empirical
+results demonstrate that the agent topology is able to alle-
+viate the CDM issue without hindering cooperation among
+agents, resulting in strong performance of TAPE.
+
+2 Preliminaries
+The cooperative multi-agent task in this paper is modelled
+as Decentralized Partially Observable Markov Decision
+Process (Dec-POMDP) (Oliehoek and Amato 2016). A Dec-
+POMDP is a tuple G = â¨I, S, A, P, r, O, O, n, Î³â©, where
+I = {1, .., n} is a finite set of n agents, S is the state space,
+A is the agent action space and Î³ is a discount factor. At
+each timestep, every agent i â I picks an action ai â A
+to form the joint-action a â A = An to interact with the
+
+environment. Then a state transition will occur according to
+a state transition function P (sâ²|s, a) : S Ã A Ã S â [0, 1].
+All agents will receive a shared reward by the reward func-
+tion r(s, a) : S Ã A â R. During execution, every agent
+draws a local observation o â O by an observation function
+O(s, a) : S Ã A â O. Every agent stores an observation-
+action history Ï a â T = (O Ã A), based on which agent i
+derives a policy Ïi(ai|Ïi). The joint policy Ï = {Ï1, .., Ïn}
+consists of policies of all agents. The global Q value func-
+tion QÏ
+i=0 Î³irt+i|st = s, at = a] is the
+expectation of discounted future reward summed over the
+joint-policy Ï.
+
+tot(s, a) = EÏ[(cid:80)
+
+(cid:104)(cid:80)
+
+The policy gradient in stochastic MAPG method DOP
+i ki(s)âÎ¸i log Ïi(ai|Ïi)QÏi
+is: g = EÏ
+, where
+ki â¥ 0 is the positive coefficient provided by the mixing
+network, and the policy gradient in deterministic MAPG
+(cid:3),
+methods is g = ED
+tot(s, a)|ai=Ïi(Ïi)
+where QÏ
+tot is the centralized critic and Ïi is the policy of
+agent i parameterized Î¸i.
+
+i âÎ¸iÏi(Ïi)âaiQÏ
+
+(cid:105)
+i (s, ai)
+
+(cid:2)(cid:80)
+
+policy
+the
+
+3 Related Work
+Multi-Agent Policy Gradient The
+gradi-
+in stochastic MAPG methods has
+form
+ent
+EÏ [(cid:80)
+i âÎ¸i log Ïi(ai|Ïi)Gi] (Foerster et al. 2018; Wang
+et al. 2020c; Lou et al. 2023b; Chen et al. 2022), where
+objective Gi varies across different methods, such as
+counterfactual advantage (Foerster et al. 2018) and polarized
+joint-action value (Chen et al. 2022). The objective in DOP
+is individual aristocratic utility (Wolpert and Tumer 2001),
+which ignores other agentsâ utilities to avoid the CDM
+issue, but the cooperation is also limited by this objective.
+It is worth noting that polarized joint-action value (Chen
+et al. 2022) also aims to address the CDM issue, but it only
+applies to stochastic MAPG methods, and the polarized
+global Q value can be very unstable. Deterministic MAPG
+to directly maximize the
+methods use gradient ascent
+centralized global Q value QÏ
+tot. Lowe et al. (Lowe et al.
+2017) model the global Q value with a centralized critic.
+Current deterministic MAPG methods (Zhang et al. 2021;
+Peng et al. 2021; Zhou, Lan, and Aggarwal 2022) adopt
+value factorization to mix individual Q values to get QÏ
+tot.
+As the global Q value is determined by the centralized critic
+for all agents, sub-optimal actions of one agent will easily
+influence all others.
+Topology in Reinforcement Learning Adjodah et al. (Ad-
+jodah et al. 2019) discuss the communication topology is-
+sue in parallel-running RL algorithms such as A3C (Mnih
+et al. 2016). Results show that the centralized learner im-
+plicitly yields a fully-connected communication topology
+among parallel workers, which will harm their performance.
+In MARL with decentralized training, communication topol-
+ogy is adopted to enable inter-agent communication among
+networked agents (Zhang et al. 2018; Wang et al. 2019; Ko-
+nan, Seraj, and Gombolay 2022; Du et al. 2021). The com-
+munication topology allows agent to share local information
+with each other during both training and execution and even
+achieve local consensus, which further leads to better cooper-
+ation performance. In MARL with centralized training, deep
+
+coordination graph (DCG) (BÂ¨ohmer, Kurin, and Whiteson
+2020) factorizes the joint value function according to a coor-
+dination graph to achieve a trade-off between representational
+capacity and generalization. Deep implicit coordination graph
+(Li et al. 2020) allows to infer the coordination graph dynam-
+ically by agent interactions instead of domain expertise in
+DCG. Ruan et al. (Ruan et al. 2022) learn an action coordina-
+tion graph to represents agentsâ decision dependency, which
+further coordinates the dependent behaviors among agents.
+
+4 Topology-based Multi-Agent Policy
+
+Gradient
+
+In this section, we propose Topology-based multi-Agent
+Policy gradiEnt (TAPE), which exploits the agent topology
+for both stochastic and deterministic MAPG. This use of the
+agent topology provides a compromise between facilitating
+cooperation and alleviating CDM. The primary purpose of
+the agent topology is to indicate relationships between agentsâ
+policy updates, so we focus on policy gradients of TAPE here
+and cover the remainder in supplementary material. First, we
+will define the agent topology.
+
+The agent topology describes how agents should consider
+othersâ utility during policy updates. Each agent is a vertex
+v â V and E is the set of edges. For a given topology, (V, E),
+if eij â E, the source agent i should consider the utility
+of the destination agent j in its policy gradient. The only
+constraint we place on a topology is that â i, eii â E, because
+agents should at least consider their own utility in the policy
+gradient. The topology captures the relationships between
+agentsâ policy updates, not their communication network at
+test time (Foerster et al. 2016; Das et al. 2019; Wang et al.
+2019; Ding, Huang, and Lu 2020). Connected agents consider
+and maximize each otherâs utilities together. Thus, the shared
+objective makes each individual agent form a coalition with
+the connected neighbors. We use the adjacency matrix E to
+refer the agent topology in what follows.
+
+In our agent topology framework, DOP (Wang et al. 2020c)
+(policy gradient given in section 2) and other independent
+learning algorithmsâ has an edgeless agent topology. The ad-
+jacency matrix is the identity matrix and no edge exists in the
+topology. With no coalition, DOP agent will only maximize
+its own individual utility Qi, and hence is poor at cooperation.
+Although DOP adopts a mixing network for the individual
+utilities to enhance cooperation, an agentâs ability to coop-
+erate is still limited, which we will empirically show in the
+matrix game experiments. Methods with centralized critic
+such as COMA (Foerster et al. 2018), FACMAC (Peng et al.
+2021) and PAC (Zhou, Lan, and Aggarwal 2022) yields the
+fully-connected agent topology. In these methods, there is
+only one coalition with all of the agents in it (all edges exist
+in the topology), and all agents update their policies based
+on the centralized critic. Consequently, they suffer from the
+CDM issue severely, because the influence of an agentâs sub-
+optimal behavior will spread to the entire multi-agent system.
+
+4.1 Stochastic TAPE
+Instead of global centralized critic (Foerster et al. 2018), we
+use the agent topology to aggregate individual utilities and
+
+critics to facilitate cooperation among agents for stochastic
+MAPG (Wang et al. 2020c). To this end, a new learning
+objective Coalition Utility for the policy gradient is defined
+as below.
+
+Definition 1 (Coalition Utility). Coalition Utility Ui for
+agent i is the summation of individual utility Uj of connected
+agent j in agent topology E, i.e. Ui = (cid:80)n
+j=1 EijUj, where
+tot(s, a) â (cid:80)
+j|Ïj)QÏ
+Uj(s, aj) = QÏ
+tot(s, (aâ²
+j, aâj)).
+aâ²
+j
+
+Ïj(aâ²
+
+Uj is the aristocrat utility from (Wang et al. 2020c; Wolpert
+and Tumer 2001). Eij = 1 only if agent j is connected to
+agent i in E and QÏ
+tot is the global Q value function. Coalition
+utility only depends on in-coalition agents because if agent
+j is not in agent iâs coalition, Eij = 0. With the coalition
+utility, we propose stochastic TAPE with the policy gradient
+given by
+
+âJ1(Î¸) = EÏ
+
+= EÏ
+
+(cid:34)
+
+(cid:88)
+
+i
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+i,j
+
+(cid:35)
+
+âÎ¸i log Ïi(ai|Ïi)Ui
+
+(1)
+
+ï£¹
+
+Eijkj(s)âÎ¸i log Ïi(ai|Ïi)QÏj
+
+j (s, aj)
+
+ï£» ,
+
+(2)
+
+where kj â¥ 0 is the weight for agent jâs local Q value QÏj
+j
+provided by the mixing network. The policy gradient deriva-
+tion from Eq. 1 to Eq. 2 is provided in the appendix A. Since
+the local utility of other in-coalition agents is maximized
+by the policy updates, cooperation among agents is facili-
+tated. Pseudo-code and more details of stochastic TAPE are
+provided in the appendix D.1.
+
+4.2 Deterministic TAPE
+
+Current deterministic MAPG methods (Peng et al. 2021;
+Zhang et al. 2021; Zhou, Lan, and Aggarwal 2022) yield
+fully-connected agent topology, which makes agents vulnera-
+ble to bad influence of other agentsâ sub-optimal actions. A
+mixing network fmix is adopted to mix local Q value func-
+tions QÏi
+i . Each agent uses deterministic policy gradient to
+update parameters and directly maximize global Q value
+QÏ
+n ). We use the agent topology to
+drop out utilities of out-of-coalition agents, so that influence
+of their sub-optimal actions will not spread to in-coalition
+agents. To this end, Coalition Q is defined as below.
+Definition 2 (Coalition Q). Coalition Q Qi
+co for agent i is
+the mixture of its in-coalition agentsâ local Q values with
+mixing network fmix, i.e.
+
+tot = fmix(s, QÏ1
+
+1 , Â· Â· Â· , QÏn
+
+Qi
+
+co(s, a) = fmix(s, 1[Ei1]QÏ1
+
+1 , Â· Â· Â· , 1[Ei,n]QÏn
+
+n ),
+
+(3)
+
+where 1[Eij] is the indicator function and 1[Eij] = 1 only
+when edge Eij exists in the topology.
+
+During policy update, out-of-coalition agentsâ Q values
+are always masked out, so agent iâs policy learning will not
+be affected by out-of-coalition agents. Based on Coalition Q,
+we propose deterministic TAPE, whose policy gradient is
+
+Figure 1: (a) gives the proposed three matrix games of different levels. We use different colors for different levels of game. Blue
+represents Easy, green represents Medium and red represents Hard. (b), (c) and (d) give evaluation results. Stochastic TAPE
+has the best performance because the agents directly maximize joint utility to achieve strong cooperation. The only difference
+between TAPE and DOP is that TAPE adopts the agent topology. Although COMA is seen as a weak baseline on SMAC, it
+achieves much better performance than DOP. QMIX fails to perform well in these games as they are not monotonic games.
+
+given by
+
+âJ2(Î¸) = ED
+
+(cid:34)
+
+(cid:88)
+
+i
+
+âÎ¸iÏi(Ïi)âai
+
+ËQi
+
+co(s, a)|ai=Ïi(Ïi)
+
+(cid:35)
+
+(4)
+(cid:17)
+
+(cid:16)
+
+n
+
+co(s, a) = fmix
+i (Ïi, ai, mi) = QÏi
+
+where ËQi
+1 , Â· Â· Â· , 1[Ei,n] ËQÏn
+s, 1[Ei1] ËQÏ1
+and ËQÏi
+i (Ïi, ai, mi) â Î± log Ïi(ai|Ïi) is
+the local soft Q value (Zhang et al. 2021) augmented with
+assistive information mi which contains information to assist
+policy learning towards the optimal policy as in (Zhou, Lan,
+and Aggarwal 2022). After dropping out agents not in the
+coalition, the bad influence of out-of-coalition sub-optimal
+actions will not affect in-coalition agents. More details and
+pseudo-code are provided in the appendix D.2.
+
+5 Analysis
+
+5.1 Agent Topology
+Although the agent topology can be any arbitrary topology, a
+proper agent topology should be able to explore diverse coop-
+eration pattern, which is essential for robust cooperation (Li
+et al. 2021; Strouse et al. 2021; Lou et al. 2023a). We stud-
+ied three prevalent random graph model: BarabÂ´asiâAlbert
+(BA) model (Albert and BarabÂ´asi 2002), WattsâStrogatz
+(WS) model (Watts and Strogatz 1998) and ErdËosâRÂ´enyi
+(ER) model (ErdËos, RÂ´enyi et al. 1960). BA model is a scale-
+free network commonly used for citation and signaling bio-
+logical networks (BarabÂ´asi and Albert 1999). WS model is
+known as the small-world network where each nodes can be
+reached through a small number of nodes, resulting in the six
+degrees of separation (Travers and Milgram 1977). While in
+ER model, each edge between any two nodes has an inde-
+pendent probability of being present. Formally, the adjacency
+matrix E of ER agent topology (V, E) for n agents is defined
+as âi â {1, .., n}, Eii = 1; âi, j â {1, .., n}, i Ì¸= j, Eij = 1
+with probability p otherwise 0.
+
+In research question 1 of section 6.3, we found that ER
+model is able to generate the most diverse topologies, which
+in turn help the agents explore diverse cooperation pattern
+and achieve strongest performance. Thus, we use ER model
+to constitute the agent topology in the experiments.
+
+5.2 Theoretical Results
+We now establish policy improvement theorem of stochastic
+TAPE, and prove a theorem for the cooperation improvement
+from the perspective of exploring the parameter space, which
+is a common motivation in RL research (Schulman, Chen,
+and Abbeel 2017; Haarnoja et al. 2018; Zhang et al. 2021;
+Adjodah et al. 2019). We assume the policy to have tabular
+expressions.
+
+The following theorem states that stochastic TAPE updates
+can monotonically improve the objective function J(Ï) =
+EÏ [(cid:80)
+
+t Î³trt].
+
+Theorem 1. [stochastic TAPE policy improvement theo-
+rem] With tabular expressions for policies, for any pre-update
+policy Ï and updated policy ËÏ by policy gradient in Eq. 2 that
+satisfy for any agent i, ËÏi(ai|Ïi) = Ïi(ai|Ïi)+Î²ai,sÎ´, where
+Î´ is a sufficiently small number, we have J( ËÏ) â¥ J(Ï), i.e.
+the joint policy is improved by the update.
+
+Please refer to Appendix B for the proof of Theorem 1.
+Although this policy improvement theorem is established for
+policies with tabular expressions, we provide conditions in
+the proof, under which policy improvement is guaranteed
+even with function approximators.
+
+Next, we provide a theoretical insight that compared to
+using individual critics, stochastic TAPE can better explore
+the parameter space to find more effective cooperation pattern.
+One heuristic for measuring such capacity is the diversity of
+parameter updates during each iteration (Adjodah et al. 2019),
+which is measured by the variance of parameter updates.
+
+Given state s and action ai, let Î¾TAPE
+
+ai,s denote the
+stochastic TAPE and DOP parameter updates respectively.
+The following theorem states that stochastic TAPE policy
+update is more diverse so that it can explore the parameter
+space more effectively.
+
+ai,s and Î¾DOP
+
+(cid:3) â¥ Var (cid:2)Î¾DOP
+ai,s
+
+Theorem 2. For any agent i and âs, ai, the stochastic
+ai,s and DOP policy update Î¾DOP
+TAPE policy update Î¾TAPE
+ai,s sat-
+(cid:3) â
+(cid:3), and â = Var (cid:2)Î¾TAPE
+isfy that Var (cid:2)Î¾TAPE
+ai,s
+ai,s
+(cid:3) is in proportion to p2, where p is the probability of
+Var (cid:2)Î¾DOP
+ai,s
+edges being present in the ErdËosâRÂ´enyi model, i.e. â â p2.
+Theorem 2 shows that compared to solely using individual
+critics, our agent topology provides larger diversity in policy
+updates to find better cooperation pattern. More details and
+
+(b) Easy(c) Medium(d) HardTAPEDOPCOMAQMIX(a) Three Matrix Games!!!"!#!!4/4/4-8/-16/-16-8/-16/-16!"-1/-1/-10/0/10/0/0!#-1/-1/-10/0/00/0/0"""!050100150200024-1050100150200Steps(50)024-2024-2050100150200Figure 2: (a) gives a scenario 6x6-3p-4f in LBF. 6x6-3p-4f stands for 6x6 grid-world with 3 players and 4 fruits. (b) In 8x8-2p-3f,
+stochastic TAPE achieve best performance. While in the more difficult task 15x15-4p-5f (c), deterministic TAPE outperform its
+base method and all other baselines. See stochastic TAPE against DOP, and deterministic TAPE against PAC for comparison.
+
+proof are provided in the appendix C. It is worth noting
+that although a large hyperparameter p in the agent topology
+means larger diversity in parameter updates, the CDM issue
+will also become severer because the connections among
+agents become denser. Thus, p must be set properly to achieve
+compromise between facilitating cooperation and avoiding
+CDM issue, which we will show later in the experiments.
+
+6 Experiment
+In this section, we first demonstrate that by ignoring other
+agents in the policy gradient to avoid bad influence of their
+sub-optimal actions, cooperation among agents is severely
+harmed. To this end, three one-step matrix games that require
+strong cooperation are proposed. Then, we evaluate the effi-
+cacy of the proposed methods on (a) Level-Based Foraging
+(LBF) (Papoudakis et al. 2021); (b) Starcraft II Multi-Agent
+Challenge (SMAC) (Samvelyan et al. 2019), and answer sev-
+eral research questions via various ablations and a heuristic
+graph search technique. Our code is available here1.
+
+6.1 Matrix Game
+We propose 3 one-step matrix games, which are harder ver-
+sions of the example in introduction. The matrix games are
+given in Fig. 1(a). We use different colors to show rewards in
+different games (blue for Easy, green for Medium and red for
+Hard). The optimal joint policy is for both agents to take ac-
+tion a0. But agent A0 lacks motivation to choose a0 because
+it is very likely to receive a large penalty (â8 or â16). Thus,
+this game requires strong cooperation among agents. In the
+Medium game, we further increase the penalty for agent 0 to
+choose a0. In the Hard game, we keep the large penalty and
+add a local optimal reward at (a1, a1). Note that these matrix
+games are not monotonic games (Rashid et al. 2020b) as the
+optimal action for each agent depends on other agents. The
+evaluation results are given in Fig. 1.
+
+With the agent topology to encourage cooperation, stochas-
+tic TAPE outperforms other methods by a large margin and is
+able to learn optimal joint policy even in the Hard game. DOP
+agents optimize individual utilities, ignoring utilities of other
+agents to avoid the influence of their sub-optimal actions,
+which result in severe miscoordination in these games. But
+since DOP agents adopt stochastic policy, they may receive
+
+1github.com/LxzGordon/TAPE
+
+some large reward after enough exploration. But the learning
+efficiency is much lower than stochastic TAPE. COMA is
+a weak baseline on complex tasks (Samvelyan et al. 2019)
+(0% win rate in all maps in section 6.3). But since COMA
+agents optimize global Q value (expected team reward sum)
+instead of individual utility in DOP, it can achieve better
+results on these tasks requiring strong cooperation. These
+matrix games demonstrate the importance of considering the
+utility of other agents in cooperative tasks. With the agent
+topology, stochastic TAPE can facilitate cooperation among
+agents and alleviate CDM issue simultaneously.
+
+6.2 Level-Based Foraging
+In Level-Based Foraging (LBF (Papoudakis et al. 2021)),
+agents navigate a grid-world and collect randomly-scattered
+food items. Agents and food items are assigned with levels. A
+food item is only allowed to be collected when near-by agentsâ
+level sum is larger than the food level. Reward is only given
+when a foot item is collected, assigning the environment with
+sparse-reward property. Test return is 1 when all food items
+are collected. Compared baselines include both value-based
+methods: QMIX (Rashid et al. 2020b) and QPLEX (Wang
+et al. 2020a), and policy-based methods: DOP (Wang et al.
+2020c), FACMAC (Peng et al. 2021) and PAC (Zhou, Lan,
+and Aggarwal 2022). Scenario illustration and results are
+given in Fig. 2.
+
+To make 8x8-2p-3f more difficult, food items can only
+be collected when all agents participate. In this simple and
+sparse-reward task, with the stochastic policy and enhanced
+cooperation, stochastic TAPE outperforms all other methods
+on convergence speed and performance. While in 15x15-
+4p-5f, only state-of-the-art method PAC and deterministic
+TAPE learn to collect food items. With the agent topology to
+keep out bad influence of other agentsâ sub-optimal actions,
+deterministic TAPE achieves best performance.
+
+6.3 StarCraft Multi-Agent Challenge
+StarCraft Multi-Agent Challenge (SMAC) (Samvelyan et al.
+2019) is a challenging benchmark built on StarCraft II, where
+agents must cooperate with each other to defeat enemy teams
+controlled by built-in AI. We evaluate the proposed meth-
+ods and baselines with the recommended evaluation protocol
+and metric in six maps including three hard maps (3s vs 4z,
+5m vs 6m and 2c vs 64zg) and three super hard maps (corri-
+
+(a) LBF(b) 8x8-2p-3f(c) 15x15-4p-5f31Test Return MeanSteps (50k)Test Return Mean22242stochastic TAPEdeterministic TAPEDOP PAC QMIX QPLEX FACMAC0.00.20.40.60.8Test Return Mean0.00.20.40.6010203040020406080100Steps (50k)Figure 3: Experiment results on SMAC. (a-c) give the results in hard maps, and (d-f) are results in super-hard maps. After adopting
+our agent topology to facilitate cooperation and alleviate CDM issue, stochastic TAPE and deterministic TAPE outperforms their
+base methods respectively. See stochastic TAPE against DOP, and deterministic TAPE against PAC for comparison.
+
+dor, MMM2 and 6h vs 8z). All algorithms are run for four
+times with different random seeds. Each run lasts for 5 Ã 106
+environmental steps. During training, each algorithm has four
+parallel environment to collect training data.
+
+Overall results The overall results in six maps are pro-
+vided in Fig. 3. We can see deterministic TAPE outperforms
+all other methods in terms of performance and convergence
+speed. In 6h vs 8z, one of the most difficult maps in SMAC,
+deterministic TAPE achieves noticeably better performance
+than its base method PAC and other baselines. Itâs worth
+noting that after integrating agent topology, both stochastic
+TAPE and deterministic TAPE have better performance com-
+pared to the base methods. This demonstrates the efficacy
+of the proposed agent topology in facilitating cooperation
+for DOP and alleviating CDM issue for PAC. Especially, in
+2c vs 64zg, stochastic TAPE outperforms all of the baselines
+except for our deterministic TAPE while its base method
+DOP struggles to perform well.
+
+Next, we answer three research questions by ablations and
+additional experiments. The research questions are: Q1. What
+is the proper model to constitute the agent topology? Q2. Is
+there indeed a compromise between facilitating cooperation
+and suffering from the CDM issue? Q3. Is the agent topology
+capable of compromising between facilitating cooperation
+and the CDM issue to achieve best performance?
+
+Q1. We study three prevalent random graph models:
+BarabÂ´asiâAlbert (BA) model (Albert and BarabÂ´asi 2002),
+WattsâStrogatz (WS) model (Watts and Strogatz 1998) and
+the ErdËosâRÂ´enyi (ER) model (ErdËos, RÂ´enyi et al. 1960) via
+visualization and ablation study. First, we generate 1000
+topologies for 12 agents with each model and give the visual-
+ization result in Fig. 4(a), where xâaxis is average degree and
+yâaxis is connectivity (minimum number of edges required,
+by removing which the graph becomes two sub-graphs). Av-
+erage degree and connectivity are two essential factors for
+agent topology as they reflect the level of CDM issue and
+
+cooperation. Compared to the other two models, ER model
+generates much more diverse topologies, covering the area
+from edgeless topology to fully-connected topology. Then,
+we evaluate stochastic TAPE with each model on MMM2, a
+super hard map in SMAC. Results are given in Fig. 4(b). For
+the random graph models, the larger the graph diversity in
+Fig. 4(a), the stronger the performance is. Thus, we constitute
+the agent topology with ER model in other experiments. For
+fully-connected topology, the performance demonstrates very
+large variance, because once a sub-optimal action occurs, its
+bad influence will easily spread through the centralized critic
+to all other agents. It is worth nothing that the graphs can
+also be generated via Bayesian optimization, but this may
+also result in limited graph diversity, causing unstable or even
+worse performance. Thus, how to generate agent topology
+via optimization-based methods remains a challenge.
+
+1, .., Ïi
+
+Q2. The compromise here means the more connection
+among agents to improve performance, the severer CDM
+issue becomes, and when it is too severe, it will in turn affect
+performance. To answer this research question, we devise
+a heuristic graph search technique. During policy training
+of agent i, we generate n topologies with the ER model
+in each step and use them to update the agent policy. Af-
+ter obtaining n updated policy [Ïi
+n], we evaluate the
+post-update global Q value Q
+and choose the pol-
+icy with largest global Q value as the updated policy, i.e.
+Ïi = arg maxj Q
+. The motivation of this heuristic
+graph search technique is that global Q value is the expected
+future reward sum, which shows the post-update performance.
+Using this technique, we can find the topology with better
+performance. Then, we respectively use the graph search
+technique when p is small or large and give the visualization
+of preferred topologies in Fig. 5. The results confirm that the
+compromise does exist, because (1) facilitating cooperation
+by building more agent connections when there is little CDM
+
+Ïâi,Ïi
+j
+tot
+
+Ïâi,Ïi
+j
+tot
+
+(a) 3s_vs_4z(d) corridorSteps (20k)(b) 5m_vs_6m(e) MMM2(c) 2c_vs_64zg(f) 6h_vs_8zstochastic TAPEdeterministic TAPEDOP PAC QMIX QPLEX FACMAC0501001502002500501001502002500501001502002500501001502002500501001502002500501001502002500.00.20.40.60.81.0Test Win Rate0.00.20.40.60.80.00.20.40.60.81.0Steps (20k)0.00.20.40.60.81.0Test Win Rate0.00.20.40.60.81.00.00.20.40.60.8Figure 4: (a) and (b) show the results and performance of using different models to constitute agent topologies. BA is
+BarabÂ´asiâAlbert model, WS is WattsâStrogatz model, ER is ErdËosâRÂ´enyi model, Edgeless and FC (Fully-Connected) are
+the topologies adopted in DOP and PAC respectively. ER has the most diverse topoloies and strongest performance. (c) and (d)
+show the performance of stochastic TAPE and deterministic TAPE in MMM2 with difference hyperparameter p for ER model.
+Evaluation metric is test win rate and scores are normalized by the base method. In base method DOP, p = 0 and base method
+PAC p = 1. The boxplot is obtained with four different random seeds, and the red lines show the mean performance.
+
+Figure 5: The heatmaps show the difference between the frequency of edges being present and the probability p. Source and
+Destination represent starting node and destination node of an edge. During training, over 1 million agent topology is generated.
+According to the law of large numbers, the difference is always around 0 when the heuristic graph search technique is not used
+in (b). In (a) and (c), we adopt the heuristic graph search technique to choose the agent topology with strongest performance.
+When p is too small (0.01 in (a)), the connection among agents is too sparse, weakening cooperation among agents. Therefore,
+agent topologies with more edges can facilitate cooperation and are preferred by the graph search technique. As a results, the
+difference is always positive in (a). On the contrary, when the connection is too dense (p = 0.3 in (c)), topologies with less edges
+are preferred because they stop bad influence of sub-optimal actions from spreading and have better performance, resulting in
+negative differences in (c).
+
+issue (Fig. 5(a)), and (2) removing connections to stop bad
+influence of sub-optimal actions from spreading when CDM
+issue is severe (Fig. 5(c)), can both improve performance.
+
+Q3. We answer this research question by giving the perfor-
+mance with different hyperparameter p, as it controls the level
+of CDM issue and cooperation. The results are given in Fig.
+4(c), (d). Large p stands for dense connections, where agents
+are easily affected by sub-optimal actions of other agents but
+cooperation is strongly encouraged. Small p means sparse
+connections, where sub-optimal actionsâ influence will not
+easily spread but cooperation among agents is limited. (c)
+and (d) are drawn at the end of training and half of training
+to show the convergence performance and speed respectively.
+We can see the performances first increase when p is small
+and later decrease when p is too large. The best performance
+appears at the point where the cooperation is strong and CDM
+issue is acceptable. From the results, we can say our ER agent
+topology is able to compromise between cooperation and al-
+leviating the CDM issue to achieve the best performance.
+
+7 Conclusion and Future Work
+
+In this paper, we propose an agent topology framework,
+which aims to alleviate the CDM issue without limiting
+agentsâ cooperation capacity. Based on the agent topology, we
+propose TAPE for both stochastic and deterministic MAPG
+methods. Theoretically, we prove the policy improvement the-
+orem for stochastic TAPE and give a theoretical explanation
+about the improved cooperation among agents. Empirically,
+we evaluate the proposed methods on several benchmarks.
+Experiment results show that the methods outperform their
+base methods and other baselines in terms of convergence
+speed and performance. A heuristic graph search algorithm
+is devised and various studies are conducted, which validate
+the efficacy of our proposed agent topology.
+
+Limitation and Future Work In this work, we consider
+constructing agent topology with existing random graph mod-
+els without learning-based methods. Our future work is to
+adaptively learn the agent topology that can simultaneously
+facilitate agent cooperation and alleviate the CDM issue.
+
+Model(a) Agent Topologies(c) Stochastic TAPE(d) Deterministic TAPE!for ER model!for ER model(b) Performance with different modelsAvg Degree024681012BAWSEREdgelessFC0.00.050.10.30.50.70.90.10.30.50.70.90.051.0Test Win Rate Mean0.60.70.80.9Connectivity024681012Normalized Score0.81.01.21.41.61.80.81.01.21.41.61.8Normalized ScoreSource01267438950123456789Source01267438950123456789Source01267438950123456789DestinationDestinationDestination(a) Graph search, ð=0.01(c) Graph search, ð=0.3(b) No graph search0.040.020.00-0.02-0.040.0100.0050.000-0.005-0.0100.0100.0050.000-0.005-0.010References
+Adjodah, D.; Calacci, D.; Dubey, A.; Goyal, A.; Krafft, P.;
+Moro, E.; and Pentland, A. 2019. Leveraging Communication
+Topologies Between Learning Agents in Deep Reinforcement
+Learning. arXiv preprint arXiv:1902.06740.
+Albert, R.; and BarabÂ´asi, A.-L. 2002. Statistical mechanics
+of complex networks. Reviews of modern physics, 74(1): 47.
+Alemi, A. A.; Fischer, I.; Dillon, J. V.; and Murphy, K. 2016.
+Deep variational information bottleneck. arXiv preprint
+arXiv:1612.00410.
+BarabÂ´asi, A.-L.; and Albert, R. 1999. Emergence of scaling
+in random networks. science, 286(5439): 509â512.
+BÂ¨ohmer, W.; Kurin, V.; and Whiteson, S. 2020. Deep coor-
+dination graphs. In International Conference on Machine
+Learning, 980â991. PMLR.
+Chen, W.; Li, W.; Liu, X.; and Yang, S. 2022. Learning
+Credit Assignment for Cooperative Reinforcement Learning.
+arXiv preprint arXiv:2210.05367.
+Das, A.; Gervet, T.; Romoff, J.; Batra, D.; Parikh, D.; Rab-
+bat, M.; and Pineau, J. 2019. Tarmac: Targeted multi-agent
+communication. In International Conference on Machine
+Learning, 1538â1546. PMLR.
+Degris, T.; White, M.; and Sutton, R. S. 2012. Off-policy
+actor-critic. arXiv preprint arXiv:1205.4839.
+Ding, Z.; Huang, T.; and Lu, Z. 2020. Learning individually
+inferred communication for multi-agent cooperation. Ad-
+vances in Neural Information Processing Systems, 33: 22069â
+22079.
+Du, Y.; Han, L.; Fang, M.; Dai, T.; Liu, J.; and Tao, D. 2019.
+LIIR: learning individual intrinsic reward in multi-agent re-
+inforcement learning. In Proceedings of the 33rd Interna-
+tional Conference on Neural Information Processing Systems
+(NeurIPS), 4403â4414.
+Du, Y.; Leibo, J. Z.; Islam, U.; Willis, R.; and Sunehag, P.
+2023. A Review of Cooperation in Multi-agent Learning.
+arXiv preprint arXiv:2312.05162.
+Du, Y.; Liu, B.; Moens, V.; Liu, Z.; Ren, Z.; Wang, J.; Chen,
+X.; and Zhang, H. 2021. Learning Correlated Communication
+Topology in Multi-Agent Reinforcement learning. In Inter-
+national Conference on Autonomous Agents and Multi-Agent
+Systems (AAMAS), 456â464.
+ErdËos, P.; RÂ´enyi, A.; et al. 1960. On the evolution of random
+graphs. Publ. Math. Inst. Hung. Acad. Sci, 5(1): 17â60.
+Feinberg, V.; Wan, A.; Stoica, I.; Jordan, M. I.; Gonzalez,
+J. E.; and Levine, S. 2018. Model-based value estimation for
+efficient model-free reinforcement learning. arXiv preprint
+arXiv:1803.00101.
+Foerster, J.; Assael, I. A.; De Freitas, N.; and Whiteson, S.
+2016. Learning to communicate with deep multi-agent rein-
+forcement learning. Advances in neural information process-
+ing systems, 29.
+Foerster, J.; Farquhar, G.; Afouras, T.; Nardelli, N.; and
+Whiteson, S. 2018. Counterfactual multi-agent policy gra-
+dients. In Proceedings of the AAAI conference on artificial
+intelligence, volume 32.
+
+Haarnoja, T.; Zhou, A.; Hartikainen, K.; Tucker, G.; Ha, S.;
+Tan, J.; Kumar, V.; Zhu, H.; Gupta, A.; Abbeel, P.; et al. 2018.
+Soft actor-critic algorithms and applications. arXiv preprint
+arXiv:1812.05905.
+Kingma, D. P.; and Ba, J. 2014. Adam: A method for stochas-
+tic optimization. arXiv preprint arXiv:1412.6980.
+Konan, S.; Seraj, E.; and Gombolay, M. 2022. Iterated rea-
+soning with mutual information in cooperative and byzantine
+decentralized teaming. arXiv preprint arXiv:2201.08484.
+Kraemer, L.; and Banerjee, B. 2016. Multi-agent reinforce-
+ment learning as a rehearsal for decentralized planning. Neu-
+rocomputing, 190: 82â94.
+Li, C.; Wang, T.; Wu, C.; Zhao, Q.; Yang, J.; and Zhang, C.
+2021. Celebrating diversity in shared multi-agent reinforce-
+ment learning. Advances in Neural Information Processing
+Systems, 34: 3991â4002.
+Li, S.; Gupta, J. K.; Morales, P.; Allen, R.; and Kochenderfer,
+M. J. 2020. Deep implicit coordination graphs for multi-agent
+reinforcement learning. arXiv preprint arXiv:2006.11438.
+Lillicrap, T. P.; Hunt, J. J.; Pritzel, A.; Heess, N.; Erez, T.;
+Tassa, Y.; Silver, D.; and Wierstra, D. 2015. Continuous
+control with deep reinforcement learning. arXiv preprint
+arXiv:1509.02971.
+Liu, H.; Kiumarsi, B.; Kartal, Y.; Koru, A. T.; Modares, H.;
+and Lewis, F. L. 2022. Reinforcement learning applications
+in unmanned vehicle control: A comprehensive overview.
+Unmanned Systems, 1â10.
+Lou, X.; Guo, J.; Zhang, J.; Wang, J.; Huang, K.; and Du, Y.
+2023a. PECAN: Leveraging Policy Ensemble for Context-
+Aware Zero-Shot Human-AI Coordination. arXiv preprint
+arXiv:2301.06387.
+Lou, X.; Zhang, J.; Du, Y.; Yu, C.; He, Z.; and Huang, K.
+2023b. Leveraging Joint-action Embedding in Multi-agent
+Reinforcement Learning for Cooperative Games. IEEE Trans-
+actions on Games.
+Lowe, R.; Wu, Y. I.; Tamar, A.; Harb, J.; Pieter Abbeel, O.;
+and Mordatch, I. 2017. Multi-agent actor-critic for mixed
+cooperative-competitive environments. Advances in neural
+information processing systems, 30.
+Mnih, V.; Badia, A. P.; Mirza, M.; Graves, A.; Lillicrap, T.;
+Harley, T.; Silver, D.; and Kavukcuoglu, K. 2016. Asyn-
+chronous methods for deep reinforcement learning. In In-
+ternational conference on machine learning, 1928â1937.
+PMLR.
+Mnih, V.; Kavukcuoglu, K.; Silver, D.; Graves, A.;
+Antonoglou, I.; Wierstra, D.; and Riedmiller, M. 2013. Play-
+ing atari with deep reinforcement learning. arXiv preprint
+arXiv:1312.5602.
+Munos, R.; Stepleton, T.; Harutyunyan, A.; and Bellemare,
+M. 2016. Safe and efficient off-policy reinforcement learning.
+Advances in neural information processing systems, 29.
+Noaeen, M.; Naik, A.; Goodman, L.; Crebo, J.; Abrar, T.;
+Abad, Z. S. H.; Bazzan, A. L.; and Far, B. 2022. Reinforce-
+ment learning in urban network traffic signal control: A sys-
+tematic literature review. Expert Systems with Applications,
+116830.
+
+Wang, S.; Hu, S.; Guo, B.; and Wang, G. 2023. Cross-Region
+Courier Displacement for On-Demand Delivery With Multi-
+Agent Reinforcement Learning. IEEE Transactions on Big
+Data.
+Wang, T.; Gupta, T.; Mahajan, A.; Peng, B.; Whiteson, S.;
+and Zhang, C. 2020b. Rode: Learning roles to decompose
+multi-agent tasks. arXiv preprint arXiv:2010.01523.
+Wang, T.; Wang, J.; Zheng, C.; and Zhang, C. 2019. Learning
+nearly decomposable value functions via communication
+minimization. arXiv preprint arXiv:1910.05366.
+Wang, Y.; Han, B.; Wang, T.; Dong, H.; and Zhang, C. 2020c.
+Off-policy multi-agent decomposed policy gradients. arXiv
+preprint arXiv:2007.12322.
+Watts, D. J.; and Strogatz, S. H. 1998. Collective dynamics
+of âsmall-worldânetworks. nature, 393(6684): 440â442.
+Wolpert, D. H.; and Tumer, K. 2001. Optimal payoff func-
+tions for members of collectives. Advances in Complex Sys-
+tems, 4(02n03): 265â279.
+Zhang, K.; Yang, Z.; Liu, H.; Zhang, T.; and Basar, T. 2018.
+Fully decentralized multi-agent reinforcement learning with
+networked agents. In International Conference on Machine
+Learning, 5872â5881. PMLR.
+Zhang, T.; Li, Y.; Wang, C.; Xie, G.; and Lu, Z. 2021. Fop:
+Factorizing optimal joint policy of maximum-entropy multi-
+agent reinforcement learning. In International Conference
+on Machine Learning, 12491â12500. PMLR.
+Zhou, H.; Lan, T.; and Aggarwal, V. 2022. PAC: As-
+sisted Value Factorisation with Counterfactual Predictions
+in Multi-Agent Reinforcement Learning. arXiv preprint
+arXiv:2206.11420.
+Zhou, M.; Liu, Z.; Sui, P.; Li, Y.; and Chung, Y. Y. 2020.
+Learning implicit credit assignment for cooperative multi-
+agent reinforcement learning. Advances in neural informa-
+tion processing systems, 33: 11853â11864.
+
+Oliehoek, F. A.; and Amato, C. 2016. A concise introduction
+to decentralized POMDPs. Springer.
+Oliehoek, F. A.; Spaan, M. T.; and Vlassis, N. 2008. Op-
+timal and approximate Q-value functions for decentralized
+POMDPs. Journal of Artificial Intelligence Research, 32:
+289â353.
+Papoudakis, G.; Christianos, F.; SchÂ¨afer, L.; and Albrecht,
+S. V. 2021. Benchmarking Multi-Agent Deep Reinforcement
+Learning Algorithms in Cooperative Tasks. In Proceedings of
+the Neural Information Processing Systems Track on Datasets
+and Benchmarks (NeurIPS).
+Peng, B.; Rashid, T.; Schroeder de Witt, C.; Kamienny, P.-
+A.; Torr, P.; BÂ¨ohmer, W.; and Whiteson, S. 2021. Facmac:
+Factored multi-agent centralised policy gradients. Advances
+in Neural Information Processing Systems, 34: 12208â12221.
+Precup, D. 2000. Eligibility traces for off-policy policy eval-
+uation. Computer Science Department Faculty Publication
+Series, 80.
+Rashid, T.; Farquhar, G.; Peng, B.; and Whiteson, S. 2020a.
+Weighted qmix: Expanding monotonic value function factori-
+sation for deep multi-agent reinforcement learning. Advances
+in neural information processing systems, 33: 10199â10210.
+Rashid, T.; Samvelyan, M.; De Witt, C. S.; Farquhar, G.; Fo-
+erster, J.; and Whiteson, S. 2020b. Monotonic value function
+factorisation for deep multi-agent reinforcement learning.
+The Journal of Machine Learning Research, 21(1): 7234â
+7284.
+Ruan, J.; Du, Y.; Xiong, X.; Xing, D.; Li, X.; Meng, L.;
+Zhang, H.; Wang, J.; and Xu, B. 2022. GCS: graph-based
+coordination strategy for multi-agent reinforcement learning.
+arXiv preprint arXiv:2201.06257.
+Samvelyan, M.; Rashid, T.; de Witt, C. S.; Farquhar, G.;
+Nardelli, N.; Rudner, T. G. J.; Hung, C.-M.; Torr, P. H. S.;
+Foerster, J.; and Whiteson, S. 2019. The StarCraft Multi-
+Agent Challenge. CoRR, abs/1902.04043.
+Schulman, J.; Chen, X.; and Abbeel, P. 2017. Equivalence
+between policy gradients and soft q-learning. arXiv preprint
+arXiv:1704.06440.
+Silver, D.; Lever, G.; Heess, N.; Degris, T.; Wierstra, D.;
+and Riedmiller, M. 2014. Deterministic policy gradient al-
+gorithms. In International conference on machine learning,
+387â395. Pmlr.
+Strouse, D.; McKee, K.; Botvinick, M.; Hughes, E.; and
+Everett, R. 2021. Collaborating with humans without human
+data. Advances in Neural Information Processing Systems,
+34: 14502â14515.
+Sutton, R. S.; and Barto, A. G. 2018. Reinforcement learning:
+An introduction. MIT press.
+Tishby, N.; Pereira, F. C.; and Bialek, W. 2000. The informa-
+tion bottleneck method. arXiv preprint physics/0004057.
+Travers, J.; and Milgram, S. 1977. An experimental study
+of the small world problem. In Social networks, 179â197.
+Elsevier.
+Wang, J.; Ren, Z.; Liu, T.; Yu, Y.; and Zhang, C. 2020a.
+Qplex: Duplex dueling multi-agent q-learning. arXiv preprint
+arXiv:2008.01062.
+
+A Derivation of Policy Gradient
+
+In this section, we give the derivation of the following policy
+gradient for stochastic TAPE
+
+âJ(Î¸) = EÏ
+
+= EÏ
+
+(cid:34)
+
+(cid:88)
+
+i
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+i,j
+
+(cid:35)
+
+âÎ¸i log Ïi(ai|Ïi)Ui
+
+ï£¹
+
+Eijkj(s)âÎ¸i log Ïi(ai|Ïi)QÏj
+
+j (s, aj)
+
+ï£» ,
+
+(5)
+
+agent i
+
+gi = EÏ
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+j
+
+ï£®
+
+= EÏ
+
+(cid:88)
+
+ï£°
+
+j
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)
+
+(cid:16)
+
+QÏj
+
+(cid:17)
+j (s, aj) â qj(s)
+
+ï£¹
+
+ï£»
+
+ï£¹
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)QÏj
+
+j (s, aj)
+
+ï£» â
+
+ï£®
+
+EÏ
+
+(cid:88)
+
+ï£°
+
+j
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)qj(s)
+
+ï£» .
+
+ï£¹
+
+where Ui =
+
+n
+(cid:80)
+j=1
+
+EijUj is the coalition utility of agent i with
+
+Since
+
+other agents connected in the agent topology, Uj(s, aj) =
+QÏ
+j, aâj)) is the aristocrat
+
+j|Ïj)QÏ
+
+tot(s, (aâ²
+
+Ïj(aâ²
+
+tot(s, a) â (cid:80)
+aâ²
+j
+
+utility of agent j from (Wolpert and Tumer 2001; Wang et al.
+2020c), and âi, Eii = 1, i.e. all agents are connected with
+themselves.
+
+Proof. First, we will reformulate the aristocrat utility for
+
+the policy gradient
+
+Ui(s, aj) = QÏ
+
+tot(s, a) â
+
+(cid:88)
+
+=
+
+j
+
+kj(s)QÏj
+
+j (s, aj)â
+
+(cid:88)
+
+aâ²
+j
+
+Ïi(aâ²
+
+j|Ïi)QÏ
+
+tot(s, (aâ²
+
+j, aâi))
+
+Ïi(aâ²
+
+j|Ïi)
+
+(cid:88)
+
+aâ²
+j
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+jÌ¸=i
+
+kj(s)QÏj
+
+j (s, aj) + ki(s)QÏi
+
+i (s, aâ²
+j)
+
+ï£¹
+
+ï£»
+
+= ki(s)QÏi
+
+i (s, ai) â ki(s)
+
+(cid:88)
+
+aâ²
+j
+
+Ïi(aâ²
+
+j|Ïi)QÏi
+
+i (s, aâ²
+j)
+
+ï£®
+ï£°QÏi
+
+i (s, ai) â
+
+= ki(s)
+
+(cid:88)
+
+aâ²
+j
+
+Ïi(aâ²
+
+j|Ïi)QÏi
+
+i (s, aâ²
+j)
+
+ï£¹
+
+ï£» .
+
+(cid:34)
+
+Uj(s, aj) = kj(s)
+
+QÏj
+
+j (s, aj) â (cid:80)
+
+aâ²
+j
+
+Ïj(aâ²
+
+j|Ïj)QÏj
+
+(cid:35)
+j (s, aâ²
+j)
+
+So policy gradient g is
+
+g = EÏ
+
+= EÏ
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+i,j
+
+(cid:34)
+
+(cid:88)
+
+i,j
+
+EijâÎ¸i log Ïi(ai|Ïi)Uj(s, aj)
+
+ï£¹
+
+ï£»
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)
+
+ï£«
+ï£­QÏj
+
+j (s, aj) â
+
+(cid:88)
+
+aâ²
+j
+
+Ïj(aâ²
+
+j|Ïj)QÏj
+
+j (s, aâ²
+j)
+
+ï£¶
+
+(cid:35)
+
+ï£¸
+
+.
+
+Let qj(s) = (cid:80)
+aâ²
+j
+
+Ïj(aâ²
+
+j|Ïj)QÏj
+
+j (s, aâ²
+
+j). Consider a given
+
+ï£®
+
+EÏ
+
+(cid:88)
+
+ï£°
+
+j
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)qj(s)
+
+ï£»
+
+ï£¹
+
+(cid:88)
+
+(cid:88)
+
+dÏ(s)
+
+Ïi(ai|Ïi)Ïâi(aâi|Ï âi)
+
+ai
+
+aâi
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)qj(s)
+
+(cid:88)
+
+(cid:88)
+
+dÏ(s)
+
+j
+
+aâi
+
+EijÏâi(aâi|Ï âi)kj(s)qj(s)
+
+Ïi(ai|Ï )âÎ¸i log Ïi(ai|Ïi) = 0,
+
+=
+
+=
+
+(cid:88)
+
+s
+(cid:88)
+
+j
+(cid:88)
+
+s
+(cid:88)
+
+ai
+
+gi = EÏ
+
+Thus,
+
+(cid:104)(cid:80)
+
+j EijâÎ¸i log Ïi(ai|Ïi)kj(s)QÏj
+
+(cid:105)
+j (s, aj)
+
+.
+
+âJ(Î¸) = EÏ
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+i,j
+
+Eijkj(s)âÎ¸i log Ïi(ai|Ïi)QÏj
+
+j (s, aj)
+
+ï£»
+
+ï£¹
+
+is the policy gradient of stochastic TAPE.
+
+â¡
+
+B Policy Improvement Theorem
+In this section, we give proof of the policy improvement
+theorem of stochastic TAPE. As in previous works (Degris,
+White, and Sutton 2012; Wang et al. 2020c; Feinberg et al.
+2018), we relax the requirement that QÏ
+tot is a good estimate
+of QÏ
+tot and simplify the Q-function learning process as the
+following MSE problem to make it tractable.
+
+.
+
+L(Ï) =
+
+(cid:88)
+
+a,s
+
+p(s)Ï(a|Ï )
+
+(cid:16)
+
+QÏ
+
+tot(s, a) â QÏ
+
+tot(s, a)
+
+(cid:17)2
+
+(6)
+
+tot(s, a) is the true value and
+
+where Ï is the joint policy, QÏ
+QÏ
+
+tot(s, a) is the estimated value.
+To make this proof self-contained, we first borrow Lemma
+1 and Lemma 2 from (Wang et al. 2020c). Lemma 1 states
+that the learning of centralized critic can preserve the order
+of local action values. Without loss of generality, we consider
+a given state s.
+
+Lemma 1. We consider the following optimization prob-
+
+lem:
+
+Ls(Ï) =
+
+(cid:88)
+
+a
+
+Ï(a|Ï ) (cid:0)QÏ(s, a) â f (QÏ(s, a))(cid:1)2
+
+(7)
+
+Here, f (QÏ(s, a)) : Rn â R, and QÏ(s, a)) is a vec-
+tor with the ith entry being QÏi
+i (s, ai). f satisfies that
+âi, ai,
+
+> 0.
+
+âf
+i (s,ai)
+
+âQÏi
+
+QÏ
+
+Then, for any local optimal solution, it holds that
+i) ââ QÏi
+i (s, ai) â¥ QÏ
+i (s, aâ²
+Proof. A necessary condition for a local optimal is
+
+i (s, ai) â¥ QÏi
+
+i (s, aâ²
+
+i), âi, ai, aâ²
+i.
+
+Lemma 3. For any pre-update joint policy Ï and updated
+joint policy ËÏ by stochastic TAPE policy gradient with tabu-
+lar expressions that satisfy ËÏi(ai|Ïi) = Ïi(ai|Ïi) + Î²ai,sÎ´ for
+any agent i, where Î´ is a sufficiently small number, âs, aâ²
+i, ai,
+it holds that
+QÏi
+
+(8)
+Proof. We start by showing the connection between
+i (s, ai) and Î²ai,s. âÎ¸iJ(Î¸) is the policy gradient for agent
+
+i (s, ai) â¥ QÏi
+
+i) ââ Î²ai,s â¥ Î²aâ²
+
+i (s, aâ²
+
+i,s.
+
+QÏi
+i
+
+) = 0.
+
+âÎ¸iJ(Î¸) = EÏ
+
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)QÏj
+
+j (s, aj)
+
+ï£¹
+
+ï£»
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+j
+
+âLs(Ï)
+i (s, ai)
+
+âQÏi
+
+= Ïi(ai|Ïi)
+
+(cid:88)
+
+(cid:89)
+
+Ïj(aj|Ïj)
+
+(cid:0)QÏ(s, a) â f (QÏ(s, a))(cid:1) (â
+
+aâi
+
+jÌ¸=i
+âf
+i (s, ai)
+
+âQÏi
+
+This implies that, for âi, ai, we have
+
+(cid:88)
+
+(cid:89)
+
+Ïj(aj|Ïj) (cid:0)QÏ(s, a) â f (QÏ(s, a))(cid:1) = 0
+
+â
+
+aâi
+(cid:88)
+
+aâi
+
+jÌ¸=i
+
+Ïâi(aâi|Ïâi)f (cid:0)QÏ (s, (ai, aâi))(cid:1) = QÏ
+
+i (s, ai).
+
+Let q(s, ai) denote (cid:80)
+aâi
+
+We have
+
+Ïâi(aâi|Ïâi)f (cid:0)QÏ (s, (ai, aâi))(cid:1).
+
+f (cid:0)QÏ (s, (ai, aâi))(cid:1)
+i (s, ai)
+
+âQÏi
+
+> 0.
+
+âq(s, ai)
+âQÏi
+i (s, ai)
+
+(cid:88)
+
+=
+
+Ïâi(aâi|Ïâi)
+
+aâi
+i (s, ai) â¥ QÏ
+
+Therefore, if QÏ
+of Ls(Ï) satisfies QÏi
+
+The mixer module
+
+âf
+âi, ai,
+i (s,ai)
+policy evaluation converges.
+
+âQÏi
+
+i (s, aâ²
+i (s, ai) â¥ QÏi
+
+i), then any local minimal
+â¡
+i (s, aâ²
+i).
+satisfies
+our method
+> 0, so Lemma 1 holds after the
+
+of
+
+Lemma 2. For two sequences {ai}, {bi}, i â [n] listed in
+
+an increasing order. if (cid:80)
+
+i bi = 0, then (cid:80)
+i aibi â¥ 0.
+(cid:80)
+then (cid:80)
+Proof. We denote a = 1
+i ai,
+i aibi =
+n
+i Ëaibi, where (cid:80)
+a((cid:80)
+i Ëai = 0. Without loss of
+generality, we assume that ai = 0, âi. j and k which
+aj â¤ 0, aj+1 â¥ 0 and bk â¤ 0, bk+1 â¥ 0. Since a, b are
+symmetric, we assume j â¤ k. Then, we have
+
+i bi) + (cid:80)
+
+(cid:88)
+
+iâ[n]
+
+aibi =
+
+(cid:88)
+
+aibi +
+
+(cid:88)
+
+aibi +
+
+(cid:88)
+
+aibi
+
+iâ[1,j]
+(cid:88)
+
+â¥
+
+iâ[j+1,k]
+(cid:88)
+
+aibi +
+
+iâ[j+1,k]
+(cid:88)
+
+â¥ ak
+
+iâ[k+1,n]
+
+bi + ak+1
+
+aibi
+
+(cid:88)
+
+iâ[k+1,n]
+
+bi.
+
+iâ[j+1,k]
+
+iâ[k+1,n]
+
+As (cid:80)
+
+bi â¥ 0, we have â (cid:80)
+
+iâ[j+1,k] bi â¤
+
+(cid:80)
+
+iâ[n] aibi â¥ (ak+1 â ak) (cid:80)
+
+iâ[j+1,n]
+iâ[k+1,n] bi
+Thus (cid:80)
+iâ[k+1,n] bi â¥ 0. â¡
+The next lemma states that for any policies with tabular
+expressions updated by stochastic TAPE policy gradient, the
+larger the local criticâs value QÏi
+i (s, ai), the larger update
+stepsize Î²s,ai for ai under state s, and vice versa.
+
+(cid:88)
+
+=
+
+dÏ(s)
+
+(cid:88)
+
+(cid:88)
+
+Ïi(ai|Ïi)Ïâi(aâi|Ï âi)
+
+s
+
+(cid:88)
+
+j
+
+aâi
+
+ai
+EijâÎ¸i log Ïi(ai|Ïi)kj(s)QÏj
+
+j (s, aj)
+
+(cid:88)
+
+=
+
+s,aâi
+
+dÏ(s)Ïâi(aâi|Ï âi)
+
+(cid:88)
+
+(cid:88)
+
+ai
+
+j
+
+EijâÎ¸iÏi(ai|Ïi)kj(s)QÏj
+
+j (s, aj).
+
+With a little abuse of notation, we let d(s, Ï âi) =
+dÏ(s)Ïâi(aâi|Ï âi) for simplicity, where Ï is joint agent
+action-observation history and âi stands for excluding agent
+i. Thus, without loss of generality, consider some given state
+s and joint action a, the policy gradient gi for agent i is
+gi = d(s, Ï âi)
+
+EijâÎ¸iÏi(ai|Ïi)kj(s)QÏj
+
+j (s, aj)
+
+(cid:88)
+
+j
+
+= d(s, Ï âi)âÎ¸iÏi(ai|Ïi)ki(s)QÏi
+
+i (s, ai)+
+EijâÎ¸iÏi(ai|Ïi)kj(s)QÏj
+
+j (s, aj).
+
+d(s, Ï âi)
+
+(cid:88)
+
+jÌ¸=i
+
+(9)
+Since the policies are with tabular expressions, then
+Ïi(ai|Ïi) = Î¸ai,Ïi. And the update Î²ai,s is in proportion
+to the gradient, so that
+
+Î²ai,s â gi = d(s, Ï âi)ki(s)QÏi
+where C is a constant independent of ai and QÏi
+
+i (s, ai) + C.
+
+i (s, ai).
+
+Since ki â¥ 0 is a positive coefficient given by the mixing
+network, d(s, Ï âi)ki(s)QÏi
+i (s, ai) + C is a linear function
+with positive coefficient w.r.t. QÏi
+i (s, ai). Thus âs, aâ²
+i, ai, it
+holds that QÏi
+i,s. â¡
+i (s, aâ²
+i) ââ Î²ai,s â¥ Î²aâ²
+Now, we are ready to provide proof for the policy improve-
+
+i (s, ai) â¥ QÏi
+
+ment theorem.
+
+Theorem 1. With tabular expressions for policies, for any
+pre-update policy Ï and updated policy ËÏ by policy gradient
+of stochastic TAPE that satisfy for any agent i, ËÏi(ai|Ïi) =
+Ïi(ai|Ïi) + Î²ai,sÎ´, where Î´ is a sufficiently small number, we
+have J( ËÏ) â¥ J(Ï), i.e. the joint policy is improved by the
+update.
+
+Proof. Given a good value estimate QÏ
+
+tot, from Lemma 1
+
+and Lemma 3 we have
+
+QÏ
+
+i (s, ai) â¥ QÏ
+
+i (s, aâ²
+
+i) ââ Î²ai,s â¥ Î²aâ²
+
+i,s.
+
+(10)
+
+Given âst, we have
+
+(cid:88)
+
+ËÏ(at|Ït)QÏ
+
+tot(st, at)
+
+at
+(cid:32) n
+(cid:89)
+
+(cid:88)
+
+=
+
+at
+
+(cid:88)
+
+=
+
+i
+(cid:32) n
+(cid:89)
+
+at
+
+i
+
+(cid:33)
+
+ËÏi(at
+
+i|Ï t
+i )
+
+QÏ
+
+tot(st, at)
+
+Ïi(at
+
+i|Ï t
+
+i ) + Î²at
+
+i,stÎ´
+
+(cid:33)
+
+QÏ
+
+tot(st, at)
+
+(cid:88)
+
+n
+(cid:89)
+
+=
+
+at
+
+i
+
+Ïi(at
+
+i|Ï t
+
+i )QÏ
+
+tot(st, at)+
+
+n
+(cid:88)
+
+(cid:88)
+
+Î´
+
+Î²at
+
+i,stQÏ
+
+tot(st, at
+
+i) + o(Î´)
+
+i=1
+
+= V Ï
+
+tot(st) + Î´
+
+at
+i
+n
+(cid:88)
+
+(cid:88)
+
+i=1
+
+at
+i
+
+Î²at
+
+i,stQÏ
+
+tot(st, at
+
+i) + o(Î´).
+
+Since Î´ is sufficiently small, we use o(Î´) to represent the
+summation of components where the exponential coefficient
+of Î´ is greater than 1. o(Î´) is omitted in further analysis since
+it is sufficiently small.
+Ïi(at
+
+= 1, we have
+
+i|st) + Î²at
+
+(cid:104)
+
+(cid:105)
+
+i,st
+
+Because (cid:80)
+at
+i
+
+Î²at
+
+i,st = 0. From Lemma 2 and Eq. 10, we have
+
+(cid:80)
+at
+i
+n
+(cid:80)
+i=1
+
+Î²at
+
+i,stQÏ
+
+tot(st, at
+
+i) > 0. Thus
+
+(cid:80)
+at
+i
+
+ËÏ(at|Ït)QÏ
+
+tot(st, at) â¥ V Ï
+
+tot(st).
+
+(cid:88)
+
+at
+
+The rest of the proof follows the policy improvement theorem
+for tabular MDPs from (Sutton and Barto 2018).
+
+V Ï
+tot(st) â¤
+
+(cid:88)
+
+at
+
+(cid:88)
+
+=
+
+at
+
+(cid:88)
+
+â¤
+
+at
+
+ËÏ(at|Ït)QÏ
+
+tot(st, at)
+
+ï£«
+
+ËÏ(at|Ït)
+
+ï£­rt + Î³
+
+(cid:88)
+
+st+1
+
+p(st+1|st, at)V Ï(st+1)
+
+ï£¶
+
+ï£¸
+
+(cid:32)
+
+ËÏ(at|Ït)
+
+rt + Î³
+
+(cid:88)
+
+st+1
+
+p(st+1|st, at)
+
+Ï(at+1|Ït+1)QÏ
+
+tot(st+1, at+1)
+
+(cid:33)
+
+(cid:17)
+
+(cid:16) (cid:88)
+
+at+1
+
+Â· Â· Â·
+= V ËÏ
+
+tot(st).
+
+So we have
+
+=â
+
+V ËÏ
+tot(s0) â¥ V Ï
+p(s0)V ËÏ
+
+tot(s0) â¥
+
+tot(s0), âs0
+(cid:88)
+
+(cid:88)
+
+p(s0)V Ï
+
+tot(s0),
+
+s0
+
+s0
+
+Which is equivalent to J( ËÏ) â¥ J(Ï), since J(Ï) =
+â¡
+p(s0)V Ï
+
+tot(s0).
+
+(cid:80)
+s0
+
+Remark We prove that with the coalition utility Ui in the
+policy gradient, the objective function J(Ï) is monotonically
+maximized. The monotone condition (Eq. 8) guarantees the
+monotonic improvement of stochastic TAPE policy updates
+in tabular cases. In cases where function approximators (such
+as neural networks) are used, the policy improvements are
+still guaranteed as long as the monotone condition holds
+(actions with larger values have larger update stepsizes). In
+the experiment section, we empirically demonstrate that the
+policies parameterized by deep neural networks have steady
+performance improvement as training goes on, and agents
+have better performance compared to the baselines.
+
+C Policy Update Diversity
+
+In this section, we give the detailed proof of Theorem
+2. We define the diversity of exploration in the parame-
+ter space as the variance of parameter updates Î¾TAPE
+ai,s =
+EE
+ai,s Î», where gai,s is the policy gradi-
+ent given s and ai, Î» is learning rate and E is the ErdËosâRÂ´enyi
+network in stochastic TAPE. Without loss of generality, we
+assume Î» = 1.
+
+ai,s Î»(cid:3) , Î¾DOP
+
+ai,s = gDOP
+
+(cid:2)gTAPE
+
+For clarity, we first restate Theorem 2.
+Theorem 2. For any agent i and âs, ai, the stochastic
+ai,s and DOP policy update Î¾DOP
+TAPE policy update Î¾TAPE
+ai,s sat-
+(cid:3) â
+(cid:3), and â = Var (cid:2)Î¾TAPE
+isfy that Var (cid:2)Î¾TAPE
+ai,s
+ai,s
+(cid:3) is in proportion to p2, where p is the probability of
+Var (cid:2)Î¾DOP
+ai,s
+edges being present in the ErdËosâRÂ´enyi model, i.e. â â p2.
+
+(cid:3) â¥ Var (cid:2)Î¾DOP
+ai,s
+
+Proof. From the proof of Lemma 3, we have
+
+ai,s = d(s, Ï âi)
+gTAPE
+
+(cid:88)
+
+j
+
+Eijkj(s)QÏj
+
+j (s, aj).
+
+By replacing the adjacency matrix E with identity matrix I,
+we have
+
+ai,s = d(s, Ï âi)ki(s)QÏi
+gDOP
+
+i (s, ai).
+
+Substitute gTAPE
+
+ai,s into Î¾TAPE
+ai,s
+
+ai,s = EE
+Î¾TAPE
+
+(cid:104)
+d(s, Ï âi)âÎ¸iÏi(ai|Ïi)ki(s)QÏi
+(cid:88)
+
+i (s, ai)+
+d(s, Ï âi)EijâÎ¸iÏi(ai|Ïi)kj(s)QÏj
+
+(cid:105)
+j (s, aj)
+
+jÌ¸=i
+= d(s, Ï âi)ki(s)QÏi
+
+i (s, ai)+
+
+ï£®
+
+EE
+
+(cid:88)
+
+ï£°
+
+d(s, Ï âi)Eijkj(s)QÏj
+
+j (s, aj)
+
+ï£»
+
+ï£¹
+
+(cid:88)
+
+jÌ¸=i
+
+EE
+
+(cid:104)
+
+= Î²DOP
+
+ai,s +
+
+d(s, Ï âi)Eijkj(s)QÏj
+
+(cid:105)
+j (s, aj)
+
+jÌ¸=i
+(cid:88)
+
+= Î¾DOP
+
+ai,s + p
+
+d(s, Ï âi)kj(s)QÏj
+
+j (s, aj),
+
+jÌ¸=i
+
+where d(s, Ï âi)kj(s)QÏj
+
+j (s, aj) = Cj is independent of Ïi
+
+and QÏi
+
+i . Thus,
+
+where E is the ER agent model, defined as
+
+Var (cid:2)Î¾TAPE
+ai,s
+
+(cid:3) = Var
+
+ï£®
+ï£°Î¾DOP
+
+ai,s + p
+
+ï£¹
+
+Cj
+
+ï£»
+
+(cid:88)
+
+jÌ¸=i
+
+= Var (cid:2)Î¾DOP
+ai,s
+
+(cid:3) + p2 (cid:88)
+
+Var [Cj] .
+
+jÌ¸=i
+
+(cid:3) â¥ Var (cid:2)Î¾DOP
+ai,s
+
+Since variance is always non-negative, clearly we have
+(cid:3) and â â p2.
+Var (cid:2)Î¾TAPE
+â¡
+ai,s
+Remark The above theorem states that stochastic TAPE
+explores the parameter space more effectively. This provides
+a theoretical insight and explanation why stochastic TAPE
+agents are more capable of finding good cooperation patterns
+with other agents. And â is in proportion to p2, which means
+as p increase, the connections among agents in the topology
+become denser and enhance their capability of cooperation.
+But the dense connection will also introduces the CDM is-
+sue, as sub-optimality of some agents will more easily affect
+other agents. Thus, p serves as a hyperparameter to compro-
+mise between avoiding CDM issue and capability to explore
+cooperation patterns.
+
+D Algorithm
+
+In this section, we give pseudo-code of the proposed methods.
+As we only modify policy gradients, rest of structures remains
+the same as the base methods (Wang et al. 2020c; Zhou, Lan,
+and Aggarwal 2022).
+
+D.1 Stochastic TAPE
+
+We first give the pseudo-code of stochastic TAPE and then
+give the details.
+
+Algorithm 1: Stochastic TAPE
+1: Initialize critic Ï, target critic Ïâ² = Ï, policy Î¸i for each
+
+agent i, and off-policy replay buffer D
+
+2: while training not finished do
+3:
+4:
+5:
+
+Rollout n trajectories and store them in D
+Use the trajectories to calculate yon
+Sample a batch of trajectories from D to calculate
+
+yoff
+
+6:
+7:
+8:
+
+9:
+
+Update Ï with yon and yoff according to Eq. 13
+Generate an agent topology E according to Eq. 12
+Update policy parameter Î¸ with the on-policy trajec-
+
+tories according to Eq. 11
+
+Copy critic network parameter Ï to target critic Ïâ²
+
+â i, j â {1, .., n}
+
+if i = j, Eij = 1
+
+else Eij =
+
+(cid:26)1 with probability p
+
+0 otherwise
+
+.
+
+(12)
+
+And as in the base method DOP, stochastic TAPE adopts
+an off-policy critic to improve sample efficiency, where the
+criticsâ training loss is the mixture of an off-policy loss with
+target yoff based on tree-backup technique (Precup 2000;
+Munos et al. 2016) and an on-policy loss with target yon, i.e.
+
+L(Ï) = ÎºED
+
+(cid:104)
+
+MSE(yoff, QÏ
+
+(cid:105)
+tot)
+
++ (1 â Îº)EÏ
+
+(cid:104)
+
+(cid:105)
+tot)
+
+MSE(yon, QÏ
+(13)
+
+,
+
+where
+
+yoff = QÏâ²
+
+tot(s, a) +
+
+(cid:34)
+
+Î³tct
+
+rt+
+
+kâ1
+(cid:88)
+
+t=0
+
+ki(st+1)EÏi
+
+(cid:104)
+
+(cid:88)
+
+Î³
+
+i
+
+QÏâ²
+
+(cid:105)
+i (st+1, Â·)
+
+i
+
++ b(st+1) â QÏâ²
+
+tot(st, at)
+
+(cid:35)
+
+yon = QÏâ²
+
+tot(s, a) +
+
+(cid:34)
+
+â
+(cid:88)
+
+(Î³Î»)t
+
+(14)
+tot(st+1, at+1) â QÏâ²
+
+(cid:35)
+tot(st, at)
+
+.
+
+rt + Î³QÏâ²
+
+t=0
+
+tot(s, a) = (cid:80)
+
+(15)
+where MSE is the mean-squared error loss function, Îº is
+a parameter controlling the importance of off-policy learn-
+ing, D is the off-policy replay buffer, Ï is the joint policy,
+QÏ
+i (st, ai
+t) + b(st), k â¥ 0 and b
+are coefficients provided by the mixing network, QÏâ²
+is
+the target network to stabilize training (Mnih et al. 2013),
+ct = (cid:81)t
+
+l=1 Î»Ï(al|sl) and Î» is the TD(Î») hyperparameter.
+With all the equations above, the pseudo-code of stochastic
+
+i ki(st)QÏi
+
+TAPE is given in Algorithm 1.
+
+D.2 Deterministic TAPE
+We first give the pseudo-code of deterministic TAPE and then
+give the details.
+
+The policy gradient of deterministic TAPE is given by
+
+(cid:34)
+
+(cid:88)
+
+LÏ = ED
+
+âÎ¸iÏi(Ïi)
+
+i
+
+(cid:16)
+
+âai fmix
+
+s, 1[Ei1] ËQÏ1
+
+1 , Â· Â· Â· , 1[Ei,n] ËQÏn
+
+n
+
+(cid:17)
+
+|ai=Ïi(Ïi)
+
+(cid:35)
+.
+
+every m episode
+
+10: end while
+
+The policy gradient of stochastic TAPE is given by
+
+g = EÏ
+
+ï£®
+
+(cid:88)
+
+ï£°
+
+i,j
+
+Eijkj(s)âÎ¸i log Ïi(ai|Ïi)QÏj
+
+j (s, aj)
+
+ï£» .
+
+ï£¹
+
+(11)
+
+i (Ïi, ai, mi) = QÏi
+
+(16)
+where ËQÏi
+i (Ïi, ai, mi) â Î± log Ïi(ai|Ïi) is
+the soft Q network augmented with assistive information mi.
+The assistive information mi is encoded from the observation
+oi of agent i, which provides information about the optimal
+joint action aâ and assists the value factorization.
+
+PAC follows the design of WQMIX (Rashid et al. 2020a)
+and keep two mixing network Qtot and ËQâ. Qtot is the mono-
+tonic mixing network as in QMIX (Rashid et al. 2020b),
+
+Algorithm 2: Deterministic TAPE
+1: Initialize critic Ïi, target critic Ïâ²
+
+i = Ïi, policy Î¸i for
+each agent i, mixing network fmix, information encoder
+fm and replay buffer D
+
+2: while training not finished do
+3:
+4:
+5:
+
+Rollout n trajectories and store them in D
+Sample a batch of trajectories from D
+Sample assistive information mi â¼ N (fm(oi), I)
+
+for all agents
+
+6:
+
+7:
+8:
+
+9:
+
+Calculate LÏ, LCA, LIB, L ËQâ and LQtot according
+
+to Eq. 16, 17, 18, 19, 20
+
+Total loss L = âLÏ + LCA + LIB + L ËQâ + LQtot
+Update the critics, mixing network, policy networks
+
+and information encoder to minimize L
+
+Copy critic network parameter Ï to target critic Ïâ²
+
+every m episode
+
+10: end while
+
+while ËQâ is an unrestricted function to make sure the joint-
+action values are correctly estimated as in WQMIX. The loss
+functions for Qtot and ËQâ are given by
+
+N
+(cid:88)
+
+L ËQâ =
+
+( ËQâ(sk, Ëak) â yk)2
+
+(17)
+
+LQtot =
+
+k=0
+
+N
+(cid:88)
+
+k=0
+
+Ï(sk, ak)(Qtot(sk, ak, mk) â yk)2.
+
+(18)
+
+where N is the batch size, Ëai = arg max QÏi
+i (Ïi, Â·, mi),
+Ëa = [Ëa1, .., Ëan], Ï(s, a) is the weighting function in
+WQMIX, m is the joint assistive information, Qtot is
+the mixture of local Q values and target yk = rk +
+Î³ ËQâ(sâ²
+k; Ïâ²)) with Ïâ² being the
+k, Ëaâ²
+parameters of the target network. PAC adopts two auxiliary
+loss to assist value factorization in MAPG, which we will
+briefly introduce next.
+
+k, arg maxËaâ²
+
+Qtot(sâ²
+
+k, mâ²
+
+k
+
+Counterfactual Assistance Loss: The counterfactual as-
+sistance loss is proposed to directly guide individual agentâs
+i from ËQâ. To this end, they pro-
+policy towards the action Ëaâ
+pose an advantage function with a counterfactual baseline
+that relegates Ëaâ
+i while keeping other all other agentsâ actions
+aâi fixed. Thus, the counterfactual assistance loss is given
+by
+
+(cid:88)
+
+LCA =
+
+log Ïi(ai|Ïi)
+
+i
+(cid:104)
+
+(cid:88)
+
+ai
+
+QÏi
+
+i (Ïi, Ëaâ
+
+i , mi) â Ïi(ai|Ïi)QÏi
+
+(cid:105)
+i (Ïi, ai, mi)
+
+.
+
+(19)
+Information Bottleneck Loss: Inspired by information
+bottleneck method (Tishby, Pereira, and Bialek 2000), the
+information bottleneck loss encodes the optimal joint action
+Ëaâ as the assistive information mi for local Q value functions
+QÏi
+i (Ïi, ai, mi). The assistive information is maximally infor-
+mative about the optimal action aâ
+i . With the deep variational
+information bottleneck (Alemi et al. 2016), the variational
+
+lower bound of this objective is
+
+LIB = Eoiâ¼D,mj â¼fm
+
+(cid:34)
+
+â H (cid:2)p(Ëaâ
+
+j |o), qÏ(Ëaâ
+
+j |oj, m)(cid:3) +
+
+Î²DKL(p(mi|oi)â¥qÏ(mi)
+
+(cid:35)
+,
+
+(20)
+where H is the entropy operator, DKL is the KL divergence
+and qÏ(mi) is a variational posterior estimator of p(mi) with
+parameter Ï. The information encoder fm is trained to encode
+assistive information mi â¼ N (fm(oi; Î¸m), I), where N is
+the normal distribution.
+
+With all the loss terms defined above, pseudo-code of
+
+deterministic TAPE is given in Algorithm 2.
+
+E Experiment and Implementation Details
+We run experiments on Nvidia RTX Titan graphics cards with
+an Intel Xeon Gold 6240R CPU. The curves in our experi-
+ments are smoothed by a sliding window, and the window
+size is 4, i.e. results of each timestep is the average of the past
+4 timesteps. More experiment and implementation details in
+each environment are given below. It is worth noting that the
+only hyperparameter that needs tuning in our methods is p,
+the probability of edges being present.
+
+E.1 Matrix Game
+The evaluation metric in the matrix game is the average re-
+turn of last 100 episodes and the training goes on for 10000
+episodes in total. The results are drawn with four random
+seeds, which are randomly initialized at the beginning of an
+experiment. For this simple matrix game, we use tabular ex-
+pressions for policies in stochastic TAPE, DOP and COMA.
+The critics are parameterized by a three-layer feed-forward
+neural network with hidden size 32. The mixing network for
+QMIX and linearly decomposed critics in stochastic TAPE
+and DOP is also three-layer feed-forward neural network
+with hidden size 32, where the coefficients for local Q values
+are always non-negative. Hyperparameter p for ER based
+agent topology in stochastic TAPE is 0.7. All algorithms are
+trained with Adam optimizer (Kingma and Ba 2014) and
+the learning rate is 1 Ã 10â3. And we use batch size 32 for
+QMIX. Since we wish to compare differences of the policy
+gradients, we omit the off-policy target for critic in Eq. 14 in
+stochastic TAPE and DOP for simplicity.
+
+E.2 Level-Based Foraging
+We use the official implementation of Level-Based Forag-
+ing (Papoudakis et al. 2021) (LBF) and remain the default
+settings of the environment, e.g. reward function and ran-
+domly scattered food items and agents. The time limit for
+8x8-2p-3f is 25, and 120 for 15x15-4p-5f. For the 8x8-2p-3f
+scenario, we use the â-coopâ option in the environment to
+force the agents collect all food items together and make
+the task more difficult. The training goes on for 2 million
+timesteps in 8x8-2p-3f and 5 million timesteps in 15x15-4p-
+5f. Each algorithm runs for 100 episodes for test every 50k
+
+Figure 6: Evaluation results on the six tasks of SMAC. InfoPG is a decentralized graph-based MARL method with networked
+agents. Our proposed methods adopt agent topology and follow centralized-training-decentralized-execution paradigm, which
+make them outperform InfoPG by a large margin during decentralized execution.
+
+timesteps. The evaluation metric is the average return of the
+test episodes.
+
+We use official implementations for all baseline algorithms
+and implement our methods based on the official implemen-
+tations without changing the default hyperparameters. For
+example, there are two hidden layers with hidden size being
+64 in the hyper network in QMIX, and target networks are
+updated every 600 steps in DOP. For fair comparison, we
+only change the number of parallel-running environments to
+4 for all algorithms and remain the other hyperparameters rec-
+ommended by the official implementations. Hyperparameter
+p for both stochastic and deterministic TAPE is 0.3.
+
+E.3 Starcraft Multi-Agent Challenge
+
+Agents and players do not play the whole StarCraft II game in
+Starcraft Multi-Agent Challenge (SMAC). In SMAC, a series
+of decentralized micromanagement tasks in StarCraft II are
+proposed to test a group of cooperative agents. The agents
+must cooperate to fight against enemy units controlled by
+StarCraft II built-in game AI. We keep the default settings of
+SMAC in our experiments, such as game AI difficulty 7, ob-
+servation range and unit health point. We run 32 test episodes
+every 20k timesteps for evaluation and report median test win
+rate across all individual runs as recommended.
+
+As in LBF, we use the official implementations, recom-
+mended hyperparameters and 4 parallel-running environ-
+ments for all baseline algorithms. The hyperparameter p
+controlling the probability of edges being present is cho-
+sen from {0.1, 0.3} for stochastic TAPE and {0.5, 0.7} for
+deterministic TAPE. p for each map and algorithm is given
+
+in Table 1.
+
+Map
+5m vs 6m
+2c vs 64zg
+6h vs 8z
+3s vs 4z
+corridor
+MMM2
+
+p (stochastic)
+0.1
+0.1
+0.1
+0.3
+0.3
+0.3
+
+p (deterministic)
+0.7
+0.7
+0.5
+0.5
+0.5
+0.5
+
+Table 1: Hyperparameter p in each map and algorithm.
+
+F Additional Experiments
+The concept of topology is also adopted in fully-decentralized
+MARL methods with networked agents (Zhang et al. 2018;
+Konan, Seraj, and Gombolay 2022). In fully-decentralized
+methods, the CDM issue does not exist since all agents are
+trained independently. Agents are networked together accord-
+ing to the topology, so that they can consider each other dur-
+ing decision making to better cooperate and even achieve
+local consensus. However, although using agent
+topol-
+ogy to gather and utilize local information of neighboring
+agents, this decentralized training paradigm cannot coordi-
+nate agentsâ behavior as well as our methods, which is based
+on centralized-training-decentralized-execution paradigm.
+
+InfoPG (Konan, Seraj, and Gombolay 2022) is the state-
+of-the-art fully-decentralized method with networked agents,
+where agentsâ policies are conditional on the policies of its
+
+Figure1:EvaluationresultsonthesixtasksofSMAC.InfoPGisadecentralizedgraph-basedMARLmethodwithnetworkedagents.Ourproposedmethodsadoptagenttopologyandfollowcentralized-training-decentralized-executionparadigm,whichmakethemoutperformInfoPGbyalargemarginduringdecentralizedexecution.(d) corridor(e) MMM2(f) 6h_vs_8z(a) 3s_vs_4z(b) 5m_vs_6m(c) 2c_vs_64zgneighboring teammates. We run InfoPG on all six maps of
+our SMAC experiments and compare the mean test return
+with our proposed stochastic TAPE and deterministic TAPE.
+The results demonstrate that our agent topology is effective
+in facilitating cooperation and filtering out bad influence
+from other agents during centralized training, which makes it
+outperform the fully-decentralized method InfoPG.
+
+

@@ -1,0 +1,44 @@
+# What Do Children and Parents Want and Perceive in Conversational Agents? Towards Transparent, Trustworthy, Democratized Agents
+
+## Introduction
+
+Conversational artificial intelligence (AI)—the ability of a computer program to understand human language and respond accordingly—holds vast potential. Imagine a conversational agent engaging children in learning history with a virtual Rosa Parks, or providing constant, accurate healthcare answers to those in need. Recent advances in natural language processing and automatic speech recognition are making these scenarios increasingly feasible. However, despite these strides, many current conversational agents, like Google Home, Apple’s Siri, and Amazon Alexa, still face significant challenges in recognizing speech and understanding intent, particularly among diverse groups. This blog delves into the unique perspectives of children and parents from various countries on conversational agents, aiming to enhance the design of these technologies to be more transparent, trustworthy, and democratized.
+
+## The Problem with Current Conversational Agents
+
+Despite their potential, conversational agents are far from perfect. Research shows that speech recognition systems by major companies such as Amazon, Google, IBM, and Microsoft perform significantly worse when recognizing speech from black speakers versus white speakers. Additionally, there are notable gender biases in AI systems. These biases can lead to serious implications, including misinformation spread, compounded human biases, and users acting on incorrect advice without realizing it.
+
+To address these issues, agents need to accurately represent their capabilities and limitations. If users are overly skeptical, they may not benefit fully from these technologies; if too trusting, they may make ill-informed decisions based on incorrect information. This calls for a balanced portrayal of conversational agents through effective design.
+
+## Understanding Children and Parents' Perspectives
+
+Historically, research on technology has predominantly focused on adults from Western, Educated, Industrialized, Rich, and Democratic (WEIRD) countries. This bias overlooks the needs and perspectives of children and non-WEIRD populations, potentially leading to technology that does not cater adequately to these groups. To address this, researchers from the Massachusetts Institute of Technology and Wellesley College conducted a study involving children and parents from various countries to understand their perceptions and trust in conversational agents.
+
+### Key Findings
+
+1. **Human-Like & Dependable**: Children perceived agents as more human-like, warm, and dependable compared to parents. They also tended to trust agents more for correct information than their parents or friends.
+2. **Trust Issues**: Both children and parents generally trusted conversational agents more than their friends and parents for accurate information. This could suggest an overtrust in these technologies.
+3. **Ideal Agents**: Children often described their ideal agents as more artificial than human-like, focusing on fun and approachable features, while parents valued task-oriented and dependable features.
+
+### Educational Workshops and Changes in Perception
+
+To empower participants, the researchers conducted educational workshops where children and parents could program their own agents using the ConvoBlocks platform. This hands-on experience aimed to demystify conversational AI and provide insights into its societal impact. Notably, many participants reported changes in their perceptions of agents after these workshops.
+
+### Agent Design Recommendations
+
+Based on the study's findings, the researchers proposed several design recommendations:
+
+1. **Fostering Appropriate Trust**: Designers should focus on creating agents with clear indicators of competence and predictability. Transparency about the sources of an agent's information is crucial to fostering appropriate levels of trust.
+2. **Cultural and Generational Considerations**: Agents should be designed to accommodate the diverse needs of users from various cultural backgrounds and age groups. This includes understanding that children might form stronger attachments to agents and see them as friends, while parents might view them more as tools.
+3. **Balancing Human-Likeness and Artificiality**: While children preferred agents that were more artificial, it’s important to avoid the uncanny valley effect—where agents that are almost but not quite human-like can evoke discomfort. 
+4. **Societal Impact Awareness**: Educating users about how agents work and their societal impact can lead to more informed and possibly more cautious use of these technologies.
+
+## Audience Engagement
+
+What are your experiences with conversational agents like Siri, Alexa, or Google Home? Do you find them trustworthy? Share your thoughts in the comments below! Additionally, what features would your ideal conversational agent have? Let’s discuss how we can push for more inclusive and trustworthy AI technologies.
+
+## Conclusion
+
+The study highlights the crucial need for more inclusive research and design in conversational AI. By incorporating diverse perspectives, especially from traditionally underrepresented groups like children and people from non-WEIRD countries, we can develop more effective, trustworthy, and democratized conversational agents. As technology continues to evolve, so too must our approaches to ensuring it serves all members of society equitably. 
+
+Let’s work together to create conversational agents that are not only smart and dependable but also transparent and inclusive, fostering a future where these technologies can be trusted and utilized by everyone, everywhere.

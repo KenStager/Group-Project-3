@@ -1,0 +1,892 @@
+Algorithm for Decentralized Cooperative
+Positioning of Multiple Autonomous Agents
+
+Milutin Pajovic, Member, IEEE, Vikrant Shah, Member, IEEE, and Philip V. Orlik, Senior Member, IEEE
+
+1
+
+9
+1
+0
+2
+
+r
+a
+
+M
+4
+1
+
+]
+
+O
+R
+.
+s
+c
+[
+
+1
+v
+3
+7
+2
+6
+0
+.
+3
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+AbstractâOne of the most essential prerequisites behind a
+successful task execution of a team of agents is to accurately
+estimate and track their poses. We consider a cooperative multi-
+agent positioning problem where each agent performs single-
+agent positioning until it encounters some other agent. Upon
+the encounter, the two agents measure their relative pose, and
+exchange particle clouds representing their poses. We propose
+a cooperative positioning algorithm which fuses the received
+information with the locally available measurements and infers
+an agentâs pose within Bayesian framework. The algorithm is
+scalable to multiple agents, has relatively low computational
+complexity, admits decentralized implementation across agents,
+and imposes relatively mild requirements on communication
+coverage and bandwidth. The experiments indicate that the pro-
+posed algorithm considerably improves single-agent positioning
+accuracy, reduces the convergence time of a particle cloud and,
+unlike its single-agent positioning counterpart, exhibits immunity
+to an impeding feature-scarce and symmetric environment layout.
+
+I. INTRODUCTION
+
+Positioning is at the core of numerous applications sup-
+ported by autonomous agents. It is often a challenging task,
+especially in environments without Global Positioning System
+(GPS) coverage and/or in setups where agents use sensors of
+limited capabilities. In cooperative positioning (CP), multiple
+agents cooperate with the goal to estimate their poses (i.e.,
+locations and orientations) more accurately and thus meet strict
+positioning accuracy requirements. As such, the CP may be
+well suited for positioning of vehicles in Intelligent Trans-
+portation Systems (ITS) [1], [2], especially in environments
+such as urban canyons [3] where vehiclesâ cooperation is
+expected to overcome issues arising from the lack of full GPS
+coverage. Consequently, different cooperative schemes have
+been considered to enhance GPS-based position estimates [4]â
+[8]. The initial GPS locations are improved with vehicle
+cooperation, realized through detection and localization of
+common features using data association in [9] [10].
+
+In another application, the CP is a critical part of cooperative
+multi-agent Simultaneous Localization and Mapping (SLAM),
+where agentsâ cooperation provides beneï¬ts such as faster
+convergence and improved robustness, in addition to obtaining
+more accurate estimates of the map and agentsâ poses [11]. In
+the robotics community, [16]â[18] exploit robot cooperation
+to reduce odometry errors, [22], [23] frame the CP as a
+
+nonlinear least squares optimization problem, while [19]â
+[21] are Kalman ï¬lter-based solutions with different levels of
+decentralization and communication bandwidth requirements.
+Particle ï¬ltering (PF) is at the core of state of the art algorithms
+for single-robot positioning [12] and SLAM [13], and has
+also been used for tracking multiple robots that do not make
+relative pose measurements [26], as well as in multi-robot
+SLAM [24], [25] where robots exchange all measurements
+at each encounter.
+
+In this paper, we propose an algorithm for cooperative
+multi-agent pose estimation and experimentally validate it. The
+agents in our setup perform pose estimation on their own using
+PF. At an encounter, the agents detect the presence of each
+other, measure relative pose between them, exchange pose
+particles, and update the pose particles using the proposed
+algorithm. The algorithm is built upon the Bayesian inference
+framework, is implemented as a fully decentralized PF, and
+has computational complexity of the order of the conventional
+single-agent positioning algorithm [12]. The experimental
+study shows that
+the particles in the proposed algorithm
+quickly converge, achieve a considerably better accuracy com-
+pared to the single-agent positioning without cooperation and,
+most importantly, overcome the impediments arising from a
+symmetric and feature scarce experimental area. Notably, the
+proposed method does not rely on GPS signals and is thus
+suited for GPS-denied environments.
+
+Among the CP algorithms, [27] and [28] are the most
+relevant to our work as they build upon the PF framework
+and consider the same setup. While the information fusion
+in [27] is aided with the use of density trees to infer an
+agentâs pose from its particles, the particle updating scheme
+in [28] comprises of evaluating relative pose distribution for
+all pairs of particles from two agents involved in the encounter,
+which results in O(K 2) computational complexity, where
+K is the number of particles. This complexity is reduced
+in [29] to O(KS) by clustering K particles into S clusters.
+In comparison to these works, our CP algorithm is derived
+by properly abiding with the Bayesian inference principles
+and the resulting particle updating scheme is optimal in the
+Bayesian sense. As such, it does not employ density trees,
+directly fuses information obtained at the agentsâ encounter
+and has linear complexity in the number of particles, i.e,
+O(K).
+
+M. Pajovic and P. V. Orlik are with the Mitsubishi Electric Research Lab-
+oratories (MERL), Cambridge, MA, 02138, USA. Email: pajovic@merl.com
+V. Shah is with the Computer Engineering Department, Northeastern
+University, Boston, MA, 02115, USA. This work has been performed when
+he was an intern at MERL.
+
+II. COOPERATIVE MULTI-AGENT POSITIONING
+
+We consider a scenario where multiple agents move in an
+indoor area whose map is known and made available to them.
+
+ 
+ 
+ 
+ 
+ 
+ 
+Each agent infers its own pose until it encounters other agent.
+At the encounter, the agents exchange information over a
+wireless link, and each agent fuses its own estimates with the
+information received from the other agent. In the following,
+we ï¬rst outline a PF-based single-agent positioning algorithm
+and then derive the proposed CP algorithm.
+
+A. Single-Agent Pose Estimation
+
+Î¸t
+
+yt
+
+A pose estimation of an agent in a 2D environment is
+concerned with estimating agentâs 2D coordinates (x, y) and
+orientation Î¸ with respect to the coordinate system associated
+with the environment. The 2D coordinates and orientation at
+time t are collected into a pose vector xt = (cid:2) xt
+(cid:3)T
+,
+where T denotes vector/matrix transpose operator. The en-
+vironment is represented with an occupancy grid map m â
+{0, 1}N , obtained by dividing the area into N bins, such that
+mi = 1 in the case the ith bin is occupied, or mi = 0, other-
+wise. As the agent moves through the environment, it collects
+ranging and odometry measurements. The ranging measure-
+ment at time t represents distances between the agent and
+obstacles seen within its ï¬eld of view. They are collected into
+vector zt and probabilistically modelled as p(zt|xt, m) [30,
+Ch. 6]. The odometry measurements corresponding to time
+interval (t â 1, t] are collected into vector ut and modelled as
+p(xt|xtâ1, ut) [30, Ch. 5].
+
+The pose estimation within Bayesian framework comprises
+of inferring probability distribution of an agentâs pose xt,
+given the map and all ranging and odometry measurements
+up to time t,
+
+p(xt|u1:t, z1:t, m) (cid:44) p(xt|u1, . . . , ut, z1, . . . , zt, m)
+
+(1)
+
+Assuming the Markov property, the inference of (1) is per-
+formed sequentially using Bayesâ ï¬lter where belief about
+agentâs pose at time t is updated from the belief of its pose at
+time t â 1 and ranging and odometry measurements collected
+between t â 1 and t [30, Ch. 8]. In most general case of
+non-Gaussian noise and/or non-linear measurement models,
+the Bayesâ ï¬lter is implemented as a particle ï¬lter (PF) [32],
+which represents the distribution (1) with K pose particles
+Ëxt,k, so that with a slight abuse of notation,
+
+p(xt|u1:t, z1:t, m) â
+
+1
+K
+
+K
+(cid:88)
+
+k=1
+
+Î´(x â Ëxt,k),
+
+(2)
+
+where Î´(Â·) is the Diracâs delta function. In the simplest im-
+plementation, the PF is initialized with K particles, uniformly
+sampled from the area where the agent is present. Given the
+set of particles {Ëxtâ1,k}K
+k=1 representing the agentâs pose at
+time t â 1 and odometry measurement ut, the agent motion
+model p(xt|xtâ1, ut) is used to sample (tentative) particles
+{x(cid:48)
+k is associated with a weight
+wk computed from the ranging model and measurement zt,
+
+k=1. Each tentative particle x(cid:48)
+
+k}K
+
+wk â p(zt|x(cid:48)
+
+k, m)
+
+(3)
+
+and normalized so that (cid:80)K
+particles are resampled according to {wk}K
+particle set {Ëxt,k}K
+
+k=1 wk = 1. Finally, the tentative
+k=1 to produce the
+k=1 representing the agentâs pose at time t.
+
+2
+
+B. Cooperative Multi-Agent Pose Estimation
+
+it
+Each agent moves through an area on its own until
+encounters some other agent, at which point both of them
+cooperatively estimate/update their poses. In other words, the
+CP happens at agentsâ encounters. Irrespective of whether an
+encounter between two agents is prearranged or occurs as a
+result of their random wander, at least one agent involved
+in an encounter has to be able to detect the presence of the
+other one. Once the agents detect that they are in the vicinity
+of each other, one (or both) measure their relative pose r,
+comprised of relative range r and relative heading Ï such
+that r = (cid:2) r Ï (cid:3)T
+. There are various modalities as to how
+agents encounter each other and measure their relative pose;
+one experiments use one particular modality.
+
+Assuming two agents A and B encounter each other at
+is to estimate their respective poses xA
+time t, our goal
+t
+and xB
+t based on their ranging and odometry measurements
+made prior to t, and their relative pose rt measured at the
+moment of encounter. To aid pose estimation, we ï¬rst consider
+joint probability distribution of both agentsâ traversed paths,
+conditioned on all measurements,
+
+(4)
+
+1:tâ , rt)
+
+p (cid:44) p(xA
+
+1:tâ , DB
+
+t , xA
+1:tâ , zA
+
+t , xB
+1:tâ = {uA
+
+1:tâ, xB
+1:tâ | DA
+where DA
+1:tâ } and xA
+1:tâ respectively denote
+measurements (odometry and ranging) and traversed path
+corresponding to agent A, prior to time t. Analogous notation
+DB
+1:tâ corresponds to agent B. We
+note that an agent does not change its pose from tâ to t, nor
+takes odometry/ranging measurements. However its pose at tâ
+is estimated from DA/B
+1:tâ , while that at t leverages additional
+information received from the encounter.
+
+1:tâ} and xB
+
+1:tâ = {uB
+
+1:tâ , zB
+
+The joint path distribution p in (4) is using Bayesâ rule
+
+expressed as
+
+p â p(rr|xA
+
+t , xB
+
+t , xA
+
+1:tâ , xB
+
+1:tâ, DA
+
+p(xA
+
+t , xB
+
+t , xA
+
+1:tâ , xB
+
+1:tâ |DA
+
+1:tâ ) Ã
+
+1:tâ, DB
+1:tâ )
+
+1:tâ , DB
+
+(5)
+
+Since the relative pose rt directly depends on xA
+t and xB
+t ,
+which already contain information about poses prior to t and
+odometry/ranging measurements,
+
+p(rr|xA
+
+t , xB
+
+t , xA
+
+1:tâ , xB
+
+1:tâ, DA
+
+1:tâ, DB
+
+1:tâ ) = p(rr|xA
+
+t , xB
+t )
+
+(6)
+Conditioned on odometry/ranging measurements, agentsâ
+paths are independent of each other and hence the second
+term on the right side of (5) factorizes as
+
+p(xA
+p(xA
+
+1:tâ , xB
+
+t , xB
+t , xA
+
+t , xA
+1:tâ|DA
+
+1:tâ |DA
+1:tâ ) p(xB
+
+1:tâ , DB
+t , xB
+
+1:tâ ) =
+1:tâ )
+
+1:tâ |DB
+
+(7)
+
+Recalling that an agent does not move nor takes ranging
+measurements between tâ and t, the path distribution of agent
+A is computed as
+
+p(xA
+
+t , xA
+
+1:tâ |DA
+
+1:tâ ) = p(xA
+= Î´(xA
+
+t |xA
+t â xA
+
+tâ ) p(xA
+
+tâ ) p(xA
+
+1:tâ|DA
+
+1:tâ )
+1:tâ |DA
+
+1:tâ) (8)
+
+The path distribution corresponding to agent B is ob-
+tained analogously. Substituting the resulting expression along
+
+with (8) into (7), and thus obtained expression and (6) into (5)
+yields
+
+p â p(rt|xA
+
+t ) Î´(xA
+
+t , xB
+1:tâ |DA
+
+t â xA
+1:tâ ) p(xB
+
+tâ ) Î´(xB
+1:tâ|DB
+
+t â xB
+1:tâ )
+
+p(xA
+
+tâ ) Ã
+
+(9)
+
+A sequential inference of agentsâ paths is performed with
+particle ï¬lter (PF), directly derived from (9). Namely, the
+agentsâ path particles up to time t are sampled from proposal
+distribution deï¬ned as
+
+t â xA
+
+t â xB
+
+1:tâ |DA
+
+1:tâ|DB
+
+q = Î´(xA
+
+tâ ) Î´(xB
+
+tâ) p(xA
+
+1:tâ ) p(xB
+
+tâ,k}K
+
+1:tâ |DA
+
+1:tâ|DA
+
+k=1 and {ËxB
+
+1:tâ )
+(10)
+Thus, pose particles ËxA
+t,k and ËxB
+t,k of the two agents at time t
+are obtained from the respective path posteriors p(xA
+1:tâ )
+and p(xB
+1:tâ ). Each path posterior is represented with
+its own set of pose particles, evaluated using single-agent
+positioning algorithm outlined in Section II-A such that the
+time tâ are
+agentsâ particles representing their poses at
+tâ,k}K
+{ËxA
+k=1, where we assume without loss
+of generality that both agents use the same number of particles
+K. Therefore, ËxA
+t,k are independently sampled from
+{ËxA
+k=1 with sampling distributions de-
+ï¬ned by the associated weights {wA
+k=1,
+respectively. In the case single-agent positioning algorithm
+resamples particles before each update step, the sampling dis-
+tributions are uniform. The weight associated to the sampled
+pair of agentsâ pose particles, ËxA
+t,k, is given as the
+ratio between the target p and proposal distribution q such
+that [14], [15]
+
+t,k and ËxB
+tâ,k}K
+
+k=1 and {ËxB
+
+k=1 and {wB
+
+t,k and ËxB
+
+tâ,k}K
+
+tâ,k}K
+
+tâ,k}K
+
+wk =
+
+p
+q
+
+â p(rt|ËxA
+
+t,k, ËxB
+
+t,k)
+
+(11)
+
+Once K pose particle pairs are sampled (so as to keep the
+number of particles unchanged), their weights are normalized
+so that (cid:80)K
+k=1 wk = 1. Upon resampling pose particle pairs
+according to {wk}K
+k=1, the resulting particles fuse all available
+measurements and represent agentsâ pose distributions upon
+their encounter.
+
+The described approach for updating agentsâ pose particles
+at the encounter naturally admits a decentralized implemen-
+tation across agents. Speciï¬cally, each agent performs a PF-
+based single-agent positioning using its odometry and ranging
+measurements until it comes relatively close to some other
+agent. At an encounter, the agents detect presence of each
+other, measure their relative pose and exchange their most
+recent pose particle sets. Each agent then updates its pose
+particle set on its own, using its particle set prior to the
+encounter, received particle set of the other agent and the
+relative pose measurement. It then continues to move in the
+area and perform single-agent positioning,
+initialized with
+the updated particle set. The pseudo-code of the proposed
+algorithm implemented on agent A is given in Algorithm 1.
+The implementation for the other agent is analogous.
+
+In addition to admitting decentralized implementation, the
+proposed algorithm has some other favorable features. First,
+it is derived within the Bayesian inference framework and
+thus the particle updating scheme is optimal in the Bayesian
+sense. Second, the computational complexity of the update
+
+Algorithm 1 Proposed algorithm implementation on Agent A
+
+3
+
+tâ,k}K
+
+k=1, X B = {ËxB
+
+1: Inputs: X A = {ËxA
+2: Inputs: Measurement of the agentsâ relative pose rt
+3: Initialize ËX A = A = â
+4: for k = 1 : K do
+5:
+
+tâ,k}K
+
+k=1
+
+6:
+
+7:
+
+Uniformly sample ËxA
+Uniformly sample ËxB
+Compute wk â p(rt | ËxA
+Update A = A âª {(ËxA
+
+t,k â¼ X A
+t,k â¼ X B
+t,k, ËxB
+t,k, wk)}
+
+t,k)
+
+(cid:80)K
+
+8:
+9: Normalize wk â wk
+10: for l = 1 : K do
+11:
+12:
+13: return ËX A
+
+Draw i with probability wi
+Update ËX A = ËX A âª ËxA
+t,i
+
+k=1 wk
+
+step comprises of evaluating weights for pose particle pairs and
+is no larger than an update step in a conventional single-agent
+positioning. Third, the agents exchange their pose particles at
+the encounter, occurring when they are in the vicinity of each
+other, implying relatively mild requirements for communica-
+tion bandwidth and coverage. Fourth, the algorithm seamlessly
+supports heterogeneous agents employing sensors of different
+capabilities. Speciï¬cally, as the above mathematical derivation
+suggests, an agent does not need any information about
+other agentâs platform and/or sensors because this information
+is already implicitly contained in pose particles it receives
+from that agent. Fifth,
+the algorithm is scalable to more
+that two agents over their multiple encounters. Namely, an
+agent performs pose particle update using Algorithm 1 at
+each encounter with any other agent. Sixth, the derived algo-
+rithm holds regardless of the type of measurements used for
+single-agent positioning, as long as the poses are represented
+with particle clouds. Finally, the performance beneï¬ts of the
+proposed algorithm are experimentally validated, which is
+described in the following part.
+
+III. EXPERIMENTAL VALIDATION
+We use two open source Turtlebot platforms1 shown in
+Fig. 1a for the experimental validation. These robots, equipped
+with full odometry and RGBD sensors, provide odometry ut
+and ranging measurements zt, where the measurement models
+are from [30, Ch 5 and 6]. To enable cooperation, robot A has
+a rigidly attached 3 Ã 3 checkerboard pattern to its body so
+that robot B can detect it based on the optical images from
+the RGBD sensor. Upon detecting presence of robot A, robot
+B performs relative pose measurement in two steps. First, the
+location of the center of the checkerboard pattern is obtained
+from the point cloud created from the depth measurements
+of the RGBD sensor. Then, the relative pose is estimated by
+extracting the point cloud of the checkerboard corners and
+estimating the surface normal using OpenPCL [31]. Robot B
+then sends the relative pose measurement to robot A and the
+two robots exchange their pose particles. As justiï¬ed in [27]
+and used in [28], [29], we assume the measurement errors
+
+1https://www.turtlebot.com
+
+4
+
+(a) Robots (left: A, right: B)
+
+(b) Robot A prior to the encounter
+
+(c) Robot B prior to the encounter
+
+(d) Experimental setup
+
+(e) Robot A upon the encounter
+
+(f) Robot B upon the encounter
+
+Fig. 1: Experimental robots, setup and pose particles of robots A and B prior and upon their encounter in one experiment.
+
+of the relative distance r and heading Î¸ are independent
+and zero-mean Gaussian distributed with standard deviations
+Ïr = 0.1 m and ÏÏ = 10o, selected based on test results of
+the described relative pose estimation pipeline.
+
+An occupancy grid map of the experimental area with
+2.5 cm cell resolution is available to both robots. As shown
+in Fig. 1d, robot B is stationary and robot A moves along
+a corridor such that they meet when robot A passes by the
+cubicle where robot B is located. The pose particles of robot
+B are prior to the encounter with robot A shown in Fig. 1c.
+Since robot A has no prior knowledge of its initial pose, its
+particles have not yet converged by the time the robots meet, as
+shown in Fig. 1b. However, even in such a case where robots
+have little knowledge of their poses prior to the encounter, the
+information fusion happening at the encounter according to the
+proposed algorithm results in updated particles that are fairly
+conï¬ned around the true poses of the corresponding robots, as
+shown in Figs 1e and 1f.
+
+The proposed algorithm is benchmarked against a single-
+agent positioning algorithm [12], conventionally used in
+robotics. Overall, the two algorithms perform global position-
+ing of robot A, and are run synchronously over the same
+measurements. The ground truth positions of robot A are esti-
+mated from averaging pose particles resulting from running yet
+another instance of the conventional single-agent positioning
+algorithm, initialized with the correct starting position of robot
+A and whose ranging measurements are provided by a high-
+resolution lidar. The comparison of how positioning error of
+the two algorithms evolve over time across ten independent
+experimental runs is shown in Fig. 2. As shown, the error
+corresponding to the proposed algorithm drops and stays
+below 0.2 m (and in most cases below 0.1 m) as soon as the
+robots meet in all ten experimental runs. Not surprisingly, the
+encounters in different runs happen at different time instants.
+The shown results validate that the proposed algorithm yields
+better error performance and faster convergence of particles,
+compared to the single-agent positioning case. In addition, due
+
+Fig. 2: Positioning errors across ten experimental runs.
+
+to a symmetry in the experimental area around the vertical axis
+passing through the middle of the area, the error corresponding
+to the single-agent positioning algorithm increases, indicating
+that the particles diverge after robot A passes by the cubicle
+where robot B is located. In contrast, the proposed algorithm
+is immune to this symmetry and is able to accurately track
+robot B as it moves down the second half of its route.
+
+IV. CONCLUSION
+We describe an algorithm for cooperative positioning of
+multiple agents. The proposed algorithm has a relatively mild
+communication bandwidth and coverage requirements, and is
+implemented as a fully decentralized particle ï¬lter with the
+same complexity as a single-agent positioning method. The
+experiments conï¬rm better accuracy and faster convergence
+compared to the case when agents do not cooperate, and
+show its immunity to a symmetric area where a single-agent
+positioning fails.
+
+5
+
+[22] S. Safavi and U. Khan, âAn Opportunistic Linear Convex Algorithm for
+Localization in Mobile Robot Networksâ, IEEE Transactions on Robotics,
+vol. 33, no. 4, Aug. 2017.
+
+[23] A. Franchi, G. Oriolo and P. Stegagno, âMutual localization in multi-
+robot systems using anonymous relative measurementsâ, The Interna-
+tional Journal of Robotics Research, vol. 32, no. 11, pp. 1302â1322,
+2013.
+
+[24] L. Carlone, M. K. Ng, J. Du, B. Bona, and M. Indri, âRao-Blackwellized
+Particle Filters Multi Robot SLAM with Unknown Initial Correspon-
+dences and Limited Communicationâ, In Proc. of the IEEE International
+Conference on Robotics and Automation (ICRA), pp. 243â249, May 2010.
+[25] A. Howard, âMulti-robot Simultaneous Localization and Mapping using
+Particle Filtersâ, The International Journal of Robotics Research, vol. 25,
+no. 12, pp. 1243-1256, Dec. 2006.
+
+[26] A. Ahmad, G. Lawless and P. Lima, âAn Online Scalable Approach to
+Uniï¬ed Multirobot Cooperative Localization and Object Trackingâ, IEEE
+Transactions on Robotics, vol. 33, no. 5, pp. 1184â1199, Oct. 2017.
+[27] D. Fox, W. Burgard, H. Kruppa and S. Thrun, âA Probabilistic Approach
+to Collaborative Multi-Robot Localizationâ, Autonomous Robots, vol. 8,
+no. 3, pp. 325â344, Jun 2000.
+
+[28] A. Prorok and A. Martinoli, âA reciprocal sampling algorithm for
+lightweight distributed multi-robot localizationâ, In Proc. of the IEEE/RSJ
+International Conference on Intelligent Robots and Systems (IROS), pp.
+3241â3247, 2011.
+
+[29] A. Prorok, A. Bahr and A. Martinoli, âLow-cost collaborative lo-
+calization for large-scale multi-robot systemsâ, In IEEE International
+Conference on Robotics and Automation (ICRA), pp. 4236-4241, 2012.
+[30] S. Thrun, W. Burgard, and D. Fox, âProbabilistic Robotics (Intelligent
+
+Robotics and Autonomous Agents)â, The MIT Press, 2005.
+
+[31] R. B. Rusu and S. Cousins, â3D is here: Point Cloud Library (PCL)â, In
+Proc. of the IEEE International Conference on Robotics and Automation
+(ICRA), May 2011.
+
+[32] B. Ristic, S. Arulampalm and N. Gordon, âBeyond the Kalman ï¬lter :
+
+particle ï¬lters for tracking applicationsâ, Artech House, 2004.
+
+REFERENCES
+
+[1] L. Chen and C. Englund, âCooperative ITS - EU Standards to Accelerate
+Cooperative Mobilityâ, International Conference on Connected Vehicles
+and Expo (IC-CVE), Nov. 2014, pp. 681-686.
+
+[2] K. Sjoberg, P. Andres, T. Buburuzan and A. Brakemeier, âCooperative
+Intelligent Transport Systems in Europe: Current Deployment Status and
+Outlook,â IEEE Vehicular Technology Magazine, vol. 12, no. 2, pp. 89-97,
+Jun. 2017.
+
+[3] E. F. N. A. Boukerche, H. A. B. F. Oliveira and A. A. Loureiro, âVehicular
+Ad Hoc Networks: A New Challenge for Localization-Based Systems,â
+Computer Communications, vol. 31, no. 12, pp. 2838-2849, Jul. 2008.
+[4] M. Rohani, D. Gingras, V. Vigneron and D. Gruyer, âA New Decentral-
+ized Bayesian Approach for Cooperative Vehicle Localization Based on
+Fusion of GPS and VANET Based Inter-Vehicle Distance Measurementâ,
+IEEE Intelligent Transportation Systems Magazine, vol. 7, no. 2, pp. 85-
+95, Apr. 2015.
+
+[5] R. Parker and S. Valaee, âVehicular Node Localization Using Received-
+Signal-Strength Indicatorâ, IEEE Transactions on Vehicular Technology,
+vol. 56, no. 6, pp. 3371-3380, Nov. 2007.
+
+[6] G. Soatti, M. Nicoli, S. Savazzi and U. Spagnolini, âConsensus-Based
+Algorithms for Distributed Network-State Estimation and Localizationâ,
+IEEE Transactions on Signal and Information Processing over Networks,
+vol. 3, no. 2, pp. 430-444, Jun. 2017.
+
+[7] H. Wymeersch, J. Lien and M. Z. Win, âCooperative Localization in
+Wireless Networksâ, Proceedings of the IEEE, vol. 97, no. 2, pp. 427-
+450, Feb. 2009.
+
+[8] N. Alam, A. T. Balaei and A. G. Dempster, âA DSRC Doppler-Based
+Cooperative Positioning Enhancement for Vehicular Networks With GPS
+Availabilityâ, IEEE Transactions on Vehicular Technology, vol. 60, no. 9,
+pp. 4462-4470, Nov. 2011.
+
+[9] G. Soatti, M. Nicoli, N. Garcia, B. Denis, R. Raulefs and H. Wymeer-
+sch,âImplicit Cooperative Positioning in Vehicular Networksâ, IEEE
+Transactions on Intelligent Transportation Systems, 2018.
+
+[10] M. Brambilla, G. Soatti and M. Nicoli, âPrecise Vehicle Positioning by
+Cooperative Feature Association and Tracking in Vehicular Networks,â
+2018 IEEE Statistical Signal Processing Workshop (SSP), Freiburg, 2018,
+pp. 648-652.
+
+[11] S. Saeedi, M. Trentini, M. Seto and H. Li, âMultiple-robot Simultaneous
+Localization and Mapping: A reviewâ, Journal of Field Robotics, vol. 33,
+no. 1, pp. 3â46, Jan. 2016.
+
+[12] D. Fox, âAdapting the Sample Size in Particle Filters through KLD-
+samplingâ, International Journal of Robotics Research, vol. 22, no. 12,
+pp. 985â1003, Dec. 2003.
+
+[13] G. Grisetti, C. Stachniss and W. Burgard, âImproved Techniques for Grid
+Mapping with Rao-Blackwellized Particle Filtersâ, IEEE Transactions on
+Robotics, vol. 23, no. 1, pp. 34â46, Feb. 2007.
+
+[14] P. M. Djuric, J. H. Kotecha, J. Zhang, Y. Huang, T. Ghirmai, M. F.
+Bugallo and J. Miguez, âParticle Filteringâ, IEEE Signal Processing
+Magazine, vol. 20, no. 5, pp. 19â38, Sept. 2003.
+
+[15] M. S. Arulampalam, S. Maskell, N. Gordon and T. Clapp, âA tutorial
+on particle ï¬lters for online nonlinear/non-Gaussian Bayesian trackingâ,
+IEEE Transactions on Signal Processing, vol. 50, no. 2, pp. 174â188,
+Feb. 2002.
+
+[16] J. Borenstein, âControl and kinematic design of multi-degree-of-freedom
+linkageâ, IEEE Transactions on Robotics and
+
+robots with compliant
+Automation, 1995.
+
+[17] R. Kurazume and N. Shigemi, âCooperative positioning with multiple
+robotsâ, In Proc. of the IEEE/RSJ International Conference on Intelligent
+Robots and Systems (IROS), 1994.
+
+[18] I. M. Rekleitis, G. Dudek, and E. Milios, âMulti-robot exploration of an
+unknown environment, efï¬ciently reducing the odometry errorâ, In Proc.
+of the International Joint Conference on Artiï¬cial Intelligence (IJCAI),
+1997.
+
+[19] S. I. Roumeliotis and G. A. Bekey, âDistributed multirobot localizationâ,
+In Transactions on Robotics and Automation, vol. 18, no. 5, pp. 781â795,
+2002.
+
+[20] E. D. Nerurkar, S. I. Roumeliotis and A. Martinelli, âDistributed maxi-
+mum a posteriori estimation for multi-robot cooperative localizationâ, In
+Proc. of the IEEE International Conference on Robotics and Automation
+(ICRA), pp. 1402â1409, May 2009.
+
+[21] L. C. Carrillo-Arce, E. D. Nerurkar, J. L. Gordillo and S. I. Roumeliotis,
+âDecentralized multi-robot cooperative localization using covariance in-
+tersectionâ, In IEEE/RSJ International Conference on Intelligent Robots
+and Systems (IROS), pp. 1412â1417, 2013.
+
+

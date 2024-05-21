@@ -1,0 +1,59 @@
+# Learning Altruistic Behaviours in Reinforcement Learning Without External Rewards
+
+## Introduction
+
+Artificial Intelligence (AI) has made significant strides in recent years, becoming an integral part of various aspects of human life and society. One of the most intriguing areas of AI research is teaching machines to act altruistically, that is, to assist others in achieving their goals. This concept extends beyond mere task completion and touches on the idea of integrating common-sense human values into artificial agents. But how can we train AI to behave altruistically without external rewards? This post explores a groundbreaking approach to developing altruistic behavior in AI, as presented in a paper at the International Conference on Learning Representations (ICLR) 2022.
+
+## The Challenge of Altruism in AI
+
+Traditionally, reinforcement learning (RL) agents are trained using specific rewards that guide their behavior. However, this method assumes that the agent knows the objectives of those it is trying to assist. In real-world scenarios, especially when dealing with human goals, such information is often ambiguous or contradictory. Human agents might find it challenging to express their goals fully, making it difficult for an AI to assist effectively. Therefore, the key challenge is to develop AI agents that can behave altruistically without explicit knowledge of others' goals or external supervision.
+
+## The Proposal: Task-Agnostic Altruism
+
+The paper proposes a novel approach where AI agents are trained to maximize the choices available to other agents, thereby increasing their ability to achieve their goals. This method does not rely on external rewards or pre-defined objectives. Instead, it focuses on giving the assisted agents more options in their environment. For example, an AI might learn to open doors for others or ensure that they can pursue their objectives without interference. This concept of altruism is formalized by training an AI to maximize the number of states another agent can reach in its future.
+
+## Methodology
+
+### The Framework
+
+The proposed framework involves a multi-agent RL setting where one agent, termed the leader, follows a pre-defined policy, while the other, termed the altruistic agent, learns to assist the leader. The altruistic agent's success is measured by the leader's ability to achieve its goals. Interestingly, the paper demonstrates that unsupervised altruistic agents can perform comparably to, or even better than, those trained with explicit cooperative strategies.
+
+### Estimating Choice
+
+To implement this approach, the paper introduces several methods to estimate the choices available to another agent:
+
+1. **Discrete Choice**: This measures the number of states an agent can reach within a certain number of steps.
+2. **Entropic Choice**: This uses Shannon entropy to estimate the variety of states an agent can reach, which is more efficient in continuous state spaces.
+3. **Immediate Choice**: A simplified version of entropic choice that considers only the immediate next step.
+
+These estimations help the altruistic agent determine the best actions to maximize the leader's future states.
+
+## Experimental Validation
+
+### Multi-Agent Environments
+
+The researchers evaluated their approach in three different multi-agent environments:
+
+1. **Gridworld Scenarios**: Simple environments where the altruistic agent helps the leader by opening doors or avoiding blocking its path.
+2. **Level-Based Foraging**: A more complex environment requiring cooperation to forage apples.
+3. **Tag Game**: A high-complexity environment where altruistic agents protect the leader from being caught by adversaries.
+
+### Results
+
+The results were promising. In the Gridworld scenarios, the altruistic agent successfully learned to open doors and avoid blocking paths, enhancing the leader's ability to reach its goals. In the Level-Based Foraging environment, the altruistic agent enabled the leader to forage apples effectively, performing comparably to a supervised agent. In the Tag Game, the altruistic agents displayed protective behavior, outperforming even supervised agents due to the dense internal reward signal from maximizing the leader's choice.
+
+## Conclusion
+
+The approach of teaching AI agents to behave altruistically by maximizing the choices available to others is a significant step forward in value alignment and AI ethics. This method does not require explicit knowledge of others' goals or external supervision, making it highly adaptable to real-world scenarios. While there are failure modes and challenges to address, this research provides a robust baseline for future explorations into unsupervised altruistic AI.
+
+## Engaging with the Audience
+
+What are your thoughts on the idea of developing altruistic AI? Do you think maximizing an agent's choices is a feasible way to ensure altruistic behavior? We would love to hear your insights and questions in the comments below. Additionally, if you're interested in the technical details, you can access the full paper and supplementary materials for a deeper dive into this fascinating research.
+
+## Final Thoughts
+
+The journey towards integrating human values into AI is complex and fraught with challenges. However, this research offers a promising avenue by focusing on increasing the choices available to others, paving the way for more ethical and helpful AI systems in the future. As we continue to develop and refine these methods, the potential for AI to act in genuinely beneficial ways grows ever closer.
+
+---
+
+### Keywords: AI, Altruism, Reinforcement Learning, Multi-Agent Systems, Value Alignment, Unsupervised Learning, ICLR 2022

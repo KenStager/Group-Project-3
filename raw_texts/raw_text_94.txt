@@ -1,0 +1,334 @@
+2
+0
+0
+2
+
+r
+p
+A
+9
+2
+
+]
+E
+C
+.
+s
+c
+[
+
+1
+v
+6
+5
+0
+4
+0
+2
+0
+/
+s
+c
+:
+v
+i
+X
+r
+a
+
+Trading Agents for Roaming Users
+
+MAGNUS BOMAN, MARKUS BYLUND and FREDRIK ESPINOZA
+Swedish Institute of Computer Science (SICS) AB
+and
+MATS DANIELSON and DAVID LYBÂ¨ACK
+Financial Market Systems, OM AB
+
+Some roaming users need services to manipulate autonomous processes. Trading agents running
+on agent trade servers are used as a case in point. We present a solution that provides the agent
+owners with means to upkeeping their desktop environment, and maintaining their agent trade
+server processes, via a briefcase service.
+
+Categories and Subject Descriptors: I.2.11 [Artiï¬cial Intelligence]: Distributed Artiï¬cial Intel-
+ligenceâIntelligent Agents; K.8 [Personal Computing]: Management/Maintenance
+
+General Terms: Economics, Human Factors, Management
+Additional Key Words and Phrases: Trading agent, Agent trade server, Customer preferences,
+Added-value services, roaming user
+
+1. TRADING AGENTS
+Unresolved questions related to law, ethics, security, and policy [?] do not in
+general prevent stock markets from applying open policies to program trading [?].
+A trading agent is a piece of encapsulated autonomous software that codes the
+preferences of its owner. In theoretical research, trading agents have been used in
+idealized games [?], artiï¬cial markets (see, e.g., http://ArtStkMkt.sourceforge.
+net/), and competitions (such as the Trading Agent Competition, see http://www.
+sics.se/tac/).
+
+Human owners of trading agents have diï¬erent levels of involvement in the coding
+itself. An expert agent owner writes her own code. A less experienced agent owner
+might employ a broker, which will write and carry responsibility for the code. An
+unexperienced agent owner can, on some markets, select an agent from a set of
+templates, such as a greedy agent, a value investor agent, a trend investor agent,
+etc. Once the agent has been written, it must be checked with respect to the rules
+of the marketplace.
+if the marketplace
+If the agent is to run on a server, i.e.
+supports an agent trade server, the agent code must comply with the API and with
+traï¬c regulations, such as the use of proxies. The agent trade server will usually
+complement an electronic exchange system, in such a way that the core services are
+unaï¬ected, and should [?]:
+
+âopen up for proper best-eï¬ort transport connectivity, fully in line with Internet
+
+design foundations and contemporary trends in the industry
+
+âprepare for the introduction of many new order details and tactical trading in-
+
+structions
+
+âprovide a new level of containment to better defend the complex system from
+
+fatal software error propagation when new services are introduced
+
+ACM Journal Name, Vol. V, No. N, October 2018, Pages 1â??.
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+Â·
+
+Once the agents are up and running on the server, the owner will require straight-
+forward means to modifying, maintaining, and even manipulating her agents. She
+can use various authenticated ways of reporting an update of her preferences, such
+as encrypted mail, https-server commands, telephone calls with PIN-code login
+procedures, etc. Such maintenance commands can be directed to the marketplace
+owner or to a broker, but regardless there will be rules and perhaps costs for the
+changes made. In the other direction, the owner will require reports on how her
+agent is doing. It is pivotal that this data is disseminated with as little delay as
+possible, as this data carries the information that might prompt changes to the
+agent, or changes to the preferences of the owner.
+
+We seek to complicate the picture further by focussing on roaming agent owners.
+In section 2, we describe the problem and background to trading on-the-ï¬y.
+In
+section 3, we describe the sView architecture that to some extent provides the
+solution. Since this is work in progress, we close with directions for future research.
+
+2. ROAMING TRADING AGENT OWNERS
+
+Agent trading in theory relaxes the agent owner from monitoring market data, but
+in practice there will be long periods of intense trading, radical market changes,
+preference changes, and other factors that will contribute to the need for full control.
+Hence, the agent owners cannot aï¬ord to be stationary, or even what is normally
+referred to as mobile users. Instead they will be carrying with them the trading
+services, and will expect at all times at least one channel of swift interaction means.
+In practice, this could mean that the owner is carrying with her a portable com-
+puter with a wireless LAN-card, together with all the necessary subscriptions and
+payphone cards for use of hot spots. On that computer, a service in the form of a
+running computer program will be activated.
+
+A beneï¬t of having trading agents is the possibility to express higher-level inten-
+tions, rather than explicit low-level orders. For stocks or commodities, this includes
+repositioning a portfolio with respect to sectors, shifting from stocks to bonds or
+vice versa, or acting on macro-economic information or news ï¬ashes. To ï¬nd the
+best venue for a trade, several market places must be monitored in advance to ï¬nd
+the optimal combination of order book and liquidity, and optimizing only one of
+the parameters will not suï¬ce (cf. [?]). This is no trivial task, since varying trading
+rules might have hard-to-foresee complications for the deal execution [?]. For large
+deals, you would want the companyâs most experienced trader to assist the agent,
+regardless of her physical location at the time of the deal.
+
+In the future, a work group collectively in charge of some important asset class
+will need to dispatch responsibility for actions based on availability. The availability
+should be ranked based on bandwidth available now and a forecast for the coming
+period, as a complement to workforce capacity. Traditional work ï¬ow models seem
+not to account for this aspect of roaming. For instance, bi-directional roaming
+access over several media may be required and as long as access networks are
+heterogeneous and bandwidth constrained, an availability map must be maintained.
+The best candidates for support of roaming agent owners are currently found among
+personal service provision systems, where personal and group states and information
+is preserved and maintained.
+
+ACM Journal Name, Vol. V, No. N, October 2018.
+
+Â·
+
+3
+
+3. THE SVIEW SYSTEM
+The sView System [?]
+is among other things an environment for personal ser-
+vices [?], some of which may be agents. Detailed descriptions can be found at the
+system home page http://sview.sics.se. The system assumes a client/server
+model, with server access being channeled through a virtual service briefcase. The
+briefcase in turn supports access from many diï¬erent types of devices and user in-
+terfaces. It is also private to an individual user, and it can store service components
+containing both service logic and data from service providers. This allows the ser-
+vice provider to split the services in two parts. One part provides commonly used
+functionality and user-speciï¬c data that executes and is stored within the virtual
+briefcase. The other part provides network-based functionality and data that is
+common to all users. Finally, the service briefcase is mobile and it can follow its
+user from host to host. This allows local and partially network-independent access
+to the service components in the briefcase.
+
+The core sView speciï¬cation constitutes an API that deï¬nes the basics of ser-
+vice components and personal service environment handling.
+It speciï¬es service
+components, a runtime environment, a data structure for persistent and mobile im-
+ages of service environments (service briefcases), and a server for handling service
+briefcases. The speciï¬cation has been implemented as a set of Java packages. Ser-
+vice components can implement an arbitrarily large part of the functionality of the
+service, and range from mere proxies to web-based services, to standalone services.
+They can be declared persistent and/or mobile. A persistent service component can
+save its state together with the service environment when the environment is saved
+locally on a host or migrates to another host in the network. If a service component
+is mobile it will follow the service environment as it migrates to a diï¬erent host in
+the network.
+
+The entity maintaining and providing runtime support to service components is
+the service context. Once the service components are loaded, the service context
+controls and sets the states of the service components. For example, newly cre-
+ated service components should be taken through an initialization state and when
+the service environment is about to migrate, all service components should be sus-
+pended. The service context is responsible for mediating service interfaces between
+service components. It is straightforward to implement a message passing service
+component on top of the core sView service/service communication scheme, and
+the sView reference implementation includes such a service. Via the service con-
+text, service components can control the behavior of the service environment (e.g.,
+migration and shutdown) as well as the behavior of other service components (such
+as creation, suspension, and resumption). However, since these activities are sensi-
+tive matters, the user must grant privileges to each service component in order for
+them to perform these actions. A service component may for example be granted
+the privileges to create and load, but not suspend or kill, service components within
+the environment. Another service component may be allowed to initiate a migra-
+tion of the whole service environment to another host, but not to control any aspect
+of individual service components.
+
+A service briefcase server speciï¬es an API for service briefcase handling.
+It
+includes basic functionality such as create new, get, put, and delete briefcase. It
+
+ACM Journal Name, Vol. V, No. N, October 2018.
+
+4
+
+Â·
+
+Web kiosk 
+
+III 
+
+HTML/HTTP
+
+HTML UI to PSE
+
+WML/WAP
+
+IV
+
+WML UI to PSE 
+
+WML/HTTP
+
+WAP Gateway
+
+C
+
+A
+
+B
+
+C
+
+B
+
+C
+
+Service Briefcase
+
+JPanel/SWING
+
+GUI to PSE 
+
+C
+
+A
+
+B
+
+I
+
+Service Briefcase Server 
+with service environments 
+for a single user 
+
+II 
+
+Service Briefcase Server 
+with service environments 
+for multiple users 
+
+Fig. 1. Parts of the core sView speciï¬cation and its APIs.
+
+also includes functionality for synchronization of content in diï¬erent instances of
+a service briefcase on diï¬erent servers. Synchronization is used when a service
+briefcase is to be moved to a server on which it has already been stored. In this case
+it is possible that parts of the briefcase, such as service component speciï¬cations,
+need not be sent with the briefcase. Synchronization is performed in two steps: the
+ï¬rst step is to ï¬nd out the diï¬erence between the two service briefcases followed
+by the second step to update the parts that have been changed. The two-phase
+commit protocol is used to ensure data integrity during synchronization.
+
+An illustration of the diï¬erent parts of the core sView speciï¬cation and their
+relations is given in Fig. 1. On the computer marked I a briefcase server and
+a service environment are executing. In this case the user is sitting next to the
+same computer as the service environment (represented by the cloud together with
+service components A, B, and C) is executing on. This makes it possible to use a
+standard GUI for user-service interaction. The computer marked II hosts service
+briefcases and environments for several users, which use remote interfaces. One
+user is using a Web-kiosk with a Web browser for user-service interaction (III) and
+another user uses a WAP phone (IV). Stored service environments, in the form of
+service briefcases (illustrated between I and II), can migrate between any computers
+that run a briefcase server.
+
+4. CONCLUSIONS AND FURTHER RESEARCH
+
+The sView system is a state-of-the-art tool for letting users develop and maintain
+their electronic services. In particular, the system may be used as a tool for devel-
+
+ACM Journal Name, Vol. V, No. N, October 2018.
+
+Â·
+
+5
+
+oping and maintaining services design to, in turn, monitor and manipulate agents
+executing on an agent trade server. An example of such a service is graphical illus-
+trations of trades conducted by an agent, or by a team of agents. Another example
+is a tool for kill requests: should agent owner preferences change during the trading
+day, means to remove an agent entirely from the agent trade server must be avail-
+able. Whether this privilege is granted the agent owner, or only member brokers
+for instance, is up to the marketplace owner to decide.
+
+The sView system does not solve all problems resulting from roaming traders.
+For example, the issue of hot login must be solved. A roaming trader wishes
+independence from service providers, security mechanisms, and billing procedures.
+A login, presumably at a predeï¬ned priority level, should be sustained for as long
+as possible, and with graceful degradation if necessary. We are currently looking
+deeper into the case of sView being employed for roaming traders, and have begun
+to write actual services.
+
+We have also started work on the actual agent trade server speciï¬cation and
+code. Since our long-term goal is to generalize our experiences from this case to
+other domains, constructing a sandbox environment for trading agent development,
+which can later be reused, is also on our agenda.
+
+ACM Journal Name, Vol. V, No. N, October 2018.
+
+

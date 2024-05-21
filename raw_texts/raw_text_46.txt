@@ -1,0 +1,658 @@
+9
+1
+0
+2
+
+b
+e
+F
+5
+1
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+7
+7
+6
+5
+0
+.
+2
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+Probabilistic Relational Agent-based Models (pram)
+
+Paul R. Cohen
+
+School of Computing and Information, University of Pittsburgh
+
+Abstract
+
+pram puts agent-based models on a sound probabilistic footing as a basis for integrating agent-
+based and probabilistic models. It extends the themes of probabilistic relational models and
+lifted inference to incorporate dynamical models and simulation.
+It can also be much more
+eï¬cient than agent-based simulation.
+
+Introduction
+
+1
+In agent-based models (ABMs, e.g., [4, 3]) agents probabilistically change state. State can be repre-
+sented as attribute values such as health status, monthly income, age, political orientation, location
+and so on. A population of agents has a joint state that is typically a joint distribution; for example,
+a population has a joint distribution over income levels and political beliefs. ABMs are a popular
+method for exploring the dynamics of joint states, which can be hard to estimate when attribute
+values depend on each other, and populations are heterogeneous in the sense that not everyone
+has the same distribution of attribute values, and the principal mechanism for changing attribute
+values is interactions between agents. For example, suppose all agents have a ï¬u status attribute
+that changes conditionally â given other attributes such as age, income, and vaccination status â
+when agents interact. The dynamics of ï¬u â how it moves through heterogeneous populations â
+can be diï¬cult or impossible to solve, but ABMs can simulate the interactions of agents, and the
+ï¬u status of these agents can be tracked over time.
+
+ABMs are no doubt engines of probabilistic inference, but it is diï¬cult to say anything about the
+models that underlie the inference. This paper presents pram â Probabilistic Relational Agent-
+based Models â a new kind of ABM with design inï¬uences from compartmental models (e.g., [1])
+and probabilistic relational models (PRMs; e.g., [2]). pram seeks to clarify the probabilistic in-
+ference done by agent-based simulations as a ï¬rst step toward integrating probabilistic and agent-
+based methods, enabling new capabilities such as automatic compilation of probabilistic models
+from simulation speciï¬cations, replacing or approximating expensive simulations with inexpensive
+probabilistic inference, and unifying ABMs with important methods such as causal inference.
+
+2 An Example
+Consider the spread of inï¬uenza in a population of students at two schools, Adams and Berry.
+To simplify the example, assume that ï¬u spreads only at school. Many students at Adams have
+parental care during the day, so when they get sick they tend to recover at home. Most students at
+Berry lack parental care during the day, so sick students go to school. Students may be susceptible,
+exposed or recovered.
+
+Several groups are entailed by this example, each of which has a count. For example, at a point
+in time early in the ï¬u season, the groups might look like those in Table 1. Each school has
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+1000 students, but they are distributed diï¬erently: Compared with Adams, there are more exposed
+students at Berry and fewer of them are at home. At a later time, some exposed students will be
+recovered, some recovered students will again be susceptible, some home-bound students will be
+back at school, and in general the counts of groups will change.
+
+has school
+Adams
+Adams
+Adams
+Adams
+Adams
+Adams
+Berry
+Berry
+Berry
+Berry
+Berry
+Berry
+
+flu status
+s
+s
+e
+e
+r
+r
+s
+s
+e
+e
+r
+r
+
+has location
+Adams
+Home
+Adams
+Home
+Adams
+Home
+Berry
+Home
+Berry
+Home
+Berry
+Home
+
+Count
+697
+3
+20
+80
+180
+20
+575
+0
+330
+10
+115
+0
+
+Table 1: Groups and counts at a speciï¬c time in a pram simulation.
+
+The central problem solved by pram is to calculate how counts of groups change over time given
+the actions of rules that probabilistically change features and relations. For example, a rule might
+say: If group g has daytime parental care and is exposed to ï¬u, then change the location of g to
+gâs home with probability 0.8 and to gâs school with probability 0.2.
+
+The connection between pram models and probabilistic models is that counts are proportional to
+posterior probabilities conditioned on attributes such as has school and flu status and on the
+actions of rules that change attributes. pram applies rules repeatedly to groups, creating novel
+groups and merging identical groups, thereby simulating the dynamics of groupsâ counts.
+
+3 Elements of PRAM Models
+pram entities have two kinds of attributes. They have features, F, which are unary predicates
+such as flu status or income; and they have relations, R, between entities, such as has school.
+Currently, pram entities are groups and sites, and all forward relations relate one group to one
+site.
+Inverse relations relate one site to a set of groups. Thus, if g1.has school = Adams and
+g2.has school = Adams, the inverse relation Adams.school of returns {g1, g2}. Inverse relations
+are important for answering queries such as âwhich groups attend g1âs school?â Formally this would
+be g1.has school.school of, which would return {g1, g2}. By mapping over entities it is easy to
+answer queries such as âwhat is the proportion of students at g1âs school that has been exposed to
+ï¬u?â In eï¬ect, pram implements a simple relational database.
+
+Besides entities, pram models have rules that apply to groups. All rules have mutually exclusive
+conditions, and each condition is associated with a probability distribution over mutually exclusive
+and exhaustive conjunctive actions. Thus, a rule will return exactly one distribution of conjunctive
+actions or nothing at all if no condition is true. For an illustration, look at the mutually exclusive
+clauses of rule flu progression in Figure 1, and particularly at the middle clause: It tests whether
+the groupâs flu status == e (exposed to ï¬u) and it speciï¬es a distribution over three conjunctive
+actions. The ï¬rst, which has probability 0.2, is that the group recovers and becomes happy (i.e.,
+
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+def rule_flu_progression (group):
+
+flu_status = group.get_feature(âfluâ)
+location = objects_related_by(group,âhas_locationâ)
+infection_probability = location.proportion_located_here([(âfluâ,âeâ)])
+
+if flu_status == âsâ:
+
+return ((infection_probability,
+
+(âchange_featureâ,âfluâ,âeâ),(âchange_featureâ,âmoodâ,âannoyedâ)),
+((1 - infection_probability),(âchange_featureâ,âfluâ,âsâ)))
+
+elif flu_status == âeâ:
+
+return ((.2, (âchange_featureâ,âfluâ,ârâ),(âchange_featureâ,âmoodâ,âhappyâ)),
+(.5, (âchange_featureâ,âfluâ,âeâ),(âchange_featureâ,âmoodâ,âboredâ)),
+(.3, (âchange_featureâ,âfluâ,âeâ),(âchange_featureâ,âmoodâ,âannoyedâ)))
+
+else flu_status == ârâ:
+
+return ((.9, (âchange_featureâ,âfluâ,ârâ)),
+(.1, (âchange_featureâ,âfluâ,âsâ))
+
+def rule_flu_location (group):
+
+...
+if flu_status == âeâ and income == âlâ:
+
+return ((.1, (âchange_relationâ,âhas_locationâ,location,home)),
+
+(.9, (âchange_relationâ,âhas_locationâ,location,location)))
+
+elif flu_status == âeâ and income == âmâ:
+
+return ((.6, (âchange_relationâ,âhas_locationâ,location,home)),
+
+(.4, (âchange_relationâ,âhas_locationâ,location,location)))
+
+else flu_status == ârâ:
+
+return ((.8, (âchange_relationâ,âhas_locationâ,location,school)),
+
+(.2, (âchange_relationâ,âhas_locationâ,location,location)))
+
+Figure 1: Two pram rules. Rule flu progression changes the flu status and mood features of
+a group. Rule flu location changes a groupâs has location relation.
+
+change flu status to r and change mood to happy). The remaining probability mass is divided
+between remaining exposed and becoming bored, with probability 0.5, and remaining exposed and
+becoming annoyed, with probability 0.3.
+
+Next, consider the preamble of rule flu progression, which queries the groupâs ï¬u status, then
+ï¬nds the groupâs location, and then calls the method proportion located here to calculate the
+proportion of ï¬u cases at the location. (Proportion located here sums the counts of groups at
+the location that have ï¬u, then divides by the sum of the counts of all the groups at the location.)
+In the ruleâs ï¬rst clause, this proportion serves as a probability of infection. It is evaluated anew
+whenever the rule is applied to a group. In this way, rules can test conditions that change over
+time. Finally, the third clause of the rule represents the transition from flu status = r back to
+flu status = s, whereupon re-exposure becomes possible.
+
+In addition to changing groupsâ features, rules can also change relations such as has location.
+The second rule in Figure 1 says, if a group is exposed to ï¬u and is low-income then change the
+groupâs location from its current location to home with probability 0.1 and stay at location with
+probability 0.9. If, however, the group is exposed and is middle-income, then it will go home with
+probability 0.6 and stay put with probability 0.4. And if the group has recovered from ï¬u, whatever
+its income level, then it will go back to school with probability 0.8.
+
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+4 The PRAM Engine: Redistributing Group Counts
+The primary function of the pram engine is to redistribute group counts among groups, as directed
+by rules, merging and creating groups as needed, in a probabilistically sound way.
+
+pram groups are deï¬ned by their features and relations in the following sense: Let F and R be
+features and relations of group g, and let n be the count of g. For groups gi and gj, if F i = F j
+and Ri = Rj, then pram will merge gi with gj and give the result a count of ni + nj. Conversely,
+if a rule speciï¬es a distribution of k changes to F i (or Ri) that have probabilities p1, p2, ..., pk, then
+pram will create k new groups with the speciï¬ed changes to F i (or Ri) and give them counts equal
+to (p1 Â· ni), (p2 Â· ni), ..., (pk Â· ni).
+
+Redistribution Step 1: Potential Groups To illustrate the details of how pram redistributes
+counts, suppose in its initial conditions a pram model contains just two extant groups:
+
+name
+g1
+g2
+
+flu
+s
+e
+
+mood
+happy
+annoyed
+
+location
+adams
+adams
+
+count
+900
+100
+
+When rule flu progression is applied to g1 it calculates the infection probability at Adams
+to be 100/(100 + 900) = .1. g1 triggers the ï¬rst clause in the rule because g1âs flu status == s.
+So the rule speciï¬es that the flu status of g1 changes to e with probability 0.1 and changes to s
+with probability 0.9. pram then creates two potential groups:
+
+name
+g1 1
+g1 2
+
+flu
+e
+s
+
+mood
+annoyed
+happy
+
+location
+adams
+adams
+
+count
+90
+810
+
+These potential groups specify a redistribution of n1, the count of g1. We will see how pram
+processes redistributions, shortly.
+
+Of the two rules described earlier, rule flu location does not apply to g1, but both apply to group
+g2. When multiple rules apply to a group, pram creates the cartesian product of their distributions
+of actions and multiplies the associated probabilities accordingly, thereby enforcing the principle
+that rulesâ eï¬ects are independent. (If one wants dependent eï¬ects they should be speciï¬ed within
+rules.) To illustrate, rule flu progression speciï¬es a distribution of three actions for groups like
+g2 that have flu status = e, with associated probabilities 0.2, 0.5, 0.3; while rule flu location
+speciï¬es two locations for groups that have flu status = e and flu status = m, with probabil-
+ities 0.6 and 0.4. Thus, for g2, there are six joint actions of these two rules, thus six potential
+groups:
+
+name
+g2 1
+g2 2
+g2 3
+g2 4
+g2 5
+g2 6
+
+flu
+r
+r
+e
+e
+e
+e
+
+mood
+happy
+happy
+bored
+bored
+annoyed
+annoyed
+
+location
+home
+adams
+home
+adams
+home
+adams
+
+count
+100 Â· 0.2 Â· 0.6 = 12.0
+100 Â· 0.2 Â· 0.4 = 8.0
+100 Â· 0.5 Â· 0.6 = 30.0
+100 Â· 0.5 Â· 0.4 = 20.0
+100 Â· 0.3 Â· 0.6 = 18.0
+100 Â· 0.3 Â· 0.4 = 12.0
+
+These groups redistribute the count of g2 (which is 100) by multiplying it by the product of
+probabilities associated with each action.
+
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+Redistribution Step 2: The Redistribution Method pram applies all rules to all groups,
+collecting potential groups as it goes along. Only then does it redistribute counts, as follows:
+
+1. Extant groups that spawn potential groups have their counts set to zero;
+
+2. Potential groups that match extant groups (i.e., have identical Fs and Rs) contribute their
+
+counts to the extant groups and are discarded;
+
+3. Potential groups that donât match extant groups become extant groups with their given
+
+counts.
+
+So: Extant groups g1 and g2 have their counts set to zero. Potential group g1 2 has the same
+features and relations as g1 so it contributes its count, 810, to g1 and is discarded. Likewise,
+potential group g1 1 matches g2 so it contributes 90 to g2 and is discarded. Potential group g2 6
+also matches g2, so it contributes 12 to g2 and is discarded, bringing g2âs total to 102. Potential
+groups g2 1, g2 2, g2 3, g2 4, and g2 5 do not match any extant group, so they become extant groups.
+The ï¬nal redistribution of extant groups g1 and g2 is:
+
+name
+g1
+g2
+g2 1
+g2 2
+g2 3
+g2 4
+g2 5
+
+flu
+s
+e
+r
+r
+e
+e
+e
+
+mood
+happy
+annoyed
+happy
+happy
+bored
+bored
+annoyed
+
+location
+adams
+adams
+home
+adams
+home
+adams
+home
+
+count
+810.0
+102.0
+12.0
+8.0
+30.0
+20.0
+18.0
+
+Redistribution Step 3: Iterate pram is designed to explore the dynamics of group counts, so
+it generally will run iteratively. At the end of each iteration, all non-discarded groups are marked as
+extant and the preceding steps are repeated: All rules are applied to all extant groups, all potential
+groups are collected, potential groups that match extant groups are merged with them, and new
+extant groups are created. A second iteration produces one such new group when the third clause
+of rule flu progression is applied to g2 1:
+
+name
+g2 1 1
+
+flu
+s
+
+mood
+happy
+
+location
+home
+
+count
+0.24
+
+The reader is invited to calculate the full redistribution resulting from a second iteration (it is
+surprisingly diï¬cult to do by hand).1
+
+5 Exploring Population Dynamics with pram
+Extending an earlier example, suppose the schools Adams and Berry each enroll 1000 students,
+of whom 900 are susceptible and 100 are exposed, evenly divided between males and females.
+All Adams students are middle-income and all Berry students are low-income. No students are
+pregnant, but we add a rule that creates pregnancies in groups of females with probability 0.01.
+The initial eight extant groups are:
+
+1The second iteration produces n1 = 706.632, n2 = 119.768, n2 1 = 26.4, n2 1 1 = 0.24, n2 2 = 25.6, n2 3 =
+
+60.6, n2 4 = 24.4, n2 5 = 36.36.
+
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+name
+g1
+g2
+g3
+g4
+g5
+g6
+g7
+g8
+
+flu
+s
+e
+s
+e
+s
+e
+s
+e
+
+sex
+f
+f
+m
+m
+f
+f
+m
+m
+
+income
+m
+m
+m
+m
+l
+l
+l
+l
+
+pregnant
+no
+no
+no
+no
+no
+no
+no
+no
+
+mood
+happy
+annoyed
+happy
+annoyed
+happy
+annoyed
+happy
+annoyed
+
+location
+adams
+adams
+adams
+adams
+berry
+berry
+berry
+berry
+
+count
+450
+50
+450
+50
+450
+50
+450
+50
+
+The dynamics of flu status = e at the two schools is presented in Figure 2. The leftmost panel
+shows the proportion of students exposed to ï¬u at each school. Berry experiences a strong epidemic,
+with more than half the students exposed, whereas Adams has a more attenuated epidemic because
+its students are middle-income and can stay home when they are exposed, thereby reducing the
+infection probability at the school. Adamsâ endemic level of ï¬u is close to zero whereas Berryâs
+endemic level is around 20%. However, resurgent ï¬u caused by recovered cases becoming susceptible
+again is more noticeable at Adams (around iteration 45). The only diï¬erence between Adams and
+Berry is that 60% of Adams students stay home when they get ï¬u, whereas 10% of Berry students
+do, but this diï¬erence has large and persistent consequences.
+
+Figure 2: The left panel shows the proportion of students exposed to ï¬u at Adams and Berry. The
+middle and right panels show the proportions of susceptible, exposed and recovered students at
+each school. The simulation ran for 100 iterations.
+
+6 Discussion
+pram code is available on github [5]. It has run on much larger problems, including a simulation
+of daily activities in Allegheny County that involved more than 200,000 groups. pram runtimes are
+proportional to Î½ the number of groups, not the group counts, so pram can be much more eï¬cient
+than agent-based simulations (ABS). Indeed, when group counts become one, pram is an ABS, but
+in applications where agents or groups are functionally identical pram is more eï¬cient than ABS.
+(Two entities i and j are functionally identical if F i = F j and Ri = Rj after removing all features
+from F i and F j and all relations from Ri and Rj that are not mentioned in any rule.)
+
+Because Î½ depends on the numbers of features and relations, and the number of discrete values
+each can have, pram could generate enormous numbers of groups. In practice, the growth of Î½ is
+controlled by the number of groups in the initial population and the actions of rules. Typically,
+Î½ grows very quickly to a constant, after which pram merely redistributes counts between these
+groups. In the preceding example, the initial Î½ = 8 groups grew to Î½ = 44 on the ï¬rst iteration
+and Î½ = 52 on the second, after which no new groups were added.
+
+Cohen
+
+Modeling the Worldâs Systems, 2019
+
+This dependence between Î½ and the actions of rules suggests a simple idea for compiling populations
+given rules: Any feature or relation that is not mentioned in a rule need not be in groupsâ F or R.
+Said diï¬erently, the only attributes that need to be in groupsâ deï¬nitions are those that condition
+the actions of rules. Currently we are building a compiler for pram that automatically creates an
+initial set of groups from two sources: A database that provides F and R for individuals and a set
+of rules. The compiler eliminates from F and R those attributes that arenât queried or changed by
+rules, thereby collapsing a population of individuals into groups with known counts.
+
+Attributes with continuous values obviously can result in essentially inï¬nite numbers of groups.
+(Imagine one group with a single real-valued feature and one rule that adds a standard normal
+variate to it. Such a pram model would double the number of groups on each iteration without
+limit.) Rather than ban real-valued attributes from pram we are working on a method by which
+groups have distributions of such attributes and rules change the parameters of these distributions.
+We are developing eï¬cient methods by which pram generates new potential groups and tests
+whether they match extant groups.
+
+For all this talk of eï¬ciency, the primary advantage of pram over ABS is that pram models are
+guaranteed to handle probabilities properly. The steps described in Section 4 ensure that group
+counts are consistent with the probability distributions in rules and are not inï¬uenced by the or-
+der in which rules are applied to groups, or the order in which rulesâ conditions are evaluated.
+These guarantees are the ï¬rst step toward a seamless uniï¬cation of databases with probabilis-
+tic and pram models. The next steps, which we have already taken on a very small scale, are
+automatic compilation of probabilistic models given pram models, and automatic compilation of
+pram rules given probabilistic models. Probabilistic relational models, which inspired pram, inte-
+grate databases with lifted inference in Bayesian models; pram adds simulation to this productive
+mashup, enabling models of dynamics.
+
+7 Acknowledgments
+This work is funded by the DARPA program âAutomating Scientiï¬c Knowledge Extraction (ASKE)â
+under Agreement HR00111990012 from the Army Research Oï¬ce.
+
+References
+[1] Julie C. Blackwood and Lauren M. Childs. An introduction to compartmental modeling for
+the budding infectious disease modeler. Letters in Biomathematics, 5(1), pp.195-221. 2018.
+doi:10.1080/23737867.2018.1509026
+
+[2] Lise Getoor, Ben Taskar (Eds.) Introduction to Statistical Relational Learning. 2007. MIT Press
+
+[3] Grefenstette JJ, Brown ST, Rosenfeld R, Depasse J, Stone NT, Cooley PC, Wheaton WD,
+Fyshe A, Galloway DD, Sriram A, Guclu H, Abraham T, Burke DS. FRED (A Framework
+for Reconstructing Epidemic Dynamics): An open-source software system for modeling infec-
+tious diseases and control strategies using census-based populations. BMC Public Health, 2013
+Oct;13(1), 940. doi: 10.1186/1471-2458-13-940.
+
+[4] Kalliopi Kravari and Nick Bassiliades. A Survey of Agent Platforms. 2015.
+
+[5] The version of pram reported here was developed by the author. A better engineered version has
+been developed by Tomek Loboda: https://github.com/momacs/pram/ with documentation
+at https://github.com/momacs/pram/blob/master/docs/Milestone-3-Report.pdf
+
+

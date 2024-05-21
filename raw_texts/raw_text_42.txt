@@ -1,0 +1,1614 @@
+2
+2
+0
+2
+
+b
+e
+F
+2
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+2
+8
+1
+1
+0
+.
+2
+0
+2
+2
+:
+v
+i
+X
+r
+a
+
+Transfer in Reinforcement Learning via Regret
+Bounds for Learning Agents
+
+Adrienne Tuynman
+UniversitÂ´e Paris-Saclay, ENS Paris-Saclay
+adrienne.tuynman@ens-paris-saclay.fr
+
+Ronald Ortner
+MontanuniversitÂ¨at Leoben
+rortner@unileoben.ac.at
+
+February 3, 2022
+
+Abstract
+
+âµ
+
+We present an approach for the quantiï¬cation of the usefulness of
+transfer in reinforcement learning via regret bounds for a multi-agent set-
+ting. Considering a number of
+agents operating in the same Markov
+decision process, however possibly with diï¬erent reward functions, we
+consider the regret each agent suï¬ers with respect to an optimal policy
+maximizing her average reward. We show that when the agents share
+their observations the total regret of all agents is smaller by a factor of
+â
+compared to the case when each agent has to rely on the information
+collected by herself. This result demonstrates how considering the regret
+in multi-agent settings can provide theoretical bounds on the beneï¬t of
+sharing observations in transfer learning.
+
+âµ
+
+1
+
+Introduction
+
+Transfer learning is a wide and important area of machine learning with
+a lot of empirical studies but few theoretical guarantees available. This
+holds true even more in the speciï¬c area of transfer in reinforcement learn-
+ing (RL). Accordingly, the two survey papers of Taylor & Stone [6] and
+Lazaric [3] are mainly dedicated to establishing a taxonomy of various
+settings as well as used performance criteria investigated in the literature.
+One particular problem is the quantiï¬cation of the beneï¬t of transfer in
+RL, for which there are hardly any general results. While Taylor & Stone
+[6] discuss diï¬erent criteria for the evaluation of transfer learning methods
+(including total reward and transfer ratio that will be closest to our al-
+ternative suggestion of considering the regret), these are rather discussed
+with respect to application to empirical studies.
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+This paper aims to take a step towards closing this gap by ï¬rst suggest-
+ing a multi-agent setting with simultaneously learning agents in a Markov
+decision process (MDP) with shared information but diï¬erent tasks. For
+the quantiï¬cation of the usefulness of the shared information we propose
+to compare worst case regret bounds with respect to the optimal poli-
+cies of each agent to the standard (single-agent) RL setting. We present
+an optimistic learning algorithm that is an adaptation of a single-agent
+RL algorithm to the multi-agent case and for which we can show regret
+bounds that are able to quantify the beneï¬t of transfer in the considered
+setting. Implicitly our multi-agent algorithm also contributes to an issue
+pointed out by by Lazaric [3] who stated that âthe problem of how the
+exploration on one task should be adapted on the basis of the knowledge of
+previous related tasks is a problem which received little attention so far.â
+While Taylor & Stone [6] mention multi-agent settings as an interesting
+application area for transfer (cf. also the related survey [5]), there is also
+a particular survey of da Silva and Costa [1], which discusses transfer
+for multi-agent RL. In general, whereas we will concentrate on MDPs in
+which all agents share common transition functions that only depend on
+the chosen action by each individual agent, the survey considers more
+complex scenarios where transitions depend on the joint actions chosen
+by the agents. This also gives rise to diï¬erent goals reaching from Nash
+equlibria and cooperative learning to adversarial settings in which one is
+interested in algorithms for a single self-interested agent.
+
+Following the classiï¬cation of multi-agent settings in [1], we assume
+that all agents share the same state and action space and that the trans-
+ferred knowledge is the experience of each single agent (also called instance
+transfer ) that is shared with all other agents.
+
+As already mentioned we are interested in regret bounds that measure
+for any time step T the diï¬erence of the accumulated rewards of an agent
+to the total reward an optimal policy (for the respective agent) would have
+achieved. We will see that while it is diï¬cult to say how much beneï¬t
+the experience of a single agent contributes to learning another task by a
+diï¬erent agent, when considering the total regret over all agents the worst
+case regret bounds are smaller by a factor of â
+agents.
+Apart from the application to transfer, these are the ï¬rst regret bounds
+for multi-agent settings in MDPs we are aware of.
+
+for a total of
+
+âµ
+
+âµ
+
+The paper is organized as follows: The precise setting is introduced
+in the following Section 2. Then we provide our algorithm and present
+respective performance bounds in the main Section 3 before we conclude
+with a discussion in Section 4.
+
+2 A Multi-Agent Learning Approach
+
+In this section we will introduce a multi-agent learning setting. We ï¬rst
+introduce the respective RL setting for a single agent however.
+
+2
+
+2.1 Preliminaries on Single-Agent-RL in MDPs
+
+In the standard setting of RL, the learning agent acts in a Markov decision
+process (MDP).
+
+and a set of actions
+
+Deï¬nition 1. A Markov decision process M = (
+, p, r, s1) consists of
+available in each of the states.1
+a set of states
+When choosing an action a
+, the agent obtains a
+random reward with mean r(s, a) and moves to a random new state sâ²
+that is determined by the transition probabilities p(sâ²
+s, a). The learning
+agent starts in an initial state s1.
+
+A
+in state s
+
+â A
+
+â S
+
+A
+
+S
+
+S
+
+|
+
+,
+
+A policy in an MDP deï¬nes which actions are taken when acting in the
+
+MDP. In the following, we will only consider stationary policies Ï :
+S â A
+that pick in each state s a ï¬xed action Ï(s). For the average reward
+criterion we will consider, it is suï¬cient to consider stationary policies
+(cf. Section 2.1.2 below).
+
+2.1.1 Assumptions and the Diameter
+
+In order to allow the agent to learn, we make further assumptions about
+the underlying MDP. First, with unbounded rewards it is diï¬cult to learn
+(as it is easy to miss out a single arbitrarily large reward at some step),
+so we assume bounded rewards. Renormalizing, in the following we make
+the assumption that all rewards are contained in the unit interval [0, 1].
+
+Further, we assume that it is always possible to recover when taking a
+wrong action once. This is possible, if the MDP is communicating, that is,
+any state is reachable from any other state with positive probability when
+selecting a suitable policy. That is, given a communicating MDP and two
+states s, sâ² there is always a policy Ï such that the expected number of
+steps TÏ(s, sâ²) that an agent executing policy Ï needs to reach state sâ²
+when starting in state s is ï¬nite. A related parameter we will use in the
+following is the diameter of the MDP that measures the maximal distance
+between any two states in a communicating MDP.
+
+Deï¬nition 2. The diameter D in a communicating MDP M is deï¬ned
+as
+
+D(M ) := max
+âS
+
+s,sâ²
+
+min
+Ï
+
+TÏ(s, sâ²).
+
+2.1.2 The Learning Goal and the Notion of Regret
+
+The goal of the learning agent is to maximize her accumulated reward
+after any T steps. For the sake of simplicity, in the following we will
+however consider the average reward
+
+1
+T
+
+lim
+T
+ââ
+
+T
+
+r(st, at),
+
+t=1
+X
+where st and at are state and action at step t, respectively. Unlike the
+accumulated T -step reward, the average reward is known [4] to maximized
+
+1It is straightforward but notationally a bit awkward to generalize our setting as well as
+
+the results to the case where diï¬erent actions are available in each of the states.
+
+3
+
+by a stationary policy Ïâ. The optimal average reward Ïâ is a good proxy
+for the (expected) optimal T -step reward, as T Ïâ diï¬ers from the latter
+at most by a term that is of order D, as noted by [2]. Accordingly, we
+measure the performance of the learning agent by considering its regret
+after any T times steps deï¬ned as
+
+RT := T Ïâ
+
+â
+
+T
+
+rt,
+
+t=1
+X
+
+where rt is the reward obtained by the agent at step t.
+
+2.2 The Multi-Agent Setting
+
+âµ
+
+learning agents Î± = 1, 2, . . . ,
+
+We are now ï¬nally ready to introduce the multi-agent setting. There are
+all of which act in the same Markov
+âµ
+decision process M , only that each agent Î± has her individual reward
+function rÎ±. We assume however that all agents share their experience.
+That is, each agent has immediately access to all the observations made
+by each other agent Î±, in particular her history (sÎ±
+0 specifying
+t )t
+t chosen and the reward rÎ±
+the state sÎ±
+t
+obtained. (As each learning agent aims at maximizing her own rewards,
+knowledge of the other agentsâ rewards is only of use in the special case
+when all agents have the same reward function, cf. Theorem 2 below.) For
+each agent Î± we consider her individual regret
+
+t visited at step t, the action aÎ±
+
+t , aÎ±
+
+t , rÎ±
+
+â¥
+
+RÎ±
+
+T := T Ïâ
+
+,Î±
+
+â
+
+T
+
+rÎ±
+t ,
+
+t=1
+X
+
+where Ïâ
+
+,Î± is the optimal average reward under the reward function rÎ±.
+
+2.2.1 Motivation:
+Terms of Transfer Learning
+
+Interpretation of Regret Bounds in
+
+As all agents share their information on the one hand and each of the
+agents acts to maximize her own rewards, the diï¬erence in regret between
+the single agent and the multi-agent setting speciï¬es the usefulness of
+the information that comes from the other learning agents. In the sim-
+plest case with just two agents with diï¬erent learning tasks (i.e., reward
+functions) in the same transition structure, the goal would be to quantify
+how useful the information collected by one agent for learning her task
+is for learning the other agentâs task. While this seems to be diï¬cult
+when considering each agent in isolation, the regret bounds we are going
+to derive will show the usefulness of sharing information for all agents
+simultaneously.
+
+3 Regret Bounds for Multi-Agent Learn-
+ing
+
+In this section, we propose an algorithm for the introduced multi-agent
+setting and present upper bounds on the total regret of all learning agents.
+
+4
+
+3.1 UCRL2 with Shared Information
+
+For our approach we propose a variant of the reinforcement learning al-
+gorithm UCRL2 [2] that is able to use shared information. That is, each
+agent will select her actions according to UCRL2 (brieï¬y introduced be-
+low) however using not only information collected by herself but also by
+all other agents.
+
+UCRL2 (sketched below) is a model-based algorithm that implements
+the idea of optimism in the face of uncertainty. Basically, UCRL2 uses
+the collected rewards as well as the transition counts for each state-action
+pair (s, a) in order to compute estimates Ër, Ëp for rewards and transition
+probabilities, respectively. While the original algorithm only considers a
+single agent, in the shared information setting the estimates are obviously
+computed from the collected observations of all agents. Based on the
+Î± of plausible MDPs
+estimates and respective conï¬dence intervals a set
+is computed for each agent Î±. Diï¬erent choices of conï¬dence intervals can
+be made, we are going to use
+
+M
+
+conf Î±
+
+r (s, a, S, A,
+
+conf p(s, a, S, A,
+
+, Î´, t)
+
+:=
+
+, Î´, t)
+
+:=
+
+âµ
+
+âµ
+
+7 log
+
+t
+2SA
+âµ
+Î´
+1, N Î±
+t (s, a)
+(cid:0)
+(cid:1)
+{
+
+s
+
+2 max
+
+14S log
+
+2At
+Î´
+
+s
+
+max
+
+1, Nt(s, a)
+(cid:0)
+(cid:1)
+{
+
+}
+
+,
+
+}
+
+(1)
+
+(2)
+
+âµÎ±=1 N Î±
+
+for the conï¬dence intervals used by agent Î± at step t, where N Î±
+t (s, a)
+is the number of samples taken by agent Î± in (s, a), and Nt(s, a) :=
+t (s, a) is the total number of samples taken by agents in (s, a).
+As all agents have the same transition structure, but the reward function
+P
+is individual, the conï¬dence intervals for rewards depend only on the
+number of visits in (s, a) by the agent Î±, while the conï¬dence intervals
+for the transition probabilities depend on the number of samples shared
+by all agents.
+
+Each agent Î± then optimistically picks an MDP ËM Î±
+
+Î± and a
+policy ËÏÎ± that maximize the average reward. This policy is played until
+the number of visits in some state-action pair has been doubled for some
+agent, when a new policy is computed. The phases between computation
+and execution of a new policy are called episodes.
+
+â M
+
+While the algorithm is described as a central algorithm controlling all
+agents, it could also be rewritten as a local algorithm for each single
+âµ
+agent. As all the agents share their observations, this is straightforward.
+
+3.2 Performance Guarantees
+
+The following upper bound on the combined regret of all agents using
+Multi-Agent-UCRL holds.
+
+Theorem 1. With probability 1
+Î´, after any T steps the regret of all
+agents controlled by Multi-agent-UCRL with conï¬dence intervals (1) and
+
+â
+
+2The computation of ËÏÎ±
+
+k can be done using extended value iteration as introduced
+in [2]. For the proof of the regret bound we will assume that extended value iteration is
+employed with accuracy 1/ât.
+
+k and ËM Î±
+
+5
+
+Algorithm 1 Multi-agent-UCRL with shared information
+
+1: Input: State space S, action space A, number of agents âµ, conï¬dence
+
+parameter Î´.
+
+2: Initialization: Observe the initial state s1.
+
+In the following, let t be the current time step.
+
+3:
+4: for episodes k = 1, 2, . . .: do
+Compute estimates ËrÎ±
+5:
+Ëpk(Â· | s, a) for transition probabilities (common to all agents).
+Compute policy ËÏÎ±
+k for each agent Î±:
+Let MÎ±
+sition probabilities Ëp(Â· | s, a) close to the computed estimates
+
+k be the set of plausible MDPs ËM with rewards Ër(s, a) and tran-
+
+k (s, a) for rewards of each agent Î± and estimates
+
+6:
+
+| Ër(s, a) â ËrÎ±
+(cid:13)Ëp(Â· | s, a) â Ëpk(Â· | s, a)(cid:13)
+(cid:13)
+
+k (s, a) | â¤ confÎ±
+
+r (s, a, S, A, âµ, Î´, t),
+(cid:13)1 â¤ confp(s, a, S, A, âµ, Î´, t).
+
+7:
+
+8:
+
+9:
+
+9:
+
+For each agent Î± compute an MDP ËM Î±
+
+k in MÎ±
+
+k with
+
+Ïâ
+
+( ËM Î±
+
+k ) = max{Ïâ
+
+(M ) | M â MÎ±
+
+k }.
+
+k .2
+
+k be the respective optimal policy in ËM Î±
+
+Further, let ËÏÎ±
+Let each agent Î± execute policy ËÏÎ±
+k :
+Let each agent Î±
+â² choose action aÎ±
+â² obtain reward rÎ±
+â² observe state sÎ±
+If the number of visits of some agent in some state-action pair has been
+doubled since the start of the episode, terminate current episode and start
+new one.
+
+t = ËÏÎ±
+t , and
+t+1.
+
+k (sÎ±
+
+t ),
+
+10: end for
+
+(2) is upper bounded by
+
+âµ
+
+RÎ±
+
+T â¤
+
+15
+
+DâS + â
+
+(cid:16)
+
+T log
+
+SA
+
+âµ
+
+âµ
+
+(cid:17) q
+
+T
+
+8A
+âµ
+Î´
+
+.
+
+(cid:0)
+
+(cid:1)
+
+< DâS, the average regret per agent after T steps is
+
+âµ
+
+Î±=1
+X
+Corollary 1. If
+ËO
+
+DSâAT
+â
+
+.
+
+(cid:16)
+
+âµ
+
+(cid:17)
+
+Corollary 1 shows that the performance guarantee improves over a
+simple sum over the regret bounds of the individual agents, as the regret
+of a single agent in the standard reinforcement learning setting for the
+same type of algorithm is ËO(DSâAT ), see [2]. Appendix A provides a
+sketch of the proof of Theorem 1, which is based on the analysis of [2].
+The main reason for the improvement being possible is that learning the
+
+6
+
+transition function in general is harder in the sense that the respective
+error has a larger inï¬uence on the regret. As several agents are able
+to learn the common transition function faster, this results in improved
+bounds.
+
+Further improvement is possible if the agents also have a joint reward
+function. Then all agents share the same MDP so that it makes sense using
+common conï¬dence intervals also for the rewards that do not depend on
+the individual visits N Î±(s, a) of an agent Î± but on the number of total
+visits N (s, a) of all agents. That is, conï¬dence intervals
+
+conf Î±
+
+r (s, a, S, A,
+
+, Î´, t)
+
+:=
+
+âµ
+
+7 log
+
+2SAt
+Î´
+1, Nt(s, a)
+(cid:0)
+{
+
+(cid:1)
+
+s
+
+2 max
+
+.
+
+}
+
+(3)
+
+can be used for the rewards. Accordingly, also the episode termination
+criterion should be changed to depend not on the visits of an individual
+agent but on the total number of visits. That is, an episode will be
+terminated if the total number of visits of all agents has been doubled
+since the start of the episode. With these modiï¬cations, one can obtain
+regret bounds of order ËO(DSâA
+T ).
+Theorem 2. In a setting where all agents share the same reward func-
+tion, using Multi-agent-UCRL wit conï¬dence intervals (3) and a modiï¬ed
+episode termination criterion, with probability 1
+Î´, the regret of all agents
+after any T steps is upper bounded by
+
+â
+
+âµ
+
+âµ
+
+Î±=1
+X
+
+RÎ±
+
+T â¤
+
+34DS
+
+T log
+
+A
+
+âµ
+
+T
+
+8A
+âµ
+Î´
+
+.
+
+(cid:0)
+
+(cid:1)
+
+q
+
+We highlight the necessary modiï¬cations in the proof of Theorem 1
+to obtain Theorem 2 in Appendix B. By Theorem 2, Corollary 1 holds
+without any condition on the number of agents in the setting of shared
+rewards.
+
+4 Discussion
+
+The results presented in the previous section provide a mean for the quan-
+tiï¬cation of the beneï¬t of transfer. In general it is diï¬cult to quantify
+how much worth are samples collected for one task when learning a new
+one. This is because it is possible that there are agents Î±, Î±â² such that
+the samples collected by Î± are of little use for Î±â². That way it is in general
+diï¬cult to quantify the beneï¬t of the samples collected by some agent Î±
+for another agent Î±â² when learning her task. However when considering
+the total regret over all agents there is a collective beneï¬t as our bounds
+on the regret show. This on the one hand conï¬rms the diï¬culty of quanti-
+fying âlocalâ transfer, but on the other hand shows that a general âglobalâ
+transfer is possible.
+
+The assumption of agents that learn simultaneously allows a straight-
+forward adaptation of the analysis known for optimistic algorithms like
+UCRL. However, in principle the setting could be easily adapted to the
+case where the agents learn successively or with time delays. Such delays
+
+7
+
+could also be considered to come from the communication between the
+agents, which in practice might not be immediate and could also happen
+in batches. While such modiï¬ed settings of course demand adaptations in
+the analysis, these can be done without any major changes with respect
+to the results we have presented.
+
+In general, our approach can serve as a blueprint for further investi-
+gations of multi-agent settings as a means for progress in transfer for RL
+in more general settings.
+
+References
+
+[1] F. L. da Silva and A. H. R. Costa. A survey on transfer learning
+for multiagent reinforcement learning systems. J. Artif. Intell. Res.,
+64:645â703, 2019.
+
+[2] T. Jaksch, R. Ortner, and P. Auer. Near-optimal regret bounds for
+reinforcement learning. J. Mach. Learn. Res., 11:1563â1600, 2010.
+
+[3] A. Lazaric. Transfer in reinforcement learning: A framework and a
+survey. In M. A. Wiering and M. van Otterlo, editors, Reinforcement
+Learning, volume 12 of Adaptation, Learning, and Optimization, pages
+143â173. Springer, 2012.
+
+[4] M. L. Puterman. Markov Decision Processes: Discrete Stochastic Dy-
+namic Programming. John Wiley & Sons, Inc., New York, NY, USA,
+1994.
+
+[5] P. Stone and M. M. Veloso. Multiagent systems: A survey from a
+machine learning perspective. Auton. Robots, 8(3):345â383, 2000.
+
+[6] M. E. Taylor and P. Stone. Transfer learning for reinforcement learning
+
+domains: A survey. J. Mach. Learn. Res., 10:1633â1685, 2009.
+
+A Proof of Theorem 1
+
+First, note that the diï¬erence between the observed rewards rÎ±
+t when agent
+Î± chooses action a in state s at step t and the respective mean rewards
+rÎ±(s, a) is a martingale diï¬erence sequence and hence can be bounded by
+Azuma-Hoeï¬ding (cf. e.g. Lemma 10 in [2]), so that
+
+rÎ±
+t â
+
+rÎ±(sÎ±
+
+t , aÎ±
+t )
+
+(cid:0)
+
+5
+2 T
+
+âµ
+
+log 8T
+
+âµÎ´
+
+â¤
+
+q
+
+(cid:1)
+
+Î±
+X
+
+t
+X
+
+Î´
+
+5/4
+
+Î´
+
+T )5/4 , similarly to eq. (7)
+with probability at least 1
+8
+of [2]. Accordingly, writing vÎ±
+k (s, a) for the number of visits of agent Î± in
+(cid:0)
+rÎ±(s, a)) to be
+(s, a) during episode k and deï¬ning âÎ±
+the regret of agent Î± in episode k, we can bound
+
+k (s, a)(Ïâ
+
+k := vÎ±
+
+â
+
+â¥
+
+â
+
+â
+
+12(
+
+,Î±
+
+1
+
+(cid:1)
+
+âµ
+
+âµ
+
+T
+
+RÎ±
+
+T â¤
+
+Î±
+X
+
+Î±
+X
+T )5/4 .
+
+Î´
+
+with probability 1
+
+12(
+
+â
+
+âµ
+
+âÎ±
+
+k +
+
+Xk
+
+q
+
+T log 8
+âµ
+Î´
+
+T
+
+5
+2 âµ
+
+(4)
+
+8
+
+Analogously to App. B.1 of [2] using our slightly adapted conï¬dence
+intervals (3) for the rewards, it can be shown that at each step t the
+probability that there is an agent Î± whose true MDP M Î± is not contained
+Î´
+in her set of plausible MDPs
+15t6 . As shown in
+Sec. 4.2 of [2], this implies that the respective regret caused by failing
+conï¬dence intervals is bounded by
+
+Î±(t) is bounded by
+
+M
+
+âÎ±
+
+k 1
+
+M Î± /
+{
+
+â M
+
+Î±
+k } â¤ âµ
+
+âT
+
+(5)
+
+with probability 1
+
+Î±
+X
+
+Xk
+Î´
+T )5/4 .
+
+â
+
+12(
+
+âµ
+
+eqs. (14)â(18) of [2] that
+
+âÎ±
+
+k 1
+
+M Î± /
+{
+
+â M
+
+Î±
+k } â¤
+
+Î±
+X
+
+Xk
+
+For the episodes k in which M Î±
+
+Î±
+k , one has analogously to
+
+â M
+
+T
+
+2SA
+Î´
+
+âµ
+
+14 log
+
+(cid:18)q
+
+(cid:0)
+
++ 2
+
+Î±
+
+(cid:19) X
+
+s,a
+Xk X
+
++ D
+
+14S log
+
+(cid:1)
+
+2AT
+Î´
+
+q
+
+(cid:0)
+1
+tk+1â
+
++
+
+p(
+
+Î±
+X
+
+Xk
+
+t=tk (cid:0)
+X
+
+Î±
+(cid:1) X
+
+s,a
+Xk X
+
+t , aÎ±
+sÎ±
+t )
+
+â
+
+Â· |
+
+p
+esÎ±
+
+t
+
+q
+
+max
+
+wÎ±
+k ,
+
+(cid:1)
+
+tk (s, a)
+
+max
+
+vÎ±
+k (s, a)
+1, N Î±
+{
+vÎ±
+k (s, a)
+1, Ntk (s, a)
+{
+
+(6)
+
+}
+
+}
+
+(7)
+
+where tk denotes the initial time step of episode k, ei is the unit vector
+with i-th coordinate 1 and all other S
+k is a
+modiï¬ed value vector (computed by extended value iteration for episode
+wÎ±
+k, cf. footnote 2) for agent Î± with
+k
+The last term of (7) is a martingale diï¬erence sequence and another
+application of Azuma-Hoeï¬ding gives (similar to eq. 19 of [2] but now for
+a sequence of length
+
+1 coordinates 0, and wÎ±
+
+k kâ â¤
+
+D/2.
+
+T )
+
+â
+
+âµ
+tk+1â
+
+1
+
+p(
+
+Î±
+X
+
+Xk
+
+t=tk (cid:0)
+X
+D
+
+t , aÎ±
+sÎ±
+t )
+
+esÎ±
+
+t
+
+wÎ±
+
+k â¤
+
+â
+
+Â· |
+
+T log
+
+5
+2 âµ
+
+8
+
+T
+
+âµ
+Î´
+
+(cid:1)
++ DSA
+
+log2
+
+8T
+SA
+
+âµ
+
+(8)
+
+q
+
+Î´
+
+(cid:0)
+
+(cid:1)
+
+(cid:0)
+
+(cid:1)
+
+with probability at least 1
+12T 5/4 , where the last term comes from a
+bound over the number of episodes, similar to Appendix B.2 of [2] (but
+now counted extra for each agent).
+
+â
+
+Finally, for the two triple sums in (7), we have as shown in [2] that
+
+vÎ±
+k (s, a)
+1, N Î±
+{
+
+max
+
+tk (s, a)
+
+1 + â2
+
+â¤
+
+}
+
+(cid:0)
+
+(cid:1) X(s,a) q
+
+N Î±
+
+T (s, a)
+
+s,a
+Xk X
+
+and similarly
+
+q
+
+vÎ±
+k (s, a)
+1, Ntk (s, a)
+{
+
+max
+
+â¤
+
+}
+
+1 + â2
+
+NT (s, a).
+
+(cid:0)
+
+(cid:1) X(s,a)
+
+p
+
+Î±
+X
+
+s,a
+Xk X
+
+p
+
+9
+
+Observing that
+follows by Jensenâs inequality that
+P
+
+s,a N Î±
+
+T (s, a) = T for each Î± and
+
+s,a NT (s, a) =
+
+T it
+
+âµ
+
+vÎ±
+k (s, a)
+1, N Î±
+{
+
+max
+
+tk (s, a)
+
+P
+1 + â2
+
+â¤
+
+}
+
+(cid:0)
+
+âµ
+(cid:1)
+
+âSAT .
+
+(9)
+
+Î±
+X
+
+s,a
+Xk X
+
+q
+
+and
+
+vÎ±
+k (s, a)
+1, Ntk (s, a)
+{
+
+max
+
+}
+
+Î±
+X
+
+s,a
+Xk X
+
+p
+
+=
+
+â¤
+
+In summary, we obtain from eqs.
+
+bounded by
+
+s,a
+Xk X
+1 + â2
+
+max
+P
+âSA
+
+p
+
+Î± vÎ±
+k (s, a)
+1, Ntk (s, a)
+{
+T .
+
+}
+(10)
+
+âµ
+(4)â(10) that the total regret is
+
+(cid:0)
+
+(cid:1)
+
+RÎ±
+
+T â¤
+
+(D + 1)
+
+q
+
+Î±
+X
+
+T log 8
+T
+Î´ +
+âµ
+
+5
+2 âµ
+
+âµ
+
+âT + DSA
+
+log2
+
+8T
+SA
+
+âµ
+
++
+
+1 + â2
+
+14 log
+
+T
+
+2A
+âµ
+Î´
+
++ 2
+
+(cid:0)
+1 + â2
+
++
+
+(cid:18)q
+(cid:1)
+D
+
+(cid:0)
+14S log
+
+(cid:1)
+
+2AT
+Î´
+
+(cid:19)
+âSA
+
+T
+
+âµ
+
+(cid:0)
+
+(cid:1)
+
+âSAT
+
+âµ
+
+q
+
+(cid:0)
+
+â
+
+(cid:1)
+Î´
+
+(cid:0)
+with probability 1
+bound holds simultaneously for all T
+
+4T 5/4 . Summing over all T = 2, . . . shows that this
+Î´.
+â¥
+It remains to simplify the bound. Summarizing terms, noting that
+T
+AT log âµ
+Î´
+
+DSA
+âµ
+the theorem holds trivially, cf. App. B of [2]) we obtain
+q
+
+2 with probability at least 1
+
+(otherwise
+
+T
+log âµ
+Î´
+
+2
+34 DS
+
+342A
+
+log2
+
+8T
+SA
+
+if T
+
+â
+
+â¤
+
+â¤
+
+âµ
+
+âµ
+
+(cid:1)
+
+(cid:0)
+
+(cid:1)
+
+RÎ±
+
+T â¤
+
+14
+
+âµ
+
+Î±
+X
+
+q
+which completes the proof of Theorem 1.
+
+(cid:0)
+
+(cid:1)
+
+SAT log
+
+T
+
+2A
+âµ
+Î´
+
++ 15DS
+
+SA
+
+T log
+
+âµ
+
+T
+
+8A
+âµ
+Î´
+
+,
+
+(cid:0)
+
+(cid:1)
+
+q
+
+B Proof of Theorem 2
+
+The proof of Theorem 2 follows the same line as the proof of Theorem 1
+with a few minor adapations due to the modiï¬ed conï¬dence intervals (3)
+for the rewards, which however only causes slight changes in the constants.
+The main diï¬erence is that due to the modiï¬ed conï¬dence intervals, all
+terms linear in
+
+can be avoided:
+
+First, all agents now share the same true MDP M as well as the set of
+Î±
+k neither
+M
+. The respective regret
+âT as in (5), however
+
+plausible MDPs
+depends on the single agents nor on their number
+over all agents then is bounded by â
+T instead of
+with the same error probability.
+
+k, so that the probability that M is not in
+
+âµ
+âµ
+
+M
+
+âµ
+
+âµ
+
+Further, using the modifed conï¬dence intervals instead of eq. (9) one
+
+obtains
+
+vÎ±
+k (s, a)
+1, Ntk (s, a)
+{
+
+max
+
+}
+
+Î±
+X
+
+s,a
+Xk X
+
+p
+
+=
+
+â¤
+
+10
+
+vk(s, a)
+
+max
+
+s,a
+Xk X
+1 + â2
+
+p
+
+âSA
+
+1, Ntk (s, a)
+{
+T ,
+
+âµ
+
+}
+
+(cid:0)
+
+(cid:1)
+
+and allows to sum-
+which also replaces the linear dependence on
+marize terms similar to the proof of the original regret bounds of [2].
+Details of the derivation are straightforward and are therefore skipped.
+
+âµ
+
+âµ
+
+by â
+
+11
+
+

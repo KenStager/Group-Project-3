@@ -1,0 +1,596 @@
+3
+2
+0
+2
+
+b
+e
+F
+7
+
+]
+
+O
+A
+.
+n
+i
+l
+n
+[
+
+1
+v
+3
+5
+2
+3
+0
+.
+2
+0
+3
+2
+:
+v
+i
+X
+r
+a
+
+Collective traï¬c of agents that rememberâ
+
+Danny Raj Mâ  and Arvind Nayak
+Dept of Chemical Engineering, Indian Institute of Science Bangalore, Bengaluru 560012, Karnataka, India
+(Dated: February 8, 2023)
+
+Traï¬c and pedestrian systems consist of human collectives where agents are intelligent and capable of
+processing available information, to perform tactical manoeuvres that can potentially increase their movement
+eï¬ciency. In this study, we introduce a social force model for agents that possess memory. Information of the
+agentâs past aï¬ects the agentâs instantaneous movement in order to swiftly take the agent towards its desired
+state. We show how the presence of memory is akin to an agent performing a proportionalâintegral control to
+achieve its desired state. The longer the agent remembers and the more impact the memory has on its motion,
+better is the movement of an isolated agent in terms of achieving its desired state. However, when in a collective,
+the interactions between the agents lead to non-monotonic eï¬ect of memory on the traï¬c dynamics. A group
+of agents with memory exiting through a narrow door exhibit more clogging with memory than without it. We
+also show that a very large amount of memory results in variation in the memory force experienced by agents in
+the system at any time, which reduces the propensity to form clogs and leads to eï¬cient movement.
+
+I.
+
+INTRODUCTION
+
+The ability to think is a key distinction between agents in hu-
+man collectives, like vehicular and pedestrian traï¬c ï¬ows [1â
+4], and granular collectives [5, 6], which are made up of grains
+that respond and move only to external forcing. Therefore,
+when one writes down a set of governing equations either in
+the form of rules of interaction or social forces, it is impor-
+tant to specify those that distinguish a living agent from one
+that is non-living. It would be an interesting problem to ex-
+plore how this distinction manifests in the dynamics of the
+collective. Since a comprehensive model for human cogni-
+tion (or thinking) is incredibly hard to formulate, we adopt a
+bottom-up approach where we investigate how a certain facet
+of intelligence aï¬ects the collective dynamics.
+
+One of the key characteristics of a living agent is its ability
+to assimilate information, process it and alter the agentâs deci-
+sions based on it. A critical aspect in this process is the agentâs
+memory. An agent can remember its past actions and change
+its current actions accordingly to achieve better performance.
+Memory of an agent can aï¬ect the dynamics across several
+time scales: from learning route-speciï¬c rules over several
+days and months, to remembering its recent trajectory and re-
+acting to immediate changes in the environment/jams. Here,
+we concentrate on the latter. We develop a social force model
+for the memory of an agent based on its past movement. Re-
+membering how it moved in the recent past, the agent evaluates
+how well it has achieved its desired velocity and takes a tactical
+decisionâto make up for the sub-optimal past movement.
+
+In this article, we introduce a social force model for agents
+that exhibit memory. Memory is characterised by two pa-
+rameters: i) how long the agent remembers and, ii) impact of
+memory on the movement. We ï¬rst analyse the model equa-
+tions to understand the impact of memory on the dynamics of
+an isolated agent. Then, we proceed to test the eï¬ect of mem-
+ory on the collective. We simulate agents attempting to exit
+
+via narrow door where agents are known to exhibit clogging
+behaviour near the exits. Our objective is to understand how
+memory aids in the collective motion: Does the presence of
+memory always guarantee eï¬cient movement? How does it
+impact the propensity to form or displace agents in a clog?
+
+II. MODEL FOR TRAFFIC DYNAMICS
+
+A. Agents with memory
+
+The motion of agents is modelled using a social force model,
+similar to Helbing et al [7â9]. The velocity of an agent evolves
+in time based on Eq 1, where: i) the ï¬rst term in the RHS is the
+restitution force that restores the agent to its desired direction
+and speed v0, ii) the second term is the force due to the eï¬ect
+of the memory of an agent and, iii) the third term Ið
+ð,ð is the
+net social interaction of the agent to avoid collision with other
+agents and the boundary.
+
+ð
+
+ðvð
+ðð¡
+
+=
+
+ð
+ð
+
+(v0 â vð) + Ëð½Mð + ð¼ð
+
+ð,ð
+
+(1)
+
+Here, the memory Mð (ð¡) of an agent ð at time ð¡, is deï¬ned as
+the total deviation of the velocity of the agent from its desired
+velocity v0 in the time window [ð¡ â ð, ð¡] of the agentâs recent
+past (see Eq 2).
+
+Mð =
+
+â« ð¡
+
+ð¡âð
+
+(cid:0)v0 â vð (ð¡ (cid:48))(cid:1) ðð¡ (cid:48)
+
+(2)
+
+When the agent is unable to travel at its desired speed and
+direction, the memory term takes a positive value and oï¬ers
+an additional force to help restore the agentâs motion sooner.
+
+ð¼ ð
+ð,ð =
+
+âï¸
+
+(cid:104)
+
+ð, ð + Fð¡
+Fð
+ð, ð
+
+(cid:105)
+
++ Fð
+
+ð + Fð¡
+ð
+
+(3)
+
+â ð âNð
+
+â Presented at the Traï¬c and Granular Flow 22 conference, held in New
+
+Delhi, India.
+
+â  dannym@iisc.ac.in; dannyrajmasila@gmail.com
+
+The term Ið
+
+ð,ð can take diï¬erent forms depending on the
+context of the traï¬c problem. For pedestrian dynamics [8],
+
+ 
+ 
+ 
+ 
+ 
+ 
+Helbing and co-workers considered interaction forces similar
+to that used in granular ï¬ows: a sum of the total normal and
+tangential (frictional) forces due to contact. However, Ið
+ð,ð can
+also include small-ranged forces that prevent collisions [9],
+which are more suitable for traï¬c ï¬ow problems. The qual-
+itative results shown in the paper do not depend on the exact
+choice of the models for interactions.
+
+B. Connections to control theory.
+
+If one were to imagine v0 as the set-point for a given agent,
+i.e., the desired state that the agent wants to achieve, then the
+restitution force and the memory term in Eqs 1 and 2, exactly
+resemble a proportional and an integral parts of a controller
+(PI), respectively. Presence of an integral component can
+result in overshoots and oscillations before the agent reaches
+its set-point. In the absence of memory and when there are
+continuous collisions with obstacles as agents move, we can
+expect the dynamics of the agent to show an oï¬set (not reach
+(cid:107)v0(cid:107))âsince, it is well known that a proportional controller
+cannot take the system exactly to its set-point. Addition of
+memory could guarantee reaching the set-point, even in the
+presence of obstacles.
+
+One could also conceive a dynamics resembling a PID con-
+troller. This modiï¬cation does not qualitatively change the
+dynamics of the system. Since, adding a derivative term for
+the deviation v0 â vð, gets absorbed into the inertia (LHS term
+of Eq 1). In other words, the derivative term acts like an ef-
+fective mass term that slows the response of the agent to any
+social force.
+
+C. Memory as a state of the agent.
+
+The memory term in Eq 2 is computed within a time window
+of [ð¡ âð, ð¡]. Any information from outside the time window is
+not used and all the information within are equally weighted.
+A simpler and more elegant formulation can be arrived at, if
+we weight the information with an exponential weighting as
+shown in Eq 4.
+
+Mð =
+
+â« ð¡
+
+0
+
+ð ð¡(cid:48)âð¡
+
+Ëð¼ (cid:0)v0 â vð (ð¡ (cid:48))(cid:1) ðð¡ (cid:48)
+
+(4)
+
+An exponential weighting prioritises information close to the
+current time instant than from a distant past. This allows us
+to move away from a discontinuous time window set by ð
+and towards a time scale Ëð¼. Then, we can diï¬erentiate Eq 4
+with time, using the Leibniz rule for diï¬erentiating under the
+integral sign to get Eq 5.
+ðMð
+ðð¡
+
+= v0 â vð â
+
+(5)
+
+Mð
+Ëð¼
+
+This allows us to convert the memory term, which was previ-
+ously an integral, into a dynamic state of the agent. Eq 5 de-
+scribes the evolution of this memory-state of the agent: v0 â vð
+serves as the instantaneous source for the memory while â Mð
+Ëð¼
+is the rate at which memory decays.
+
+2
+
+III. RESULTS AND DISCUSSION
+
+A. Dynamics of a single agent
+
+The equations for the dynamics of an isolated agent, far away
+from the boundary, can be written compactly as in Eq 6. This
+is after: i) the governing equations in Eq 1 are scaled (ð¡ with
+ð, (cid:107)v(cid:107) with (cid:107)v0(cid:107), (cid:107)M(cid:107) with (cid:107)v0 (cid:107)/ð), ii) the interaction terms
+are dropped and, iii) the scaled memory parameters become
+ð¼ = Ëð¼/ð and ð½ = Ëð½/ð.
+
+ð
+ðð¡
+
+ð£ ð¥
+ð£ ð¦
+ðð¥
+ðð¦
+
+(cid:169)
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:171)
+
+(cid:170)
+(cid:174)
+(cid:174)
+(cid:174)
+(cid:172)
+
+=
+
+ð½
+â1 0
+0
+ð½
+(cid:169)
+0 â1
+0
+(cid:173)
+â1 0 â 1
+(cid:173)
+0
+ð¼
+(cid:173)
+0 â 1
+0 â1
+ð¼
+(cid:171)
+
+(cid:170)
+(cid:174)
+(cid:174)
+(cid:174)
+(cid:172)
+
+Ã
+
+ð£ ð¥
+ð£ ð¦
+ðð¥
+ðð¦
+
+(cid:169)
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:171)
+
+(cid:170)
+(cid:174)
+(cid:174)
+(cid:174)
+(cid:172)
+
++
+
+1
+(cid:169)
+(cid:170)
+0
+(cid:173)
+(cid:174)
+(cid:173)
+(cid:174)
+1
+(cid:173)
+(cid:174)
+0
+(cid:171)
+(cid:172)
+
+(6)
+
+To understand the eï¬ect of memory (ð¼ and ð½) on the move-
+ment characteristics of a single agent, it is enough to look at
+the eigen values of the matrix in Eq 6. The eigen values are
+2ð¼ Ã (cid:2) â (ð¼ + 1) Â± âï¸â4ð¼2 ð½ + ð¼2 â 2ð¼ + 1 (cid:3), repeated twice.
+1
+Analysing the eigen values helps us partition the ð½ â ð¼ space
+into four regions (see Fig 1, i).
+
+Stability: When ð½ > 0, the memory term aids in restoring
+the agent to its desired state at steady state (see Fig 1, ii). And
+when ð½ < 0, memory opposes the agentâs attempt to reach its
+desired state. However, since the restitution force (v0 â vð)
+always acts to restore the agentâs dynamics, a small negative
+ð½ memory does not immediately destabilise the dynamics and
+only increases the time taken to reach steady state (see Fig 1,
+vi). However, when ð½ < â 1
+ð¼ , the eigen values begin to have a
+positive real part and the memory term overpowers the resti-
+tution force leading to unstable dynamics (see Fig 1, vii).
+2ð¼ + 1
+
+4ð¼2 , the
+eigen values become complex conjugates and the dynamics
+become under-damped which results in oscillations in both the
+memory and the velocity of the agent (Fig 1, iv and v). Also,
+when ð¼ = 1, any ð½ greater than 0 results in oscillations. This
+divides the region exhibiting non-oscillatory dynamics into
+two. The high-ð¼ part of this region exhibits dynamics where
+we observe overshoots; i.e.
+the velocity takes a larger value
+before asymptotically tapering to the desired, steady state value
+(see Fig 1, ii and iii to compare the dynamics in the low-ð¼ and
+high-ð¼ regions).
+
+Overshoots & oscillations: When ð½ > 1
+
+4 â 1
+
+B. Collective escape through a narrow exit
+
+To understand the eï¬ect of memory on the dynamics of the
+collective, we consider a well known system: agents exiting a
+room via a narrow door (See inset of ï¬gure 2 i). We use the
+conditions similar to that in ref [8]. The governing equations in
+Eq 1 and 5 are simulated where every agent has a v0, directed
+along the line joining the agent centre and the mid-point of the
+exit of the door. The inter-agent interactions lead to collisions
+between agents as they crowd near the exit, slowing them down
+and giving rise to temporary clogging. Now as agents slow
+down, memory force increases since the source for the memory
+
+3
+
+FIG. 1. (i) Regions with qualitatively diï¬erent dynamics in the ð½ â ð¼ parameter space. Coloured (shaded) regions exhibit stable dynamics,
+which can be oscillatory, non-oscillatory and opposing (negative ð½). The unshaded region marks the unstable region, which is found only
+when ð½ takes a suï¬ciently large negative value. (ii)-(vii) Time evolution of the x components of velocity and memory of the isolated agent
+for diï¬erent memory parameters. (ii) ð¼ = 0.3; ð½ = 2, (iii) ð¼ = 3; ð½ = 0.2, (iv) ð¼ = 0.75; ð½ = 3, (v) ð¼ = 3; ð½ = 3, (vi) ð¼ = 0.4; ð½ = â1, (vii)
+ð¼ = 3; ð½ = â1.
+
+is v0 â vð. This makes the agents push harder as they attempt
+to exit the room. To understand how these forces experienced
+by the agents lead to the collective escape of these agents, we
+introduce an order parameter C that characterises the clogging
+propensity. Here, C is simply the fraction of the total time
+when the agent-number in the room remains a constant. With
+this deï¬nition, a high value of C would correspond to the
+prevalence of a large number of clogging events during which
+agent number in the room remains unchanged.
+
+Figure 2 i, shows the heat map of C in the ð½ â ð¼ space.
+We ï¬nd the landscape of C to be non-monotonic with respect
+i.e., an increase in the memory
+to both the principle axes:
+does not necessarily reduce the propensity to form clogs. This
+observation is similar to the so-called faster-is-slower eï¬ect
+(FIS), reported by Helbing et al [8, 10, 11], where agents
+trying harder do not necessarily lead to more eï¬cient escape.
+In addition, we ï¬nd that the observed non-monotonic eï¬ect
+is more pronounced in certain regions of the ð¼ â ð½ space.
+For instance, when either ð¼ or ð½ are high (see ï¬gure 2 i),
+the non-monotonicity with respect to the other parameter is
+well pronounced in comparison to when they are low. We
+believe this feature arises due to the intrinsic dependence of
+the memory force on the parameters ð¼ and ð½ as seen in ï¬gure 1.
+When an agent remembers only its recent past, i.e. when ð¼
+is small, a high value of ð½ is required to produce a force
+of a similar magnitude to transition from non-oscillatory to
+oscillatory behaviour and vice versa.
+
+We partition the ð¼ â ð½ space in ï¬gure 2 i into four regions
+while preserving the ð¼ â ð½ relationship discussed previously.
+Region I is monotonic with respect to C and completely covers
+and extends over the region in the ð¼ â ð½ space corresponding
+to non-oscillatory behaviour at the agent-level (compare with
+ï¬gure 1). Region II corresponds to the ideal amount of mem-
+ory that agents can possess to eï¬ciently escape through the
+exit. Region III corresponds to the FIS phenomenon and it is
+sandwiched between regions II and IV which exhibit eï¬cient
+collective escape.
+
+To understand how memory aï¬ects the escape dynamics
+
+and the formation of clogs, we look at the averaged dynamics
+of the memory term for the agents within the room. Figure 2
+ii shows the time evolution of the mean and standard devia-
+tion of the memory (cid:107) ðð (ð¡)(cid:107) in system, averaged over all the
+independent realisations of the escape dynamics. The initial
+transient dynamics show that the eï¬ect of memory is more pro-
+nounced for the agents with lesser strength of memory (i.e.,
+regions ð¼ ð¼ > ð¼ ð¼ ð¼ > ð¼ð). This is because memory increases
+when the agents begin to slow down and agents with a higher
+strength of memory reach their desired state faster. This trend
+disappears as the agents clog near the entrance: both the mean
+and standard deviation of memory of the agents within the
+room increases rapidly in time. The dynamics of agents with
+memory in region III begin to have a higher overall memory
+with smaller variation between the agents within the room in
+comparison to II and IV. In other words, the strength and time
+scale of memory is such that all the agents try hard to exit by a
+similar amount which favours the formation of clogs and gives
+rise to a high value of C. However, the higher variation and
+the lower mean memory of agents with memory in region IV
+implies that the some agents have more memory than the rest,
+which favours a more eï¬cient exit strategy giving rise to lower
+values for C.
+
+IV. CONCLUSION
+
+A key feature of the traï¬c characteristics of living collec-
+tives is the ability of individual agents to assimilate dynamic
+In this
+information and alter their movement appropriately.
+article, we introduce memory, a facet of intelligence where an
+agent remembers its trajectory from its recent past and quan-
+tiï¬es how well it was able to achieve its desired velocity. The
+agent makes up for any non-optimal movement in its recent
+past with a social force proportional to the memory. We show
+that an agentâs memory has an eï¬ect akin to a Proportionalâ
+Integral controller. Depending on the memory parameters ð¼
+and ð½, the agent dynamics can be stable or unstable, and give
+
+OscillatoryNon-oscillatoryStable & opposingUnstableð½=â1ð¼ð½=14â12ð¼+14ð!Timeð£!,ð!Opposing (stable)Opposing (unstable)(i)(ii)(iii)(iv)(v)(vi)(vii)Non-oscillatoryOscillatoryTime scale of memory ð¼Time scale of memory ð½4
+
+FIG. 2. (i) - Heat map of the clogging order parameter C, averaged over 75 independent realisations, plotted for the memory parameters
+ð½ â [0, 10] and ð¼ â [0.1, 30].
+(ii) - Time evolution of the mean
+INSET: a snapshot of agents exiting a room through a narrow exit.
+and the standard deviation of the memory of agents within the room, averaged over 75 independent realisations. This is plotted for three
+diï¬erent memory conï¬gurations one from each of the regions II, III and IV. Parameters considered are ð¼ = 22.2 and ð½ = 0.3 for region II,
+ð¼ = 22.2 and ð½ = 2 for region III and ð¼ = 22.2 and ð½ = 10 for region IV.
+
+rise to overshoots and oscillations. The eigen values of the
+system shed light on the boundaries that partition the diï¬erent
+regions in the ð½ â ð¼ space that show qualitatively diï¬erent
+dynamics.
+
+While the eï¬ect of memory on the dynamics of the agent
+is monotonic when only a single agent is considered, it is not
+the case when agents are in a crowd. We study the eï¬ect of
+memory on the dynamics of agents exiting a room through
+a narrow door. We ï¬nd that the presence of memory does
+not always improve the movement of the agents: the clogging
+order parameter C has a non-monotonic landscape in the ð½ â ð¼
+space resulting in a behaviour similar to the well known faster-
+is-slower eï¬ect. This allows us to partition the ð½ â ð¼ space
+into four regions based on a order parameter that quantiï¬es
+clogging propensity. We ï¬nd the eigen values corresponding
+to the motion of individual agents, in the non-monotonic region
+
+of the ð½ â ð¼ space, to be complex. In other words, the observed
+FIS eï¬ect is a result of the under-damped response of agents
+arising due to the integral component of the memory force
+term. The time dynamics of the mean and standard deviation
+of the memory of agents within the room, reveal why some
+regions in the ð½ â ð¼ space favour the formation of clogs giving
+rise to non-monotonicity.
+
+ACKNOWLEDGEMENTS
+
+The authors thank the DST INSPIRE faculty award (grant
+number: DST/INSPIRE/04 /2017/002985) for the funding.
+DRM thanks V Kumaran, IISc Bangalore for the discussions
+during the early stages of the work.
+
+[1] M. Moussaid, S. Garnier, G. Theraulaz, and D. Helbing, Collec-
+tive Information Processing and Pattern Formation in Swarms,
+Flocks, and Crowds, Topics in Cognitive Science 1, 469 (2009).
+[2] M. J. Seitz, N. W. Bode, and G. KÃ¶ster, How cognitive heuristics
+can explain social interactions in spatial movement, Journal of
+the Royal Society Interface 13, 10.1098/rsif.2016.0439 (2016).
+[3] Y. Rahmati and A. Talebpour, Learning-based game theoretical
+framework for modeling pedestrian motion, Physical Review E
+98, 032312 (2018).
+
+[4] A. Nicolas, M. Kuperman, S. IbaÃ±ez, S. Bouzat, and C. Appert-
+Rolland, Mechanical response of dense pedestrian crowds to the
+crossing of intruders, Scientiï¬c Reports 9, 105 (2019).
+
+[5] R. Candelier and O. Dauchot, Journey of an intruder through the
+ï¬uidization and jamming transitions of a dense granular media,
+Physical Review E 81, 011304 (2010).
+
+[6] Y. Guo and J. S. Curtis, Discrete element method simulations
+for complex granular ï¬ows, Annual Review of Fluid Mechanics
+
+47, 21 (2015).
+
+[7] D. Helbing and P. MolnÃ¡r, Social force model for pedestrian
+
+dynamics, Physical Review E 51, 4282 (1995).
+
+[8] D. Helbing, I. Farkas, and T. Vicsek, Simulating dynamical
+
+features of escape panic, Nature 407, 487 (2000).
+
+[9] D. Helbing, I. J. Farkas, and T. Vicsek, Freezing by Heating in
+a Driven Mesoscopic System, Physical Review Letters 84, 1240
+(2000).
+
+[10] A. GarcimartÃ­n, I. Zuriguel, J. M. Pastor, C. MartÃ­n-GÃ³mez,
+and D. R. Parisi, Experimental evidence of the "faster is slower"
+eï¬ect, Transportation Research Procedia 2, 760 (2014).
+[11] J. M. Pastor, A. GarcimartÃ­n, P. a. Gago, J. P. Peralta, C. MartÃ­n-
+GÃ³mez, L. M. Ferrer, D. Maza, D. R. Parisi, L. a. Pugnaloni, and
+I. Zuriguel, Experimental proof of faster-is-slower in systems
+of frictional particles ï¬owing through constrictions, Physical
+Review E 92, 062817 (2015).
+
+IIIIIIIV8Time scale of memory ð¼Time scale of memory ð½(i)(ii)

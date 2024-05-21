@@ -1,0 +1,583 @@
+On Networks with Active and Passive Agents
+
+Tansel Yucelen
+
+4
+1
+0
+2
+
+y
+a
+M
+7
+
+]
+
+C
+O
+.
+h
+t
+a
+m
+
+[
+
+1
+v
+0
+8
+4
+1
+.
+5
+0
+4
+1
+:
+v
+i
+X
+r
+a
+
+Abstractâ We introduce an activeâpassive networked multi-
+agent system framework, which consists of agents subject to
+exogenous inputs (active agents) and agents without any inputs
+(passive agents), and analyze its convergence using Lyapunov
+stability.
+
+A. Preliminaries
+
+In the multiagent literature, graphs are broadly adopted
+to encode interactions in networked systems [1], [2]. An
+undirected graph G is deï¬ned by a set VG = {1, . . . , n} of
+nodes and a set EG â VG Ã VG of edges. If (i, j) â EG, then
+the nodes i and j are neighbors and the neighboring relation
+is indicated with i â¼ j. The degree of a node is given by the
+number of its neighbors. Letting di be the degree of node i,
+then the degree matrix of a graph G, D(G) â RnÃn, is given
+by D(G) , diag(d), d = [d1, . . . , dn]T. A path i0i1 . . . iL is
+a ï¬nite sequence of nodes such that ikâ1 â¼ ik, k = 1, . . . , L,
+and a graph G is connected if there is a path between any
+pair of distinct nodes. The adjacency matrix of a graph G,
+A(G) â RnÃn, is given by
+
+[A(G)]ij ,
+
+if (i, j) â EG,
+
+1,
+0, otherwise.
+
+(
+
+(1)
+
+The Laplacian matrix of a graph, L(G) â S nÃn
++ , playing a
+central role in many graph theoretic treatments of multiagent
+systems, is given by
+
+L(G) , D(G) â A(G).
+
+(2)
+
+Throughout this note, we model a given multiagent system
+by a connected, undirected graph G, where nodes and edges
+represent agents and inter-agent communication links, re-
+spectively.
+
+B. Problem Formulation
+
+Consider a system of n agents exchanging information
+among each other using their local measurements according
+to a connected, undirected graph G. In addition, consider that
+
+T. Yucelen is an Assistant Professor of the Mechanical and Aerospace
+Engineering Department and the Director of the Advanced Systems Re-
+search Laboratory at the Missouri University of Science and Technology,
+Rolla, MO 65409, USA (e-mail: yucelen@mst.edu).
+
+there exists m â¥ 1 exogenous inputs that interact with this
+system. We make the following deï¬nitions.
+
+Deï¬nition 1. If agent i, i = 1, . . . , n, is subject to one or
+more exogenous inputs (resp., no exogenous inputs), then it
+is an active agent (resp., passive agent).
+
+Deï¬nition 2. If an exogenous input interacts with only
+one agent (resp., multiple agents), then it is an isolated input
+
+(resp., non-isolated input).
+
+In this note, we are interested in the problem of driving
+
+the states of all (active and passive) agents to the average
+of the applied exogenous inputs. Motivating from this stand-
+
+point, we propose an integral action-based distributed control
+approach given by
+
+Ëxi(t) = â
+
+xi(t) â xj(t)
+
++
+
+Î¾i(t) â Î¾j(t)
+
+iâ¼j (cid:16)
+X
+
+(cid:17)
+
+iâ¼j (cid:16)
+X
+
+â
+
+xi(t) â ch
+
+,
+
+xi(0) = xi0,
+
+(cid:17)
+(3)
+
+ËÎ¾i(t) = â
+
+iâ¼h(cid:16)
+X
+
+iâ¼j (cid:16)
+X
+
+(cid:17)
+
+xi(t) â xj(t)
+
+,
+
+Î¾i(0) = Î¾i0,
+
+(4)
+
+(cid:17)
+
+where xi(t) â R and Î¾i(t) â R denote the state and the
+integral action of agent i, i = 1, . . . , n, respectively, and
+ch â R, h = 1, . . . , m, denotes an exogenous input applied
+to this agent. Similar to the i â¼ j notation indicating the
+neighboring relation between agents, we use i â¼ h to indicate
+the exogenous inputs that an agent is subject to.
+
+T
+
+Next,
+
+x1(t), x2(t), . . . , xn(t)
+
+let x(t) =
+Î¾1(t), Î¾2(t), . . . , Î¾n(t)
+
+â Rn,
+c1, c2,
+Î¾(t) =
+â Rn, where we assume m â¤ n for the
+. . . , cm, 0, . . . , 0
+(cid:2)
+ease of the following notation and without loss of generality.
+We can now write (3) and (4) in a compact form as
+
+â Rn, and c =
+(cid:3)
+
+(cid:2)
+
+(cid:3)
+
+(cid:3)
+
+(cid:2)
+
+T
+
+Ëx(t) = âL(G)x(t) + L(G)Î¾(t) â K1x(t) + K2c,
+
+ËÎ¾(t) = âL(G)x(t),
+
+Î¾(0) = Î¾0,
+
+x(0) = x0,
+
+(5)
+
+(6)
+
+where L(G) â S nÃn
++ ,
+
+K1 , diag([k1,1, k1,2, . . . , k1,n]T) â S nÃn
++ ,
+
+(7)
+
+with k1,i â Z+ denoting the number of the exogenous inputs
+
+ 
+ 
+ 
+ 
+ 
+ 
+applied to agent i, i = 1, . . . , n, and
+
+and using (15) in (12) yields
+
+k2,11
+k2,21
+...
+k2,n1
+
+k2,12
+k2,22
+...
+k2,n2
+
+Â· Â· Â·
+
+Â· Â· Â·
+. . .
+Â· Â· Â·
+
+k2,1n
+k2,2n
+...
+k2,nn
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+K2 , ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+
+â RnÃn,
+
+(8)
+
+with k2,ih = 1 if the exogenous input ch(t), h = 1, . . . , m,
+is applied to agent i, i = 1, . . . , n, and k2,ih = 0 otherwise.
+Note that k1,i =
+
+n
+j=1 k2,ij.
+
+Since we are interested in driving the states of all (active
+
+P
+
+and passive) agents to the average of the applied exogenous
+inputs, let
+
+Ç« ,
+
+Î´(t) , x(t) â Ç«1n â Rn,
+1T
+n K2c
+n K21n
+1T
+be the error between xi(t), i = 1, . . . , n, and the average
+of the applied exogenous inputs Ç«. Based on (10), Ç« can be
+equivalently written as
+
+â R,
+
+(10)
+
+(9)
+
+Ç« =
+
+k2,11c1 + k2,12c2 + Â· Â· Â· + k2,21c1
+
+(cid:16)
++k2,22c2 + Â· Â· Â·
+
+/
+
+k2,11 + k2,12
+
++ Â· Â· Â· + k2,21 + k2,21 + Â· Â· Â·
+
+(cid:17)
+
+(cid:16)
+
+,
+
+(11)
+
+which is the average of the applied exogenous inputs.
+
+(cid:17)
+
+C. Convergence Analysis
+
+ËÎ´(t) = âF (G)Î´(t) + L(G)
+
+e(t) + Lâ (G)LcK2c
+
+âLcK2c
+
+= âF (G)Î´(t) + L(G)e(t) +
+
+(cid:2)
+
+In â
+
+âLcK2c
+
+h
+
+1
+n
+
+1n1T
+n
+
+(cid:3)
+
+LcK2c
+
+i
+
+= âF (G)Î´(t) + L(G)e(t),
+
+(16)
+
+1n1T
+
+since 1
+n
+addition, differentiating (15) with respect to time yields
+
+n LcK2c = 0 as a direct consequence of (14). In
+
+Ëe(t) = âL(G)
+
+Î´(t) + Ç«1n
+
+= âL(G)Î´(t),
+
+(cid:2)
+
+(cid:3)
+
+(17)
+
+where L(G)1n = 0n. The following theorem shows that
+the state of all agents xi(t), i = 1, . . . , n asymptotically
+converge to Ç«.
+
+Theorem 1. Consider the networked multiagent system
+
+given by (3) and (4), where agents exchange information
+using local measurements and with G deï¬ning a connected,
+undirected graph topology. Then, the closed-loop error dy-
+namics deï¬ned by (16) and (17) are Lyapunov stable for all
+initial conditions and Î´(t) asymptotically vanishes.
+
+Proof. Proof follows by considering Lyapunov function
+2 eTe and differentiat-
+
+candidate given by V (Î´, e) = 1
+ing it along the trajectories of (16) and (17).
+
+2 Î´TÎ´ + 1
+
+Note that a generalized version of the proposed integral
+
+action-based distributed control approach can be given by
+
+It follows from (9) and L(G)1n = 0n of Lemma 1 that
+
+Ëxi(t) = âÎ±
+
+xi(t) â xj (t)
+
++
+
+Î¾i(t) â Î¾j(t)
+
+Î´(t) + Ç«1n
+
++L(G)Î¾(t) â K1
+
+Î´(t)
+
+iâ¼j (cid:16)
+X
+
+(cid:17)
+
+iâ¼j (cid:16)
+X
+
+âÎ±
+
+xi(t) â ch
+
+,
+
+xi(0) = xi0,
+
+(cid:17)
+(18)
+
+ËÎ´(t) = âL(G)
++Ç«1n
+
++K2c(t)
+(cid:2)
+
+(cid:3)
+
+(cid:2)
+
+= âF (G)Î´(t) + L(G)Î¾(t) â
+
+(cid:3)
+
+= âF (G)Î´(t) + L(G)Î¾(t) â
+
+(cid:2)
+
+K11nÇ« â K2c
+K11n1T
+n K2c
+n K21n
+1T
+
+(cid:20)
+
+= âF (G)Î´(t) + L(G)Î¾(t) â LcK2c,
+
+where F (G) , L(G) + K1 and
+
+Lc , K11n1T
+n
+n K21n
+1T
+
+â In.
+
+Note that F (G) â SnÃn
+
++
+
+and
+
+(cid:3)
+â K2c
+
+(cid:21)
+(12)
+
+(13)
+
+n Lc = 1T
+1T
+
+n
+
+K11n1T
+n
+n K21n
+1T
+n K11n)/(1T
+
+(cid:20)
+
+since (1T
+
+Next, letting
+
+1T
+n K11n
+n K21n
+1T
+
+â In
+
+=
+
+(cid:21)
+
+n â 1T
+1T
+
+n = 0, (14)
+
+n K21n) = 1 from k1,i =
+
+n
+j=1 k2,ij.
+
+P
+
+e(t) , Î¾(t) â Lâ (G)LcK2c,
+
+(15)
+
+ËÎ¾i(t) = âÎ³
+
+iâ¼h(cid:16)
+X
+
+(cid:17)
+xi(t) â xj(t)
+
+iâ¼j (cid:16)
+X
+
+where Î± â R+ and Î³ â R+.
+
+(cid:17)
+
+D. Concluding Remarks
+
+,
+
+Î¾i(0) = Î¾i0,
+
+(19)
+
+We investigated a system consisting of agents subject to
+exogenous constant inputs and agents without any inputs.
+
+Future research will consider extensions to time-varying
+exogenous inputs and more general graph topologies.
+
+REFERENCES
+
+[1] M. Mesbahi and M. Egerstedt, âGraph Theoretic Methods in Multi-
+
+agent Networks,â Princeton University Press, 2010.
+
+[2] R. Olfati-Saber, J. Fax, and R. M. Murray, âConsensus and Cooper-
+ation in Networked Multiagent Systems,â Proc. of the IEEE, vol. 95,
+pp. 215â233, 2007.
+
+

@@ -1,0 +1,4261 @@
+Broadcast Guidance of Agents in Deviated
+Linear Cyclic Pursuit
+
+Ilana Segall and Alfred M. Brucksteinâ
+
+Center for Intelligent Systems
+MultiAgent Robotic Systems (MARS) Lab
+Computer Science Department
+Technion, Haifa 32000, Israel
+July 12, 2021
+
+0
+2
+0
+2
+
+v
+o
+N
+1
+
+]
+
+O
+R
+.
+s
+c
+[
+
+1
+v
+9
+0
+6
+0
+0
+.
+1
+1
+0
+2
+:
+v
+i
+X
+r
+a
+
+âThis research was in part supported by Technion Autonomous Systems Program
+
+(TASP)
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+Contents
+
+1 Introduction
+
+1.1 Literature survey . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.2 An Overview of The New Results . . . . . . . . . . . . . . . . .
+1.3 Preliminaries - Properties of the matrix ËM . . . . . . . . . . .
+
+2 Derivation of The Emergent Behavior
+
+2.1 Zero input dynamics
+2.2
+
+. . . . . . . . . . . . . . . . . . . . . . . .
+Input induced group dynamics . . . . . . . . . . . . . . . . . . .
+
+3 Demonstration by Simulation
+
+3.1 Autonomous deviated cyclic pursuit
+. . . . . . . . . . . . . . .
+3.2 The impact of the broadcast control and of the random set of
+leaders . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+4 Summary and discussion
+
+Appendices
+
+Appendix A General results on matrices
+
+A.1 Algebraic and geometric multiplicity of eigenvalues
+. . . . . .
+A.2 Diagonizable matrices . . . . . . . . . . . . . . . . . . . . . . . .
+A.3 Left eigenvectors . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.4 Square matrices decomposition . . . . . . . . . . . . . . . . . .
+A.5 About non-symmetric real matrices . . . . . . . . . . . . . . . .
+A.6 Normal matrices . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.7 Unitary matrices and unitary similarity . . . . . . . . . . . . .
+
+Appendix B Kronecker product properties
+
+B.1 Basic Properties
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+Appendix C Properties of circulant matrices
+
+C.1 Cyclic linear pursuit . . . . . . . . . . . . . . . . . . . . . . . . .
+
+Appendix D Properties of the block circulant matrix ËM
+
+D.1 Eigenvalues and eigenvectors of ËM . . . . . . . . . . . . . . . .
+
+4
+5
+8
+11
+
+13
+13
+16
+
+23
+24
+
+30
+
+53
+
+55
+
+55
+55
+56
+56
+57
+58
+58
+58
+
+59
+59
+
+60
+61
+
+61
+62
+
+2
+
+Appendix E Proof of Lemma 2.2
+
+E.1 Derivation of R(Y ) and I(Y ) . . . . . . . . . . . . . . . . . . .
+E.2 Proof of circular movement for agent k . . . . . . . . . . . . . .
+. . . . . . . . . . . . .
+E.3 Proof of movement on a common orbit
+. . . . . . . . . . .
+E.4 Equal spacing between agents on the orbit
+
+65
+66
+67
+68
+70
+
+3
+
+Abstract
+
+In this report we show the emergent behavior of a group of agents,
+ordered from 1 to n, performing deviated, linear, cyclic pursuit, in
+the presence of a broadcast guidance control. Each agent senses the
+relative position of its target, i.e. agent i senses the relative position
+of agent i + 1. The broadcast control, a velocity signal, is detected
+by a random set of agents in the group. We assume the agents to be
+modeled as single integrators. We show that the emergent behavior
+of the group is determined by the deviation angle and by the set of
+agents detecting the guidance control.
+
+1
+
+Introduction
+
+The work presented in this report is a ï¬rst follow-up of the report âGuidance
+of Agents in Cyclic Pursuitâ, see [14], where the problem of (direct) linear
+and non-linear cyclic pursuit, in the presence of a broadcast velocity con-
+trol detected by a random set of agents in the group, has been thoroughly
+investigated. In the existing literature, âcyclic pursuitâ is meant to be an
+autonomous system of n agents, ordered from 1 to n, which behaves ac-
+cording to the following rule: agent i chases agent i + 1 and agent n chases
+agent 1. In the sequel all indices associated with agents are modulo(n)
+and agent i + 1 is deï¬ned as the target of agent i.
+
+As in our previous work, we assume the agents to be identical, memory-
+less, particles, modeled as single integrators. Each agent can sense the rel-
+ative position of its target but its own absolute location is unknown. The
+orientation of all local coordinate systems is aligned to that of the global
+coordinate system, i.e. agents are assumed to have compasses enabling them
+to align their local reference frames to a global reference direction (a common
+north).
+
+In autonomous linear deviated cyclic pursuit, each agent moves in a di-
+
+rection rotated by an angle Î¸ from the line of sight to its target.
+
+Let pi(t) be the position of agent i at time t; pi(t) â R2. Then, the rule
+
+of movement for agent i, in the autonomous system is
+
+where R(Î¸) is the rotation matrix
+
+Ëpi(t) = R(Î¸)(pi+1(t) â pi(t))
+
+R(Î¸) = [ cos(Î¸)
+
+sin(Î¸)
+]
+âsin(Î¸) cos(Î¸)
+
+4
+
+(1)
+
+(2)
+
+This rule of movement is illustrated in Fig. 1 where ui(t) = (pi+1(t) â pi(t)).
+
+Figure 1: Illustration of deviated pursuit
+
+The deviation angle Î¸ is assumed to be constant and common to all agents.
+
+1.1 Literature survey
+
+Various researchers have treated the problem of formations obtained in au-
+tonomous cyclic pursuit, without external input. In the sequel we refer to
+those considering agents modeled as single-integrators with linear dynamics.
+The problem of linear agreement algorithms for agents with single integrator
+kinematics, over general topologies, was vastly investigated (see e.g. [3],[7],
+[6], [13]). Cyclic pursuit is a particular unidirectional topology where each
+agent receives information from a single neighbor, its target.
+
+Lin et al. consider in [5] n ordered and numbered points in the complex
+plane, each representing a freely mobile agent. They show that when the
+agents are in linear cyclic pursuit they converge to the centroid of the points
+and the centroid is stationary. Moreover, other formations are achievable by
+a simple modiï¬cation, where each agent chases a âï¬xedâ displacement of its
+target.
+
+Sinha and Goose, [15], consider a group of autonomous mobile agents,
+
+5
+
+with identical behavior rules but with generally diï¬erent control gains
+
+Ëpi = ui
+ui = ki(pi+1 â pi)
+
+for i = 1, . . . , n. They show that, by suitably selecting the gains ki, the
+collective behavior of the agents can be controlled to obtain not only a point
+of convergence but also directed motion, where the trajectories of all the
+agents converge to a straight line as t â â, (see conditions in Theorem 3,
+Theorem 4).
+
+Pavone and Frazzoli, [8], generalize the (linear) cyclic pursuit strategy
+to deviated cyclic pursuit, in the context of geometric pattern formation.
+They show that n agents operating in R2, in deviated cyclic pursuit, with a
+common oï¬set angle Î¸, will eventually converge to a single point, a circle or
+an ever expanding logarithmic spiral pattern, depending on the value of Î¸,
+as follows:
+
+â¢ if â£Î¸â£ < Ï/n, to a single point, determined by the initial positions of the
+
+agents (the initial centroid)
+
+â¢ if â£Î¸â£ = Ï/n, to an evenly spaced circle formation, with radius determined
+
+by the initial positions of the agents
+
+â¢ if Ï/n < â£Î¸â£ < 2Ï/n, to an evenly spaced, ever expanding, logarithmic
+
+spiral formation.
+
+Ramirez et al. in [10], [9], extended these results in three directions:
+
+1. the agents move in R3
+
+2. control of the center of the formation by modifying the autonomous
+
+velocity control
+
+If kc > 0 then
+
+ui = R(Î¸)(pi+1 â pi) â kcpi;
+Ëpi = ui
+
+kc â¥ 0
+
+2.1. the center of the formation is no longer determined by the initial
+positions of the agents, instead it always converges, exponentially
+fast, to the origin.
+
+6
+
+2.2. each agent is required to know not only the relative position to its
+target but also its own position, (in contradiction to our require-
+ments here).
+
+3. control the radius of the evenly-spaced circular formations.
+
+The key idea here is to relax the assumption of a common deviaton
+angle, Î¸, and make the deviation angle of each agent, Î¸i, a function of
+the location of the agents and the desired inter-agent distance. In this
+case, the rule of motion (1) becomes
+
+Ëpi = R(Î¸i)(pi+1 â pi)
+
+where
+
+Î¸i = Ï
+n
+
++ kth(r â â¥pi+1 â piâ¥);
+
+r, kth > 0
+
+and r is the desired inter-agent distance and kth is a gain.
+
+Ren considered more general topologies and shows that collective motions
+including rendezvous, circular patterns, and logarithmic spiral patterns can
+be achieved by introducing Cartesian coordinate coupling to existing con-
+sensus algorithms. A particular case of coupling is the rotation matrix. In
+[11] the eï¬ect of coordinates coupling, introduced by a rotation matrix, on
+linear consensus algorithms for agents with single integrator kinematics was
+considered. In this case, the rule of movement is
+
+Ëpi = â
+kâNi
+
+R(Î¸)(pk â pi)
+
+(3)
+
+where R(Î¸) is the rotation matrix and Ni is the neighborhood of agent i,
+representing a general network topology, in contrast to [8], where the anal-
+ysis of a similar problem was limited to unidirectional ring topology (cyclic
+pursuit). It is shown that both the network topology and the value of the ro-
+tation angle aï¬ect the resulting collective motions. When the nonsymmetric
+Laplacian matrix, representing the network topology, has certain properties
+and the rotation angle is below, equal, or above a critical value, the agents
+will eventually rendezvous, move on circular orbits, or follow logarithmic spi-
+ral curves. In particular, when the agents eventually move on circular orbits,
+the relative radius of the orbits is equal to the relative magnitude of the
+components of a right eigenvector associated with a critical eigenvalue of the
+nonsymmetric Laplacian matrix, in contrast to the common circular obits
+obtained in case of cyclic pursuit (see [8]).
+
+7
+
+1.2 An Overview of The New Results
+
+The contribution of this work is in the analysis of the impact of an ex-
+ogenous velocity control on the emergent behavior of n agents performing
+(autonomous) deviated linear cyclic pursuit. The exogenous velocity control,
+we assume, is broadcast by a controller and detected by a random set of
+agents from the group, that thereby become temporary (ad-hoc) âleadersâ
+of the swarm.
+
+In this case, the rule of movement (1) becomes
+
+Ëpi(t) = R(Î¸)(pi+1(t) â pi(t)) + bi(t)Uc(t);
+
+i = 1, ..., n
+
+(4)
+
+where
+
+â¢ Uc(t) is the broadcast velocity vector signal at time t
+
+â¢ bi(t) is the indicator of detection of Uc(t) by agent i, given by
+
+bi =
+
+â§âªâª
+â¨
+âªâªâ©
+
+1
+0
+
+if agent i detects Uc
+otherwise
+
+(5)
+
+1.2.1 Group dynamics with broadcast control
+Let P = [p1, p2, ...pn]T be the vector of stacked agent positions, where pi,
+i =
+1, . . . , n evolves according to eq. (4). The group dynamics of the system can
+be written as:
+
+ËP (t) = ËM P (t) + ËB(t)Uc(t)
+
+where
+
+â¢ ËM = M â R(Î¸), such that M is the circulant matrix (7):
+
+MnÃn = circ[â1, 1, 0, 0, â¯, 0] =
+
+â¡
+â1
+0
+1
+â¢
+â¢
+0 â1 1
+â¢
+â¢
+â¢
+â®
+â¢
+â¢
+â£
+
+1
+
+0
+
+0 â¯ 0
+0 â¯ 0
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¯ 0 â1
+â¦
+
+(6)
+
+(7)
+
+and R(Î¸) is deï¬ned by (2).
+
+â¢ ËB(t) = B(t) â I, where B is the âleadersâ indicator, i.e. BnÃ1(i) = bi,
+
+where bi is deï¬ned by (5) and I is the 2 Ã 2 identity matrix
+
+8
+
+â¢ â denotes the Kronecker product, see Appendix B
+
+â¢ Uc is the external broadcast control, Uc(t) â R2
+
+Due to the structure of M , ËM is block circulant, as follows:
+
+02Ã2
+
+02Ã2 â¯
+
+âR(Î¸) R(Î¸) 02Ã2 â¯
+
+ËM =
+
+02Ã2
+
+â¡
+âR(Î¸) R(Î¸)
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â¢
+â£
+
+R(Î¸)
+
+02Ã2
+
+â®
+
+â¯
+
+02Ã2 âR(Î¸)
+
+02Ã2
+
+02Ã2
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¦
+
+(8)
+
+The matrix M is time independent by its deï¬nition (see (7)). The as-
+sumption of cyclic pursuit with a constant deviation angle makes R(Î¸), and
+therefore ËM too, time independent. We assume the exogenous control, Uc(t),
+and the set of agents detecting it, deï¬ned by the leaders indicator vector
+B(t), to be piecewise constant. In the sequel we treat separately each inter-
+val where Uc(t) and B(t) ( the set of agents detecting the exogenous control)
+are constant and thus it is convenient to let t denote the relative time since
+the beginning of the interval and P (0) the state of the system at the moment
+of change, deï¬ned to be t = 0.
+Remark 1.1. The behavior of the group of agents in multiple intervals, where
+Uc and/or B change at the start of each new interval and the end conditions
+of one interval are the start conditions of the next interval, is discussed and
+illustrated by simulation in section 3.2.2.
+In each interval eq. (6) becomes
+
+ËP (t) = ËM P (t) + ËBUc
+
+(9)
+
+i.e. the system evolves as a linear time independent system (LTI) with the
+well known solution (10), (see [4]).
+
+P (t) = e ËM tP (0) + â«
+
+t
+
+0
+
+e ËM (tâÏ ) ËBUcdÏ
+
+(10)
+
+1.2.2 The resulting emergent behavior
+
+Given an external broadcast control, Uc, the emergent behavior of the group is
+a function of the deviation angle Î¸, the critical angle, Î¸c = Ï
+and the (random)
+n
+
+9
+
+subset of agents detecting the broadcast control (leaders), represented by the
+leaders indicator vector B. We have the following results:
+
+â¢ if Î¸ < Î¸c then
+
+â if B = 1n, i.e. all agents detect the broadcast control signal, then
+
+the asymptotic behavior of the group is given by
+
+pi(t â â) = pc + Uct;
+
+i = 1, . . . , n
+
+where pc is the centroid of the initial positions. Thus, if all agents
+detect the broadcast control, the agents will eventually gather and
+move as a single point with velocity Uc on a line anchored at pc.
+
+â if B â  1n then
+
+pi(t â â) = pc + nl
+n
+
+Uct + ÏiR(âÎ¸)Uc;
+
+i = 1, . . . , n
+
+In this case, all agents will eventually move with velocity nl
+parallel lines anchored at pc + ÏiR(âÎ¸)Uc, where
+â nl is the number of agents detecting Uc.
+â ÏiR(âÎ¸)Uc is the asymptotic deviation of the anchor of the
+movement line of agent i from the centroid pc and Ïi is a
+function of B, i.e. of the set of leaders (see section 2.2.2)
+
+n Uc on
+
+Therefore, the agents will asymptotically align in a linear forma-
+tion, rotated by âÎ¸ from the direction of Uc, and the formation
+will move with velocity
+
+Uc.
+
+nl
+n
+
+â¢ if Î¸ = Î¸c then
+
+â if B = 1n then
+
+pi(t â â) = pc + Uct + pr
+i
+
+(t);
+
+i = 1, . . . , n
+
+where
+â pr
+i
+
+(t) is a rotation component of the position at time t, s.t.
+
+pr
+i
+
+(t) = [r sin(Ït + Î±i), r cos(Ït + Î±i)]T
+
+10
+
+)
+
+â Ï = 2 sin( Ï
+n
+â R is the radius of a circular orbit, common to all agents,
+determined by the number of agents and the initial positions
+â The agents are equally spaced on the orbit, at angular dis-
+
+tance
+
+2Ï
+n
+
+, i.e. Î±i+1 â Î±i = 2Ï
+n
+
+Therefore, the agents are asymptotically moving, at equal dis-
+tances, on a circular orbit, around a common center moving with
+velocity Uc.
+â if B â  1n then
+
+pi(t â â) = pc + nl
+n
+
+Uct + pr
+i
+
+(t) + ËÏiR(âÎ¸)Uc;
+
+i = 1, . . . , n
+
+(t) is the position of agent i on a common circular orbit,
+where pr
+i
+same as above, but in this case the center of the orbit, for agent
+i is shifted by ËÏiR(âÎ¸)Uc from a common center, where ËÏi is a
+function of B (see section 2.2.2). All centers move with velocity
+nl
+n
+
+Uc.
+
+Remark 1.2. We observe that the circular formation and its characteristics
+(radius and angular distances between agents) are independent of the broad-
+cast control Uc and the set of agents detecting it. These inï¬uence only the
+center of the orbit and its movement.
+
+Remark 1.3. The emergent behavior for the various deviation angles, summa-
+rized above, is determined by the eigenvalues of the matrix ËM (see Appendix
+D.1). We note that if Î¸ > Î¸c then then ËM has at least two non-zero eigen-
+values which lie in the open right-half complex plane causing the position of
+the agents to spiral out. This is an unstable system which is not discussed
+herein.
+
+The emergent behaviors are rigorously derived in section 2 and illustrated
+
+by simulations in section 3.
+
+1.3 Preliminaries - Properties of the matrix ËM
+The following properties of the matrix ËM are used in the sequel for the
+derivation of the emergent behavior of the system, P (t â â), evolving under
+(9).
+
+11
+
+â¢ ËM is a normal matrix (see Lemma C.1), therefore it is unitarily diago-
+
+nizable, i.e.
+
+where
+
+ËM = ÎÎÎâ
+
+â Î is the diagonal matrix of eigenvalues of ËM , denoted by
+
+ÂµÂ±
+k;
+
+k = 0, ...., n â 1, (see Appendix D.1)
+
+ÂµÂ±
+k
+
+= 2 sin(Ïk
+n
+
+)eâj( Ï
+
+2
+
++ Ïk
+n
+
+Â±Î¸)
+
+â Î is the unitary matrix of eigenvectors of ËM , denoted by
+k = 0, ...., n â 1, see Appendix D.1, such that
+
+Î¶ Â±
+k ;
+
+Î¶ Â±
+k
+
+= vk â (1, Â±j)T
+
+(11)
+
+(12)
+
+where
+vk = 1â
+n
+
+(1, eâ2Ïjk/n, eâ4Ïjk/n, â¯, eâ2Ïjk(nâ1)/n)T
+
+;
+
+k â {0, 1, â¯, n â 1}
+
+â¢ For n agents in linear cyclic pursuit with common deviation angle Î¸,
+n , (see Corollary 2 in Appendix D.1.1),
+
+there exists a critical value Î¸c = Ï
+such that
+
+(a) if â£Î¸â£ < Î¸c, then ËM has two zero eigenvalues, ÂµÂ±
+eigenvalues lie in the open left-half complex plane
+
+0 , and all other
+
+(b) if â£Î¸â£ = Î¸c, then ËM has two zero eigenvalues, ÂµÂ±
+
+0 , and two non-zero
+eigenvalues which lie on the imaginary axis, while all remaining
+eigenvalues lie in the open left-half complex plane. The eigenvalues
+nâ1 and Âµâ
+on the imaginary axis are Âµ+
+1
+
+(c) if â£Î¸â£ > Î¸c, then ËM has two zero eigenvalues and at least two non-
+zero eigenvalues which lie in the open right-half complex plane,
+therefore this is an unstable system which shall not be dis-
+cussed herein. The agents in this case spread out and cease to
+remain in a ï¬nite extent constellation.
+
+12
+
+2 Derivation of The Emergent Behavior
+
+We consider a piecewise constant time interval of a system evolving according
+to eq. (9), with a solution given by eq. (10). Since the emergent behavior
+is given by P (t â â) we assume that the dwell time of the interval is long
+enough to approach the asymptotic behavior. We recall (see eq. (10))
+
+P (t) = e ËM tP (0) + â«
+
+t
+
+0
+
+e ËM (tâÏ ) ËBUcdÏ
+
+which can be decomposed into
+
+P (t) = P (h)(t) + P (u)(t)
+
+(13)
+
+where
+
+â¢ P (h)(t) = e ËM tP (0) is the homogeneous part of the solution, representing
+
+the zero input dynamics of the swarm
+
+â¢ P (u)(t) = â«
+
+0
+
+Uc, to the dynamics of the swarm
+
+t
+
+e ËM (tâÏ ) ËBUcdÏ is the contribution of the guidance control,
+
+2.1 Zero input dynamics
+
+P (h)(t) = e ËM tP (0)
+= 1
+2
+
+nâ1
+â
+i=0
+
+[Î¶ +
+
+i eÂµ+
+
+i t(Î¶ +
+i
+
+)â]P (0)
+
+(14)
+
+(15)
+
+)â + Î¶ â
+
+i eÂµâ
+
+i t(Î¶ â
+i
+
+where we used the decomposition property of ËM and ÂµÂ±
+equations (11) and (12) respectively.
+
+i , Î¶ Â±
+
+i are given by
+
+Separating in (15) the elements with zero eigenvalues from the remaining
+
+elements, we can rewrite (15) as
+
+P (h)(t) = P (h0) + â(h0)
+
+P
+
+(t)
+
+(16)
+
+where
+
+13
+
+â¢ P (h0) is the component of the homogeneous position vector P (h)(t) due
+
+to the zero eigenvalues
+
+P (h0) = 1
+2
+
+[Î¶ +
+0
+
+(Î¶ +
+0
+
+)â + Î¶ â
+0
+
+(Î¶ â
+0
+
+)â]P (0)
+
+(17)
+
+P (h0) is time independent and common to all Î¸, see section 2.1.1
+
+â¢ â(h0)
+P
+
+(t) is the component of P (h)(t), due to the remaining eigenvalues
+
+â(h0)
+P
+
+(t) = 1
+2
+
+nâ1
+â
+i=1
+
+[Î¶ +
+
+i eÂµ+
+
+i t(Î¶ +
+i
+
+)â + Î¶ â
+
+i eÂµâ
+
+i t(Î¶ â
+i
+
+)â]P (0)
+
+(18)
+
+(t) is time dependent and its asymptotic value depends on Î¸, see
+
+â(h0)
+P
+section 2.1.2
+
+2.1.1 The derivation of P (h0)
+Lemma 2.1. Let P (h0) â¶= (p(h0)
+, . . . , p(h0)
+)T where P (h0) is deï¬ned by eq.
+(17). Denote by pc = (xc, yc)T the centroid of the agentsâ initial positions,
+pi(0) = (xi(0), yi(0))T .
+
+n
+
+1
+
+Then
+
+(19)
+Proof. Recalling that the two eigenvectors of ËM , corresponding to the two
+zero eigenvalues are Î¶ Â±
+0
+
+= v0 â [1, Â±j]T where v0 = 1n we have
+
+= pc; âi â [1, . . . , n]
+
+p(h0)
+i
+
+Î¶ Â±
+0
+
+= 1â
+n
+
+[1, Â±j, 1, Â±j, . . . , 1, Â±j]T
+
+(20)
+
+Let Y (0) = Î¶ +
+0
+
+(Î¶ +
+0
+
+)â. Then, eq. (17) can be rewritten as
+P (h0) = 1
+2
+
+(Y (0) + Y (0))P (0) = R(Y (0))P (0)
+
+R(Y (0)) = 1
+n
+
+â¡
+1 0 1 0 . . . 1 0
+â¢
+â¢
+â¢
+0 1 0 1 . . . 0 1
+â¢
+â®
+â®
+â¢
+â¢
+â¢
+1 0 1 0 . . . 1 0
+â¢
+â¢
+â£
+0 1 0 1 . . . 0 1
+
+. . .
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¦
+
+Thus,
+
+p(h0)
+i
+
+= ( 1
+n
+
+nâ1
+â
+i=0
+
+xi(0),
+
+1
+n
+
+nâ1
+â
+i=0
+
+yi(0))T â¡ pc; âi â [1, . . . , n]
+
+(21)
+
+(22)
+
+QED
+
+14
+
+2.1.2 Derivation of the asymptotic behavior of â(h0)
+
+P
+
+(t)
+
+(t) is the increment of the position, at time t, due to the eigenvalues
+
+â(h0)
+P
+other than the zero eigenvalues, see (16).
+
+Lemma 2.2. Let
+
+â(h0)
+P
+
+(t) = (â(h0)
+
+p1
+
+(t), . . . , â(h0)
+
+pn
+
+(t))T
+
+(23)
+
+where â(h0)
+Î¸, as follows:
+
+P
+
+(t) is deï¬ned as in eq. (18). Then â(h0)
+
+(t â â) is a function of
+
+P
+
+L.1 if â£Î¸â£ < Î¸c then â(h0)
+
+pk
+
+(t) tâââââ 02; âk â [1, . . . , n]
+
+L.2 if â£Î¸â£ = Î¸c then the agents asymptotically move, equally spaced, on a
+
+common circular orbit.
+
+â¢ The angular velocity is Ï = 2 sin( Ï
+n
+â¢ The angular distance between consecutive agents is 2Ï
+n
+â¢ The radius of the circular orbit is determined by the number of
+
+)
+
+agents,n, and their initial positions pl(0); l = 1, . . . , n
+
+Proof.
+
+L.1 if â£Î¸â£ < Î¸c , all non-zero eigenvalues of ËM have negative real part, see
+
+Corollary 2.(a), in Appendix D.1.1
+Thus, from eq. (18) we have â(h0)
+to (18),
+
+P
+
+(t) tâââââ 02n. Therefore, according
+
+â(h0)
+pk
+
+(t) tâââââ 02;
+
+k = 1, . . . , n
+
+L.2 if â£Î¸â£ = Î¸c , then in addition to the 2 zero eigenvalues, ËM has 2 eigen-
+nâ1, Âµâ
+values on the imaginary axis Âµ+
+1 and all remaining eigenvalues of
+ËM have negative real part. Thus, â(h0)
+(t) can be separated into a part
+P
+containing the eigenvalues on the imaginary axis, denoted by P (h1)(t),
+and a part containing the remaining eigenvalues, which have negative
+real part, denoted by P (h2)(t).
+
+â(h0)
+P
+
+(t) = P (h1)(t) + P (h2)(t)
+
+15
+
+Since P (h2)(t) contains only eigenvalues with negative real part, we
+have
+
+P (h2)(t) tâââââ 02n
+
+and
+
+â(h0)
+P
+
+(t) tâââââ P (h1)(t) = 1
+2
+
+[eÂµ+
+
+nâ1tÎ¶ +
+
+nâ1
+
+(Î¶ +
+
+nâ1
+
+)â + eÂµâ
+
+1 tÎ¶ â
+1
+
+(Î¶ â
+1
+
+)â]P (0) (24)
+
+We show, in Appendix E that for k = 1, . . . , n
+
+â(h0)
+pk
+
+(t) tââââââ¶= pk(h1)(t) = [r sin(Ït + Î±k), r cos(Ït + Î±k)]T
+
+where
+
+)
+
+â¢ Ï = 2 sin( Ï
+n
+â
++ c2
+â¢ r =
+
+c2
+1
+
+2, where
+
+c1 = 1
+n
+c2 = 1
+n
+
+n
+â
+l=1
+n
+â
+l=1
+
+â¢ Î±k+1 = Î±k + 2Ï
+n
+
+[cos( 2Ï
+
+n l); â sin( 2Ï
+
+n l)] pl(0)
+
+[sin( 2Ï
+
+n l); cos( 2Ï
+
+n l)] pl(0)
+
+Therefore, the agents asymptotically move, equally spaced, on a cir-
+cular orbit with a radius determined by the number of agents,n, and
+their initial positions pl(0); l = 1, . . . , n
+
+QED
+
+2.2
+
+Input induced group dynamics
+
+We recall, see eq. (13), that the position of the agents at time t is given by
+
+P (t) = P (h)(t) + P (u)(t)
+where P (h)(t) is the homogeneous part of the solution, derived in section 2.1,
+and P (u)(t) is the contribution of the guidance control, Uc.
+
+t
+
+P (u)(t) = â«
+0
+
+e ËM (tâÏ ) ËBUcdÏ = â«
+
+t
+
+nâ1
+â
+i=0
+
+0
+
+eÂµÂ±
+
+i (tâÏ ) ËBUcdÏ
+
+(25)
+
+where
+
+16
+
+â¢ ËB = B â I2Ã2
+
+â¢ B is the indicator vector to the ad-hoc leaders (the agents detecting
+
+the exogenous control, Uc)
+
+Recalling the location of the eigenvalues of ËM , see Appendix D.1, we can
+write
+
+P (u)(t) = P (u1)(t) + P (u2)(t) + â(u)
+P
+
+(t)
+
+(26)
+
+where
+
+â¢ P (u1)(t) is due to the elements with zero eigenvalue, existing for any Î¸
+
+â¢ P (u2)(t) is due to the elements with Âµâ
+
+1 , Âµ+
+
+nâ1 on the imaginary axis,
+
+existing if Î¸ = Î¸c
+
+(t) is due to the remaining eigenvalues which have negative real
+
+â¢ â(u)
+P
+part
+
+2.2.1 Agentsâ asymptotic velocity
+
+V (t) =
+
+d
+dt
+
+[P (u1)(t) + P (u2)(t) + â(u)
+P
+
+(t)]
+
+â¶= V (1)(t) + V (2)(t) + V (3)(t)
+
+V (3)(t) =
+
+=
+
+(t)
+
+â(u)
+P
+
+d
+dt
+â§âªâª
+ânâ1
+â¨
+âªâªâ©
+(eÂµ+
+
+i t ËBUc
+
+i=1 eÂµÂ±
+1 t + eÂµâ
+
+nâ1t + ânâ1
+
+i=2 eÂµÂ±
+
+i t) ËBUc
+
+if â£Î¸â£ < Î¸c
+if â£Î¸â£ = Î¸c
+
+Since all Âµi in V (3)(t) have negative real part, we have
+
+V (3)(t) tâââââ 02n
+
+Thus, the asymptotic velocity of agent i is
+
+Vi(t â â) = V (1)
+
+i
+
+(t â â) + V (2)
+
+i
+
+(t â â)
+
+17
+
+Lemma 2.3. Let Uc be the broadcast velocity control, B the ad-hoc leaders
+pointer vector, n the number of agents and nl the number of agents detecting
+the broadcast control (ad-hoc leaders). Then,
+
+1. if â£Î¸â£ < Î¸c all agents move with asymptotic velocity Vi(t â â) = nl
+n
+
+Uc.
+
+2. if â£Î¸â£ = Î¸c then the asymptotic velocities of the agents are
+
+Vi(t â â) = nl
+n
+
+Uc + V c
+i
+
+(t)
+
+(t) is the circular component of the velocity of agent i at time
+
+where V c
+i
+t, such that
+
+V c
+i
+
+(t) â¶= V (u2)
+
+i
+
+(t â â) = [rV sin(Ït + Î±V
+i
+rV cos(Ït + Î±V
+i
+
+)
+)
+
+]
+
+where
+
+â¢ rV is determined by B and Uc and is common to all agents
+
+â¢ the phase shift between consecutive agents is
+
+2Ï
+n
+
+Proof.
+
+1. Derivation of V (u1)
+
+i
+
+(t)
+
+P (u1)(t) = 1
+2
+
+[â«
+0
+
+t
+
+(Î¶ +
+0
+
+(Î¶ +
+0
+
+)â + Î¶ â
+0
+
+(Î¶ â
+0
+
+)â)dÎ½] ËBUc
+
+(27)
+
+ËB = B â I2Ã2.
+
+Thus
+
+P (u1)(t) = 1
+2
+
+t(Î¶ +
+0
+
+(Î¶ +
+0
+
+)â + Î¶ â
+0
+
+(Î¶ â
+0
+
+)â) ËBUc
+
+V (u1)(t) = 1
+2
+
+(Î¶ +
+0
+
+(Î¶ +
+0
+
+)â + Î¶ â
+0
+
+(Î¶ â
+0
+
+)â) ËBUc
+
+Using again Y (0) = Î¶ +
+0
+
+(Î¶ +
+0
+
+)â we obtain
+
+V (u1)(t) = R(Y (0)) ËBUc
+
+18
+
+(28)
+
+(29)
+
+(30)
+
+where R(Y (0)) is given by (21).
+
+â V (u1)
+i
+
+(t â â) = nl
+n
+
+Uc;
+
+i = 1, . . . , n
+
+2. Derivation of V c
+i
+
+(t)
+
+P (u2)(t) = 1
+2
+
+[â«
+
+0
+
+t
+
+Thus
+
+(eÂµ+
+
+nâ1Î½Î¶ +
+
+nâ1
+
+(Î¶ +
+
+nâ1
+
+)â + eÂµâ
+
+1 Î½Î¶ â
+1
+
+(Î¶ â
+1
+
+)â)dÎ½] ËBUc
+
+(31)
+
+V (u2)(t) =
+
+P (u2)(t)
+
+(Î¶ +
+
+nâ1
+
+)â + eÂµâ
+
+1 tÎ¶ â
+1
+
+(Î¶ â
+1
+
+)â] ËBUc
+
+(32)
+
+(33)
+
+[eÂµ+
+
+nâ1tÎ¶ +
+
+nâ1
+
+d
+dt
+= 1
+2
+
+We note the similarity of eq. (33) to (24) with ËBUc replacing P (0).
+Therefore, we can write (by similarity)
+
+V c
+i
+
+(t) â¶= V (u2)
+
+i
+
+(t â â) = [rV sin(Ït + Î±V
+i
+rV cos(Ït + Î±V
+i
+
+)
+)
+
+]
+
+(34)
+
+where
+
+)
+
+â¢ Ï = 2 sin(Ï
+n
+â
+)2 + (cV
+(cV
+2
+1
+
+â¢ rV =
+
+)2, such that
+
+cV
+1
+
+cV
+2
+
+= 1
+n
+= 1
+n
+
+n
+â
+l=1
+n
+â
+l=1
+
+â¢ Î±V
+
+i+1
+
+= Î±V
+i
+
++ 2Ï
+n
+
+bl [cos( 2Ï
+
+n l); â sin( 2Ï
+
+n l)] Uc
+
+bl [sin( 2Ï
+
+n l); cos( 2Ï
+
+n l)] Uc
+
+QED
+
+19
+
+2.2.2 Contribution of remaining eigenvalues: â(u)
+P
+
+(t â â)
+
+The eigenvalues whose contribution has not been considered so far are the
+eigenvalues with negative real part, causing element â(u)
+in (26), due
+P
+to the integration in P (u)(t), eq. (25). These eigenvalues are
+
+â¢ all eigenvalues other than ÂµÂ±
+
+0 , if Î¸ < Î¸c
+
+â¢ all eigenvalues other than ÂµÂ±
+
+0 , Âµâ
+
+1 , Âµ+
+
+nâ1 , if Î¸ = Î¸c
+
+Let pc(t) denote the moving centroid at time t â â, such that
+
+pc(t) = pc(0) + nl
+n
+
+Uc
+
+where pc(0) is the centroid of the initial positions. Then
+
+pd
+i
+
+(t) = pc(t) + â(u)
+pi
+
+where â(u)
+pi ;
+the asymptotic deviation of agent i from pc(t).
+
+i â [1, . . . , n], such that â(u)
+P
+
+= (â(u)
+
+p1 , . . . , â(u)
+pn
+
+(35)
+
+)T , represents
+
+â¢ if Î¸ < Î¸c then pd
+i
+â¢ if Î¸ = Î¸c then pd
+i
+
+t â â
+
+(t) is the position of agent i at time t â â
+
+(t) is the center of the circular orbit for agent i at time
+
+(t) be deï¬ned as in eq. (35). Then pd
+(t); i = 1, . . . , n are
+Lemma 2.4. Let pd
+i
+i
+aligned on a line rotated by angle âÎ¸ from the direction of Uc. The dispersion
+of the agents along this line is a function of the set of agents detecting the
+exogenous control,Uc, represented by the vector B.
+
+Proof.
+
+Consider the case Î¸ < Î¸c . Then we have
+
+nâ1
+[
+â
+i=1
+
+p (t) = 1
+â(u)
+2
+nâ1
+= 1
+â
+2
+i=1
+â â(u1)
+P
+
+[ 1
+Âµ+
+i
++ â(u2)
+P
+
+(â«
+
+t
+
+0
+
+(Î¶ +
+
+i eÂµ+
+
+i Î½(Î¶ +
+i
+
+)â + Î¶ â
+
+i eÂµâ
+
+i Î½(Î¶ â
+i
+
+)â)dÎ½)] ËBUc
+
+(1 â eÂµ+
+
+i t)Î¶ +
+i
+
+(Î¶ +
+i
+
+)â + 1
+Âµâ
+i
+
+(1 â eÂµâ
+
+i t)Î¶ â
+i
+
+(Î¶ â
+i
+
+)â] ËBUc
+
+(t)
+
+20
+
+where
+
+â(u1)
+P
+
+= 1
+2
+(t) = â1
+2
+
+nâ1
+â
+i=1
+
+[ 1
+Âµ+
+i
+[ 1
+Âµ+
+i
+
+nâ1
+â
+i=1
+
+â(u2)
+P
+
+Î¶ +
+i
+
+(Î¶ +
+i
+
+(Î¶ â
+i
+
+Î¶ â
+i
+
+)â + 1
+Âµâ
+i
+)â + 1
+Âµâ
+i
+
+(Î¶ +
+i
+
+eÂµ+
+
+i tÎ¶ +
+i
+
+)â] ËBUc
+
+eÂµâ
+
+i tÎ¶ â
+i
+
+(Î¶ â
+i
+
+)â] ËBUc
+
+(36)
+
+(37)
+
+Since R(Âµi) < 0; i = 1, . . . , n â 1 we have â(u2)
+
+P
+
+(t) tâââââ 02n and therefore
+
+â(u)
+P
+
+(t) tâââââ â(u1)
+
+P
+
+.
+
+Recalling that (see Appendix D.1)
+
+ÂµÂ±
+i
+Î¶ Â±
+i
+
+= Î»ieÂ±jÎ¸)
+= vi â (1, Â±j)T
+
+i = 0, . . . , n â 1 are the eigenvalues and eigenvectors of M ,
+where Î»i, vi;
+respectively, and using the property of product of two Kronecker products,
+eq. (51), we have
+
+Similarly
+
+Let
+
+Then,
+
+where
+
+1
+Âµ+
+i
+
+eÂµ+
+
+i tÎ¶ +
+i
+
+(Î¶ +
+i
+
+)â = eâjÎ¸
+Î»i
+
+vivâ
+i
+
+â [1 âj
+1
+j
+
+]
+
+1
+Âµâ
+i
+
+eÂµâ
+
+i tÎ¶ â
+i
+
+(Î¶ â
+i
+
+)â = ejÎ¸
+Î»i
+
+vivâ
+i
+
+â [ 1
+
+j
+]
+âj 1
+
+A = eâjÎ¸ [1 âj
+1
+
+j
+
+]
+
+1
+Âµ+
+i
+
+eÂµ+
+
+i tÎ¶ +
+i
+
+(Î¶ +
+i
+
+)â + 1
+Âµâ
+i
+
+eÂµâ
+
+i tÎ¶ â
+i
+
+(Î¶ â
+i
+
+)â = 2
+Î»i
+
+vivâ
+i
+
+â R(A)
+
+R(A) = [cos(Î¸) â sin(Î¸)
+cos(Î¸)
+sin(Î¸)
+
+] = R(âÎ¸)
+
+21
+
+(38)
+
+(39)
+
+where R(Î¸) is the rotation matrix deï¬ned in (2). Thus, we can rewrite eq.
+(36) as
+
+â(u1)
+P
+
+=
+
+vivâ
+i
+
+â R(âÎ¸))(B â I)Uc
+
+= ([
+
+vivâ
+i
+
+]B) â R(âÎ¸)Uc
+
+nâ1
+â
+i=1
+
+( 1
+Î»i
+nâ1
+1
+â
+Î»i
+i=1
+
+(40)
+
+(41)
+
+Given Î»i, vi; i = 0, . . . , n â 1 as deï¬ned in (57), (54) respectively and M =
+circ(â1, 1, 0, . . . , 0) we have
+
+Thus, we can rewrite (41) as
+
+i M T = Î»ivâ
+vâ
+
+i
+
+â(u1)
+P
+
+where
+
+nâ1
+â
+i=1
+
+= ([
+
+1
+Î»iÎ»i
+â¶= (Î³M T B) â R(âÎ¸)Uc
+
+vivâ
+i
+
+]M T B) â R(âÎ¸)Uc
+
+Î³ = [
+
+nâ1
+â
+i=1
+
+1
+Î»iÎ»i
+
+vivâ
+i
+
+]
+
+is an n Ã n matrix common to all agents. Let
+
+Then we have
+
+Ï = Î³M T B
+
+â(u1)
+pi
+
+= ÏiR(âÎ¸)Uc
+
+(42)
+
+(43)
+
+(44)
+
+(45)
+
+(46)
+
+where Ïi is a scalar. Thus, the agents asymptotically align in a linear for-
+mation rotated by an angle âÎ¸ from the direction of Uc . The dispersion
+of the agents along this line is a function of the set of agents detecting the
+exogenous control, represented by B.
+Consider now the case Î¸ = Î¸c .
+
+In this case there are two additional eigenvalues of ËM with zero real part, Âµâ
+1
+and Âµ+
+
+nâ1, and following the same procedure as above, we have
+
+â(u1)
+P
+
+nâ1
+[
+â
+i=1
+
+= 1
+2
+
+[ 1
+Âµ+
+i
+= (ËÎ³M T B) â R(âÎ¸)Uc
+
+)â â + 1
+Âµâ
+i
+
+(Î¶ +
+i
+
+Î¶ +
+i
+
+Î¶ â
+i
+
+(Î¶ â
+i
+
+)â] â 1
+Âµâ
+1
+
+Î¶ â
+1
+
+(Î¶ â
+1
+
+)â â 1
+Âµ+
+
+nâ1
+
+Î¶ +
+nâ1
+
+(Î¶ +
+
+nâ1
+
+)â] ËBUc
+
+22
+
+where
+
+and Î³ is given by (44).
+
+where
+
+ËÎ³ = Î³ â 1
+Î»1Î»1
+
+v1vâ
+1
+
+â(u1)
+pi
+
+= ËÏiR(âÎ¸)Uc
+
+ËÏ = ËÎ³M T B
+
+(47)
+
+(48)
+
+QED
+
+Remark 2.1.
+â(u)
+= 0; âi and therefore pd
+pi
+i
+expression for Ï and ËÏ, eqs. (45) and (48), respectively.
+
+If B = 1n, i.e. the signal Uc is detected by all the agents, then
+(t) = pc(t); âi. This is due to M T B = 0n in the
+
+3 Demonstration by Simulation
+
+In this section we illustrate by simulation the impact of the deviation angle
+Î¸, of the broadcast control, Uc(t), and of the set of leaders (agents detecting
+the broadcast control) on the emergent behavior of a group of agents in
+linear, deviated, cyclic pursuit. We recall that the set of agents detecting the
+broadcast control is represented by the vector B, such that B(i) = 1 if agent
+i detected the broadcast signal and B(i) = 0 otherwise.
+
+We present results for
+
+1. Single time interval
+
+1.1. Autonomous deviated linear cyclic pursuit, without external con-
+
+trol
+
+1.2. The broadcast control and the set of leaders are constant in the
+
+time interval, i.e. Uc(t) = Uc, B(t) = B for t â [0, Tmax]
+
+2. Multiple time intervals, where the time line [0, Tmax] is divided in piece-
+k = 0, ....m â 1, where m is the
+
+wise constant time intervals [tk, tk+1];
+number of intervals and
+
+â¢ Uc(t) = Uc(tk) if t â [tk, tk+1)
+â¢ B(t) = B(tk) if t â [tk, tk+1)
+
+23
+
+â¢ The start state of a new interval is the end state of the previous
+
+interval
+
+In all shown simulation results we assumed n = 5, where n is the number
+
+of agents.
+
+3.1 Autonomous deviated cyclic pursuit
+
+In this section we illustrate the emergent behavior of the autonomous devi-
+ated cyclic pursuit, i.e. with Uc = (0, 0)T , as a function of the deviation angle
+Î¸, corresponding to the analytically obtained results (see section 2.1). We
+recall that Î¸c = 2Ï
+. Therefore, for n = 5 we have Î¸c = 36deg.
+n
+We show, starting from two initial topologies, shown in Figures 2, (see
+
+Example1) and 5,(see Example2), that
+
+â¢ if Î¸ < Î¸c then the agents gather to pc, the centroid of the agentsâ initial
+
+positions, see Figures 3 and 6. In these ï¬gures
+
+â pc is the displayed initial centroid
+â pi(Tmax) â¶= (xi(Tmax, yi(Tmax))T
+â pi(Tmax) == pc âi, as expected.
+
+â¢ if Î¸ = Î¸c then the agents will rotate around pc on a common orbit with a
+radius (displayed as r) depending on the initial positions of the agents,
+see Figures 4 and 7.
+
+In these ï¬gures we show the trajectories of the agents,
+pi(t); i = 1, . . . , n; t â [0, Tmax] and the circular component of the trajec-
+tories (shown in black). We note that the center of the circular orbit
+is pc, as expected.
+
+24
+
+3.1.1 Example1
+
+Figure 2: Example1 - Initial positions of the agents
+
+25
+
+Figure 3: Î¸ < Î¸c - Agents gathering to the centroid of the initial positions
+
+26
+
+Figure 4: Î¸ = Î¸c - Agents rotating around the centroid of the initial positions
+
+27
+
+3.1.2 Example2
+
+Figure 5: Example2 - Initial positions of the agents
+
+28
+
+Figure 6: Î¸ < Î¸c - Agents gathering to the centroid of the initial positions
+
+29
+
+Figure 7: Î¸ = Î¸c - Agents rotating around the centroid of the initial positions
+
+3.2 The impact of the broadcast control and of the
+
+random set of leaders
+
+The remaining simulations presented in this section were run with the initial
+locations shown in Figure 5.
+
+In all the ï¬gures included in this section
+
+â¢ a solid line represents an ad-hoc leader (an agent that detects the broad-
+
+cast control)
+
+â¢ a dotted line represents a follower (an agent that does not detect the
+
+broadcast control)
+
+30
+
+3.2.1 Single time interval
+
+We recall that the emergent behavior, analytically derived in section 2, is
+an asymptotic behavior. Thus, in order to compare the numerical results,
+obtained by simulation to the analytically derived results we need the simu-
+lation time, Tmax to be long enough to approximate t â â. We found that
+Tmax = 60 is such a time. Therefore all presented simulations were run with
+Tmax = 60 (Points=60000, dT=0.001). However, for visualization purposes
+all trajectories and velocities are shown for the ï¬rst part of the data, up to
+t = 10.
+
+For the simulations presented in this section we used Uc = (2, 3)T and we
+
+considered the following cases
+
+1. Î¸ = 20deg(< Î¸c)
+
+1.1. Uc is detected by all the agents, i.e. B = 1n
+1.2. Uc is detected only by agents 2 and 5, i.e B = (0, 1, 0, 0, 1)T
+
+2. Î¸ = 36deg(= Î¸c)
+
+2.1. Uc is detected by all the agents, i.e. B = 1n
+2.2. Uc is detected only by agents 2 and 5, i.e B = (0, 1, 0, 0, 1)T
+
+31
+
+Case 1.1: Î¸ = 20deg, B = 1n
+
+Figure 8: Case 1.1 - Emergent trajectories
+
+32
+
+Figure 9: Case 1.1 - Emergent velocities
+
+In this case all the agents converge to a point (see xTmax, yTmax in Fig. 8)
+that moves with asymptotic velocity Uc,(see uxTmax, uyTmax displayed in Fig.
+9), as expected.
+
+33
+
+Case 1.2: Î¸ = 20deg, B = (0, 1, 0, 0, 1)T
+
+Figure 10: Case1.2 - Emergent trajectories
+
+34
+
+Figure 11: Case1.2 - Emergent velocities
+
+In this case
+
+â¢ the number of ad-hoc leaders, nl is two.
+
+â¢ the velocity of each agent asymptotically converges to
+
+see (uxTmax, uyTmax
+
+) in Fig.11
+
+nl
+n
+
+Uc,
+
+â¢ the emergent trajectories of the agents are parallel lines in the direction
+is the
+
+of Uc, anchored at pc + â(u1)
+asymptotic, time independent, deviation given by eq. (46)
+
+, (see Fig. 10) where Delta(u1)
+
+pi
+
+pi
+
+We complete the demonstration of the emergent behavior of the agents
+in case Î¸ < Î¸c, B â  1n by showing the deviations of the agents from a moving
+center for Î¸ = 20deg vs 0deg, see Fig. 12. We observe that in both cases the
+
+35
+
+agents are aligned in a linear formation. While for Î¸ = 0 the formation is
+aligned with Uc for Î¸ = 20the formation is aligned with R(âÎ¸)Uc, where R
+denotes the rotation matrix, complying with eq.(46).
+
+Figure 12: Agentsâ asymptotic linear formation, Î¸ = 20deg vs 0deg
+
+In this case
+
+R(â20) = [0.9397 â0.3420
+]
+0.9397
+0.3420
+Thus, R(âÎ¸)Uc has a slope= 4.1053, as indicated.
+
+36
+
+Case 2.1: Î¸ = Î¸c = 36deg, B = 1n
+
+Figure 13: Case 2.1 - Emergent trajectories
+
+37
+
+Figure 14: Case 2.1 - Emergent velocities
+
+38
+
+Case 2.2: Î¸ = Î¸c = 36deg, B = (0, 1, 0, 0, 1)T
+
+Figure 15: Case 2.2 - Emergent trajectories
+
+39
+
+Figure 16: Case 2.2 - Emergent velocities
+
+3.2.2 Multiple piecewise constant intervals
+
+A new interval starts upon a change of broadcast velocity control, Uc, or a
+change in the set of agents detecting it, represented by the vector B(t). The
+initial state of each interval is the end state of the previous interval.
+
+In this section we show the emergent behavior of the same group of ï¬ve
+agents, starting at the same initial positions, Fig. 5, over multiple intervals,
+with piecewise constant Uc(t) and B(t).
+
+We show two cases of piecewise constant systems, Uc(t) = (ux(t), uy(t))T
+and B(t), and for each system we show the emergent behavior, trajectories
+and velocities, for Î¸ < Î¸c and Î¸ = Î¸c.
+
+40
+
+CaseM.1 U (t) as shown in Fig. 17, B(t) as follows
+
+â¢ for t â [0, 45) the set of agents detecting the broadcast control is
+
+{2, 5}, i.e. B(t) = (0, 1, 0, 0, 1)T
+
+â¢ for t â [45, 60] the set of agents detecting the broadcast control is
+
+âallâ, i.e. B(t) = 15
+
+CaseM.2 U (t) as shown in Fig. 18, B(t) as follows
+
+â¢ for t â [0, 45) the set of agents detecting the broadcast control is
+
+{2, 5}, i.e. B(t) = (0, 1, 0, 0, 1)T
+
+â¢ for t â [45, 52.5) the set of agents detecting the broadcast control
+
+is âallâ, i.e. B(t) = 15
+
+â¢ for t â [52.5, 60] the set of agents detecting the broadcast control
+
+is again {2, 5}, i.e. B(t) = (0, 1, 0, 0, 1)T
+
+We observe that the emergent behavior over multiple time intervals is a
+
+concatenation of the single intervals, as expected.
+
+41
+
+Figure 17: Piecewise constant broadcast control, Uc(t) - CaseM.1
+
+42
+
+Figure 18: Piecewise constant broadcast control, Uc(t) - CaseM.2
+
+43
+
+3.2.3 CaseM.1.1 - CaseM.1 with Î¸ < Î¸c
+
+Figure 19: CaseM.1.1 - Emergent trajectories
+
+44
+
+Figure 20: CaseM.1.1 - Emergent velocities
+
+45
+
+3.2.4 CaseM.1.2 - CaseM.1 with Î¸ = Î¸c
+
+Figure 21: CaseM.1.2 - Emergent trajectories
+
+46
+
+Figure 22: CaseM.1.2 - Emergent velocities
+
+47
+
+3.2.5 CaseM.2.1 - CaseM.2 with Î¸ < Î¸c
+
+Figure 23: CaseM.2.1 - Emergent trajectories
+
+48
+
+Figure 24: CaseM.2.1 - Emergent velocities
+
+49
+
+3.2.6 CaseM.2.2 - CaseM.2 with Î¸ = Î¸c
+
+Figure 25: CaseM.2.2 - Emergent trajectories
+
+50
+
+Figure 26: Example 2.2 - Emergent velocities
+
+We note that what seems like an irregular circular movement in case Î¸ = Î¸c
+and B â  1n, see Fig. 21, 25, is actually due to changes in the deviation of the
+centers upon change in Uc(t). (We recall that the deviation of the centers is
+given by eq. 46: â(u1)
+= ÏiR(âÎ¸)Uc). To demonstrate this claim we show the
+emergent behavior with the same Uc(t) (see Fig. 18) in case B = 1n, when
+the centers overlap, i.e. there are no deviations.
+
+pi
+
+51
+
+Figure 27: Emergent trajectories when Î¸ = Î¸c and B = 1n
+
+52
+
+Figure 28: Emergent velocities when Î¸ = Î¸c and B = 1n
+
+4 Summary and discussion
+
+In this work we apply well known LTI systems evolution theory to a novel
+paradigm where agents in deviated linear cyclic pursuit are exposed to a
+piecewise constant broadcast control, detected by a random subset of agents.
+The emergent behavior of the agents is rigorously derived for a single time
+interval and illustrated by simulations for multiple time intervals, a concate-
+nation of single time intervals. The emergent behavior of the swarm is shown
+to be a function of the deviation angle, Î¸, the critical deviation angle Î¸c = Ï
+n
+
+53
+
+nl
+agents is
+n
+agents detecting it.
+nl
+n
+nl
+n
+
+â If
+
+â If
+
+and of the (random) subset of agents detecting the broadcast control (ad-hoc
+leaders). We show that the emergent pattern of movement depends only on
+the deviation angle Î¸, such that
+
+â¢ if Î¸ < Î¸c the movement is linear and the asymptotic velocity of the
+is the ratio of
+
+Uc, where Uc is the broadcast control and
+
+nl
+n
+
+= 1 then the agents gather and move as a single point.
+
+< 1 then the agents will asymptotically move as a time inde-
+pendent linear formation rotated by R(âÎ¸) from the direction of
+Uc.
+
+â¢ if Î¸ = Î¸c the movement is circular around a center moving with velocity
+Uc. The radius of the circular orbit is a function of the number of
+
+nl
+n
+agents and the initial positions and is common to all agents.
+
+nl
+n
+
+nl
+n
+
+â If
+
+= 1 then the centers coincide. In this case the agents move,
+
+equally spaced, on a common orbit.
+
+â If
+
+< 1 then the centers move on parallel lines, such that at each
+point in time, t, they are placed on a line rotated by R(âÎ¸) from
+the direction of Uc. The dispersion of the centers on this line is
+time-independent.
+
+We plan in the future to investigate the emergent behavior of non-linear
+agents, sensing bearing-only (bugs), in deviated cyclic pursuit, under the
+inï¬uence of broadcast control detected by a random subset of agents.
+
+54
+
+Appendices
+
+Appendix A General results on matrices
+
+Following [2], let Mn denote the class of all n Ã n matrices. Two matrices
+A, B â Mn are similar, denoted by A â¼ B, if there exists an invertible (non-
+singular) matrix S â Mn s.t. A = SBSâ1. Similar matrices are just diï¬erent
+basis representation of a single linear transformation.Similar matrices have
+the same characteristic polynomial, c.f. Theorem 1.3.3 in [2] and therefore
+the same eigenvalues
+
+A.1 Algebraic and geometric multiplicity of eigenval-
+
+ues
+
+Let Î» be an eigenvalue of an arbitrary matrix A â Mn with an associated
+eigenvector v â Cn.
+Deï¬nitions:
+
+â¢ The spectrum of A â Mn is the set of all the eigenvalues of A, denoted
+
+by Ï(A).
+
+â¢ The spectral radius of A is Ï(A) = maxâ£Î»â£ â¶ Î» â Ï(A).
+
+â¢ For a given Î» â Ï(A) , the set of all vectors v â Cn satisfying Av = Î»v
+is called the eigenspace of A associated with the eigenvalue Î» . Every
+nonzero element of this eigenspace is an eigenvector of A associated
+with Î»
+
+â¢ The algebraic multiplicity of Î» is its multiplicity as a root of the char-
+
+acteristic polynomial det(Î»I â A)
+
+â¢ The geometric multiplicity of Î» is the dimension of the eigenspace as-
+sociated with Î», i.e. the number of linearly independent eigenvectors
+associated with that eigenvalue.
+
+â¢ We say that Î» is simple if its algebraic multiplicity is 1; it is semisimple
+
+if its algebraic and geometric multiplicities are equal.
+
+â¢ The algebraic multiplicity of an eigenvalue is larger than or equal to its
+
+geometric multiplicity.
+
+55
+
+â¢ We say that A is defective if the geometric multiplicity of some eigen-
+
+value is less than its algebraic multiplicity
+
+A.2 Diagonizable matrices
+Deï¬nition: If A â Mn is similar to a diagonal matrix, then A is said to be
+diagonizable
+
+Theorem 1. See Theorem 1.3.7 in [2].
+
+The matrix A â Mn is diagonizable iï¬ there are n linearly indepen-
+If
+
+dent vectors, v(1), v(2), ...., v(n), each of which is an eigenvector of A.
+v(1), v(2), ...., v(n) are linearly independent eigenvectors of A and S = [v(1), v(2), ...., v(n)]
+then Sâ1AS is a diagonal matrix Î and the diagonal entries of Î are the
+eigenvalues of A
+
+Lemma 1. Let Î»1, ..., Î»k;
+pose v(i) is an eigenvector associated with Î»i;
+[v(1), v(2), ...., v(k)] are linearly independent.
+
+k â¥ 2 be distinct eigenvalues of A â Mn and sup-
+i = 1, ...., n. Then the vectors
+
+Proof of Lemma 1.3.8 in [2]
+
+Theorem 2. If A â Mn has n distinct eigenvalues, then A is diagonizable
+
+Proof. Since all eigenvalues are distinct Lemma 1 ensures that the associated
+eigenvectors are linearly independent and thus, according to Theorem 1, A
+QED
+is diagonizable
+
+Notes:
+
+1. Having distinct eigenvalues is suï¬cient for diagonizability, but not nec-
+
+essary.
+
+2. A matrix is diagonizable iï¬ it is non-defective, i.e. it has no eigenvalue
+with geometric multiplicity strictly less than its algebraic multiplicity
+
+A.3 Left eigenvectors
+Deï¬nition: A non-zero vector y â Cn is a left eigenvector of A â Mn asso-
+ciated with eigenvalue Î» of A if yâA = Î»yâ. From [2], Theorem 1.4.12, we
+have the following relationship between left and right eigenvectors and the
+multiplicities of the corresponding eigenvalue:
+
+56
+
+Theorem 3. Let Î» â C be an eigenvalue of A â Mn associated with right
+eigenvector x and left eigenvector yâ. Then the following hold:
+
+(a) If Î» has algebraic multiplicity 1, then yâx â  0
+
+(b) If Î» has geometric multiplicity 1, then it has algebraic multiplicity 1 iï¬
+
+yâx â  0
+
+A.4 Square matrices decomposition
+
+â¢ If A â Mn with distinct eigenvectors (not necessarily distinct eigenval-
+ues) then A = V ÎV â1, where Î is a diagonal matrix formed from the
+eigenvalues of A, and the columns of V are the corresponding eigen-
+vectors of A.
+A matrix A â Mn always has n eigenvalues, which can be ordered (in
+more than one way) to form a diagonal matrix Î â Mn and a cor-
+responding matrix of nonzero columns V that satisï¬es the eigenvalue
+equation AV = V Î. If the n eigenvectors are distinct then V is invert-
+ible, implying the decomposition A = V ÎV â1.
+Comment: The condition of having n distinct eigenvalues is suï¬cient
+but not necessary. The necessary and suï¬cient condition is for each
+eigenvalue to have geometric multiplicity equal to its algebraic multi-
+plicity.
+
+â¢ If A is real-symmetric its n (possibly not distinct) eigenvalues are all
+real with geometric multiplicity which equals the algebraic multiplicity.
+V is always invertible and can be made to have normalized columns.
+Then the equation V V T = I holds, because each eigenvector is orthonor-
+mal to the other. Therefore the decomposition (which always exists if
+A is real-symmetric) reads as: A = V ÎV T . This is known as the the
+spectral theorem, or symmetric eigenvalue decomposition theorem.
+
+â¢ If A â Mn is normal, i.e. AAT = AT A, then
+
+1. There exists an orthonormal set of n eigenvectors of A
+2. A is unitarily diagonizable, i.e. A = U ÎU â, where U is a unitary
+matrix of eigenvectors and Î is a diagonal matrix of eigenvalues
+of A.
+
+57
+
+A.5 About non-symmetric real matrices
+
+â¢ the eigenvalues of non-symmetric real n Ã n matrix are real or come in
+
+complex conjugate pairs
+
+â¢ the eigenvectors are not orthonormal in general and may not even span
+
+an n-dimensional space
+
+â Incomplete eigenvectors can occur only when there are degenerate
+eigenvalues with algebraic multiplicity greater
+
+eigenvalues, i.e.
+than 1, but do not always occur in such cases
+
+â Incomplete eigenvectors never occur for the class of normal ma-
+
+trices
+
+â¢ Diagonalization theorem: an n Ã n matrix A is diagonizable iï¬ A has n
+
+linearly independent eigenvectors
+
+A.6 Normal matrices
+Deï¬nition 1. A matrix A â Mn is called normal if AâA = AAâ
+Deï¬nition 2. A matrix A â Mn is called Hermitian if Aâ = A
+Theorem 4. If A â Mn has eigenvalues Î»1, Î»2, ....., Î»n the following statements
+are equivalent:
+
+(a) A is normal
+
+(b) A is unitarily diagonizable
+
+(c) ân
+
+i=1 ân
+j=1
+
+â£aijâ£2 = ân
+j=1
+
+â£Î»jâ£2
+
+(d) There is an orthonormal set of n eigenvectors of A
+
+Remark A.1. All normal matrices are diagonizable but not all diagonizable
+matrices are normal.
+
+A.7 Unitary matrices and unitary similarity
+Unitary matrices, U â Mn, are non-singular matrices such that U â1 = U â, i.e
+U âU = U U â = I. A real matrix U â Mn(R) is real orthogonal if U T U = I.
+The following are equivalent:
+
+58
+
+(a) U is unitary
+
+(b) U is non-singular and U â1 = U â
+
+(c) U U â = I
+
+(d) U â is unitary
+
+(e) The columns of U are orthonormal
+
+(f) The rows of U are orthonormal
+
+(g) For all x â Cn,
+
+â¥xâ¥2 = â¥U xâ¥2
+
+Deï¬nition A.1. :
+
+â¢ A is unitarily similar to B if there is a unitary matrix U s.t. A = U BU â
+
+â¢ A is unitarily diagonizable if it is unitarily similar to a diagonal matrix
+
+Appendix B Kronecker product properties
+
+This section follows mostly reference [12].
+
+Deï¬nition B.1. The Kronecker product of the matrix A â Mp,q with the
+matrix B â Mr,s is deï¬ned as
+
+A â B =
+
+â¡
+A11B A12B â¯ A1qB
+â¢
+â¢
+A21B A22B â¯ A2qB
+â¢
+â¢
+â¢
+â¢
+â¢
+â£
+
+Ap1S Ap2B â¯ ApqB
+
+â®
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¦
+
+(49)
+
+B.1 Basic Properties
+
+The properties of the Kronecker product in this subsection are only those
+with bearing on this work. A complete list of properties can be found in [12].
+
+â¢ Taking the transpose before carrying out the Kronecker product yields
+
+the same result as doing so afterwards, i.e.
+
+(A â B)T = AT â BT
+
+(50)
+
+59
+
+â¢ The product of two Kronecker products yields another Kronecker prod-
+
+uct:
+
+(A â B)(C â D) = AC â BD; âA â Mp,q, B â Mr,s, C â Mq,k, D â Ms,l
+(51)
+
+â¢ Taking the complex conjugate before carrying out the Kronecker prod-
+
+uct yields the same result as doing so afterwards, i.e.
+
+(A â B)â = Aâ â Bâ; âA â Mp,q(C), B â Mr,s(C)
+
+(52)
+
+â¢ Denote by Ï(A) the spectrum of a square matrix A, i.e. the set of all
+
+eigenvalues of A. Then, Theorem B.1 holds.
+Theorem B.1. (Theorem 2.3 in [12]) Let A â Mm and B â Mn.
+Furthermore, let Î» â Ï(A) with corresponding eigenvector x and let
+Âµ â Ï(B) with corresponding eigenvector y. Then, Î»Âµ is an eigenvalue
+of A â B with corresponding eigenvector x â y
+
+Appendix C Properties of circulant matrices
+
+A circulant matrix is an n Ã n matrix having the form
+
+C =
+
+â¡
+c0
+â¢
+â¢
+â¢
+cnâ1
+â¢
+â¢
+â¢
+â¢
+â£
+
+c1
+
+c1
+c0
+
+c2
+
+c2 â¯ cnâ1
+c1 â¯ cnâ2
+â®
+
+â¯ c0
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¦
+
+(53)
+
+which can also be characterized as an n Ã n matrix C with entry (k, j)
+
+given by
+
+Ck,l = c(lâk)mod(n)
+
+Every n Ã n circulant matrix C has eigenvectors (cf. [1], [10])
+vk = 1â
+(1, eâ2Ïjk/n, eâ4Ïjk/n, â¯, eâ2Ïjk(nâ1)/n)T
+n
+â
+
+;
+
+k â {0, 1, â¯, n â 1}
+
+where j =
+
+â1, with corresponding eigenvalues
+
+Î»k =
+
+nâ1
+â
+l=0
+
+cleâ2Ïjlk/n
+
+60
+
+(54)
+
+(55)
+
+From the deï¬nition of eigenvalues and eigenvectors we have
+
+Cvk = Î»kvk;
+
+k = 0, 1, â¯, n â 1
+
+which can be written as a single matrix equation
+
+where Î = diag(Î»k);
+
+k = 0, â¯, n â 1 and
+
+CU = U Î
+
+U = [v0, v1, â¯, vnâ1]
+
+=
+
+1â
+n
+
+[eâ2Ïjmk/n; m, k = 0, â¯, n â 1]
+
+U is a unitary matrix, i.e. U U â = U âU = I (cf. [1], proof by direct computa-
+tion) and
+
+Note that Fn =
+
+nU â is the known Fourier matrix.
+
+â
+
+C = U ÎU â
+
+(56)
+
+C.1 Cyclic linear pursuit
+
+The matrix M , representing cyclic pursuit, is a special case of circulant ma-
+trix (see eq. (7) M = circ(â1, 1, 0, 0, . . . , 0).
+
+Thus, using (55), the eigenvalues of M are
+
+Î»k = â1 + eâ2Ïjk/n;
+
+k = 0, ..., n â 1
+
+(57)
+
+and the eigenvectors are given by eq. (54).
+
+Lemma C.1. M = circ(â1, 1, 0, 0, . . . , 0) is a normal matrix, i.e. satisï¬es
+M M T = M T M
+
+Proof. By direct computation M M T = M T M = circ([2, â1, 0, ...., 0, â1]) QED
+
+Appendix D Properties of the block circu-
+
+lant matrix ËM
+
+Consider now the block circulant matrix ËM , deï¬ned as in eq. (8), represent-
+ing linear cyclic pursuit with a common deviation angle Î¸.
+
+ËM = M â R(Î¸)
+
+61
+
+Thus, ËM = circ [âR(Î¸), R(Î¸), 02Ã2, ..., 02Ã2], where R(Î¸) is the rotation ma-
+trix, deï¬ned by eq. (2)
+
+Lemma D.1. The matrix ËM = M â R(Î¸), where M = circ(â1, 1, 0, 0, . . . , 0)
+and R is a rotation matrix, is a normal matrix
+
+Proof. Using the Kroenecker product properties and Lemma C.1 we prove
+that ËM ËM T = ËM T ËM .
+
+ËM ËM T = (M â R)(M â R)T = (M M T ) â (RRT ) = (M M T ) â I
+ËM T ËM = (M â R)T (M â R) = (M T M ) â I = (M M T ) â I = ËM ËM T
+
+QED
+
+D.1 Eigenvalues and eigenvectors of ËM
+Denote by ÂµÂ±
+i . Re-
+calling that ËM = (M â R(Î¸)) and applying theorem B.1, the eigenvalues of
+ËM are products of the eigenvalues of M and of R(Î¸), while the eigenvectors
+of ËM are Kronecker products of the eigenvectors of M and of R(Î¸)
+
+i the eigenvalues of ËM with corresponding eigenvectors Î¶ Â±
+
+Lemma D.2. The rotation matrix R(Î¸) has 2 eigenvalues eÂ±jÎ¸ with cor-
+responding eigenvectors Ï + = (1, j)T ,
+Ï â = (1, âj)T , where j denotes the
+imaginary unit.
+
+Proof by direct computation.
+Let Î»i; i = 0, ..., n â 1 be the eigenvalues of M with corresponding eigen-
+
+vectors vi; i = 0, ..., n â 1. According to (57), we have for k = 0, ..., n â 1
+
+62
+
+)
+
+)
+
+Î»k = â1 + eâ2Ïjk/n
+) â j sin(2Ïk
+= â1 + cos(2Ïk
+n
+n
+) cos(Ïk
+) â 2j sin(Ïk
+= â2 sin2(Ïk
+n
+n
+n
+) (sin(Ïk
+= â2 sin(Ïk
+) + j cos(Ïk
+n
+n
+n
+â Ïk
+) + j sin(Ï
+â Ïk
+) (cos(Ï
+= â2 sin(Ïk
+n
+2
+n
+2
+n
+= 2 sin(Ïk
++ Ïk
+) â j sin(Ï
++ Ïk
+) (cos(Ï
+n
+2
+n
+2
+n
+= 2 sin(Ïk
+n
+
+)eâj( Ï
+
++ Ïk
+n
+
+))
+
+)
+
+2
+
+))
+
+))
+
+The following Lemma is well known in the linear algebra literature
+
+Lemma D.3. If Î» is a complex eigenvalue of a real matrix A, with corre-
+sponding, complex, eigenvector v, then Î» is also an eigenvalue of A, with
+eigenvector v
+
+Proof. By the deï¬nition of Î» and v, we have
+
+Av = Î»v,
+
+v â  0.
+
+Taking complex conjugates of this equation, we obtain:
+
+Av = Av = Î»v
+
+where A = A since A is real. Therefore, Î» is also an eigenvalue of A, with
+QED
+eigenvector v
+
+For the particular case of A = M , we have Î»0 = 0 and Î»nâ1 = Î»1
+The eigenvectors of M are given by eq. (54), i.e.
+
+vk = 1â
+n
+
+(1, eâ2Ïjk/n, eâ4Ïjk/n, â¯, eâ2Ïjk(nâ1)/n)T
+
+;
+
+k â {0, 1, â¯, n â 1}
+
+satisfying v0 = 1n and vnâ1 = v1.
+
+Therefore, we have
+
+63
+
+Corollary 1. The eigenvalues of ËM are ÂµÂ±
+k;
+= Î»keÂ±jÎ¸ = 2 sin(Ïk
+n
+
+ÂµÂ±
+k
+
+k = 0, . . . , n â 1, s.t.
+
+)eâj( Ï
+
+2
+
++ Ïk
+n
+
+Â±Î¸)
+
+(58)
+
+with corresponding eigenvectors Î¶ +
+k
+
+= vk â Ï + and Î¶ â
+k
+
+= vk â Ï â.
+
+Note: The eigenvectors of ËM do not depend on the deviation angle Î¸.
+
+From Corollary 1, it is immediate to see that
+
+C.1 ËM has 2 zero eigenvalues, ÂµÂ±
+[1, Â±j, 1, Â±j, . . . , 1, Â±j]T ,
+
+0 , with corresponding eigenvectors Î¶ Â±
+0
+
+=
+
+C.2 remaining eigenvalues depend on the value of Î¸, while the eigenvectors
+
+are independent of Î¸.
+
+C.2.1. Âµâ
+1
+
+C.2.2. Âµ+
+
+nâ1
+
+C.2.3. Î¶ +
+
+2
+
+âÎ¸)
+
++ Ï
+n
+
+)eâj( Ï
+
+= 2 sin( Ï
+n
+= 2 sin( Ï(nâ1)
+)eâj( Ï
++Î¸) = Âµâ
+1
+= vnâ1â[1, j]T = v1â[1, âj]T = Î¶ â
+
++ Ï(nâ1)
+n
+
+n
+
+2
+
+nâ1
+of the Kronecker product for complex conjugates
+
+1 , where we used the property
+
+D.1.1 Critical deviation angle, Î¸c
+Let Î¸c deï¬ne the critical value of the deviation Î¸, deï¬ned such that R(Âµâ
+1
+R(Âµ+
+
+) = 0.
+
+nâ1
+
+) =
+
+R(Âµ+
+
+nâ1
+
+R(Âµâ
+1
+
+) = cos(Ï
+2
+) = cos(Ï
+2
+
++ Ï(n â 1)
+n
+â Î¸c) = 0 = cos(Ï
++ Ï
+2
+n
+
++ Î¸c) = 0 = cos(3Ï
+2
+)
+
+)
+
+Solving the above for Î¸c we obtain Î¸c = Ï
+n
+
+. Thus, for Î¸ = Î¸c = Ï
+
+n we have
+
+â¢ Âµâ
+1
+
+= 2j sin( Ï
+n
+
+)
+
+â¢ Âµ+
+
+nâ1
+
+= â2j sin( Ï
+n
+
+)
+
+Corollary 2. For n agents in linear cyclic pursuit with common deviation
+angle Î¸, there exists a critical value Î¸c = Ï
+
+n , such that
+
+64
+
+(a) if â£Î¸â£ < Î¸c, then ËM has two zero eigenvalues, ÂµÂ±
+
+values of ËM lie in the open left-half complex plane
+
+0 , and all non-zero eigen-
+
+(b) if â£Î¸â£ = Î¸c, then ËM has two zero eigenvalues, ÂµÂ±
+
+0 , and two non-zero
+eigenvalues which lie on the imaginary axis, while all remaining eigen-
+values lie in the open left-half complex plane. The eigenvalues on the
+imaginary axis are Âµ+
+
+nâ1 and Âµâ
+1
+
+(c) if â£Î¸â£ > Î¸c, then ËM has two zero eigenvalues and at least two non-zero
+eigenvalues which lie in the open right-half complex plane, therefore
+this is an unstable system which shall not be discussed herein.
+
+Appendix E Proof of Lemma 2.2
+
+We derive p(h1)
+
+k
+
+; k = 1, . . . , n from
+
+P (h1)(t) = 1
+2
+
+[eÂµ+
+
+nâ1tÎ¶ +
+
+nâ1
+
+(Î¶ +
+
+nâ1
+
+)â + eÂµâ
+
+1 tÎ¶ â
+1
+
+(Î¶ â
+1
+
+)â]P (0)
+
+. where P (h1)(t) = (p(h1)
+
+, p(h1)
+2
+We recall (see Corollary 1 in Appendix D.1) that
+
+, . . . , p(h1)
+
+)T .
+
+n
+
+1
+
+Î¶ â
+1
+
+Î¶ +
+nâ1
+
+= v1 â (1, âj)T
+= vnâ1 â (1, j)T
+
+Since vnâ1 = v1 we have Î¶ +
+
+nâ1
+
+= Î¶ â
+1
+
+Âµâ
+1
+
+Âµ+
+
+nâ1
+
+= 2j sin(Ï
+)
+n
+= â2j sin(Ï
+n
+
+)
+
+Let Y = Î¶ â
+1
+
+(Î¶ â
+1
+
+)â and Ï = 2 sin( Ï
+n
+
+). Then
+
+P (h1)(t) = 1
+2
+= 1
+2
+
+[eÏjtY + eâÏjtY ]P (0)
+
+[(Y + Y ) cos(Ït) â j(Y â Y ) sin(Ït)]P (0)
+
+= [R(Y ) cos(Ït) + I(Y ) sin(Ït)]P (0)
+
+(59)
+
+(60)
+
+(61)
+
+65
+
+Thus,
+
+p(h1)
+k
+
+(t) =
+
+n
+â
+l=1
+
+{[R(Y )]kl cos(Ït) + [I(Y )]kl sin(Ït)}pl(0)
+
+(62)
+
+where R(Y ) and I(Y ) are the real matrices, derived in Appendix E.1,
+and [R(Y )]kl, [I(Y )]kl are 2 Ã 2 blocks of R(Y ), I(Y ) matrices respectively.
+
+E.1 Derivation of R(Y ) and I(Y )
+
+Y = Î¶ â
+1
+
+(Î¶ â
+1
+
+)â
+
+= v1 â [1, âj]T
+
+Î¶ â
+1
+v1 =
+
+1â
+n
+
+[1, eâ2Ïj/n, eâ4Ïj/n, . . . , eâ2Ïj(nâ1)/n]T
+
+Using the Kronecker properties (50) and (51) we obtain
+
+Y = v1vâ
+1
+
+â [ 1
+
+j
+]
+âj 1
+
+(63)
+
+Denote W = v1vâ
+Wkl = 1
+n
+
+1 . Then
+eâ2Ïj(kâl)/n = 1
+n
+
+(cos(2Ï(k â l)/n) â j sin(2Ï(k â l)/n)) ;
+
+k, l = 1, . . . , n
+
+Then
+
+Y = W â [ 1
+
+j
+]
+âj 1
+
+and denote by [Y ]kl the 2 Ã 2 block of Y , such that
+
+[Y ]kl = Wkl [ 1
+
+j
+âj 1
+
+] ;
+
+k, l = 1, . . . , n
+
+where Wkl is a scalar. Denote
+
+Ïkl = 2Ï(k â l)/n
+
+(64)
+
+Then
+
+[Y ]kl = 1
+n
+
+(cos(Ïkl) â j sin(Ïkl)) [ 1
+
+j
+âj 1
+
+] = 1
+n
+
+[ cos(Ïkl) â j sin(Ïkl)
+j cos(Ïkl) + sin(Ïkl)
+âj cos(Ïkl) â sin(Ïkl) cos(Ïkl) â j sin(Ïkl)
+
+]
+
+66
+
+Thus,
+
+[R(Y )]kl = 1
+n
+
+[cos(Ïkl))
+sin(Ïkl)
+]
+â sin(Ïkl) cos(Ïkl)
+
+[I(Y )]kl = 1
+n
+
+cos(Ïkl)
+â sin(Ïkl)
+[
+â cos(Ïkl) â sin(Ïkl)
+
+]
+
+E.2 Proof of circular movement for agent k
+
+Let
+
+c(a)
+kl
+
+c(b)
+kl
+
+= 1
+n
+= 1
+n
+
+[cos(Ïkl)) sin(Ïkl)]
+
+[â sin(Ïkl)) cos(Ïkl)]
+
+where Ïkl is deï¬ned by (64). Then eq. (62) can be re-written as
+
+p(h1)
+k
+
+(t) = [ ak cos(Ït) + bk sin(Ït)
+âak sin(Ït) + bk cos(Ït)
+
+]
+
+Ï = 2 sin(Ï
+n
+
+)
+
+ak =
+
+bk =
+
+n
+â
+l=1
+n
+â
+l=1
+
+[c(a)
+
+kl pl(0)]
+
+[c(b)
+
+kl pl(0)]
+
+where
+
+where
+
+(65)
+
+(66)
+
+(67)
+
+(68)
+
+(69)
+
+(70)
+
+(71)
+
+â¢ c(a)
+
+kl and c(b)
+
+â¢ pl(0);
+
+kl depend only on the number of agents n, see eqs (67), (68).
+l = 1, . . . , n are the initial positions of the agents
+
+Therefore, ak, bk are scalars deï¬ned by the number of agents and the
+initial positions of the agents. Equivalently, (69) can be written as
+
+p(h1)
+k
+
+(t) = [Rk sin(Ït + Î±k)
+Rk cos(Ït + Î±k)
+
+]
+
+(72)
+
+67
+
+where
+
+= a2
++ b2
+R2
+k
+k
+k
+tan(Î±k) = ak
+bk
+
+(73)
+
+(74)
+
+Next, we show that the radius is common to all agents and the agents are
+
+equally spaced on the orbit, at angular distances
+
+2Ï
+n
+
+.
+
+E.3 Proof of movement on a common orbit
+We consider agents k and k + 1 and show that Rk+1 = Rk for k = 1, . . . , n.
+k = 2, . . . , n, i.e. R1 is the common radius.
+Thus Rk = R1;
+
+E.3.1 All orbits have a common radius
+
+k+1
+
+R2
+
+= a2
+
++ b2
+Given Ïkl = 2Ï(k â l)/n, see (64), we have
+Ïk+1,l = Ïkl + 2Ï
+n
+
+k+1
+
+k+1
+
+(75)
+
+[cos(Ïk+1,l) sin(Ïk+1,l)]
+
+)) sin(Ïkl
+
+)]
+
+2Ï
+n
+
+c(a)
+k+1,l
+
+. Therefore
+= 1
+n
+= 1
+n
+= 1
+[cos(Ïkl) cos( 2Ï
+n
+n
+kl cos(2Ï
+= c(a)
+n
+
+[cos(Ïkl + 2Ï
+n
+
+) + c(b)
+
+kl sin(2Ï
+n
+
+)
+
+) â sin(Ïkl) sin( 2Ï
+n
+
+) sin(Ïkl) cos( 2Ï
+n
+
+) + cos(Ïkl) sin( 2Ï
+n
+
+)]
+
+Similarly we obtain
+
+c(b)
+k+1,l
+
+= c(b)
+
+kl cos(2Ï
+n
+
+) â c(a)
+
+kl sin(2Ï
+n
+
+)
+
+ak+1 =
+
+n
+â
+l=1
+
+k+1,lpl(0) = ak cos(2Ï
+c(a)
+n
+) â ak sin(2Ï
+n
+
+bk+1 = bk cos(2Ï
+n
+
+)
+
+) + bk sin(2Ï
+n
+
+)
+
+(76)
+
+(77)
+
+68
+
+Rewriting eq.(75) using (76) and (77) we obtain
+
+R2
+
+k+1
+
+2
+
+))
+
+= a2
+k
+
+= (ak cos(2Ï
+n
+(cos2(2Ï
+n
++2akbk cos(2Ï
+n
+
+) + bk sin(2Ï
+n
+) + sin2(2Ï
+)) + b2
+k
+n
+) â 2akbk cos(2Ï
+n
+
+)
+
+= a2
+k
+
++ b2
+k
+
+= R2
+k
+
++ (bk cos(2Ï
+n
+(sin2(2Ï
+n
+
+) â ak sin(2Ï
+n
+) + cos2(2Ï
+n
+
+))
+
+2
+))
+
+Since (81) holds for k = [1, . . . , n]mod(n) we have
+
+â Rk+1 = Rk = R1
+
+âk â [1, . . . , n]mod(n)
+
+E.3.2 Derivation of the common radius
+
+From (82) we see that R1 is the common radius, r. Thus,
+
+â
+
+r =
+
+a2
+1
+
++ b2
+1
+
+.
+
+where
+
+a1 =
+
+b1 =
+
+n
+â
+l=1
+n
+â
+l=1
+
+[c(a)
+
+1l pl(0)]
+
+[c(b)
+
+1l pl(0)]
+
+c(a)
+1l
+
+c(b)
+1l
+
+= 1
+n
+= 1
+n
+
+[cos(Ï1l)) sin(Ï1l)]
+
+[â sin(Ï1l)) cos(Ï1l)]
+
+and Ï1l = 2Ï
+n
+
+(1 â l). Using
+
+cos(Ï1l) = cos(2Ï
+n
+sin(Ï1l) = sin(2Ï
+n
+
+) cos(2Ï
+n
+) cos(2Ï
+n
+
+l) + sin(2Ï
+n
+l) + cos(2Ï
+n
+
+) sin(2Ï
+n
+) sin(2Ï
+n
+
+l)
+
+l)
+
+69
+
+(78)
+
+(79)
+
+(80)
+
+(81)
+
+(82)
+
+(83)
+
+(84)
+
+we obtain, after some algebra
+
+a1 = cos(2Ï
+n
+b1 = â sin(2Ï
+n
+
+)c1 + sin(2Ï
+)c2
+n
+)c1 + cos(2Ï
+n
+
+)c2
+
+where
+
+c1 = 1
+n
+c2 = 1
+n
+
+n
+â
+l=1
+n
+â
+l=1
+
+[cos( 2Ï
+
+n l) â sin( 2Ï
+
+n l)] pl(0)
+
+[sin( 2Ï
+
+n l) cos( 2Ï
+
+n l)] pl(0)
+
+Therefore we have
+
+r2 = a2
+1
+
++ b2
+1
+â
+
+= c2
+1
+
++ c2
+2
+
+c2
+1
+
++ c2
+2
+
+â r =
+
+(85)
+
+(86)
+
+(87)
+
+where c1, c2 are given by (85),(86), respectively.
+
+E.4 Equal spacing between agents on the orbit
+
+In this section we show that the angular distance between consecutive agents
+is 2Ï
+
+n , i.e. we show Î±k+1 = Î±k + 2Ï
+n .
+Corresponding to (74) we have
+
+tan(Î±k+1) = ak+1
+bk+1
+
+Recalling (see eqs. (76) and (77)
+
+ak+1 = ak cos(2Ï
+n
+bk+1 = bk cos(2Ï
+n
+
+) + bk sin(2Ï
+n
+) â ak sin(2Ï
+n
+
+)
+
+)
+
+tan(Î±k+1) =
+
+ak cos( 2Ï
+n
+bk cos( 2Ï
+n
+
+) + bk sin( 2Ï
+n
+) â ak sin( 2Ï
+n
+
+)
+)
+
+70
+
+(88)
+
+(89)
+
+From (74) we have
+
+sin(Î±k) =
+
+cos(Î±k) =
+
+akâ
+a2
+k
+bkâ
+a2
+k
+
++ b2
+k
+
++ b2
+k
+
+Thus we can rewrite (89) as
+â
+(
+â
+
+tan(Î±k+1) =
+
+a2
+k
+a2
+k
+
++ b2
+k
++ b2
+k
+
+) sin(Î±k + 2Ï
+n
+) cos(Î±k + 2Ï
+n
+
+)
+
+)
+
+= tan(Î±k + 2Ï
+n
+
+)
+
+(
+
+â Î±k+1 = Î±k + 2Ï
+n
+
+(90)
+
+71
+
+References
+
+[1] R.M. Gray. Toeplitz and circulant matrices: A review. Foundations and
+
+Trends in Communications and Information Theory, 2(3), 2005.
+
+[2] R.A Horn and C.R. Johnson. Matrix Analysis. Cambridge University
+
+Press, 2013.
+
+[3] A. Jadbabaie, J. Lin, and A. S. Morse. Coordination of groups of mobile
+autonomous agents using nearest neighbor rules. IEEE Transactions on
+automatic Control, 48:988â1001, 2002.
+
+[4] Thomas Kailath. Linear Systems. Prentice Hall, 1980.
+
+[5] Z. Lin, M.E. Broucke, and B.A. Francis. Local control strategies for
+groups of mobile autonomous agents. In Proc. 42nd IEEE Conf. Decision
+and Control, pages 1006 â 1011, 2003.
+
+[6] R. Olfati-Saber, A. Fax, and R. Murray. Agreement problems in net-
+works with directed graphs and switching topology. In Proceedings of
+the 42nd IEEE Conference on Decision and Control, 2003.
+
+[7] R. Olfati-Saber, A. Fax, and R. Murray. Consensus and cooperation in
+
+networked multiagents systems. Proceedings of IEEE, 95-1, 2007.
+
+[8] M. Pavone and E. Frazzoli. Decentralized policies for geometric pattern
+formation and path coverage. Journal of Dynamic Systems, Measure-
+ment, and Control, 129(5), 2007.
+
+[9] J. L. Ramirez, M. Pavone, E. Frazzoli, and D. W. Miller. Distributed
+control of spacecraft formation via cyclic pursuit: Theory and experi-
+ments. In 2009 American Control Conference, pages 4811â4817, 2009.
+
+[10] J.L. Ramirez. New Decentralized Algorithms for Spacecraft Formation
+
+Control Based on a Cyclic Approach. PhD thesis, M.I.T., 2010.
+
+[11] W. Ren. Collective motion from consensus with cartesian coordinate
+In Proc. 2008 IEEE
+
+coupling - part i: Single-integrator kinematics.
+Conference on Decision and Control, pages 1006â1011, 2008.
+
+[12] K. Schacke. On the kronecker product. http://www.math.uwaterloo.
+ca/~hwolkowi/henry/reports/kronthesisschaecke04.pdf, 2013.
+
+72
+
+[13] I. Segall and A. Bruckstein. Stochastic broadcast control of multi-agent
+
+swarms. arXiv:1607.04881, 2016.
+
+[14] I. Segall and A. Bruckstein. Guidance of agents in cyclic pursuit.
+
+arXiv:2007.00949, 2020.
+
+[15] A. Sinha and D. Goose. Control of multiagent systems using linear
+cyclic pursuit with heterogenous controller gains. Journal of Dynamic
+Systems, Measurement, and Control, 129:742â748, 2005.
+
+73
+
+

@@ -1,0 +1,1607 @@
+When Do Introspection Axioms Matter for Multi-Agent
+Epistemic Reasoning?
+
+Yifeng Ding
+University of California, Berkeley
+
+Wesley H. Holliday
+University of California, Berkeley
+
+Cedegao Zhang
+University of California, Berkeley
+
+yf.ding@berkeley.edu
+
+wesholliday@berkeley.edu
+
+cedzhang@berkeley.edu
+
+The early literature on epistemic logic in philosophy focused on reasoning about the knowledge or
+belief of a single agent, especially on controversies about âintrospection axiomsâ such as the 4 and
+5 axioms. By contrast, the later literature on epistemic logic in computer science and game theory
+has focused on multi-agent epistemic reasoning, with the single-agent 4 and 5 axioms largely taken
+for granted. In the relevant multi-agent scenarios, it is often important to reason about what agent A
+believes about what agent B believes about what agent A believes; but it is rarely important to reason
+just about what agent A believes about what agent A believes. This raises the question of the extent
+to which single-agent introspection axioms actually matter for multi-agent epistemic reasoning. In
+this paper, we formalize and answer this question. To formalize the question, we ï¬rst deï¬ne a set of
+multi-agent formulas that we call agent-alternating formulas, including formulas like (cid:50)a(cid:50)b(cid:50)a p but
+not formulas like (cid:50)a(cid:50)a p. We then prove, for the case of belief, that if one starts with multi-agent K
+or KD, then adding both the 4 and 5 axioms (or adding the B axiom) does not allow the derivation of
+any new agent-alternating formulasâin this sense, introspection axioms do not matter. By contrast,
+we show that such conservativity results fail for knowledge and multi-agent KT, though they hold
+with respect to a smaller class of agent-nonrepeating formulas.
+
+1 Introduction
+
+The classic early works on epistemic logic in philosophy by Hintikka [13] and Lenzen [19] focused on
+the logic of knowledge and belief for a single agent,1 especially on controversies about âintrospection
+axiomsâ: for example, if an agent knows p, does she know that she knows p (formalized by the 4
+axiom of modal logic, Ka p â KaKa p)? If an agent does not know p, does she know that she does not
+know p (formalized by the 5 axiom of modal logic, Â¬Ka p â KaÂ¬Ka p)? By contrast, the later literature
+on epistemic logic in computer science (e.g., [21, 5]) and game theory (e.g., [2]) focused on multi-agent
+epistemic reasoning, especially as required for coordination between agents or strategic reasoning against
+opponents. In this literature, the single-agent introspection principles formalized by the 4 and 5 axioms
+are largely taken for granted (for exceptions, see, e.g., [25, 17, 15]). In the relevant multi-agent scenarios,
+it is often important to reason about what agent A believes about what agent B believes about what agent
+A believes (BaBbBa p); but it is rarely important to reason just about what agent A believes about what
+agent A believes (BaBa p). Consider the following famous examples of multi-agent epistemic reasoning.
+
+Muddy children We assume familiarity with the 3-agent Muddy Children puzzle where two children
+have mud on their foreheads (see, e.g., Â§ 1.1 of [5]). The following is a derivation in the bimodal version
+of the minimal normal modal logic K showing how one of the muddy children comes to realize that
+
+1Only Â§Â§ 4.1-4.6 and Â§ 4.13 of [13] and pp. 59, 66, and 70 of [19] contain discussion of multi-agent formulas.
+
+L.S. Moss (Ed.): TARK 2019
+EPTCS 297, 2019, pp. 121â139, doi:10.4204/EPTCS.297.9
+
+c(cid:13) Y. Ding, W. H. Holliday, & C. Zhang
+This work is licensed under the
+Creative Commons Attribution License.
+
+122
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+she is muddy.2 Note that (i) no introspection axioms are used, and in fact (ii) modalities occur only
+âalternatingly,â in the sense that no occurrence of a modality for an agent i has scope over another
+occurrence of a modality for i without an intervening occurrence of some modality for an agent j (cid:54)= i.
+
+(a) (cid:50)1(cid:50)2((Â¬m1 â§ Â¬m3) â m2)
+(b) (cid:50)1(cid:50)2Â¬m3
+(c) (cid:50)1(Â¬m1 â (cid:50)2Â¬m1)
+(d) (cid:50)1Â¬(cid:50)2m2
+
+(assumption: 1 knows that 2 knows that at least one child is muddy)
+
+(assumption: 1 knows that 2 can see 3, who is not muddy)
+
+(assumption: 1 knows that 2 can see 1)
+
+(assumption: 1 knows that 2 did not step forward after the parentâs ï¬rst question)
+
+1. (cid:50)2((Â¬m1 â§ Â¬m3) â m2) â ((cid:50)2(Â¬m1 â§ Â¬m3) â (cid:50)2m2)
+2. (cid:50)1(cid:50)2((Â¬m1 â§ Â¬m3) â m2) â (cid:50)1((cid:50)2(Â¬m1 â§ Â¬m3) â (cid:50)2m2)
+3. (cid:50)1((cid:50)2(Â¬m1 â§ Â¬m3) â (cid:50)2m2)
+4. (cid:50)1(Â¬(cid:50)2m2 â Â¬(cid:50)2(Â¬m1 â§ Â¬m3))
+5. (cid:50)1Â¬(cid:50)2(Â¬m1 â§ Â¬m3)
+6. Â¬(cid:50)2(Â¬m1 â§ Â¬m3) â Â¬((cid:50)2Â¬m1 â§ (cid:50)2Â¬m3)
+7. (cid:50)1Â¬(cid:50)2(Â¬m1 â§ Â¬m3) â (cid:50)1Â¬((cid:50)2Â¬m1 â§ (cid:50)2Â¬m3)
+8. (cid:50)1Â¬((cid:50)2Â¬m1 â§ (cid:50)2Â¬m3)
+9. (cid:50)1Â¬(cid:50)2Â¬m1
+10. (cid:50)1m1
+
+(K axiom)
+
+(from (1) by RM)
+
+(from (a) and (2) by PL)
+
+(from (3) using PL and RM)
+
+(from (d) and (4) by K and PL)
+
+(theorem of K)
+
+(from (6) by RM)
+
+(from (5) and (7) by PL)
+
+(from (b) and (8) using PL, Nec, and K)
+
+(from (c) and (9) using PL, Nec, and K)
+
+Backward induction We assume familiarity with the classic backward induction reasoning in exten-
+sive form games (see, e.g., [22, Â§ 6.2]). In [26], Vilks provides a syntactical derivation of backwards
+induction in the bimodal version of the modal logic KT, which we reproduce below. Again note that (i)
+no introspection axioms are used, and in fact (ii) modalities occur only âalternatinglyâ as above.
+
+1
+
+a
+
+2
+
+b
+
+2
+
+c
+
+d
+(4, 2)
+
+e
+(2, 4)
+
+f
+(1, 1)
+
+g
+(3, 3)
+
+â¢ p1 := ab â§ Â¬ac â§ bd â§ Â¬be â§ Â¬c f â§ Â¬cg
+
+â¢ p2 := ab â§ Â¬ac â§ Â¬bd â§ be â§ Â¬c f â§ Â¬cg
+
+â¢ p3 := Â¬ab â§ ac â§ Â¬bd â§ Â¬be â§ c f â§ Â¬cg
+
+â¢ p4 := Â¬ab â§ ac â§ Â¬bd â§ Â¬be â§ Â¬c f â§ cg
+
+(both play left)
+
+(1 play left, 2 play right)
+
+(1 play right, 2 play left)
+
+(both play right)
+
+2âPLâ stands for propositional logic, âNecâ stands for the necessitation rule, and âRMâ stands for the monotonicity rule that
+if Ï â Ï is a theorem, then so is (cid:50)iÏ â (cid:50)iÏ. Note that in the derivation, RM is only applied to theorems of the logic. For
+example, to obtain (4), RM is applied to the theorem (Ï â Ï) â (Â¬Ï â Â¬Ï) where Ï := (cid:50)2(Â¬m1 â§ Â¬m3) and Ï := (cid:50)2m2.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+123
+
+â¢ q := d >1 e â§ d >1 f â§ d >1 g â§ e >1 f â§ g >1 e â§ g >1 f â§ e >2 d â§ d >2 f â§ g >2 d â§ e >2 f â§ e >2
+(playersâ preferences)
+
+g â§ g >2 f
+
+â¢ G := (p1 â¨ p2 â¨ p3 â¨ p4) â§ q
+
+(description of the game)
+
+(a) (cid:50)1G
+(assumption: 1 knows the game)
+(b) (cid:50)1((bd â¨be) â (cid:51)2be) (assumption: 1 knows that if 2 is at b then 2 considers the move be possible)
+(c) (cid:50)1((c f â¨ cg) â (cid:51)2cg)
+(assumption: similar to (b))
+(d) (cid:50)2((ab â¨ ac) â (cid:51)1ac)
+(e) (cid:50)1((e >2 d â§ (cid:51)2be) â Â¬bd)
+(f) (cid:50)1((g >2 f â§ (cid:51)2cg) â Â¬c f )
+(assumption: similar to (e))
+(g) (cid:0)(cid:50)1(ab â be)â§(cid:50)1(ac â cg)â§g >1 eâ§(cid:51)1ac(cid:1) â Â¬ab (assumption: follows from 1 being rational)
+1. (cid:50)1(ab â be)
+2. (cid:50)1(ac â cg)
+3. (ab â¨ ac) â (cid:51)1ac
+4. G
+
+(assumption: follows from assuming 1 knows that 2 is rational)
+
+(from (a), (b), and (e) using PL, Nec, and K)
+
+(from (a), (c), and (f) using PL, Nec, and K)
+
+(assumption: similar to (b))
+
+(from (d) by T)
+
+(from (a) by T)
+
+5. ab â¨ ac
+6. (cid:51)1ac
+7. Â¬ab
+
+8. ac
+
+9. ac â cg
+
+10. ac â§ cg
+
+(from (4) by PL)
+
+(from (3) and (5) by PL)
+
+(from (g), (1), (2), (4), and (6) by PL)
+
+(from (5) and (7) by PL)
+
+(from (2) by T)
+
+(from (8) and (9) by PL)
+
+In general, in typical strategic form games a player needs to reason about the beliefs of her oppo-
+nents, as which action is best for her depends on her opponentsâ actions, which in turn depend on their
+beliefs. On the other hand, reasoning about oneâs own beliefs seems unnecessary, as the dependencies
+just mentioned seem to be tight: which action is the best for a player depends on what her opponentsâ
+actions are alone, which in turn depend on their beliefs over what their opponentsâ actions are alone. We
+can then iterate this reasoning, and it seems there is no place for reasoning about oneâs own beliefs. In
+Appendix A we provide a formalization of this idea using Kripke models of games in the style of [24]
+and [4], where only formulas with no modality scoping immediately over a modality of the same agent
+are used to ensure that rationalizable strategies are played.3
+
+These considerations raise the question of the extent to which single-agent introspection axioms
+actually matter for multi-agent epistemic reasoning. In particular, as motivated by the above examples,
+we can ask: in situations where the agents and also the analyst only need to reason about formulas where
+modalities occur only alternatingly, would the commonly debated introspection axioms still matter, in
+the sense that assuming them allows us to derive more conclusions?
+
+This question has indeed been partially investigated previously, though motivated not by the question
+of whether introspection axioms may in practice be âirrelevantâ but rather by the goal of devising efï¬cient
+
+3We are not arguing that introspection assumptions never matter in multi-agent epistemic reasoning. For example, it is
+
+shown in [8, 18] that Aumannâs [1] theorem on agreeing to disagree fails without the assumption of positive introspection.
+
+124
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+reasoning algorithms for the system K45. In [16], it is explicitly stated (Lemma 5) that when restricted
+to the fragment of the multi-agent language in which modalities occur only in the agent-alternating way,
+K and K45 derive the same set of theorems.4 This facilitates reasoning in K45 since it is also known that
+every formula is provably equivalent in K45 to an agent-alternating formula,5 which is then derivable in
+K45 iff it is derivable K, making the efï¬cient methods of deciding theoremhood in K applicable to K45.
+Subsequently, the idea of agent-alternating formulas was also used in the axiomatization of reï¬nement
+quantiï¬cation logics [10, 9] and in epistemic planning [14, 20, 6].
+
+In this paper, we study the question more systematically. In Â§ 2, we provide multiple ways to deï¬ne
+the agent-alternating formulas, which include formulas like (cid:50)a((cid:50)b p â§ (cid:50)b(cid:50)aq) but not (cid:50)a((cid:50)b p â§ (cid:50)aq).
+In Â§ 3, we ï¬rst provide a bisimulation notion for the fragment of agent-alternating formulas and then use
+it to completely chart the relationships of the modal logics in the well-known âModal Logic Cubeâ when
+restricted to the fragment of agent-alternating formulas. We prove that if one starts with multi-agent K
+or KD, then adding both the 4 and 5 axioms (or adding the B axiom) does not allow the derivation of any
+new agent-alternating formulaâin this sense, introspection axioms do not matter. By contrast, we show
+that such conservativity results fail for knowledge and multi-agent KT, though they hold with respect to
+a smaller class of agent-nonrepeating formulas introduced in Â§ 4. In Â§ 5, we report on preliminary inves-
+tigations of how these results are affected in the presence of a common belief operator in the language.
+Finally, we conclude in Â§ 6 with some directions for future research.
+
+2 Agent-Alternating Formulas
+
+Fix a set A of agents with |A| â¥ 2 and a countably inï¬nite set Prop of proposition letters.
+
+Deï¬nition 2.1. The language of multi-agent epistemic logic is deï¬ned inductively by
+
+L (cid:51) Ï ::= p | Â¬Ï | (Ï â§ Ï) | (cid:50)aÏ
+
+where p â Prop and a â A. Connectives â, â¨, and (cid:51)a are abbreviations as usual.
+
+We adopt the standard deï¬nition of when one formula is a subformula of another.
+
+Notation 2.2. For Ï, Ï â L , let Ï (cid:52) Ï indicate that Ï is a subformula of Ï and Ï âº Ï that Ï is a proper
+subformula of Ï.
+
+Intuitively, agent-alternating formulas are those formulas in which an operator (cid:50)a does not immedi-
+ately scope over another operator (cid:50)a of the same agent a. We now offer two ways to precisely capture
+this intuition, one using immediate subformulas and occurrences, and one using simultaneous induction.
+Deï¬nition 2.3. For Î±, Î² â L , we say Î± is an immediate subformula of Î² , and write Î± âºÂ· Î² , if Î² is either
+Â¬Î±, or (Î± â§ Î³) for some Î³ â L , or (Î³ â§ Î±) for some Î³ â L , or (cid:50)aÎ± for some a â A. Note that the
+reï¬exive and transitive closure of âºÂ· is precisely (cid:52).
+
+For any Ï â L , an occurrence type O of Ï is a ï¬nite sequence (cid:104)O1, O2, Â· Â· Â· , Olen(O)(cid:105) of formulas in
+L such that Olen(O) = Ï and for each i between 1 and len(O) â 1, Oi âºÂ· Oi+1. Let OC(Ï) be the set of
+occurrence types of Ï and â¤ the preï¬x-extension relation: O â¤ O(cid:48) iff O(cid:48) is a sufï¬x of O. It is then easy
+to see that (cid:104)OC(Ï), â¤(cid:105) is a (downward-growing) tree.
+
+We call an occurrence type O of Ï with O1 = Î± an Î±-occurrence of Ï. If this Î± is (cid:50)aÎ² for some
+Î² â L and a â A, then we also call O a (cid:50)a-occurrence. We typically denote an Î±-occurrence by O[Î±].
+
+4The authors refer to [11] for the proof of this lemma, though we are unable to locate an explicit proof there.
+5In Appendix B, we show the semantic counterpart of this proposition and further show that 4 and 5 are in a sense necessary.
+
+See also Theorem 1 of [23] for an early precursor of this result.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+125
+
+Deï¬nition 2.4. A formula Ï â L is an agent-alternating formula iff for any a â A and any two different
+(cid:50)a occurrences O[(cid:50)aÎ±] and O[(cid:50)aÎ² ] such that O[(cid:50)aÎ±] â¤ O[(cid:50)aÎ² ], there is a b â A \ {a} and a (cid:50)b-
+occurrence O[(cid:50)bÎ³] of Ï such that O[(cid:50)aÎ±] â¤ O[(cid:50)bÎ³] â¤ O[(cid:50)aÎ² ]. In other words, Ï is agent alternating iff
+in the tree (cid:104)OC(Ï), â¤(cid:105), between any two (cid:50)a-occurrences, there is a (cid:50)b-occurrence for some b â A \ {a}.
+Example 2.5. Assuming a, b, c are different elements in A, examples of agent-alternating formulas in-
+clude:
+
+(cid:50)a p, (cid:50)a(cid:50)b p, (cid:50)a(cid:50)b(cid:50)a p, (cid:50)a(cid:50)b(cid:50)c p, (cid:50)a(p â§ (cid:50)bq).
+
+Non-examples include:
+
+(cid:50)a(cid:50)a p, (cid:50)a(cid:50)b(cid:50)a(cid:50)a p, (cid:50)a((cid:50)b(cid:50)a p â§ (cid:50)aq).
+
+We now give an equivalent inductive deï¬nition of the set of agent-alternating formulas.
+
+Deï¬nition 2.6. Deï¬ne a family {Lâa}aâA of languages through the following simultaneous induction:
+
+Lâa (cid:51) Ï ::= p | (cid:50)xÏ | Â¬Ï | (Ï â§ Ï)
+
+where p â Prop and x â A \ {a} while Ï â Lâx. Then the language Lalt is deï¬ned inductively by
+
+where p â Prop and Ï â (cid:83)
+
+aâA
+
+Lâa.
+
+Lalt (cid:51) Ï ::= p | Ï | Â¬Ï | (Ï â§ Ï)
+
+Note that (cid:83)
+is in Lalt but not in (cid:83)
+
+aâA
+
+Lâx.
+
+xâA
+
+Lâa does not cover all of Lalt. For example, when A = {a, b} with a (cid:54)= b, (cid:50)a p â§ (cid:50)b p
+
+It is not hard to verify that the two deï¬nitions above are equivalent, suggesting that our formal
+deï¬nitions captures the intended intuition. Due to limited space, we omit the proof of this equivalence,
+but the idea is simply to examine the parsing trees of formulas.
+Proposition 2.7. For any Ï â L , Ï is agent alternating iff Ï â Lalt.
+
+3 Collapsing logics by Lalt
+We now investigate which logics are indistinguishable by formulas in Lalt. For any normal modal logic
+L (deï¬ned as a set of formulas in L satisfying the usual closure properties), let L|alt := L â© Lalt. Then
+the general question is: for which modal logics L and L(cid:48) are L|alt and L(cid:48)|alt the same?
+
+More speciï¬cally, since we are mainly interested in the introspection axioms 4 and 5, we focus on
+the logics appearing in the classic modal logic cube shown in Figure 1 below.6 Our main result is that
+the two shaded areas in Figure 1 are collapsed in Lalt but no other logics are. To establish this result, we
+need to ï¬rst develop bisimulation and unraveling concepts for agent-alternating formulas.
+Notation 3.1. For convenience, we consider alt as an object not in A. Also for any set L (cid:48) of formulas,
+M , u â¡L (cid:48) N , v means that for all Ï â L (cid:48), M , u |= Ï iff N , v |= Ï.
+
+Deï¬nition 3.2 (Agent-alternating bisimulation relation). An agent-alternating bisimulation family be-
+tween two models M and N is a family of binary relations {(cid:28)a}aâAâª{alt} between M and N such
+that for every a â A âª {alt} and every u â M and v â N such that u (cid:28)a v:
+
+â¢ (Atom) for all p â Prop, u â V M (p) iff v â V N (p);
+
+6Figure 1 is reproduced from [7].
+
+126
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+â¢ (Zig) for all b â A \ {a} and u(cid:48) â RM
+â¢ (Zag) for all b â A \ {a} and v(cid:48) â RN
+
+x (u), there is v(cid:48) â RN
+x (v), there is u(cid:48) â RM
+Then we say M , u is agent-alternating bisimilar to N , v if there is an agent-alternating bisimulation
+family {(cid:28)a}aâAâª{alt} between M and N such that u (cid:28)alt v.
+Lemma 3.3. For any models M and N , agent-alternating bisimulation family {(cid:28)a}aâAâª{alt} between
+M and N , and a â A, if u (cid:28)a v, then M , u â¡Lâa
+
+x (v) such that u(cid:48) (cid:28)b v(cid:48);
+x (u) such that u(cid:48) (cid:28)b v(cid:48).
+
+N , v, and if u (cid:28)alt v, then M , u â¡Lalt
+
+N , v.
+
+Proof. A simple induction on modal depth.
+
+Deï¬nition 3.4 (Agent-alternating unraveling). Given a model M = (cid:104)W M , {RM
+alternating unravelings are all models of the form (cid:104)S, {Ra}aâA,V (cid:105) satisfying the following conditions:
+
+a }aâA,V M (cid:105), its agent-
+
+â¢ S is the set of all nonempty ï¬nite sequences s of pairs in (A âª {alt}) ÃW M such that
+
+(1) s1 â {alt} ÃW M ,
+(2) si â A ÃW M for all i = 2 . . . len(t), and
+(3) letting (cid:104)ai, wi(cid:105) = si for all i = 1 . . . len(s), wiRM
+ai+1
+
+wi+1 and ai (cid:54)= ai+1 for all i = 1 . . . len(s) â 1;
+â¢ for all a â A âª {alt} and s â S such that slen(s) = (cid:104)a, w(cid:105), for all b â A \ {a}, Rb(s) = {s + (cid:104)b, w(cid:48)(cid:105) |
+
+w â RM
+
+b (w))} (note that this is precisely {t â S | s = t1...len(t)â1,tlen(t) â {b} ÃW M };
+
+â¢ for every s â S and p â Prop, s â V (p) iff slen(s) â (A âª {alt}) ÃV M (p).
+Let Alt(M ) denote the set of all agent alternating unraveling of M . Then for every N â Alt(M ),
+
+we deï¬ne a family of binary relations between M and N , which we denote as {PN
+
+a }aâAâª{alt}, by
+
+uPN
+
+a s ââ slen(s) = (cid:104)a, u(cid:105).
+
+Lemma 3.5. For any model M and N â Alt(M ), {PN
+family between M and N . Consequently, by Lemma 3.3, for every w â M , M , w â¡Lalt
+Proof. Immediate from Deï¬nition 3.4 and the recursive structure of Lalt as deï¬ned in Deï¬nition 2.6.
+
+a }aâAâª{alt} is an agent-alternating bisimulation
+N , (cid:104)(cid:104)alt, w(cid:105)(cid:105).
+
+Now we can formally state our main result.
+
+Theorem 3.6. Among the systems displayed in Figure 1:
+
+1. K|alt = K4|alt = K5|alt = K45|alt = KB|alt;
+
+2. KD|alt = KD4|alt = KD5|alt = KD45|alt = KDB|alt;
+3. no other collapse happens when restricting to Lalt.
+
+The results are summarized in Figure 2, where systems in the same shaded region in Figure 1 collapse.
+
+Proof. Combining Proposition 3.7, 3.8, and 3.9 below, we have all the collapsing and non-collapsing
+results in the three layers of Figure 1. To see that the three layers do not collapse, it is enough to observe
+that the axioms D and T are in Lalt.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+127
+
+S4
+
+S5
+
+KD4
+
+KD45
+
+KD5
+
+B
+
+KDB
+
+K4
+
+K45
+
+KB5
+
+K5
+
+KB
+
+T
+
+KD
+
+K
+
+S4|alt
+
+S5|alt
+
+T|alt
+
+B|alt
+
+KD|alt
+(= KD4|alt, KD5|alt,
+KD45|alt, KDB|alt)
+
+K|alt
+(= K4|alt, K5|alt,
+K45|alt, KB|alt)
+
+KB5|alt
+
+Figure 1: Systems of interest
+
+Figure 2: Systems when restricted to Lalt
+
+Proposition 3.7 (Collapsing 4 and 5). K|alt = K45|alt and KD|alt = KD45|alt
+
+Proof. The right-to-left direction of both equations is trivial. For the left-to-right direction, by complete-
+ness, we need only show that for every Ï â Lalt, if Ï is satisï¬ed by a pointed model, then it is also
+satisï¬ed by a pointed model based on a transitive and Euclidean frame. Further, if the ï¬rst model is
+based on a serial frame, then the frame of the second model is also serial. So it is enough to show the
+following: for every pointed model M , u, there exists a pointed model N , v such that:
+
+is serial, then for every a â A, RN
+a
+
+1. if for every a â A, RM
+a
+2. for every a â A, RN
+a
+3. M , u â¡Lalt
+Now let N = (cid:104)S, {Ra}aâA,V (cid:105) be constructed by adding to the deï¬nition of being in Alt(M ) as in
+
+is transitive and Euclidean;
+
+is also serial;
+
+N , v.
+
+Deï¬nition 3.4 the following:
+
+â¢ for all a â A and s â S such that slen(s) â {a} ÃW M , Ra(s) = Ra(s1...len(s)â1).
+
+This construction is possible because crucially the deï¬nition of being an agent-alternating unraveling
+of M is silent on what Ra(s) should be when s ends in {a} Ã W M for a â A. Also, when s ends in
+{a} Ã W M for some a â A, len(s) > 1 and s1...len(s)â1 does not end in {a} Ã W M , which means that
+Ra(s1...len(s)â1) is deï¬ned in Deï¬nition 3.4.
+
+Now we can show that N , (cid:104)(cid:104)alt, u(cid:105)(cid:105) satisï¬es all the requirements. It is not hard to see that if M
+is serial, then so is N . The key observation is that for any s â S, letting (cid:104)a, w(cid:105) = slen(s), Ra(s) must
+include s, and Rb(s) for any b â A \ {s} must be nonempty since RM
+b (w) is nonempty. Hence we are
+done with (1). To see that for every a â A, Ra is transitive and Euclidean, note that for any s â S, letting
+(cid:104)x, w(cid:105) = slen(s), we have the following:
+
+â¢ If x (cid:54)= a, then for every t â Ra(s), t ends in {a} Ã W M , and t1...len(t)â1 = s. This means that our
+
+construction above applies to t and Ra(t) = Ra(s).
+
+â¢ If x = a, then our construction above applies to s:
+
+letting s0 = s1...len(s)â1, s0 does not end in
+{a} Ã W M , and Ra(s) = Ra(s0) by our deï¬nition. Then it is easy to see that for every t â Ra(s),
+t â Ra(s0), and t1...len(t)â1 is also s0. This means that t ends in {a} Ã W M , and our construction
+above also applies to t. Hence Ra(t) = Ra(s0) = Ra(s).
+
+128
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+Adding the above two points together, we have shown that for every s â S and t â Ra(s), Ra(t) = Ra(s).
+This is precisely transitivity plus Euclideanness.
+
+By Lemma 3.5, M , u â¡Lalt
+
+N , (cid:104)(cid:104)alt, u(cid:105)(cid:105) since {PN
+
+a }aâAâª{alt} is an agent-alternating bisimulation
+
+family and uPN
+
+alt (cid:104)(cid:104)alt, u(cid:105)(cid:105). Thus, all three requirements are satisï¬ed, so we are done.
+
+Proposition 3.8 (Collapsing B). K|alt = KB|alt and KD|alt = KDB|alt
+
+Proof. Following the strategy of the proof of Proposition 3.7, we only need to show that for every pointed
+model M , u, there exists an agent-alternating unraveling N = (cid:104)S, {Ra}aâA,V (cid:105) of M such that for every
+a â A, Ra is symmetric.
+
+Indeed, let N be the agent-alternating unraveling of M such that for every a â A and s â S such that
+slen(s) â {a} Ã W M , Ra(s) = {s1...len(s)â1}. Then it is easy to see that for every a â A, Ra is symmetric:
+for every s,t â S, if sRat, then we have the following.
+
+â¢ If slen(s) â {a} ÃW M , then t must be s1...len(s)â1 by our construction. By the deï¬nition of unravel-
+
+ing, tRas.
+
+â¢ If slen(s) (cid:54)â {a} Ã W M , then t must be s + (cid:104)a, w(cid:105) for some w such that letting (cid:104)b, w0(cid:105) = slen(s),
+
+w0RM
+
+a w. Then our construction applies to t and tRas.
+
+Putting the above two points together, Ra is symmetric, so we are done.
+
+Proposition 3.9 (Non-collapsing results). B|alt \ S4|alt, S4|alt \ B|alt, KB5|alt \ S4|alt, KB5|alt \ B|alt are
+all nonempty.
+
+Proof. Let a, b be two different elements in A. In B (= KTB), we have the following theorems.
+
+(cid:96)B (cid:50)b(cid:50)a p â (cid:50)a p
+(cid:96)B (cid:51)a(cid:50)b(cid:50)a p â (cid:51)a(cid:50)a p
+(cid:96)B (cid:51)a(cid:50)a p â p
+(cid:96)B (cid:51)a(cid:50)b(cid:50)a p â p
+
+(1)[T]
+(2)[RM, 1]
+(3)[B]
+(4)[MP, 2, 3].
+
+Now the last formula, formula (4), is agent-alternating. However, (cid:54)(cid:96)S4 (4). Using soundness, it is enough
+to ï¬nd an S4 model refuting (4). Consider the following model:
+
+w1
+
+a
+
+w2
+
+p
+
+M
+
+a, b
+
+a, b
+
+By focusing on the restriction of M to a and b, respectively, it is easy to see that M is based on an S4
+frame. Indeed, the accessibility relation for b is even an equivalence relation. Now, M , w1 |= (cid:51)a(cid:50)b(cid:50)a p
+since M , w2 |= (cid:50)b(cid:50)a p. Also we have M , w1 (cid:54)|= p. Hence M , w1 (cid:54)|= (4), and thus (cid:54)(cid:96)S4 (4). This shows
+that B|alt \ S4|alt is nonempty.
+
+In the same spirit, (cid:51)a(cid:50)b(cid:51)a p â (cid:51)a p â S4|alt \ B|alt. The derivation of (cid:51)a(cid:50)b(cid:51)a p â (cid:51)a p in S4 is
+essentially the same as above: using T we can eliminate the (cid:50)b in between the two (cid:51)aâs. A symmetric
+countermodel of this formula is as follows.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+129
+
+w1
+
+w2
+
+a
+
+a
+
+w3
+
+p
+
+M (cid:48)
+
+a, b
+
+a, b
+
+a, b
+
+In KB5 we do not have the T axiom. So (cid:51)a(cid:50)b(cid:50)a p â p and (cid:51)a(cid:50)b(cid:51)a p â (cid:51)a p are not in KB5.
+However, we only need to add (cid:50)a(cid:51)b(p â¨ Â¬p) to the antecedents. Speciï¬cally, note that the formula
+((cid:51)b(p â¨ Â¬p) â§ (cid:50)bq) â q is in KB5. Hence:
+
+â¢ (cid:51)a((cid:51)b(p â¨ Â¬p) â§ (cid:50)b(cid:50)a p) â p â KB5|alt \ S4|alt;
+â¢ (cid:51)a((cid:51)b(p â¨ Â¬p) â§ (cid:50)b(cid:51)a p) â (cid:51)a p â KB5|alt \ B|alt.
+
+Their derivations in KB5 are in the same spirit as above, and M and M (cid:48) can be reused.
+
+4 Agent-nonrepeating formulas
+
+The above non-collapsing results raise a natural question: is there a smaller fragment deï¬ned in the same
+spirit that also collapses S5 to T? Recall that the non-collapsing results are witnessed by formulas like
+(cid:51)a(cid:50)b(cid:51)a p â (cid:51)a p. When (cid:50)b is factive, agent a is ipso facto introspecting since we can eliminate (cid:50)b by
+T. In this section we identify a fragment of agent-nonrepeating formulas in which this cannot happen
+and S5 does collapse to T. The key idea is that we need to forbid (cid:50)a to appear at all in the scope of (cid:50)a.
+Again, to formalize this idea, we provide an occurrence-based deï¬nition and an inductive deï¬nition.
+Deï¬nition 4.1. A formula Ï â L is an agent-nonrepeating formula iff for any a â A and (cid:50)a occurrence
+O[(cid:50)aÎ±], there is no other (cid:50)a occurrence O[(cid:50)aÎ² ] such that O[(cid:50)aÎ² ] â¤ O[(cid:50)aÎ±]
+Deï¬nition 4.2. Deï¬ne a family {LX }XâA of fragments of L through the following simultaneous induc-
+tion:
+
+LX (cid:51) Ï ::= p | (cid:50)xÏ | Â¬Ï | (Ï â§ Ï)
+
+where p â Prop and x â X while Ï â LX\{x}.
+
+The following equivalence is easily veriï¬ed.
+
+Proposition 4.3. For any Ï â L , Ï â LA iff Ï is agent nonrepeating.
+
+As before, we need a notion of bisimulation appropriate for the fragment.
+
+Deï¬nition 4.4. An agent-nonrepeating bisimulation family between two models M and N is a family
+of binary relations {(cid:28)X }XâA between M and N such that for every X â A and every u â M and v â N
+such that u (cid:28)X v:
+
+â¢ (Atom) for all p â Prop, u â V M (p) iff v â V N (p);
+x (u), there is v(cid:48) â RN
+â¢ (Zig) for all x â X and u(cid:48) â RM
+x (v), there is u(cid:48) â RM
+â¢ (Zag) for all x â X and v(cid:48) â RN
+
+x (v) such that u(cid:48) (cid:28)X\{x} v(cid:48);
+x (u) such that u(cid:48) (cid:28)X\{x} v(cid:48).
+
+Then we say M , u is agent-nonrepeating bisimilar to N , v if there is an agent-nonrepeating bisimulation
+family {(cid:28)X }XâA between M and N such that u (cid:28)A v.
+Lemma 4.5. For any models M and N , agent-nonrepeating bisimulation family {(cid:28)X }XâA between
+N , v. Hence whenever M , u is agent-nonrepeating
+M and N , and X â A, if u (cid:28)X v, then M , u â¡LX
+bisimilar to N , v, we have M , u â¡LA
+
+N , v.
+
+130
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+For any logic L, we write L|nr for L â© LA. We can now prove the desired collapse result.
+
+Theorem 4.6. For every reï¬exive pointed model M , w, there is a partition model N , w(cid:48) such that M , w
+is agent-nonrepeating bisimilar to N , w(cid:48). Consequently, T|nr = S5|nr.
+
+Proof. Let M be a reï¬exive model. We construct N = (cid:104)S, {Ra}aâA,V (cid:105). Let S be the set of all nonempty
+ï¬nite sequences s of pairs in â(A) ÃW M such that, letting s = (cid:104)(cid:104)Xi, wi(cid:105)(cid:105)i=1...len(s), (1) X1 = A, and (2)
+for all i = 1 . . . len(s) â 1 and Xi+1 (cid:40) Xi, there is a â A such that Xi = Xi+1 âª {a} and wiRM
+
+a wi+1.
+
+To make the rest of the construction easier, we make a few auxiliary deï¬nitions. For each s â S, deï¬ne
+LastA(s) to be â (cid:54)â A when len(s) = 1 and otherwise the a â X \ X0 with (cid:104)X, u(cid:105) = slen(s) and (cid:104)X0, u0(cid:105) when
+slen(s)â1. Intuitively, LastA(s) denotes the last accessibility relation used in the sequence s. It is easy to
+observe from the deï¬nition above that for any s â S with (cid:104)X, u(cid:105) = slen(s), LastA(s) (cid:54)â X, and moreover
+when len(s) > 1, slen(s)â1 = (cid:104)X âª LastA(s), u0(cid:105) for a u0 â M such that u0RM
+
+LastA(s)u.
+
+Then for any a â A and s â S, deï¬ne s<a to be s if a (cid:54)= LastA(s) and otherwise s1...len(s)â1. Intuitively
+this is the a-predecessor of s in S. Now Ra is deï¬ned for each a â A by the condition that sRat iff s<a = t<a
+for all s,t â S. With this deï¬nition, it is not hard to compute Ra(s) speciï¬cally. For all s â S such that
+len(s) > 1, letting slen(s) = (cid:104)X, u(cid:105), slen(s)â1 = (cid:104)X0, u0(cid:105) and s0 = s1...len(s)â1, we have the following.
+
+â¢ For all a â X, Ra(s) = {s + (cid:104)X \ {a}, v(cid:105) | v â RM
+â¢ For the a â X0 \ X (namely LastA(s)), Ra(s) = {s0} âª {s0 + (cid:104)X, u(cid:48)(cid:105) | u0RM
+â¢ For a â A \ X0, Ra(s) = {s}.
+
+a (u)} âª {s}.
+
+a u(cid:48)}.
+
+For all s â S such that len(s) = 1, in which case s = (cid:104)A, u(cid:105) for some u â W M , we have that Ra(s) =
+{s + (cid:104)A \ {a}, v(cid:105) | v â RM
+
+a (u)} âª {s}.
+
+The valuation V is deï¬ned as usual. For every s â S and p â Prop, s â V (p) iff slen(s) â â(A) Ã
+
+V M (p). That is, s â V (p) iff the second coordinate of slen(s) is in V M (p).
+
+Then there is a natural family {(cid:28)X }Xââ(A) of relations between M and N deï¬ned by
+
+u (cid:28)X s ââ slen(s) = (cid:104)Y, u(cid:105) with X â Y.
+
+Now we are left with two tasks: to show that N is a partition model and to show that {(cid:28)X }Xââ(A)
+is an agent-nonrepeating bisimulation family between M and N . That N is a partition model is clear:
+for any a â A, we deï¬ned Ra by an equality condition. Now we show that {(cid:28)X }Xââ(A) is an agent-
+nonrepeating bisimulation family. Pick arbitrary u â M , s â S, and X â â(A) such that u (cid:28)X s. By
+deï¬nition, slen(s) = (cid:104)Y, u(cid:105) for some Y â X. The (Atom) clause is trivial. For the (Zig) clause, pick
+an arbitrary a â X and v â RM
+a (u). Then we see that s + (cid:104)Y \ {a}, v(cid:105) witnesses the requirement, as
+s + (cid:104)Y \ {a}, v(cid:105) â Ra(s) and v (cid:28)X\{a} s + (cid:104)Y \ {a}, v(cid:105) because from X â Y we have X \ {a} â Y \ {a}. For
+the (Zag) clause, we need to use the fact that M is reï¬exive. Picking an arbitrary a â X and t â Ra(s),
+we know that a â Y and hence there are two cases for t:
+
+â¢ t = s. Then u itself witnesses the requirement, as u (cid:28)X\{a} s and uRM
+â¢ t = s + (cid:104)Y \ {a}, v(cid:105) for some v â M such that uRM
+a v. Then clearly v is witnesses the requirement.
+In summary, N , (cid:104)(cid:104)A, w(cid:105)(cid:105) is a pointed partition model, and M , w is agent-nonrepeating bisimilar to
+
+a u.
+
+it. Hence we are done.
+
+With the help of the above theorem, we obtain the poset of logics in Figure 3 when restricted to LA.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+131
+
+KD|nr
+(= KD4|nr, KD5|nr,
+KD45|nr, KDB|nr)
+
+K|nr
+(= K4|nr, K5|nr,
+K45|nr, KB|nr)
+
+T|nr
+(= S4|nr, B|nr,
+S5|nr.
+
+KB5|nr
+
+Figure 3: Systems when restricted to LA
+
+Theorem 4.7. Among the systems displayed in Figure 1:
+
+1. K|nr = K4|nr = K5|nr = K45|nr = KB|nr;
+
+2. KD|nr = KD4|nr = KD5|nr = KD45|nr = KDB|nr;
+
+3. T|nr = S4|nr = B|nr = S5|nr;
+4. no other collapse happens when restricting to LA.
+
+The results are summarized in Figure 3.
+
+Proof. Since LA â Lalt, all collapsing results in Theorem 3.6 obtain. This covers (1) and (2). Due to
+Theorem 4.6, we have (3). Clearly KB5|nr â S5|nr since the T axiom is in LA. Hence we are left to show
+that KB5|nr is not in KD|nr. The witness is simply ((cid:51)a(p â¨ Â¬p) â§ (cid:50)a p) â p.
+
+5 Allowing the standard common belief operator?
+
+Given its importance in many applications, it is natural to consider adding the standard common belief
+operator to Lalt and investigate the resulting collapse of logics. In this section, we provide three non-
+collapsing results for the axioms 4 and 5, and leave a full investigation with possible collapsing results for
+future work. Given that Cp expresses a potentially inï¬nitary conjunction of formulas where modalities
+are compounded in arbitrary order, implicitly Cp is not agent alternating: formulas like (cid:50)a(cid:50)a p are part
+of the deï¬nition of Cp. Hence it is not surprising that we get many non-collapsing results. Moreover,
+we face the problem of whether to allow C to be in the scope of or scope over any (cid:50)a or itself. Again
+the reason is that if we expand C(cid:50)a p or CCp syntactically as inï¬nitary formulas, (cid:50)a will scope over
+an occurrence of (cid:50)a immediately. Hence it is not obvious what is the most appropriate deï¬nition of an
+agent-alternating fragment in a language with a common belief operator, and a full investigation would
+require a hierarchy of fragments, each allowing more interactions between C and other modalities or C
+itself. Our non-collapsing results about 4 also crucially rely on A being ï¬nite. We conjecture that the
+collapsing situation would change radically when A is inï¬nite.
+
+Now let us ï¬x the language and semantics for the common belief operator.
+
+Deï¬nition 5.1. Let C be deï¬ned by adding new clauses CÏ and EÏ to L âs context-free grammars.
+Semantically, M , u |= EÏ iff for all v â M such that u((cid:83)
+a )v, M , v |= Ï, and M , u |= CÏ iff for
+aâA RM
+a )+v, M , v |= Ï, where ((cid:83)
+all v â M such that u((cid:83)
+a )+ means the transitive closure of the
+
+aâA RM
+aâA RM
+
+132
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+union of relations in {RM
+commonly believed that Ï.â
+
+a }aâA. Hence EÏ formalizes âeveryone believes Ï,â and CÏ formalizes âit is
+
+Our logics must expand as well, as we need to add the axioms and rules for the C and E operators. To
+avoid choosing particular axiomatizations, we deï¬ne logics directly as validities. For any L â L , let CL
+denote the set of formulas in C that are valid on all frames that validates L. For particular axiomatizations,
+see [12]. For our purposes, it is enough to note that for any L, the followings formulas are in CL.
+
+(Cp â§C(p â q)) â Cq
+
+(C(p â E p) â§ E p) â Cp
+
+Cp â E(p â§Cp)
+
+(E p â§ E(p â q)) â Eq
+E p â (cid:50)a p
+(cid:94)
+
+(cid:50)a p â E p
+
+(when A is ï¬nite).
+
+aâA
+
+Then we can identify at least two E-free fragments: one in which C is not allowed to interact with (cid:50)a
+but allowed to interact with C, and one in which C can appear arbitrarily.
+Deï¬nition 5.2. Let C p be the fragment of formulas in C with C the only appearing modality. Then let
+LaltC p be the fragment consisting of Boolean combinations of formulas in Lalt and C p.
+Deï¬nition 5.3. Let Calt and Câa for any a â A be deï¬ned by adding a new clause CÏ to Lalt and Lâaâs
+context-free grammars.
+
+For example, (cid:50)aCÏ is in Calt but not in LaltC p. Note that LaltC p â Calt. Hence for non-collapsing
+
+results, using LaltC p would be stronger.
+
+Now we present the non-collapsing results. The situation with the 5 axiom is relatively simple. Even
+
+in the smaller fragment LaltC p and even with the D axiom, 5 is still important.
+Proposition 5.4. CK5 â© LaltC p is not contained in CKD â© LaltC p. The formula Ï5 = ((cid:51)a p â§ (cid:51)aÂ¬p) â
+(cid:98)C(p â§ (cid:98)CÂ¬p) is the witness.
+
+Proof. Clearly the following model proves the claim. All accessibility relations are the same, so we are
+not labeling the arrows.
+
+w2
+
+w1
+
+M
+
+w3
+
+p
+
+For the 4 axiom we provide two non-collapsing results. First, in LaltC p, CK4 does not collapse to
+
+CK when A is ï¬nite.
+Proposition 5.5. CK4 â© LaltC p is not contained in CK â© LaltC p. The witness is the formula Ï4 =
+((cid:86)
+
+xâA\{a}((cid:50)xâ¥ â§ (cid:50)a(cid:50)xâ¥) â§ (cid:50)a p) â Cp.
+
+Proof. The idea is essentially the same as the proof of the next proposition, Proposition 5.6.
+
+The formula in the previous proposition does not separate CKD4 from CKD, as it is trivially valid in
+CKD for the reason that (cid:50)bâ¥ is inconsistent. Here we provide a formula not in LaltC p but in Calt that
+separates CKD4 from CKD, again assuming that A is ï¬nite.
+Proposition 5.6. CKD4 â© Calt is not contained in CKD â© Calt. The witness is the following formula ÏD4:
+
+ï£«
+
+ï£­
+
+(cid:94)
+
+bâA\{a}
+
+((cid:50)b p â§C(cid:50)b p â§ (cid:50)b(cid:50)a p â§C(cid:50)b(cid:50)a p) â§ (cid:50)a p
+
+ï£¸ â Cp.
+
+ï£¶
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+133
+
+Proof. Clearly ÏD4 is in Calt. To see that it is in CK4, recall that the introduction axiom for common
+belief is
+
+(C(Ï â EÏ) â§ E(cid:50)aÏ) â CÏ.
+Note that E(cid:50)a p is derivable from the antecedent of ÏD4, as (cid:50)b(cid:50)a p for any b â A \ {a} is already in the
+antecedent, and (cid:50)a(cid:50)a p follows from (cid:50)a p by 4. Hence we only need C(p â E p). It is enough to show
+CE p and in fact C(cid:50)a p, as for every b â A \ {a}, C(cid:50)b p is already in the antecedent of ÏD4. By the C-intro
+axiom again, we only need to derive E(cid:50)a p and C((cid:50)a p â E(cid:50)a p). We already dealt with E(cid:50)a p, so we
+are left with C((cid:50)a p â E(cid:50)a p). For any b â A \ {a}, C((cid:50)a p â (cid:50)b(cid:50)a p) follows from C(cid:50)b(cid:50)a p, which is
+already in the antecedent of ÏD4. For the case of C((cid:50)a p â (cid:50)a(cid:50)a p), we only need to necessitate 4.
+
+Semantically, consider an arbitrary transitive model and a world u in the model. For any v that is
+
+reachable from u, there are only the following cases.
+
+â¢ Only Ra is used. Then (cid:50)a p being true at u is enough to make p true at v, by transitivity.
+â¢ Only Rb is used for b â A \ {a}. Since (cid:50)b p is true at u, similarly p is true at v.
+â¢ The last step is in Ra, and the last non-a step is Rb. Then depending on if there is a step before the
+
+last Rb step, (cid:50)b(cid:50)a p or C(cid:50)b(cid:50)a p being true at u guarantees pâs being true at v.
+
+â¢ The last step is in Rb for some b â A \ {a}, and Rb is not the only relation used. Then C(cid:50)b p being
+
+true at u guarantees that p is true at v.
+
+Hence p is true at v no matter how v is reached from u. Thus, Cp is true at u.
+
+Now to see that ÏD4 is not in CKD, consider the following model.
+
+M
+
+w1
+
+p
+
+w3
+
+a
+
+a
+a
+
+b
+
+a, b
+
+a
+
+b
+
+p
+
+v1
+
+w2
+
+b
+
+p
+
+This model M has all relations serial. Note that at any world, a b step moves you to v1, which makes p
+and Cp true. Note that (cid:50)a p is also true at w1. Hence the antecedent is true at w1. But clearly Cp is false
+at w1, as w3 is reachable but p is false at w3. Thus, ÏD4 is not in CKD.
+
+6 Discussion
+
+In the introduction, we suggested that Lalt is sufï¬cient to formalize agentsâ multi-agent epistemic rea-
+soning in many cases, especially in games. As shown in Appendix B, this claim is substantial if we do
+not assume both introspection axioms 4 and 5, for then there is a loss of expressivity in moving from L
+to Lalt. There remains the question of how widely it is true that Lalt is sufï¬cient to formalize multi-agent
+epistemic reasoning. In concrete games, it may well be that there is a brute fact Ï that is not expressible
+in Lalt, yet for agents to do well in this game, they must reason about Ï. For example, when twins
+are playing games, there seems to be motivation for them to introspect and reason about themselves. A
+formal study of this question would complement our work and contribute to answering the question of
+to what extent introspection axioms matter for multi-agent epistemic reasoning.
+
+In Â§ 4, we identiï¬ed one fragment, the fragment of agent-nonrepeating formulas, with respect to
+which S5 collapses to T. It is not too hard to see that the expressivity of this fragment is extremely
+
+134
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+poor. For example, there is a bound on the modal depth of the formulas in this fragment when A is ï¬nite.
+It remains an open question whether there is an expressively more satisfying fragment with a natural
+syntactic deï¬nition that can collapse S5 to T.
+
+In Â§ 5, we noted that a full investigation of which fragments of C collapse which logics is left for
+future research. In particular, there are two obvious questions. First, when we are separating CKD4 from
+CKD, the formula we used is in Calt but not in LaltC p. The question here is whether LaltC p in fact
+collapses CLD4 to CKD. Second, we did not consider the case where A is inï¬nite. We conjecture that
+when A is inï¬nite, LaltC p and perhaps even Calt has the same collapsing power as Lalt does.
+
+The main reason for the complexity of the problem with C is that C is implicitly not agent alternating
+and hence our unraveling technique does not apply directly. This motivates the formulation of an agent-
+alternating common belief operator. Indeed, we need many versions of agent-alternating common belief.
+For any subsets X and Y of A, we can deï¬ne an operator XCY such that XCY p means that for any nonempty
+agent alternating ï¬nite sequence l of elements in A such that l1 â X and llen(l) â Y , l1 believes that l2
+believes that Â· Â· Â· llen(l) believes that p. The X and Y are here to make sure that XCY immediately scopes
+over and is immediately in the scope of the right modalities. For example, (cid:50)a
+XCY (cid:50)b p would be agent
+alternating iff a (cid:54)â X and b (cid:54)â Y .
+It is not hard to see that the techniques in Â§ 3 are enough to deal
+with these operators, through a translation to inï¬nitary languages allowing inï¬nite conjunctions, as our
+agent-alternating bisimulation families preserves truth values of even inï¬nitary formulas.
+
+Finally, our project can be naturally extended to any extension of the multi-agent doxastic/epistemic
+language. Natural candidates include languages with dynamic operators, probability operators, or non-
+standard knowledge operators. The central question to ask in each case is this: what would be a natural
+agent-alternating fragment or a fragment sufï¬cient for the intended application of those languages, and
+how does restricting to this fragment affect the landscape of logics? We believe that this type of question
+will generate interesting results and deepen our understanding of the realm of epistemic logics.
+
+References
+
+[1] Robert J. Aumann (1976): Agreeing to disagree.
+
+The Annals of Statistics 4(6), pp. 1236â1239,
+
+doi:10.1214/aos/1176343654.
+
+[2] Robert J. Aumann (1999): Interactive epistemology I: Knowledge. International Journal of Game Theory
+
+28(3), pp. 263â300, doi:10.1007/s001820050111.
+
+[3] B. Douglas Bernheim (1984): Rationalizable strategic behavior. Econometrica 52(4), pp. 1007â1028,
+
+doi:10.2307/1911196.
+
+[4] Giacomo Bonanno (2002): Modal logic and game theory: two alternative approaches. Risk, Decision and
+
+Policy 7(3), pp. 309â324, doi:10.1017/s1357530902000704.
+
+[5] Ronald Fagin, Joseph Y. Halpern, Yoram Moses & Moshe Y. Vardi (2003): Reasoning About Knowledge.
+
+MIT Press.
+
+[6] Liangda Fang, Kewen Wang, Zhe Wang & Ximing Wen (2018): Knowledge compilation in multi-agent
+
+epistemic logics. arXiv: 1806.10561v2.
+
+[7] James Garson (2018): Modal Logic. In Edward N. Zalta, editor: The Stanford Encyclopedia of Philosophy,
+
+fall 2018 edition, Metaphysics Research Lab, Stanford University.
+
+[8] John Geanakoplos (1989): Game theory without partitions, and applications to speculation and consensus.
+Cowles Foundation Discussion Papers 914, Cowles Foundation for Research in Economics, Yale University.
+
+[9] James Hales (2016): Quantifying over epistemic updates. Ph.D. thesis, The University of Western Australia.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+135
+
+[10] James Hales, Tim French & Rowan Davies (2012): Reï¬nement quantiï¬ed logics of knowledge and belief for
+
+multiple agents. In: Advances in Modal Logic, Volume 9, pp. 317â338.
+
+[11] Joseph Y Halpern & Gerhard Lakemeyer (2001): Multi-agent only knowing. Journal of Logic and Computa-
+
+tion 11(1), pp. 41â70, doi:10.1093/logcom/11.1.41.
+
+[12] Joseph Y. Halpern & Richard A. Shore (2004): Reasoning about common knowledge with inï¬nitely many
+
+agents. Information and Computation 191(1), pp. 1â40, doi:10.1016/j.ic.2004.01.003.
+
+[13] Jaakko Hintikka (1962): Knowledge and Belief: An Introduction to the Logic of the Two Notions. Cornell
+
+University Press.
+
+[14] Xiao Huang, Biqing Fang, Hai Wan & Yongmei Liu (2018): A general multi-agent epistemic planner based
+
+on higher-order belief change. arXiv: 1806.11298v2.
+
+[15] Mamoru Kaneko (2002): Epistemic logics and their game theoretic applications: Introduction. Economic
+
+Theory 19(1), pp. 7â62, doi:10.1007/s001990100202.
+
+[16] Gerhard Lakemeyer & Yves LespÂ´erance (2012): Efï¬cient reasoning in multiagent epistemic logics.
+In: Proceedings of the 20th European Conference on Artiï¬cial Intelligence, ECAIâ12, pp. 498â503,
+doi:10.3233/978-1-61499-098-7-498.
+
+[17] Philippe Lamarre & Yoav Shoham (1994): Knowledge, certainty, belief, and conditionalisation (abbrevi-
+ated version).
+In Jon Doyle, Erik Sandewall & Pietro Torasso, editors: Principles of Knowledge Repre-
+sentation and Reasoning, The Morgan Kaufmann Series in Representation and Reasoning, pp. 415â424,
+doi:10.1016/b978-1-4832-1452-8.50134-2.
+
+[18] Harvey Lederman (2015): People with common priors can agree to disagree. Review of Symbolic Logic
+
+8(1), pp. 11â45, doi:10.1017/s1755020314000380.
+
+[19] Wolfgang Lenzen (1978): Recent work in epistemic logic. Acta Philosophica Fennica 30(2), pp. 1â219.
+
+[20] Qiang Liu & Yongmei Liu (2018): Multi-agent epistemic planning with common knowledge.
+
+In: Pro-
+ceedings of the 27th International Joint Conference on Artiï¬cial Intelligence, IJCAI-18, pp. 1912â1920,
+doi:10.24963/ijcai.2018/264.
+
+[21] John-Jules Ch Meyer & Wiebe van der Hoek (1995): Epistemic Logic for AI and Computer Science. Cam-
+
+bridge University Press, doi:10.1017/cbo9780511569852.
+
+[22] Martin J. Osborne & Ariel Rubinstein (1994): A Course in Game Theory. MIT Press.
+
+[23] Rohit Parikh & Paul Krasucki (1992): Levels of knowledge in distributed systems. Sadhana 17(1), pp. 167â
+
+191, doi:10.1007/bf02811342.
+
+[24] Robert Stalnaker (1994): On the evaluation of solution concepts. Theory and Decision 37(1), pp. 49â73,
+
+doi:10.1007/bf01079205.
+
+[25] Moshe Y. Vardi (1985): A model-theoretic analysis of monotonic knowledge.
+
+In: Proceedings of the 9th
+
+International Joint Conference on Artiï¬cial Intelligence, IJCAI-85, pp. 509â512.
+
+[26] Arnis Vilks (1999): Knowledge of the game, relative rationality, and backwards induction without counter-
+
+factuals. Working Paper no.25, Leipzig Graduate School of Management.
+
+A Rationalizability as agent-alternating common belief of rationality
+
+In this appendix, we sketch a proof that rationality plus agent-alternating common belief of rationality,
+in which one need not believe that oneself is rational, is enough for all agents to play their rationalizable
+strategies. This is already implicit in one of the very ï¬rst deï¬nitions of rationalizability by Bernheim [3],
+where he carefully stipulated that agents cannot formulate âconjecturesâ about themselves in systems of
+beliefs that rationalize their actions. We make this more explicit by using modal logic and Kripke models
+of games in the style of [24] and [4].
+
+136
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+We utilize typical notation in game theory in this appendix. Let G = (cid:104){Sa}aâA, {Ua}aâA(cid:105) be a strategic
+form game: for all a â A, Sa is a ï¬nite set and Ua is a function from Î aâASa to R, which then naturally
+extends to âÎ aâASa.
+
+Following [4], we ï¬rst pick a set of distinct proposition letters {ra | a â A} â Prop. Then a model
+
+M of G is a tuple (cid:104)W, {Ra}aâA, {Pa}aâA, {Ïa}aâA,V (cid:105) satisfying the following properties.
+
+â¢ W is a ï¬nite set.
+
+â¢ For any a â A, Ra is serial binary relation on W .
+
+â¢ For any a â A, Pa is a function from W to probability distributions on W such that for any w â W ,
+
+Pa,w(Ra(w)) = 1.
+
+â¢ For any a â A, Ïa is a function from W to Sa.
+
+â¢ V is a function from Prop to â(W ).
+
+â¢ For any a â A, w â V (ra) iff Ïa(w) is a best response to what a believes her opponents play.
+
+Formally, this condition is
+
+âsa â Sa, â
+
+w(cid:48)âRa(w)
+
+Pa,w(w(cid:48))Ua(Ïa(w), Ïâa(w(cid:48))) â¥ â
+
+w(cid:48)âRa(w)
+
+Pa,w(w(cid:48))Ua(sa, Ïâa(w(cid:48))).
+
+To formulate agent-alternating common belief of rationality, for each nonempty ï¬nite sequence l of
+elements in A, let Ïs be the formula (cid:50)l1
+(cid:50)l2 Â· Â· Â· (cid:50)llen(l)â1rllen(l). For example, Ï(cid:104)a(cid:105) = ra and Ï(cid:104)a,b,a(cid:105) = (cid:50)a(cid:50)bra.
+Then let Î be the set of Ïl such that l is agent-alternating: for all i = 1 . . . len(l) â 1, li (cid:54)= li+1. This Î then
+encodes agent-alternating common belief of rationality.
+
+With these deï¬nitions, it easily follows that if M , w |= Î, then for each a â A, Ïa(w) is a strategy that
+survives the iterated elimination of strictly dominated strategies. To show this, we can simply adapt the
+proof in [24]. For each a â A, collect Ïa(w(cid:48)) in Qa for each w(cid:48) â W such that there is an agent-alternating
+path from w to w(cid:48) with the last move not using Ra. Then it is not hard to see that for any a â A and
+qa â Qa, qa is not strictly dominated by any strategy in âQa assuming any opponent b â A \ {a} only
+plays strategies in Qb. Indeed, given that qa is in Qa, by deï¬nition there is w(cid:48) â W and w1, w2, . . . , wn and
+a1, a2, Â· Â· Â· , an (cid:54)= a such that w1 = w, wn = w(cid:48), an (cid:54)= a, and for all i = 1 . . . n â 1, wiRiwi+1 and ai (cid:54)= ai+1.
+Then for each w(cid:48)(cid:48) â Ra(w(cid:48)), Ïâa(w(cid:48)(cid:48)) â Qâa as w(cid:48)(cid:48) is reachable from w using a1, a2, Â· Â· Â· , an, a which is still
+an alternating sequence. Note also that M , w |= Î and in particular M , w |= (cid:50)a1
+(cid:50)a2 Â· Â· Â· (cid:50)anâ1ran. Hence
+M , w(cid:48) |= ra, and qa is the best response to the mixture mâa of (cid:104)Ïâa(w(cid:48)(cid:48)) | w(cid:48)(cid:48) â Ra(w(cid:48))(cid:105) using Pa,w(cid:48), which
+is a mixture of Qâa since each Ïâa(w(cid:48)(cid:48)) â Qâa. Thus qa is not strictly dominated by any mixture ma of
+Qa: if ma strictly dominates qa on any qâa â Qâa, then ma strictly dominates qa on mâa, and then qa is
+not the best response to mâa, a contradiction. Thus each Qa survives each stage of elimination. Now for
+each a â A, Ïa(w) â Qa, since we can use the trivially agent-alternating path w1 = w and a1 = b â A \ {a}
+(recall that |A| > 1). Hence the strategy Ïq(w) played at w is a strategy that survives iterated elimination
+of strictly dominated strategies.
+
+We may also express agentsâ belief that their opponentsâ actions are independent by proposition
+letters. Then agent-alternating common belief that agents believe that their opponentsâ actions are inde-
+pendent can be expressed using modal formulas. To this end, ï¬rst ï¬x another set {r(cid:48)
+a | a â A} â Prop
+a | a â A} â© {ra | a â A} = â. The intended interpretation of
+of distinct proposition letters such that {r(cid:48)
+r(cid:48)
+a is that a believes that her opponentsâ actions are independent. Hence we require that for any a â A,
+a) iff Pa,w({w(cid:48) â Ra(w) | Ïâa(w(cid:48)) = sâa}) = Î bâA\{a}Pa,w({w(cid:48) â Ra(w) | Ïb(w(cid:48)) = sâa(b)}) for
+w â V (r(cid:48)
+any sâa â Sâa. Then similar to the deï¬nition of Ïl, for any alternating sequence l of elements in A, we
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+137
+
+l with the trailing proposition letter being r(cid:48)
+
+deï¬ne Ï (cid:48)
+l âs. With this
+llen(l)
+setup, it is not hard to see, using the same strategy as above, that if M , w |= Î âª Î(cid:48), then for any a â A,
+Ïa(w) is a rationalizable strategy for a.
+
+, and we let Î(cid:48) be the set of all such Ï (cid:48)
+
+B Expressivity of Lalt
+In this appendix we study the inï¬uence of the introspection axioms on the expressivity of Lalt. We ï¬rst
+deï¬ne ï¬nite agent-alternating bisimulations so we can give a more quantitative analysis of expressivity.
+Deï¬nition B.1. By induction on n, let binary relations {(cid:28)n
+follows:
+
+âa}aâA be deï¬ned on all pointed models as
+
+â¢ M , u (cid:28)0
+âa
+â¢ M , u (cid:28)n+1
+âa
+
+N , v iff V M (u) = V N (v).
+N , v iff
+
+â (Atom) V M (u) = V M (v) and
+â âb â A \ {a}
+
+â (b-zig) âx â RM
+â (b-zag) ây â RN
+
+b (u) ây â RN
+b (v) âx â RM
+
+b (v) M , x (cid:28)n
+âb
+b (u) M , x (cid:28)n
+âb
+
+N , y and
+N , y.
+âa for any a â A, and deï¬ne (cid:28)n+1
+
+alt by
+
+Then let (cid:28)0
+
+alt be deï¬ned in the same way as (cid:28)0
+
+â¢ (Atom) V M (u) = V M (v) and
+â¢ âb â A
+
+â (b-zig) âx â RM
+â (b-zag) ây â RN
+
+b (u) ây â RN
+b (v) âx â RM
+
+b (v) M , x (cid:28)n
+âb
+b (u) M , x (cid:28)n
+âb
+
+N , y and
+N , y.
+
+x be the intersection of {(cid:28)n
+
+Then for x â A âª {alt}, let (cid:28)Ï
+Proposition B.2. For all n â N and a â A, (cid:28)n
+equivalence relation for all n â N.
+Theorem B.3. For any n â N and pointed models M , u and N , v:
+
+x}nâN.
+
+âa is an equivalence relation. Consequently, (cid:28)n
+
+alt is an
+
+alt
+
+âa
+
+N ,v if M , u (cid:28)n
+âa
+N , v if M , u (cid:28)n
+alt
+N , v if M , u (cid:28)Ï
+âa
+N , v if M , u (cid:28)Ï
+alt
+
+â¢ M , u â¡L n
+â¢ M , u â¡L n
+â¢ M , u â¡Lâa
+â¢ M , u â¡Lalt
+Let (cid:28)n denote the usual n-bisimulation relation and (cid:28)Ï the intersection of {(cid:28)n}nâN.
+Now we can present our main results in this appendix. First, with both introspection axioms, there is
+
+N , v;
+N , v;
+N , v;
+N , v.
+
+no loss of expressivity at each modal depth in moving from L to Lalt.
+Proposition B.4. Letting K45 be the class of pointed models where each Ra is transitive and Euclidean,
+(cid:28)n â© K452 = (cid:28)n
+
+alt â© K452 for all n â N.
+
+Proof. If |A| = 1, then (cid:28)1 â© K452 = (cid:28)2 â© K452 = (cid:28)n â© K452 for all n â¥ 1. It is also easy to see that
+alt â© K452 = (cid:28)n â© K452 for all n. The required proposition follows immediately.
+(cid:28)1
+alt = (cid:28)1. Hence (cid:28)1
+Now we assume |A| > 1 and prove the claim by induction on n. The case for n = 0 is trivial. Now
+suppose (cid:28)n â© K452 = (cid:28)n
+alt â© K452, and let us show that the claim is true for n + 1. The left-to-right
+subset relation is trivial. Hence let us pick two arbitrary pointed models M , u and N , v in K45 such
+
+138
+
+When Do Introspection Axioms Matter for Multi-Agent Epistemic Reasoning?
+
+that M , u (cid:28)n+1
+alt
+valuation is trivial. Now pick an arbitrary b â A and u(cid:48) such that uRM
+a v(cid:48) such that vRN
+so that b â A \ {a}. By the deï¬nition of (cid:28)n+1
+alt
+and M , u(cid:48) (cid:28)n
+âb
+hypothesis, it is enough to show that M , u(cid:48) (cid:28)n
+alt
+
+N , u. Now we need to show that M , u (cid:28)n+1 N , v. That they have the same atomic
+b u(cid:48) in M . Our goal is then to ï¬nd
+b v(cid:48) and M , u(cid:48) (cid:28)n N , v(cid:48). Pick some a â A \ {b} (note that we assumed that |A| > 1)
+b v(cid:48)
+N , v(cid:48). Now we show that this v(cid:48) is what we need: M , u(cid:48) (cid:28)n N , v(cid:48). By the induction
+
+N , v. Then we obtain a v(cid:48) such that vRN
+
+, M , u (cid:28)n+1
+âa
+
+N , v(cid:48).
+
+Thus, pick an arbitrary x â A. We need to show that M , u(cid:48) (cid:28)n
+âx
+
+N , v(cid:48). The case for the atomic
+valuation is again trivial. Now we need to show y-zig and y-zag for all y â A \ {x}. When y (cid:54)= b, they are
+âb, which holds between M , u(cid:48) and N , v(cid:48). Hence we are left with the case
+part of the deï¬nition of (cid:28)n
+where y = b. For b-zig, pick an arbitrary u(cid:48)(cid:48) such that u(cid:48)RM
+b u(cid:48) and Rb is transitive.
+Hence uRM
+b v(cid:48)(cid:48) and M , u(cid:48)(cid:48) (cid:28)âb N , v(cid:48)(cid:48). But
+b v(cid:48) too. Hence vRN v(cid:48)(cid:48). Thus this v(cid:48)(cid:48) witnesses the b-zig clause for M , u(cid:48) (cid:28)n
+RN
+âx
+b
+N , v(cid:48). b-zag is shown symmetrically, where the transitivity of RN
+are
+b
+used. The zag clause for M , u (cid:28)n+1 N , v is also shown symmetrically.
+
+and the Euclideanness of RM
+b
+
+N , v, we obtain v(cid:48)(cid:48) such that vRN
+
+b u(cid:48)(cid:48). Applying M , u (cid:28)n+1
+âa
+
+b u(cid:48)(cid:48). Recall that uRM
+
+is Euclidean and vRN
+
+However, if we consider frame classes corresponding to the modal logic cube as in Figure 1, having
+
+both introspection properties is necessary.
+
+Proposition B.5. Letting S4 (resp. KD5, B) be the class of pointed models where each Ra is reï¬exive
+and transitive (resp. serial and Euclidean, reï¬exive and symmetrical), we have (cid:28)Ï
+alt â© S42 (cid:54)â (cid:28)2 â© S42,
+(cid:28)Ï
+
+alt â© KD52 (cid:54)â (cid:28)2 â© KD52, and (cid:28)Ï
+
+alt â© B2 (cid:54)â (cid:28)2 â© B2.
+
+Proof. The following two models deal with the S4 case. Reï¬exive loops are omitted. The dashed arrows
+represent relations for a, and the solid ones represent relations for all agents in A beside a.
+
+l1
+
+l2
+
+M
+
+l3
+
+r1
+
+r2
+
+r3
+
+l(cid:48)
+1
+
+l(cid:48)
+1
+
+l(cid:48)
+1
+
+N
+
+r(cid:48)
+1
+
+r(cid:48)
+2
+
+r(cid:48)
+3
+
+p
+
+p
+
+p
+
+p
+
+Then we have an agent-alternating family {(cid:28)a}aâAâª{alt} of bisimulations. For any i â {1, 2, 3} and
+b â A \ {a}:
+
+â¢ li (cid:28)a l(cid:48)
+
+â¢ li (cid:28)b l(cid:48)
+
+i, r(cid:48)
+i;
+
+i and ri (cid:28)a l(cid:48)
+
+i, r(cid:48)
+i and ri (cid:28)b r(cid:48)
+i.
+
+Essentially the nodes on the same level are connected by (cid:28)a, and the left column in M is connected
+to the left column of N by (cid:28)b, and similarly the right column in M is connected to the right column
+of N by (cid:28)b. Finally it enough to just connect l1 with l(cid:48)
+1 by (cid:28)alt. Then it is not hard to check that
+{(cid:28)a}aâAâª{alt} is indeed an agent-alternating bisimulation family. By a simple induction, this clearly
+1 (cid:54)|= (cid:51)a(cid:51)a p.
+implies that M , l1 (cid:28)Ï
+alt
+
+1 since M , l1 |= (cid:51)a(cid:51)a p but N , l(cid:48)
+
+1. But of course M , l1 (cid:54)(cid:28)2 N , l(cid:48)
+
+N , l(cid:48)
+
+The following two models deal with the KD5 case.
+
+Y. Ding, W. H. Holliday, & C. Zhang
+
+139
+
+m1
+
+m2
+
+m3M
+
+p
+
+N
+
+l1
+
+l2
+
+l3
+
+r1
+
+r2
+
+r3
+
+p
+
+p
+
+This case is easier. For each i â {1, 2, 3}, mi (cid:28)a li, ri and mi (cid:28)b ri. Then connecting m1 with r1 by
+(cid:28)alt, we have an agent-alternating bisimulation family. Hence M , m1 (cid:28)alt N , r1. However, we have
+M , m1 |= (cid:51)a(cid:51)a p and N , r1 (cid:54)|= (cid:51)a(cid:51)a p.
+
+Finally, the following two models deal with the B case. Again, the reï¬exive loops are omitted from
+the diagram. The agent-alternating bisimulation family and the formula to refute (cid:28)2 we need to use are
+the same as we used in the S4 case.
+
+l1
+
+l2
+
+l3
+
+M
+
+r1
+
+r2
+
+r3
+
+l(cid:48)
+1
+
+l(cid:48)
+2
+
+l(cid:48)
+3
+
+N
+
+r(cid:48)
+1
+
+r(cid:48)
+2
+
+r(cid:48)
+3
+
+p
+
+p
+
+p
+
+p
+
+

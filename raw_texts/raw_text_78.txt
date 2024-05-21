@@ -1,0 +1,2472 @@
+DCIR: Dynamic Consistency Intrinsic Reward for
+Multi-Agent Reinforcement Learning
+
+Kunyang Lin 1 Yufeng Wang 1 Peihao Chen 1
+Runhao Zeng 2 Siyuan Zhou 3 Mingkui Tan 1 Chuang Gan 4
+
+3
+2
+0
+2
+
+c
+e
+D
+0
+1
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+3
+8
+7
+5
+0
+.
+2
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+Learning optimal behavior policy for each agent
+in multi-agent systems is an essential yet difficult
+problem. Despite fruitful progress in multi-agent
+reinforcement learning, the challenge of address-
+ing the dynamics of whether two agents should ex-
+hibit consistent behaviors is still under-explored.
+In this paper, we propose a new approach that
+enables agents to learn whether their behaviors
+should be consistent with that of other agents by
+utilizing intrinsic rewards to learn the optimal pol-
+icy for each agent. We begin by defining behavior
+consistency as the divergence in output actions
+between two agents when provided with the same
+observation. Subsequently, we introduce dynamic
+consistency intrinsic reward (DCIR) to stimulate
+agents to be aware of othersâ behaviors and deter-
+mine whether to be consistent with them. Lastly,
+we devise a dynamic scale network (DSN) that
+provides learnable scale factors for the agent at
+every time step to dynamically ascertain whether
+to award consistent behavior and the magnitude
+of rewards. We evaluate DCIR in multiple envi-
+ronments including Multi-agent Particle, Google
+Research Football and StarCraft II Micromanage-
+ment, demonstrating its efficacy.
+
+1. Introduction
+
+Multi-Agent Reinforcement Learning (MARL) has been
+evidenced as an important technique in a wide range of
+practical real-world tasks. These tasks are set in multi-
+agent systems with the goal of cooperation, such as robotic
+control (Peng et al., 2021; Kober et al., 2013; Lillicrap
+et al., 2015), video games (Carroll et al., 2019; Vinyals
+et al., 2019; Brown & Sandholm, 2019), and autonomous
+vehicles (Dinneweth et al., 2022; Bhalla et al., 2020). In
+
+1South China University of Technology 2Shenzhen Univer-
+sity 3The Hong Kong University of Science and Technology
+4UMass Amherst. Correspondence to: Mingkui Tan <mingkui-
+tan@scut.edu.cn>.
+
+Figure 1. (a) In a multi-agent cooperation task, four agents must
+cooperate to reach four goals simultaneously as soon as possible.
+In the context that Agent1 and Agent3 take aggressive behavior
+to directly walk towards the goal they have observed, Agent2 and
+Agent4 should share consistent humble behavior to explore more
+targets.
+(b) Our dynamic consistency intrinsic reward (DCIR)
+awards Agent4 if it behaves consistently with Agent2 while punish-
+ing it if it behaves consistently with Agent1 and Agent3.
+
+MARL, each agent is a reinforcement learning system with
+its own perception and decision-making capabilities. The
+agents are required to collectively learn and optimize their
+behavior strategies by interacting with the environment to
+achieve a common goal.
+
+As the number of agents grows from one to multiple, it is
+challenging for each agent to find its optimal behavior. This
+is particularly obvious in many real-world scenarios where
+extrinsic rewards are sparse and delayed, exacerbating the
+difficulty of MARL. Deducing the reward of each agent is
+crucial to encourage the agents to organize their behaviors
+for successful collaboration (Ma et al., 2022). While re-
+ward shaping (Ng et al., 1999) requires heavy and careful
+manual work, previous works are striving to cope with this
+
+1
+
+MotivationGoalObservation FieldHumble BehaviorAggressive BehaviorAgent2Agent3Agent1Agent4(a) Task: 4 agents cooperate to reach 4 goalsRewardconsistent with Agent2 Penaltyconsistent with Agent1 and 3 (b) Behaviors of Agent4 rewarded by DCIR 
+ 
+ 
+ 
+ 
+ 
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+challenge by assigning intrinsic rewards for each agent (Ma
+et al., 2022; Du et al., 2019; Jaderberg et al., 2019; Stadie
+et al., 2015; Iqbal & Sha, 2019b). LIIR (Du et al., 2019)
+tries to break down the extrinsic reward into individual learn-
+able intrinsic rewards for each agent. ELIGN (Ma et al.,
+2022) encourages multi-agent cooperation through learning
+a shared world model among different agents. However, ex-
+isting methods fail to address the dynamics of whether two
+agents should exhibit consistent behaviors, which results
+in a pitfall in multi-agent reinforcement learning. In this
+context, consistent behaviors exhibited by two agents denote
+their tendency to arrive at identical decisions when they are
+given the same observations. To inspect the existing agentsâ
+ability of dynamic behavior consistency, we conduct a pilot
+study: to evaluate whether they can behave with adequate
+consistency (see supplementary for more details). We found
+that existing methods ( e.g.ELIGN) put up a poor show:
+when required to behave consistently, only 75% agents com-
+ply, and even worse in being asked to behave inconsistently
+(69%). Thus, incentivizing agents to behave with dynamic
+consistency remains an unresolved issue.
+
+To illustrate the necessity of both behavior consistency and
+inconsistency, we consider a collaborative navigation sce-
+nario, where four agents aim to collectively reach four goals.
+As shown in Figure 1, Agent1 and Agent2 share similar ob-
+servations, wherein they both observe the same goal. How-
+ever, to facilitate efficient collaborative task completion and
+avoid conflicts, it is recommended that they behave incon-
+sistently. Expressly, Agent1 should adopt a more aggressive
+approach by navigating directly towards the target, whereas
+Agent2 should behave more humbly and continue exploring.
+In a parallel scenario, Agent3 exhibits similar aggressive
+behavior as Agent1. Therefore, Agent4 should maintain be-
+havior consistent with Agent2 by also adopting a humble
+exploration behavior towards other goals. Consequently, it
+is intuitive to reward Agent4 for adopting the same behav-
+ior as Agent2 and penalize it for imitating the behaviors of
+Agent1 or Agent3.
+
+Motivated by this observation, in this work, we consider
+exploring a multi-agent system where each individual agent
+is incentivized to dynamically and selectively behave con-
+sistently with other agents. To formulate behavior consis-
+tency, inspired by agent play style diversity (Charakorn
+et al., 2023), we expose two agents to the same observa-
+tion and assess the KL divergence of their predicted action
+distributions. Intuitively, the action distribution reflects an
+agentâs intention. If two agents have consistent behavior, it
+suggests that they share similar intentions when facing the
+same situation. We exploit such consistency in behavior as
+intrinsic rewards to encourage agents to selectively adhere
+to the behavior of other agents. However, deciding when to
+behave consistently or inconsistently with other agents is
+non-trivial. In order to address this challenge, we introduce
+
+a dynamic scaling network (DSN) that calculates learnable
+scale factors for each agent at every time step to dynami-
+cally guide whether to award consistent behavior and the
+magnitude of intrinsic rewards. The decent combination of
+behavior consistency and scale factor constitutes our pro-
+posed dynamic consistency intrinsic reward (DCIR). DCIR
+alleviates the dynamic behavior consistency issue in existing
+methods mentioned above by a large margin (i.e.from 75%
+to 88% in consistent behavior case and from 69% to 97% in
+inconsistent behavior case).
+
+To sum up, our main contributions are as follows:
+
+â¢ We study the multi-agent reinforcement learning problem
+from the perspective of behavior consistency between agents.
+To this end, we provide a novel viewpoint to assess behavior
+consistency, formulating it as the divergence in output action
+distributions between agents given the same observation.
+
+â¢ We propose Dynamic Consistency Intrinsic Re-
+ward (DCIR) for evaluating the goodness of an agentâs
+behavior. This reward dynamically encourages agents to
+behave consistently or inconsistently to each other, to maxi-
+mize extrinsic return and thereby coordinate their behaviors.
+
+â¢ Our extensive experiments demonstrate the superior effi-
+cacy of the DCIR method, outperforming five baseline meth-
+ods on three multi-agent benchmarks consistently, including
+both cooperative and competitive scenarios, within Multi-
+agent Particle environment (Lowe et al., 2017), Google
+Research Football environment (Kurach et al., 2020) and
+StarCraftII (Samvelyan et al., 2019).
+
+2. Related Work
+
+2.1. Multi-Agent Reinforcement Learning
+
+The multi-agent environment, where multiple agents are
+present for interaction and action, is more typical in prac-
+tical applications (Cao et al., 2012; BuÂ¸soniu et al., 2010;
+Zhang et al., 2021b; McArthur et al., 2007; Berner et al.,
+2019; Yu et al., 2022; Lin et al., 2023) compared with the
+single-agent environment. However, multi-agent reinforce-
+ment learning (MARL) methods are more challenging due
+to the dependencies and conflicts between multiple agents
+as well as the dynamic and unstable environment (Alzetta
+et al., 2020; Canese et al., 2021). To address this issue, One
+prominent approach is independent reinforcement learn-
+ing (IRL) (Zhang et al., 2021a; Xu et al., 2021), where
+each agent treats other agents as part of the environment
+and learns its policy independently. Though simple and
+intuitive, IRL ignores the dependencies between agents,
+often leading to sub-optimal outcomes. To capture inter-
+agent dependencies, centralized training and decentralized
+execution (CTDE)
+(Foerster et al., 2016; Canese et al.,
+2021; Chen, 2020; Lowe et al., 2017; Iqbal & Sha, 2019a;
+
+2
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Liu et al., 2020) is an effective and widely applied frame-
+work. CTDE trains a centralized critic network that ob-
+serves all agentsâ joint state and action information during
+training. During execution, each agent acts independently
+based on its own observations, leading to decentralized
+decision-making. CTDE has been widely used in MARL,
+such as RMIX (Qiu et al., 2021), QMIX (Rashid et al.,
+2020), COMA (Foerster et al., 2018), VDN (Sunehag et al.,
+2018), and QTRAN (WJKDE et al., 2019). In this work, we
+also follow the CTDE paradigm in our proposed method.
+
+2.2. Intrinsic Reward in Multi-Agent System
+
+In a multi-agent system, a single extrinsic reward provided
+by the environment makes it difficult to coordinate the be-
+havior of multiple agents. Designing intrinsic rewards for
+each agent is an effective approach to reward allocation in
+multi-agent environments. In this way, ELIGN (Ma et al.,
+2022) attempts to encourage agents to match the expecta-
+tions of their neighborsâ expectations and learn collaborative
+behaviors consistently, making the system more predictable
+and stable. LIIR (Du et al., 2019) and CDS (Li et al., 2021)
+learn each agent an intrinsic reward function which diversely
+stimulates the agents at each time step. GIIR (Wu et al.,
+2021) uses an intrinsic reward encoder to generate a separate
+stimulation for each agent. AIIR-MIX (Li et al., 2023) tries
+to combine intrinsic and extrinsic rewards dynamically in
+response to changes in the environment. Stadie et al. (Stadie
+et al., 2015) and Chen et al. (Chen et al., 2022) propose a
+kind of intrinsic reward to encourage each agent to explore
+the states that are novel to itself, while Iqbal et al. (Iqbal &
+Sha, 2019b) reward each agent simultaneously to explore
+states that are also novel to the rest of team agents. However,
+these intrinsic reward paradigms only promote consistent
+or diverse behaviors in agents during an episode, but the
+real world requires agents to autonomously determine when
+to behave consistently. Our proposed DCIR addresses this
+issue for better real-world performance.
+
+3. Preliminaries
+
+3.1. Problem Definition
+
+We formulate the MARL problem as a Decentralized Par-
+tially Observable Markov Decision Process (DPOMDP):
+< N, S, O, U , T , rex > (Oliehoek & Amato, 2016) for
+N agents in an environment with state space S. The ob-
+servation space for the agents is O = (cid:8)O1, ..., ON (cid:9) and
+the action space is U = (cid:8)U 1, ..., U N (cid:9). At time step t,
+each agent i â N â¡ {1, ..., n} obtains its own observation
+oi
+t â U i through the pa-
+t â Oi and performs an action ui
+rameterized policy network Ïi : Oi Ã U â [0, 1]. The
+environment changes to the next state according to the tran-
+sition function T : S Ã U â S with the current state and
+each agentâs actions and returns a shared extrinsic reward
+
+rex : S Ã U â R. The learning objective of the multi-agent
+problem is to learn the policy network Ïi of each agent
+parameterized by Î¸i to maximize the total expected return:
+R = (cid:80)T
+
+t=0 Î³trex, where Î³ â [0, 1] is the discount factor.
+
+3.2. Soft Actor-Critic
+
+We primarily adopt Soft Actor-Critic (SAC) algorithm
+(Haarnoja et al., 2018) as the policy optimization method in
+the experiment. SAC is an off-policy RL algorithm with the
+Actor-Critic framework. It combines maximizing entropy
+learning to bring better exploration ability. For each training
+iteration, the policy parameter Î¸i of agent i is optimized by
+minimizing the objective LÎ¸i:
+
+(cid:20)
+
+LÎ¸i = E
+
+oi
+tâ¼Di
+
+E
+tâ¼ÏÎ¸i (Â·|t)
+
+ui
+
+(cid:20)
+Ï log ÏÎ¸i(ui
+
+t | oi
+t)
+
+â min
+Ïi
+
+QSof t
+Ïi
+
+(cid:21)(cid:21)
+
+(oi
+
+t, ui
+t)
+
+(1)
+
+where oi
+t is the observation of agent i uniformly sampled
+from the replay buffer Di at time step t; ÏÎ¸i(ot) is the
+predicted action probability distribution by policy ÏÎ¸i input
+by observation ot; Ï is the entropy temperature coefficient.
+It determines the importance of entropy maximization in the
+objective function; QSof t
+t, ui
+t) is the output action value
+of the soft value function with parameter Ïi. In order to
+alleviate overestimating problem, two value networks with
+the same structure are constructed and the smaller output
+value of the two networks is chosen during training, that is
+
+(oi
+
+Ïi
+
+QSof t
+Ïi
+
+(oi
+
+t, ui
+
+t) = min
+
+(cid:110)
+
+Q1
+Ï1
+i
+
+(oi
+
+t, ui
+
+t), Q2
+Ï2
+i
+
+(cid:111)
+
+(oi
+
+t, ui
+t)
+
+(2)
+
+4. Method
+
+In this section, we present a formal description of our pro-
+posed DCIR that aims to encourage the agents to adaptively
+adjust their behavior based on behavior consistency with
+other agents for finishing multi-agent tasks efficiently. We
+begin by defining behavior consistency between two agents.
+Next, we introduce the DCIR framework and its dynamic
+adjustment approach for each agent. Finally, we formulate
+an optimizing algorithm for the learning objective.
+
+4.1. Behavior Consistency between Agents
+
+In evaluating the behavior consistency between two agents,
+our approach involves examining their respective action
+outputs when confronted with similar states. For analyti-
+cal purposes, behavior consistency is defined as the degree
+of similarity in the distribution of actions for two agents
+given an identical observation. Specifically, each agent i has
+its own observation denoted by oi
+t at time step t. Since
+the action space size of each agent is represented as n,
+we denote the action distribution of policy of Agent i as
+
+3
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+and the behavior of other agents, which is represented by
+Equation 3. To promote the adaptive adjustment of the
+dominance of consistent and diverse behaviors based on
+collaboration progress with agent j, we propose Dynamic
+Consistency Intrinsic Reward (DCIR) for the i-th agent
+as follows:
+
+ri,t
+DCIR =
+
+(cid:88)
+
+Î±i
+
+j Ã Ci,j,t,
+
+jâN (i)
+
+(4)
+
+where the value of Î±i
+j can be negative to encourage consis-
+tent behavior between agent i and agent j, while positive
+Î±i
+j rewards inconsistent behavior. Hence, the introduced
+adjustment factor Î±i
+j provides a reliable basis to determine
+when to reward or punish for the consistent and inconsistent
+behavior of an agent during collaboration.
+
+4.3. Dynamic Scale Network (DSN)
+
+As aforementioned, factor Î± is expected to dynamically ad-
+just the consistent reward. To achieve this goal, we propose
+a Dynamic Scale Network (DSN) to parameterize the learn-
+able Î±. The DSN is modeled by a multi-layer perceptron
+(MLP) with layers, each with ReLU activations except the
+last layer. For a multi-agent system with N agents, each
+agent has its own DSN which outputs a vector of length
+(N â 1) for the behavior consistent with other (N â 1)
+agents respectively. Formally, we compute
+
+Î±i = DSN (o1, . . . , oN )
+
+(5)
+
+where Î±i = {Î±i
+j | j â N (i)} and N (i) denotes the set
+of agents excluding agent i. As illustrated in Figure 2, the
+output Î± is used to multiply the behavior consistency C for
+DCIR in Equation 4.
+
+4.4. Learning Objective
+
+In this section, we present an approach for utilizing the
+proposed DCIR in multi-agent reinforcement learning. For
+each agent i at each time step t, we calculate the DCIR
+using Equation 4 and obtain a proxy reward by taking the
+extrinsic reward (rt
+
+ex) and ri,t
+
+DCIR into the consideration:
+ex + Î² Ã ri,t
+
+DCIR .
+
+(6)
+
+proxy = rt
+ri,t
+
+where Î² is a scaling hyper-parameter. Here, as outlined
+problem definition, the extrinsic reward ri,t
+proxy is sparse and
+delayed since it is feedbacked by the environment regarding
+the completion of the task. Then, ri,t
+proxy is used to update
+the proxy critic via Temporal Difference(TD) (Sutton, 1988)
+learning. The updated proxy critic outputs the proxy Q-
+value used to modify the actor parameters of the agent.
+
+To maximize the standard accumulated discounted team re-
+turn from the environment, we adopt the learning paradigm
+from LIIR (Du et al., 2019) to train the DSN parameters
+
+4
+
+Figure 2. Schematic of the overall DCIR framework. We adopt a
+bi-level actor-critic framework. Each agent has its own actor and
+proxy critic (denoted as different colors). The centralized extrinsic
+critic is used for updating the proposed DSN. Taking the green
+agent as an example, at each time step, the Behavior Consistency
+module calculates its behavior consistency C with the other agents.
+The DSN outputs the dynamic adjustment factor Î±. Then, the
+intrinsic reward rDCIR is obtained from multiplying the C and Î±.
+Last, rDCIR is added to extrinsic reward rex for proxy value.
+
+t) = {ui
+
+t = Ïi(oi
+
+ui
+t,n}. The behavior consistency
+between agent i and its cooperative agent j is defined by the
+following KL divergence:
+
+t,1, ..., ui
+
+Ci,j,t =
+
+n
+(cid:88)
+
+k=1
+
+ui,j
+t,k log
+
+ui,j
+t,k
+ui
+
+t,k
+
+.
+
+(3)
+
+Here, ui,j
+t,k represents the probability of agent j selecting
+action k when it observes the same observation as agent i
+(i.e., oi
+t) at time step t. A larger KL divergence (i.e., a larger
+C) indicates a greater difference in the behaviors taken by the
+two agents. On the other hand, a smaller KL divergence (i.e.,
+a smaller C) indicates more consistency in the behaviors
+taken by the two agents. Note that in continuous action
+setting, we can still perform KL divergence calculations by
+replacing the action probability with the mean and variance
+of the continuous action distribution to sample.
+
+4.2. Dynamic Consistency Intrinsic Reward (DCIR)
+
+Based on the above analyses, a successful collaboration re-
+quires each agent to dynamically behave in a consistent or
+inconsistent manner with other agents. Ideally, the environ-
+ment should assign a high reward to the agent i when its
+optimal behavior for the task at time step t is a consistent
+behavior w.r.t. agent j. Therefore, an agentâs reward at each
+step is directly related to the difference between its behavior
+
+Proxy CriticMethodexrExtrinsic CriticÎ±DCIRrEnvironmentActorproxyrBehavior ConsistencyDynamic FactorConsistencyDSNâ¦â¦Action Distributionï¢ï´DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Algorithm 1 Training paradigm for DCIR
+Require: The reply buffer D, the policy of the agent ÏÎ¸, the
+
+Dynamic Scale Network DSNÎ·.
+
+1: Initialize the N agent parameters Î¸ and DSN parameters Î·
+
+randomly.
+
+5:
+6:
+
+t, oi
+
+ex, ui
+
+t+1, rt
+
+t+1, rt
+
+t, {ui,j
+t
+
+| j â N (i)}}
+
+2: Initialize the replay buffer D
+3: while not converge do
+Collect samples {oi
+t, oi
+4:
+from environments and populate them into D
+for agent i = 1, ..., N do
+Uniformly sample {oi
+N (i)}} from D
+Compute DCIR ri,t
+tion 4 and Equation 5
+Calculate proxy reward ri,t
+Update the sample to {oi
+j â N (i)}}
+Update Î¸i using Soft Actor-Critic algorithm
+Update Î·i using the extrinsic actor-critic optimization
+method based on the chain derivation rule
+
+proxy via Equation 6
+t, oi
+
+DCIR according to Equation 3, Equa-
+
+t, {ui,j
+t
+
+t, {ui,j
+t
+
+ex, , ri,t
+
+proxy, ui
+
+t+1, rt
+
+ex, ui
+
+j â
+
+8:
+9:
+
+7:
+
+|
+
+|
+
+10:
+11:
+
+end for
+12:
+13: end while
+
+using an extrinsic-level actor-critic framework. This frame-
+work shares the same actors as the proxy actor-critic frame-
+work but maintains a centralized extrinsic critic. We utilize
+the chain rule to connect the impact of the DSN parameter
+(i.e. Î·i) changes on the objective J ex of the extrinsic-level
+actor-critic in the updated actor parameter (i.e. Î¸â²
+
+i) as:
+
+âÎ·iJ ex = âÎ¸â²
+
+i
+
+J exâÎ·iÎ¸â²
+i
+
+(7)
+
+More derivation details can be found in the supplementary
+material. An overview of the optimization process is pre-
+sented in Algorithm 1.
+
+5. Experiment
+
+5.1. Environments
+
+To evaluate the efficacy of DCIR, we perform experiments
+on three popular MARL benchmark environments: Multi-
+agent Particle Environment (MPE) (Lowe et al., 2017),
+Google Research Football (Kurach et al., 2020) and Star-
+Craft II Micromanagement (Samvelyan et al., 2019).
+
+Multi-agent Particle Environment (MPE) In this envi-
+ronment, multiple particle agents can move, communicate,
+observe each other, push other agents, and interact with
+fixed landmarks inhabiting a two-dimensional world. The
+action space for each agent is discrete, i.e. stay or change
+the velocities of four cardinal directions, while the observa-
+tion space of each agent is continuous. We adopt a partially
+observable setting, wherein each agent possesses an obser-
+vation radius. These particles can perceive the positions and
+velocities of other agents within the radius, as well as the
+positions of landmarks falling within the same range.
+
+5
+
+Google Research Football(GRF) Google Research Foot-
+ball (GRF) provides a simulated football environment for
+training multi-agent players to score against the adversary
+players in a three-dimensional world. The discrete action
+set consists of 19 actions including one idle action, eight
+movement actions, four passing/shooting actions, and six
+other actions. Each football play is controlled by an agent,
+observing the ball information, team playersâ information,
+adversary playersâ information, controlled player informa-
+tion, and game mode information.
+
+StarCraft II Micromanagement StarCraft II Microman-
+agement is a strategy game where each agent has various
+attributes such as health points, weapon cooldown, unit type,
+last action, and distance to observed units. Agents partially
+observe units within their view range, i.e. a circular radius.
+The action space includes 4 move directions, a maximum of
+k attack actions against enemy units, stop, and no operation.
+
+5.2. Multi-Agent Tasks
+
+We evaluate the proposed DCIR on three multi-agent tasks
+based on the MPE, GRF, and StarCraft II Micromanagement.
+In order to more comprehensively verify the effectiveness of
+DCIR, we consider both cooperative and competitive tasks.
+
+Cooperative Navigation. (Coop Nav.) This task is con-
+ducted in MPE. In this task, N agents are required to coop-
+erate to reach N goals as fast as possible and are collectively
+rewarded based on how many goals are occupied.
+
+Heterogeneous Navigation. (Hetero Nav) There are N
+goals that N agents cooperate to reach in MPE. The speeds
+and sizes of N agents are different. Half of the agents are
+slow and big, while the other half are fast and small.
+
+Physical Deception. (Phy Decep.) N agents are rewarded
+if one of them reaches the goal but penalized if one of their
+N/2 adversaries occupies it. The goal is hidden among N
+landmarks, known only to agents, not adversaries. Agents
+must learn to deceive adversaries by covering all the land-
+marks. This task is based on MPE.
+
+(Pred-prey.)
+
+Predator-prey.
+In a randomly generated
+obstacle-filled environment, N slow adversaries pursue and
+capture N fast cooperating agents. When an adversary
+catches an agent, the agent is penalized, and the adversary
+is rewarded. This task is based on MPE.
+
+Keep-away. In this MPE task, there are N agents and N
+landmarks. One of the landmarks is the goal, known to
+the agents. M adversaries are present, and the agents are
+rewarded for pushing them away from the goal. Adversaries
+can only deduce the goal based on the agentsâ behavior.
+
+Academy 3vs1 with Keeper. (3v1 w/ keeper.) This task is
+undertaken within the GRF environment. Specifically, three
+agents are assigned to control three individual players. Their
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+objective is to successfully navigate past a defender and a
+goalkeeper in order to propel the ball into the goal and score.
+
+3 Marines vs. 3 Marines. We explore symmetric battle sce-
+narios in StarCraft II involving 3 Marines on each side, i.e. 3
+Marines vs. 3 Marines (3M). In each time step, the agents
+receive a joint team reward based on their inflicted damage
+and the damage received from the enemy.
+
+5.3. Experimental Setups
+
+We implement the experiments in MPE by tianshou frame-
+work (Weng et al., 2022), GRF environment by rllib frame-
+work (Liang et al., 2018) and StarCraft II Micromanage-
+ment by SMAC framework (Samvelyan et al., 2019). For a
+fair comparison, we employ the same experiment setting in
+MPE and GRF as ELIGN and in StarCraft II Micromanage-
+ment as LIIR. Specifically, for MPE, we train the agents for
+100k time steps until convergence, while 5M time steps for
+GRF and 3M time steps for StarCraft II Micromanagement.
+Each experiment runs on one NVIDIA A800 GPU.
+
+5.4. Baselines
+
+Our overall main focus is on evaluating the effectiveness
+of DCIR in intrinsic reward systems. Toward this goal, we
+choose five popular and solid baselines under the same set-
+ting as our method for a fair and comprehensive evaluation.
+
+SPARSE (Lowe et al., 2017) This SPARSE baseline learns
+the policy using only sparse extrinsic rewards returned by
+the environment.
+
+EXP-self (Stadie et al., 2015) This baseline encourages the
+agent to explore states that it has not explored before. The
+intrinsic reward is high for exploring more novel states. It is
+a classic exploration-based intrinsic reward method in the
+single-agent domain.
+
+EXP-team (Iqbal & Sha, 2019b) In addition to only re-
+warding its exploration of states that are novel to itself, EXP-
+team also rewards each agent for simultaneously exploring
+states that are also novel to the rest of the team agents. The
+rewards are also provided in the form of intrinsic rewards.
+
+ELIGN (Ma et al., 2022) ELIGN proposes to use intrinsic
+rewards to reward each agent for making decisions that
+conform to the predictions of other agents, ensuring that the
+behavior of each agent is predictable.
+
+LIIR (Du et al., 2019) LIIR proposes to motivate agents
+to perform diverse behaviors by using learnable intrinsic
+rewards without specific practical meanings.
+
+5.5. Comparison Results
+
+Results on Cooperative Tasks In Table 1, the policy learned
+with our DCIR beats all the baselines on both Coop Nav.
+
+task and Hetero Nav. task. On Coop Nav. task, compared to
+the exploration-based methods EXP-self and EXP-team, the
+improvement can be attributed to that instead of blindly pur-
+suing novel states, we encourage agents to selectively adopt
+exploration behaviors. DCIR also beat ELIGN. ELIGN
+encourages the behaviors of agents to be predictable and
+aligned with each other. When the behaviors of all agents
+become easy to predict, they also tend to be the same. This
+limits the agents to dynamically adjust intentions according
+to the current state. Different from ELIGN, our method does
+not simply request all the agents acting consistently but con-
+siders both behaviors dynamically conditioned on the states.
+This is more obvious in the Hetero Nav., where the agents
+need more moments of inconsistent behavior because of dif-
+ferences in their properties. Compared to LIIR, DCIR better
+promotes collaboration and coordination among multiple
+agents instead of focusing on agentsâ own learning of an
+intrinsic reward. Moreover, it is difficult to fully learn an
+intrinsic reward that has no physical meaning in a complex
+multi-agent environment from scratch.
+
+Results on Competitive Tasks We further demonstrate the
+effectiveness of our proposed DCIR for tasks with adver-
+saries. The results are shown in Table 1 and Figure 4. We
+noticed that DCIR has the highest improvement (89.99%)
+over the SoTA baseline in the Keep-away. task. We spec-
+ulate that the role division is more obvious in this task,
+e.g. deceiving and pushing, which has high requirements
+for the behavior consistency between agents and DCIR can
+alleviate this. Also in the 3v1 w/ keeper. task, while the base-
+lines have comparable performance, our DCIR can boost
+the performance by 24%. This can be explained by the
+complexity arising from intricate rules, interferences among
+defenders and keepers, beyond the scope of mere explo-
+ration (EXP-self, EXP-team) or alignment (ELIGN) strate-
+gies. Additionally, the vast action and state possibilities
+hinder direct learning of a feasible intrinsic reward (LIIR).
+Test winning rates in Figure 4 on StarCraft II Microman-
+agement further shows consistent improvement with faster
+convergence and higher win rate, demonstrating the efficacy
+of DCIR in strategy competitive MARL task.
+
+5.6. Ablation Study
+
+In this section, we proceed to ablate DCIR under MPE on
+both cooperative task and competitive task, i.e. Cooperative
+Navigation and Physical Deception, respectively.
+
+Divergence Alternatives To quantify the behavior consis-
+tency between agents, we calculate the KL divergence be-
+tween the action probability distributions of two agents
+when given the same observation. In this section, we con-
+sider three alternatives. For the first variant (Binary
+Divergence), the behavior consistency is +1 if the
+agents output the same action otherwise â1, indicating
+
+6
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+MPE (Cooperative)
+
+MPE (Competitive)
+
+GRF (Competitive)
+
+Coop Nav. (5v0)
+
+Hetero Nav. (6v0)
+
+Phy Decep. (4v2)
+
+Pred-prey. (4v4)
+
+Keep-away. (4v4)
+
+3v1 w/ keeper. (3v2)
+
+459.92 Â± 22.44
+458.45 Â± 19.79
+497.15 Â± 11.47
+498.24 Â± 9.77
+495.50 Â± 8.40
+
+616.62 Â± 25.30
+702.73 Â± 18.57
+695.38 Â± 12.22
+646.70 Â± 23.25
+660.92 Â± 15.71
+
+166.89 Â± 27.72
+146.55 Â± 29.05
+84.66 Â± 16.94
+186.83 Â± 21.92
+179.27 Â± 21.74
+
+â28.75 Â± 7.3
+â25.35 Â± 6.16
+â17.21 Â± 8.23
+â9.14 Â± 5.57
+â49.79 Â± 11.57
+
+DCIR(Ours)
+
+525.92 Â± 8.99
+
+707.52 Â± 16.70
+
+224.49 Â± 15.39
+
+â7.91 Â± 1.88
+
+0.752 Â± 1.82
+10.52 Â± 5.48
+1.40 Â± 2.06
+11.29 Â± 9.02
+3.45 Â± 13.53
+
+21.45 Â± 9.75
+
+0.020 Â± 0.001
+0.024 Â± 0.004
+0.021 Â± 0.002
+0.025 Â± 0.001
+0.027 Â± 0.003
+
+0.031 Â± 0.002
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+Table 1. Mean test episode extrinsic rewards and standard errors across different methods. We train all algorithms with 5 random seeds
+following ELIGN. The numbers in parentheses represent the number of agents and adversaries, i.e. (Agt # vs. Adv #).
+
+Distance Type
+
+Binary Divergence
+JS Divergence
+TV Distance
+
+Cooperative
+
+Competitive
+
+Coop Nav. (5v0)
+
+Phy Decep. (4v2)
+
+504.60 Â± 7.56
+516.76 Â± 3.98
+508.27 Â± 7.52
+
+205.08 Â± 14.46
+220.57 Â± 13.17
+214.64 Â± 19.43
+
+KL Divergence (Ours)
+
+525.92 Â± 8.99
+
+224.49 Â± 15.39
+
+Method
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+DCIR
+
+Cooperative
+
+Competitive
+
+Coop Nav. (5v0) Coop Nav. (10v0)
+
+Phy Decep. (4v2)
+
+Phy Decep. (8v4)
+
+459.92 Â± 22.44
+458.45 Â± 19.79
+497.15 Â± 11.47
+498.24 Â± 9.77
+495.50 Â± 8.40
+
+1103.87 Â± 22.89
+1101.15 Â± 42.53
+1106.48 Â± 33.14
+1088.42 Â± 39.4
+1003.45 Â± 44.1
+
+166.89 Â± 27.72
+146.55 Â± 29.05
+84.66 Â± 16.94
+186.83 Â± 21.92
+179.27 Â± 21.74
+
+563.42 Â± 70.52
+334.71 Â± 97.83
+351.02 Â± 84.01
+534.91 Â± 48.05
+586.83 Â± 141.33
+
+525.92 Â± 8.99
+
+1137.48 Â± 47.21
+
+224.49 Â± 15.39
+
+622.88 Â± 82.96
+
+Table 2. Ablation Study on alternatives of KL Divergence.
+
+Factor Type
+
+Cooperative
+
+Competitive
+
+Coop Nav. (5v0)
+
+Phy Decep. (4v2)
+
+Inconsistency
+Consistency
+Shared Factor
+Learnable Paras.
+
+491.51 Â± 12.16
+506.45 Â± 8.12
+511.18 Â± 25.13
+505.29 Â± 12.63
+
+197.46 Â± 31.92
+206.04 Â± 19.93
+205.90 Â± 21.81
+208.85 Â± 17.20
+
+DSN (Ours)
+
+525.92 Â± 8.99
+
+224.49 Â± 15.39
+
+Table 3. Ablation Study on the effectiveness of DSN.
+
+their behavior is consistent and inconsistent, respectively.
+The second variant is a modification of KL divergence,
+i.e. Jensen-Shannon (JS) Divergence (MenÃ©ndez et al.,
+1997). The last variant is Total Variant (TD) Distance (Be-
+ran, 1977), which can be formulated as L1-norm between
+two distributions. In Table 2, the results suggest that both
+KL divergence and JS divergence are effective measures
+for consistency, but KL divergence performs slightly better.
+The binary consistency method is the worst. We suspect
+that the binary consistency method is too simplistic and fails
+to capture the nuances of the action distributions. On the
+other hand, TV distance is not as effective as KL divergence,
+which may be due to its sensitivity to small differences be-
+tween distributions. KL divergence and JS divergence are
+both smooth measures of the similarity between two prob-
+ability distributions, which makes them more effective in
+measuring consistency.
+
+Effectiveness of DSN To investigate the effectiveness of the
+proposed DSN, we replace the output of the dynamically
+adjustable factor Î± output from DSN with three variants.
+We first replace Î± with +1, constructing a variant that en-
+
+Table 4. Performance when the number of agents increases.
+
+courages an agent to behave inconsistently with any other
+agent. We thus name it Inconsistency. On the contrary,
+we replace Î± with â1 to encourage consistent behaviors be-
+tween agents, and we denote this variant as Consistency.
+Then, to verify that each agent needs to maintain different
+behavior consistency with different agents, we design a vari-
+ant (i.e. Shared Factor). The DSN of each agent in this
+variant only outputs a shared Î± for the team agents. Last,
+we replace Î± with no-input learnable parameters to justify
+the necessity of DSN design (i.e. Learnable Paras.).
+As illustrated in Table 3, either awarding the agents to per-
+form only inconsistent behaviors or consistent behaviors
+drops the performance. By adding our DSN to learn the
+dynamic adjustable factor Î±, the agent can learn to tackle
+different requirements for behavior consistency under each
+task. Compared to Shared Factor, learning separate Î±
+significantly improves the performances. This is because
+the team agents vary in their policy learning levels and be-
+havior intentions. Therefore, different Î± needs to be used to
+encourage different behavior consistency with other team
+agents. Moreover, the lack of necessary input information
+and network complexity makes the learnable parameters dif-
+ficult to distinguish task situations and adjust appropriately.
+Learnable Paras. thereby performs worse than DSN.
+
+Scalability of DCIR In this experiment, we investigate the
+scalability of DCIR when more agents are added to cooper-
+ative and competitive tasks. As shown in Table 4, when the
+number of agents increases, DCIR enjoys superior perfor-
+mance over the five baselines both in the cooperative task
+and the competitive task. This highlights that DCIR is fea-
+sible and effective in the case of a larger number of agents.
+Furthermore, in contrast to MPE and GRF benchmarks that
+use SAC, we utilize AC (Barto et al., 1983) algorithm in
+StarCraft II Micromanagement following LIIR. In Fig. 5,
+
+7
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Figure 3. Visualization of Cooperation Navigation (5v0) task. Goal: â . Agent1:â¢. Agent2:â¢. Agent3:â¢. Agent4:â¢. Agent5:â¢. Behavior
+direction of Agent1: â. Behavior direction of Agent3: â.
+
+move towards another one while Agent2 chooses to âstayâ.
+This eventually leads to two agents covering different goals
+without conflict (time step t = 10). At time step t = 14,
+Agent3 â¢ encounters the same situation. At this time, the
+intrinsic reward we proposed should encourage Agent3 and
+Agent4 â¢ to behave inconsistently, which means Î±3
+4 in the
+Equation 4 should be a positive value. Agent3 also should be
+rewarded for maintaining consistent behavior with Agent1
+to perform âhumbleâ behavior. To this end, Î±3
+1 should be
+negative. We input the state of time step t = 14 into the
+DSN of Agent3 and find that the output for Î±3
+4 is 0.28 and
+Î±3
+
+1 is â0.05, suggesting the correctness of DSN.
+
+Ultimately, Agent3 adopts a behavior consistent with Agent1
+to explore another goal, while being inconsistent with
+Agent4âs behavior. We calculate its consistency at the time
+step t = 14 according to the Equation 3, and get its consis-
+tency C with Agent1 and Agent4 to be 0.52 and 5.57, respec-
+tively. Notably, in our method, the smaller C is, the more
+consistent the behavior of the two agents is. This shows that
+behavior consistency by our definition is reasonable.
+
+6. Conclusion
+
+In this paper, we address the MARL cooperation problem
+from the perspective of behavior consistency between agents.
+We propose to assign each agent a dynamic consistency
+intrinsic reward (DCIR) to enhance performance in multi-
+agent tasks. Experimental results show that the proposed
+method significantly outperforms baseline MARL meth-
+ods on the Multi-agent Particle, Google Research Football
+and StarCraft II benchmark environments. Qualitative re-
+sults also show that the proposed metric correctly defines
+the behavior consistency and the DSN successfully outputs
+the appropriate scale factors for incentivizing the agents to
+perform their optimal behaviors. DCIR is still limited to
+inferring the behavior in an implicit way. In scenarios with
+more high-level and complex actions, interpretable explicit
+behaviors may be needed to help the environment give more
+accurate intrinsic rewards. Future work will focus on better
+representing and modeling teammate behavior for agents.
+
+Figure 4. Average test winning rates vs.training steps of various
+methods on 3M task in StarCraft II. Our training and testing set-
+tings remain the same as in the LIIR (Du et al., 2019), and 5 seeds
+are selected for plotting.
+
+Figure 5. Average test winning rates vs.training steps of incorporat-
+ing DCIR into MAPPO and JRPO on 3M task in StarCraft II. Our
+training and testing settings remain the same as in the LIIR (Du
+et al., 2019), and 5 seeds are selected for plotting.
+
+we also incorporate our DCIR into advanced MARL algo-
+rithms, i.e. MAPPO (Yu et al., 2022) and JRPO (Lin et al.,
+2023), respectively in StarCraft II Micromanagement. Con-
+sistent improvement showcases the generalization ability
+and scalability of DCIR.
+
+5.7. Qualitive Results
+
+In Figure 3, we visualize an episode of our agent performing
+the Cooperative Navigation (5v0) task. During the process,
+at time step t = 5, both Agent1â¢ and Agent2 â¢ cover the
+same goal and Agent1 performs a âhumbleâ behavior to
+
+8
+
+Motivationt = 5 t = 10 t = 14 t = 19 0.00.51.01.52.02.53.0Step (M)406080100Average Win Rate (%)SPARSEEXP-selfEXP-teamELIGNLIIRDCIR (Ours)0.00.51.01.52.02.53.0Step (M)020406080100Average Win Rate (%)JRPOJRPO+DCIR0.00.51.01.52.02.53.0Step (M)020406080100Average Win Rate (%)MAPPOMAPPO+DCIRDCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+References
+
+Alzetta, F., Giorgini, P., Najjar, A., Schumacher, M. I., and
+Calvaresi, D. In-time explainability in multi-agent sys-
+tems: Challenges, opportunities, and roadmap. In EX-
+TRAAMAS, pp. 39â53. Springer, 2020.
+
+Barto, A. G., Sutton, R. S., and Anderson, C. W. Neuronlike
+adaptive elements that can solve difficult learning control
+problems. IEEE Trans. Syst. Man Cybern., 13:834â846,
+1983.
+
+Beran, R. Minimum hellinger distance estimates for para-
+metric models. The annals of Statistics, pp. 445â463,
+1977.
+
+Berner, C., Brockman, G., Chan, B., Cheung, V., DËebiak, P.,
+Dennison, C., Farhi, D., Fischer, Q., Hashme, S., Hesse,
+C., et al. Dota 2 with large scale deep reinforcement
+learning. arXiv preprint arXiv:1912.06680, 2019.
+
+Bhalla, S., Ganapathi Subramanian, S., and Crowley, M.
+Deep multi agent reinforcement learning for autonomous
+In Canadian Conference on Artificial Intelli-
+driving.
+gence, pp. 67â78. Springer, 2020.
+
+Brown, N. and Sandholm, T. Superhuman ai for multiplayer
+
+poker. Science, 365:885â890, 2019.
+
+BuÂ¸soniu, L., BabuÅ¡ka, R., and De Schutter, B. Multi-agent
+Innovations in
+reinforcement learning: An overview.
+Multi-Agent Systems and Application â 1, pp. 183â221,
+2010.
+
+Canese, L., Cardarilli, G. C., Di Nunzio, L., Fazzolari, R.,
+Giardino, D., Re, M., and SpanÃ², S. Multi-agent reinforce-
+ment learning: A review of challenges and applications.
+Applied Sciences, 11:4948, 2021.
+
+Cao, Y., Yu, W., Ren, W., and Chen, G. An overview of
+recent progress in the study of distributed multi-agent co-
+ordination. IEEE Transactions on Industrial Informatics,
+9:427â438, 2012.
+
+Carroll, M., Shah, R., Ho, M. K., Griffiths, T., Seshia, S. A.,
+Abbeel, P., and Dragan, A. D. On the utility of learning
+about humans for human-ai coordination. In NeurIPS, pp.
+5175â5186, 2019.
+
+Charakorn, R., Manoonpong, P., and Dilokthanakul, N. Gen-
+erating diverse cooperative agents by learning incompati-
+ble policies. In ICLR, 2023.
+
+Chen, G. A new framework for multi-agent reinforcement
+learningâcentralized training and exploration with decen-
+In Proceed-
+tralized execution via policy distillation.
+ings of the 19th International Conference on Autonomous
+Agents and MultiAgent Systems, pp. 1801â1803, 2020.
+
+Chen, P., Ji, D., Lin, K., Hu, W., Huang, W., Li, T., Tan,
+M., and Gan, C. Learning active camera for multi-object
+navigation. In NeurIPS, pp. 28670â28682, 2022.
+
+Dinneweth, J., Boubezoul, A., Mandiau, R., and EspiÃ©,
+S. Multi-agent reinforcement learning for autonomous
+vehicles: a survey. Autonomous Intelligent Systems, 2:27,
+2022.
+
+Du, Y., Han, L., Fang, M., Liu, J., Dai, T., and Tao, D. LIIR:
+learning individual intrinsic reward in multi-agent rein-
+forcement learning. In NeurIPS, pp. 4405â4416, 2019.
+
+Foerster, J., Assael, I. A., De Freitas, N., and Whiteson,
+S. Learning to communicate with deep multi-agent rein-
+forcement learning. In NeurIPS, pp. 2137â2145, 2016.
+
+Foerster, J., Farquhar, G., Afouras, T., Nardelli, N., and
+Whiteson, S. Counterfactual multi-agent policy gradients.
+In AAAI, pp. 2974â2982, 2018.
+
+Haarnoja, T., Zhou, A., Abbeel, P., and Levine, S. Soft actor-
+critic: Off-policy maximum entropy deep reinforcement
+learning with a stochastic actor. In ICML, pp. 1856â1865,
+2018.
+
+Iqbal, S. and Sha, F. Actor-attention-critic for multi-agent
+reinforcement learning. In ICML, pp. 2961â2970, 2019a.
+
+Iqbal, S. and Sha, F. Coordinated exploration via intrinsic
+rewards for multi-agent reinforcement learning. arXiv
+preprint arXiv:1905.12127, 2019b.
+
+Jaderberg, M., Czarnecki, W. M., Dunning, I., Marris, L.,
+Lever, G., Castaneda, A. G., Beattie, C., Rabinowitz,
+N. C., Morcos, A. S., Ruderman, A., et al. Human-level
+performance in 3d multiplayer games with population-
+based reinforcement learning. Science, 364:859â865,
+2019.
+
+Kober, J., Bagnell, J. A., and Peters, J. Reinforcement
+learning in robotics: A survey. International Journal of
+Robotics Research, 32:1238â1274, 2013.
+
+Kurach, K., Raichuk, A., StaÂ´nczyk, P., Zaj Ëac, M., Bachem,
+O., Espeholt, L., Riquelme, C., Vincent, D., Michalski,
+M., Bousquet, O., et al. Google research football: A
+novel reinforcement learning environment. In AAAI, pp.
+4501â4510, 2020.
+
+Langley, P. Crafting papers on machine learning. In ICML,
+
+pp. 1207â1216, 2000.
+
+Li, C., Wang, T., Wu, C., Zhao, Q., Yang, J., and Zhang, C.
+Celebrating diversity in shared multi-agent reinforcement
+learning. pp. 3991â4002, 2021.
+
+9
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Li, W., Liu, W., Shao, S., and Huang, S. Aiir-mix: Multi-
+agent reinforcement learning meets attention individual
+intrinsic reward mixing network. In ACML, pp. 579â594,
+2023.
+
+Liang, E., Liaw, R., Nishihara, R., Moritz, P., Fox, R., Gold-
+berg, K., Gonzalez, J., Jordan, M. I., and Stoica, I. Rllib:
+Abstractions for distributed reinforcement learning. In
+ICML, pp. 3059â3068, 2018.
+
+Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez,
+T., Tassa, Y., Silver, D., and Wierstra, D. Continuous
+control with deep reinforcement learning. arXiv preprint
+arXiv:1509.02971, 2015.
+
+Rashid, T., Samvelyan, M., De Witt, C. S., Farquhar, G.,
+Foerster, J., and Whiteson, S. Monotonic value function
+factorisation for deep multi-agent reinforcement learning.
+Journal of Machine Learning Research, 21:7234â7284,
+2020.
+
+Samvelyan, M., Rashid, T., De Witt, C. S., Farquhar, G.,
+Nardelli, N., Rudner, T. G., Hung, C.-M., Torr, P. H.,
+Foerster, J., and Whiteson, S. The starcraft multi-agent
+challenge. arXiv preprint arXiv:1902.04043, 2019.
+
+Schulman, J., Levine, S., Abbeel, P., Jordan, M. I., and
+Moritz, P. Trust region policy optimization. In ICML, pp.
+1889â1897, 2015.
+
+Lin, F., Huang, S., Pearce, T., Chen, W., and Tu, W.-W.
+Tizero: Mastering multi-agent football with curriculum
+learning and self-play. arXiv, 2023.
+
+Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and
+Klimov, O. Proximal policy optimization algorithms.
+CoRR, abs/1707.06347, 2017.
+
+Liu, I.-J., Yeh, R. A., and Schwing, A. G. Pic: permuta-
+tion invariant critic for multi-agent deep reinforcement
+learning. In CoRL, pp. 590â602, 2020.
+
+Stadie, B. C., Levine, S., and Abbeel, P. Incentivizing ex-
+ploration in reinforcement learning with deep predictive
+models. arXiv preprint arXiv:1507.00814, 2015.
+
+Lowe, R., Wu, Y., Tamar, A., Harb, J., Abbeel, P., and Mor-
+datch, I. Multi-agent actor-critic for mixed cooperative-
+competitive environments. In NeurIPS, pp. 6379â6390,
+2017.
+
+Ma, Z., Wang, R., Fei-Fei, L., Bernstein, M. S., and Kr-
+ishna, R. ELIGN: expectation alignment as a multi-agent
+intrinsic reward. In NeurIPS, pp. 8304â8317, 2022.
+
+McArthur, S. D., Davidson, E. M., Catterson, V. M., Dimeas,
+A. L., Hatziargyriou, N. D., Ponci, F., and Funabashi,
+T. Multi-agent systems for power engineering applica-
+tionsâpart ii: Technologies, standards, and tools for
+IEEE Transactions on
+building multi-agent systems.
+Power Systems, 22:1753â1759, 2007.
+
+MenÃ©ndez, M., Pardo, J., Pardo, L., and Pardo, M. The
+jensen-shannon divergence. Journal of the Franklin Insti-
+tute, 334(2):307â318, 1997.
+
+Ng, A. Y., Harada, D., and Russell, S. Policy invariance
+under reward transformations: Theory and application to
+reward shaping. In ICML, pp. 278â287, 1999.
+
+Oliehoek, F. A. and Amato, C. A concise introduction to
+
+decentralized POMDPs. Springer, 2016.
+
+Peng, B., Rashid, T., Schroeder de Witt, C., Kamienny, P.-
+A., Torr, P., Boehmer, W., and Whiteson, S. Facmac:
+Factored multi-agent centralised policy gradients.
+In
+NeurIPS, pp. 12208â12221, 2021.
+
+Qiu, W., Wang, X., Yu, R., Wang, R., He, X., An, B.,
+Obraztsova, S., and Rabinovich, Z. Rmix: Learning risk-
+sensitive policies for cooperative reinforcement learning
+agents. In NeurIPS, pp. 23049â23062, 2021.
+
+Sunehag, P., Lever, G., Gruslys, A., Czarnecki, W. M., Zam-
+baldi, V., Jaderberg, M., Lanctot, M., Sonnerat, N., Leibo,
+J. Z., Tuyls, K., et al. Value-decomposition networks for
+cooperative multi-agent learning based on team reward.
+In Proceedings of the 17th International Conference on
+Autonomous Agents and MultiAgent Systems, pp. 2085â
+2087, 2018.
+
+Sutton, R. S. Learning to predict by the methods of temporal
+
+differences. Machine Learning, 3:9â44, 1988.
+
+Sutton, R. S., McAllester, D., Singh, S., and Mansour, Y.
+Policy gradient methods for reinforcement learning with
+function approximation. 1999.
+
+Vinyals, O., Babuschkin, I., Chung, J., Mathieu, M., Jader-
+berg, M., Czarnecki, W. M., Dudzik, A., Huang, A.,
+Georgiev, P., Powell, R., et al. Alphastar: Mastering
+the real-time strategy game starcraft ii. DeepMind blog,
+2:20, 2019.
+
+Wang, R. E., Wu, S. A., Evans, J. A., Parkes, D. C., Tenen-
+baum, J. B., and Kleiman-Weiner, M. Too many cooks:
+Bayesian inference for coordinating multi-agent collabo-
+ration. In Muggleton, S. H. and Chater, N. (eds.), Human-
+Like Machine Intelligence, pp. 152â170. 2022.
+
+Weng, J., Chen, H., Yan, D., You, K., Duburcq, A., Zhang,
+M., Su, Y., Su, H., and Zhu, J. Tianshou: A highly mod-
+ularized deep reinforcement learning library. The Jour-
+nal of Machine Learning Research, 23(1):12275â12280,
+2022.
+
+WJKDE, H., Son, K., Kim, D., et al. Learning to factorize
+with transformation for cooperative multi-agent reinforce-
+ment learning. In ICML, pp. 5887â5896, 2019.
+
+10
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Wu, H., Li, H., Zhang, J., Wang, Z., and Zhang, J. Gen-
+erating individual intrinsic reward for cooperative mul-
+International Journal
+tiagent reinforcement learning.
+of Advanced Robotic Systems, 18:17298814211044946,
+2021.
+
+Xu, X., Li, R., Zhao, Z., and Zhang, H. Stigmergic indepen-
+dent reinforcement learning for multiagent collaboration.
+IEEE Transactions on Neural Networks and Learning
+Systems, 33:4285â4299, 2021.
+
+Yu, C., Velu, A., Vinitsky, E., Gao, J., Wang, Y., Bayen,
+A., and Wu, Y. The surprising effectiveness of ppo in
+cooperative multi-agent games. pp. 24611â24624, 2022.
+
+Zhang, C., Jin, S., Xue, W., Xie, X., Chen, S., and Chen, R.
+Independent reinforcement learning for weakly cooper-
+ative multiagent traffic control problem. IEEE Transac-
+tions on Vehicular Technology, 70:7426â7436, 2021a.
+
+Zhang, K., Yang, Z., and BaÂ¸sar, T. Multi-agent reinforce-
+ment learning: A selective overview of theories and al-
+gorithms. Handbook of Reinforcement Learning and
+Control, pp. 321â384, 2021b.
+
+Zheng, Z., Oh, J., and Singh, S. On learning intrinsic re-
+wards for policy gradient methods. In Bengio, S., Wallach,
+H. M., Larochelle, H., Grauman, K., Cesa-Bianchi, N.,
+and Garnett, R. (eds.), NeurIPS, pp. 4649â4659, 2018.
+
+11
+
+Supplementary Materials for
+âDCIR: Dynamic Consistency Intrinsic Reward for
+Multi-Agent Reinforcement Learningâ
+
+In the supplementary, we provide more implementation details and experimental results of our DCIR method. We organize
+the supplementary as follows.
+
+â¢ In Section âOptimizing Method of DSNâ, we provide the formulaic derivation of the optimizing method of DSN.
+
+â¢ In Section âMore Implementation Detailsâ, we provide more implementation details of our method, including the
+
+model architectures and hyperparameters.
+
+â¢ In Section âSymmetry-Breaking Experimentsâ, we provide the experimental results under Symmetry-Breaking
+
+setting.
+
+â¢ In Section âOccupancy/collision Results and Agent-to-target/adversary Distance Resultsâ, we provide more results
+
+w.r.t. occupancy/collision and agent-to-target/adversary distance.
+
+â¢ In Section âPilot Studyâ, we provide the details of the pilot study mentioned in Section 1.
+
+A. Optimizing Method of DSN
+
+The dynamic scale network (DSN) is parameterized by Î·. As aforementioned, each agent has its own DSN to output the
+dynamic scaling factor Î± for behavior consistency with other team agents. The parameters of DSN should be optimized
+in the direction of increasing extrinsic rewards. To achieve this goal, we adopt an extra-level actor-critic framework as in
+LIIR (Du et al., 2019).
+
+To streamline our analysis, we represent the policy ÏÎ¸i with parameters Î¸i for agent i. We adopt the Policy Gradiant (Sutton
+et al., 1999) method as the objective function of the policy in an extra-level actor-critic framework:
+
+(8)
+here, the advantage Aex is estimated as Aex(ot, ut) = rex(ot, ut) + V ex (ot+1) â V ex(ot) following (Du et al., 2019;
+Schulman et al., 2015; 2017). We denoted V ex as the extrinsic value which is estimated by the extrinsic critic and ot+1 as
+the next successive observations of the agents.
+
+(cid:2)log ÏÎ¸i
+
+(cid:0)ui
+
+t | oi
+t
+
+(cid:1) Aex(ot, ut)(cid:3) ,
+
+J ex = Eot,utâ¼D
+
+Given the updated policy ÏÎ¸â²
+the connection between Î·i and J ex as follows (Du et al., 2019):
+
+with parameters Î¸â²
+
+i
+
+i of agent i and its own DSN ( i.e. DSNÎ·i ), we use the chain rule to build
+
+where the first term âÎ¸â²
+
+i
+
+J ex is formulated as
+
+âÎ·iJ ex = âÎ¸â²
+
+i
+
+J exâÎ·iÎ¸â²
+i
+
+âÎ¸â²
+
+i
+
+log ÏÎ¸â²
+
+i
+
+(cid:0)ui
+
+t | oi
+t
+
+(cid:1) Aex(ot, ut)
+
+here we reuse the samples generated by Î¸i with importance sampling method (Zheng et al., 2018).
+
+As mentioned in Section 3.2, the updated parameter Î¸â²
+
+Î¸i â Î¾E
+
+oi
+tâ¼Di
+
+(cid:20)
+âÎ¸i
+
+E
+
+ui
+
+â Î¸i â Î¾E
+
+oi
+tâ¼Di
+
+(cid:104)
+
+tâ¼ÏÎ¸i( Â·|t)
+(cid:0)oi
+
+(cid:1)â¤ (cid:104)
+
+t
+
+âÎ¸iÏÎ¸i
+
+i comes from the following stochastic gradient method:
+(cid:20)
+Ï log ÏÎ¸i
+
+(cid:0)ui
+
+t | oi
+t
+
+t, ui
+t
+
+(cid:0)oi
+
+(cid:21)(cid:21)
+
+(cid:1)
+
+(cid:1) â min
+Î¸i
+(cid:0)oi
+(cid:1) â QSof t
+
+QSof t
+Ïi
+(cid:1)(cid:105)(cid:105)
+
+t
+
+Ïâ²
+i
+
+Ï log ÏÎ¸i
+
+(cid:0)oi
+
+t
+
+12
+
+(9)
+
+(10)
+
+(11)
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+where Î¾ is the learning rate, Ï is the entropy temperature coefficient.
+
+To this end, the second term âÎ·iÎ¸â²
+
+i is computed as
+
+âÎ·iÎ¸â²
+i
+= E
+
+tâ¼Di âÎ·i
+oi
+
+= E
+
+tâ¼Di âÎ·i
+oi
+
+= E
+
+tâ¼Di âÎ·i
+oi
+
+(cid:104)
+
+(cid:104)
+
+(cid:104)
+
+= Î¾E
+
+tâ¼Di âÎ¸iÏÎ¸i
+oi
+
+= Î¾E
+
+tâ¼Di âÎ¸iÏÎ¸i
+oi
+
+Î¸i â Î¾âÎ¸i
+
+(cid:104)
+ÏÏÎ¸i
+(cid:0)oi
+
+t
+
+(cid:1)â¤
+
+(cid:1)â¤
+
+(cid:0)oi
+
+t
+
+log ÏÎ¸i
+(cid:0)oi
+(cid:1)(cid:105)
+
+t
+
+log ÏÎ¸i
+(cid:0)oi
+
+t
+
+âÎ¾âÎ¸i ÏÏÎ¸i
+(cid:0)oi
+
+Î¾âÎ¸iÏÎ¸i
+(cid:0)oi
+(cid:0)oi
+
+t
+
+t
+
+(cid:1)â¤
+
+(cid:1)â¤
+
+t
+
+(cid:1)â¤
+
+QSof t
+Ïâ²
+i
+âÎ·iQSof t
+Ïâ²
+i
+QSof t
+Ïâ²
+i
+
+âÏâ²
+
+i
+
+t
+
+(cid:0)oi
+(cid:0)oi
+
+t
+
+(cid:1)
+
+(cid:1) âÎ·iÏâ²
+
+i
+
+t
+
+(cid:0)oi
+
+(cid:1) â ÏÎ¸i
+(cid:1) + Î¾âÎ¸iÏÎ¸i
+
+(cid:1)â¤
+
+(cid:0)oi
+
+t
+
+QSof t
+Ïâ²
+i
+
+(cid:0)oi
+
+t
+
+(cid:1)(cid:105)(cid:105)
+
+(cid:1)â¤
+
+(cid:0)oi
+
+t
+
+QSof t
+Ïâ²
+i
+
+(cid:1)(cid:105)
+
+(cid:0)oi
+
+t
+
+The parameter of proxy critic i is derived as
+
+âÎ·iÏâ²
+i
+
+(cid:20)
+
+= E
+
+tâ¼DiâÎ·i
+oi
+
+= âE
+
+tâ¼Di âÎ·i
+oi
+
+Ïi â Î¾âÏi
+
+(cid:16)
+
+(cid:104)
+
+2
+
+QSof t
+Ïi
+
+= â2Î¾E
+
+= 2Î¾E
+
+oi
+
+(cid:16)
+
+QSof t
+Ïi
+
+tâ¼DiâÎ·i
+oi
+tâ¼DiâÎ·iQtarget âÏiQSof t
+
+t
+
+(cid:0)oi
+
+(cid:17)2(cid:21)
+
+(cid:1) â Qtarget
+(cid:17)
+
+(cid:1)(cid:105)
+
+(cid:0)oi
+
+t
+
+Î¾âÏiQSof t
+
+Ïi
+âÏiQSof t
+
+Ïi
+
+(cid:1)
+
+(cid:0)oi
+
+t
+
+(cid:17)
+
+(cid:16)
+
+QSof t
+Ïi
+
+(cid:0)oi
+
+t
+
+(cid:0)oi
+
+t
+
+(cid:1) â Qtarget
+(cid:1) â Qtarget
+(cid:0)oi
+
+(cid:1)
+
+t
+
+Ïi
+(cid:1) â Ï log (cid:0)ÏÎ¸â²
+
+i
+
+where Qtarget = rt
+
+ex + Î² Ã ri,t
+
+DCIR +
+
+E
+t+1â¼ÏÎ¸â²
+i
+
+ui
+
+(cid:104)
+
+QSof t
+Ïâ²
+i
+
+(cid:0)oi
+
+t+1
+
+(cid:0)ui
+
+t+1 | oi
+
+t+1
+
+(cid:1)(cid:1)(cid:105)
+
+Therefore,
+
+Hence we have:
+
+âÎ·iÏâ²
+
+i = 2Î²Î¾E
+oi
+
+tâ¼DiâÎ·iri,t
+
+DCIRâÏiQSof t
+
+Ïi
+
+(cid:1)
+
+(cid:0)oi
+
+t
+
+âÎ·iÎ¸â²
+i
+= Î¾E
+
+tâ¼DiâÎ¸i ÏÎ¸i
+oi
+
+(cid:1)â¤
+
+(cid:0)oi
+
+t
+
+= 2Î²Î¾2E
+
+(cid:0)oi
+
+t
+
+tâ¼DiâÎ¸iÏÎ¸i
+oi
+j Ã Ci,j,t and the Î±i
+
+âÏâ²
+i
+(cid:1)â¤
+
+QSof t
+Ïâ²
+i
+
+(cid:0)oi
+
+t
+
+âÏâ²
+
+i
+
+QSof t
+Ïâ²
+i
+
+i
+
+(cid:1) âÎ·Ïâ²
+(cid:0)oi
+
+t
+
+(cid:1) âÎ·i ri,t
+
+DCIRâÏiQSof t
+
+Ïi
+
+(cid:1)
+
+(cid:0)oi
+
+t
+
+DCIR = (cid:80)
+
+where the ri,t
+j is parameterized by Î·i. In this way, we can connect the parameter
+updating of DSN with the objective J ex to ensure the dynamic scaling factor Î± to be optimized in the direction of increasing
+extrinsic rewards.
+
+jâN (i) Î±i
+
+B. More Implementation Details
+
+We use multi-layer perceptron (MLP) to implement all the models, including our DSN models, actor models, and critic
+models. The replay buffer size is 1, 000, 000 for both the multi-agent particle environment and the Google research football
+environment. The training batch size is 1024 and 256 for the multi-agent particle environment and google research football
+environment, respectively. We adopt the Adam optimizer for parameter learning. The learning rate of actor and critic is
+0.001 for the multi-agent particle environment while 0.0003 for the Google research football environment. We set discount
+factors 0.95 and 0.99 in the multi-agent particle and Google research football environments, respectively. The soft update
+coefficient is 0.01 in the multi-agent particle environment and 0.005 in the Google research football environment. The
+entropy temperature coefficient is fixed to be 0.1 in the multi-agent particle environment while learnable in the Google
+research football environment initializing by 1.0. As for the StarCraft II Micromanagement, the learning rate is 0.0005 and
+the training batch size is 32, and the other implementation settings keep the same as in LIIR (Du et al., 2019). The above
+settings are the same for all baselines and our method across all tasks, as these are common parts. The hyperparameters of
+DSN differ in tasks, and we will detail them in the open-source code.
+
+13
+
+(12)
+
+(13)
+
+(14)
+
+(15)
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+MPE (Cooperative)
+
+MPE (Competitive)
+
+Coop Nav. (5v0)
+
+Hetero Nav. (6v0)
+
+Phy Decep. (4v2)
+
+Pred-prey. (4v4)
+
+Keep-away. (4v4)
+
+328.24 Â± 24.17
+295.48 Â± 20.54
+316.33 Â± 14.44
+357.40 Â± 19.52
+337.14 Â± 10.01
+
+405.08 Â± 21.53
+436.17 Â± 26.30
+422.71 Â± 13.24
+417.94 Â± 22.29
+439.07 Â± 25.17
+
+172.87 Â± 32.43
+202.39 Â± 26.06
+229.50 Â± 28.29
+184.21 Â± 23.16
+184.25 Â± 58.98
+
+â35.40 Â± 8.63
+â11.19 Â± 3.65
+â11.56 Â± 6.37
+â7.34 Â± 5.12
+â52.98 Â± 13.55
+
+1.37 Â± 3.48
+9.24 Â± 8.49
+â1.29 Â± 1.58
+18.71 Â± 14.78
+2.64 Â± 17.86
+
+DCIR(Ours)
+
+360.46 Â± 9.65
+
+461.90 Â± 40.26
+
+214.61 Â± 31.05
+
+â7.05 Â± 3.70
+
+23.56 Â± 13.81
+
+Table 5. Mean test episode extrinsic rewards and standard errors in multi-agent particle environment under Symmetry-Breaking setting.
+Higher values are better.
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+DCIR(Ours)
+
+MPE (Cooperative)
+
+Coop Nav. (5v0) â
+
+Hetero Nav. (6v0) â
+
+Phy Decep. (4v2) â
+
+MPE (Competitive)
+Pred-prey. (4v4) â
+
+Keep-away. (4v4) â
+
+0.37 Â± 0.05
+0.29 Â± 0.03
+0.32 Â± 0.02
+0.37 Â± 0.03
+0.38 Â± 0.01
+
+0.38 Â± 0.02
+
+0.38 Â± 0.03
+0.43 Â± 0.02
+0.34 Â± 0.01
+0.40 Â± 0.03
+0.36 Â± 0.03
+
+0.34 Â± 0.02
+
+0.75 Â± 0.04
+0.66 Â± 0.06
+0.78 Â± 0.07
+0.96 Â± 0.20
+1.01 Â± 0.25
+
+0.57 Â± 0.05
+
+0.13 Â± 0.03
+0.05 Â± 0.02
+0.05 Â± 0.02
+0.04 Â± 0.03
+0.22 Â± 0.06
+
+0.03 Â± 0.01
+
+0.04 Â± 0.02
+0.12 Â± 0.08
+0.02 Â± 0.01
+0.06 Â± 0.03
+0.46 Â± 0.24
+
+0.15 Â± 0.08
+
+Table 6. Mean test episode occupancy (for tasks except Pred-prey.) and collision (only for Pred-prey.) per step and standard errors in
+multi-agent particle environment under Symmetry-Breaking setting.
+
+C. Symmetry-Breaking Experiments
+
+In this section, we study the challenges of efficiently allocating the sub-goals in multi-agent collaboration (Wang et al.,
+2022). We consider the symmetry-breaking setting as in ELIGN (Ma et al., 2022). Specifically, for Coop Nav. and Hetero
+Nav., we initialize all the agents in the same position and draw the goals randomly around the agents on a circle perimeter
+with a certain radius, which is equal to the value of the world radius minus the greatest goal size. As for Phy Decep., we
+place both agents and adversaries at the origin and the landmarks randomly around the agents on a circle perimeter with
+a certain radius. In Pred-prey. task, we initialize the agents in the same position while the adversaries are put randomly
+in a circle. The agents and adversaries in Keep-away. are placed in the same way as in Pred-prey., and the landmarks are
+initialized on a circle perimeter. Symmetry-breaking setting raises a challenge for the efficient goal allocation of the agents
+without supervision.
+
+In Table 5, we show the test results under Symmetry-Breaking setting in the multi-agent particle environment. The results
+show that DCIR significantly beats the baselines, suggesting that DCIR helps the agents to break the deadlock of the same
+initial position. Through behavior consistency coordination among the agents, each agent can find its own optimal sub-goal,
+thus completing the task efficiently. We also notice that DCIR does not outperform all the baselines in Phy Decep., we
+hypothesize that this is because this task starts with both the agent and the adversaries in the same position, leading to a
+phase where their observations align. During this, the agents not only need to perform the dynamic behavior consistency
+with teammates to occupy the goals but also to deceive adversaries without confusing teammates. This enormously increases
+the difficulty of behavior consistency decision-making.
+
+D. Occupancy/collision Results and Agent-to-target/adversary Distance Results
+
+In this section, we provide more results on occupancy/collision and agent-to-target/agent-to-adversary distance, as illustrated
+in Table 6, 7, 8, 9. Note that these metrics are for individual agents and are not necessarily directly related to team
+performance. For example, the occupancy of each agent is high while the overall reward is low, indicating that many agents
+may occupy conflicting goals.
+
+14
+
+DCIR: Dynamic Consistency Intrinsic Reward for Multi-Agent Reinforcement Learning
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+DCIR(Ours)
+
+MPE (Cooperative)
+
+Coop Nav. (5v0) â
+
+Hetero Nav. (6v0) â
+
+Phy Decep. (4v2) â
+
+MPE (Competitive)
+Pred-prey. (4v4) â
+
+Keep-away. (4v4) â
+
+0.36 Â± 0.01
+0.50 Â± 0.04
+0.43 Â± 0.03
+0.42 Â± 0.03
+0.40 Â± 0.04
+
+0.42 Â± 0.02
+
+0.42 Â± 0.02
+0.37 Â± 0.02
+0.45 Â± 0.01
+0.41 Â± 0.02
+0.44 Â± 0.03
+
+0.46 Â± 0.02
+
+0.35 Â± 0.01
+0.38 Â± 0.03
+0.35 Â± 0.02
+0.37 Â± 0.01
+0.31 Â± 0.02
+
+0.41 Â± 0.04
+
+2.04 Â± 0.18
+2.35 Â± 0.12
+2.39 Â± 0.15
+2.25 Â± 0.15
+3.16 Â± 0.23
+
+2.52 Â± 0.12
+
+3.10 Â± 0.29
+2.70 Â± 0.35
+3.37 Â± 0.19
+2.62 Â± 0.30
+4.08 Â± 0.37
+
+2.98 Â± 0.32
+
+Table 7. Mean test episode agent-to-target (for tasks except for Pred-prey.) distance and agent-to-adversary (only for Pred-prey.) distance
+per step and standard errors in multi-agent particle environment under Symmetry-Breaking setting.
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+DCIR(Ours)
+
+MPE (Cooperative)
+
+Coop Nav. (5v0) â
+
+Hetero Nav. (6v0) â
+
+Phy Decep. (4v2) â
+
+MPE (Competitive)
+Pred-prey. (4v4) â
+
+Keep-away. (4v4) â
+
+0.50 Â± 0.04
+0.48 Â± 0.03
+0.53 Â± 0.03
+0.56 Â± 0.04
+0.54 Â± 0.01
+
+0.57 Â± 0.01
+
+0.46 Â± 0.08
+0.63 Â± 0.01
+0.60 Â± 0.02
+0.67 Â± 0.00
+0.66 Â± 0.00
+
+0.63 Â± 0.03
+
+1.20 Â± 0.10
+1.20 Â± 0.08
+1.20 Â± 0.09
+1.30 Â± 0.23
+1.46 Â± 0.23
+
+1.34 Â± 0.01
+
+0.11 Â± 0.02
+0.07 Â± 0.02
+0.05 Â± 0.02
+0.04 Â± 0.02
+0.23 Â± 0.06
+
+0.05 Â± 0.02
+
+0.08 Â± 0.02
+0.15 Â± 0.06
+0.06 Â± 0.01
+0.10 Â± 0.02
+0.36 Â± 0.18
+
+0.20 Â± 0.09
+
+Table 8. Mean test episode occupancy (for tasks except Pred-prey.) and collision (only for Pred-prey.) per step and standard errors in
+multi-agent particle environment.
+
+Methods
+
+SPARSE
+EXP-self
+EXP-team
+ELIGN
+LIIR
+
+DCIR(Ours)
+
+MPE (Cooperative)
+
+Coop Nav. (5v0) â
+
+Hetero Nav. (6v0) â
+
+Phy Decep. (4v2) â
+
+MPE (Competitive)
+Pred-prey. (4v4) â
+
+Keep-away. (4v4) â
+
+0.22 Â± 0.01
+0.30 Â± 0.02
+0.23 Â± 0.02
+0.23 Â± 0.04
+0.24 Â± 0.02
+
+0.24 Â± 0.03
+
+0.27 Â± 0.05
+0.21 Â± 0.01
+0.22 Â± 0.01
+0.19 Â± 0.00
+0.19 Â± 0.00
+
+0.21 Â± 0.01
+
+0.23 Â± 0.02
+0.24 Â± 0.01
+0.23 Â± 0.02
+0.22 Â± 0.01
+0.20 Â± 0.01
+
+0.21 Â± 0.00
+
+2.03 Â± 0.15
+2.18 Â± 0.13
+2.29 Â± 0.12
+2.12 Â± 0.16
+3.14 Â± 0.20
+
+2.40 Â± 0.16
+
+2.97 Â± 0.17
+2.70 Â± 0.25
+3.14 Â± 0.08
+2.66 Â± 0.23
+4.23 Â± 0.30
+
+2.89 Â± 0.17
+
+Table 9. Mean test episode agent-to-target/agent-to-target (for tasks except Pred-prey.) distance and agent-to-adversary (only for Pred-
+prey.) distance per step and standard errors in multi-agent particle environment.
+
+E. Pilot Study
+
+To inspect how severe the previous methods suffer in dynamic behavior consistency problem and how much DCIR alleviates
+this problem, we conduct two pilot studies. We place 5 agents at the origin in MPE. In Study 1, we position one target at the
+origin, while the remaining 4 are randomly distributed around a circle centered at the origin, all within the observable range
+of agents. The agents need to behave inconsistently to go in different directions toward the targets. In Study 2, we place
+all the targets on the right of the origin within the observation range of the agents. In this case, agents need to maintain
+consistent behaviors to go right toward the target. For Study 1, we report the proportion of agents that left the origin (with a
+denominator of 4 since one agent needs to stay at the origin which also has a target). In Study 2, we report the proportion of
+agents that approach the targets. Each variant is repeated 1000 times in different seeds.
+
+Study 1
+
+Study 2
+
+ELIGN
+DCIR(Ours)
+
+0.75 Â± 0.07
+0.88 Â± 0.08
+
+0.69 Â± 0.18
+0.97 Â± 0.02
+
+Table 10. Pilot studies on dynamic behavior consistency
+In Table 10, compared with the existing SoTA method ELIGN, our delicately designed DCIR works well to encourage
+agents to perform dynamic behavior consistency at the right time and thus improve task performance.
+
+15
+
+

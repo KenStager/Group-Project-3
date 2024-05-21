@@ -1,0 +1,863 @@
+Quantitative Characterization of Randomly Roving
+Agents
+
+Hakob Aslanyan
+Computer Science Department
+University of Geneva
+1227 Geneva, Switzerland
+hakob.aslanyan@unige.ch
+
+Jose Rolim
+Computer Science Department
+University of Geneva
+1227 Geneva, Switzerland
+jose.rolim@unige.ch
+
+3
+1
+0
+2
+
+r
+a
+
+M
+3
+
+]
+I
+
+N
+.
+s
+c
+[
+
+1
+v
+5
+2
+5
+0
+.
+3
+0
+3
+1
+:
+v
+i
+X
+r
+a
+
+AbstractâQuantitative characterization of randomly roving
+agents in Agent Based Intrusion Detection Environment (ABIDE)
+is studied. Formula simpliï¬cations regarding known results
+and publications are given. Extended Agent Based Intrusion
+Detection Environment (EABIDE) is introduced and quantitative
+characterization of roving agents in EABIDE is studies.
+
+I. INTRODUCTION
+
+Wireless sensor networks (WSN) are composed of thou-
+sands of nodes that are spatially distributed in an unattended
+area usually without prior knowledge of the network topology.
+They act as a real time environmental monitoring tool by
+sensing and reporting environmental data to the base station,
+which usually happens in a multi-hop way. In many WSN
+applications, like hostile area monitoring or when WSN acts
+as an intrusion detection system for a building, the security
+of the network is crucial. Especially when network nodes
+are deployed in an unattended area an adversary can have
+a physical access to them which will allow him to read,
+modify or erase the content of a node. In some deployments
+node replication attack also becomes feasible. The aim of an
+intrusion detection system (IDS) for those networks is to act as
+the second defence line against network attacks that preventive
+mechanisms fail to address [6]. An Intrusion detection system
+for a network is a system that dynamically monitors the events
+taking place on a network and decides whether these events
+are symptoms of an attack or constitute a legitimate use of
+the system [7]. Comprehensive surveys on IDS for WSN are
+presented in [1], [12].
+
+Agent based intrusion detection systems became popular
+because of their scalability, reconï¬gurability and survivability
+[2], [5], [15], [8], [3]. It is more difï¬cult for an attacker to
+deal with such IDS as they do not have deï¬ned structures
+and are not predictable. In this work we discuss an agent
+based intrusion detection system called ABIDE (Agent Based
+Intrusion Detection Environment) [14], [13], [11] which uses
+autonomous software agents for intrusion detection in com-
+puter networks. In ABIDE autonomous agents are moving
+randomly in a network along communication links and record-
+ing/calculating a unique information on randomly selected
+nodes. An example of such unique information can be a check-
+sum of the operating system running on a node, which can
+help to understand whether it has been modiï¬ed or not. Later
+
+each agent passes the data it collected to a special agent which
+combines the data received from various agents and tries to
+determine weather an intrusion took place or not (more details
+on ABIDE are given in Section II). [11] tries to calculate the
+number of agents required by ABIDE for detecting intrusions
+in a given size network with a given probability. The formulas,
+that give the relation between the number of agents and the
+probability of an intrusion to be detected, presented in [11],
+such as Formula (1), are complex and unobservable and their
+simpliï¬cations or approximations are of interest. By this same
+reason [11] considers a computer simulation instead of using
+the Formula (1), to understand the typical number of agents
+necessary to retrieve the required information in a network.
+Our work tends to prove simple formulas analytically, for
+the same numerical characteristics of ABIDE, which can be
+used to understand the relations between the number of agents
+and the amount of information that can be gathered by them,
+without considering a software simulations. We also propose
+the extended version of ABIDE, called EABIDE and consider
+the same quantitative characteristics for it. As a result we
+get formulas representing the relation between the number of
+roving agents in EABIDE and the amount of information that
+can be gathered by them in terms of Stirling numbers of the
+second kind. Known asymptotic estimates for Stirling numbers
+of second kind can further be applied to get more compact
+approximations [4], [9], [16].
+
+II. AGENT BASED INTRUSION DETECTION ENVIRONMENT
+(ABIDE)
+
+Consider a network where each node has a software agent
+hosting environment (i.e. software agents can move into a
+node perform some action and leave.). ABIDE [11] uses four
+different kinds of agents to organize intrusion detection and
+correction in the system.
+
+1) A Data Mining Agent (DMA) roams around in a net-
+work (i.e. randomly chooses a host node and moves
+there) and acquires environmental
+information from
+nodes. DMA is lightweight and uses simplest mining al-
+gorithms. For example DMA may calculate a checksum
+of the operating system that runs on a host node, and if
+it decides that the value of the checksum is suspicious
+it can keep the value and curry on for further analysis.
+
+ 
+ 
+ 
+ 
+ 
+ 
+2) A Data Fusion Agent (DFA) roams around or is located
+on the base station. It receives the data collected by
+various DMAs and builds a larger picture of events
+from this data. As the DFA has a combined data it
+can apply classical
+intrusion detection techniques to
+determine whether an intrusion took place or not. Of
+course the power of the DFA depends on the quantity
+of information received from DMAs.
+
+3) Nodes that have been identiï¬ed as suspicious by DFA
+are further visited by a Probe Agent (PA), sent by DFA,
+which performs a test on a host node to conï¬rm the
+intrusion.
+
+4) Once the intrusion is conï¬rmed by a PA a Corrective
+Agent (CA) can be dispatched by a DFA to take actions.
+We tend to answer to the following question. What is the
+probability of identifying intrusions in a network of a given
+size with the set of given DMAs in a presence of a single
+DFA, where DFA needs information from at least t distinct
+nodes [11] in order to be able to determine whether there is
+an intrusion or not. Further this can be used to calculate the
+number of DMAs required for identifying intrusions in a given
+network with a given probability.
+
+Formally the problem we consider is the following. Given
+a set of k DMAs which roam around in a network of n nodes.
+Each DMA has a storage where it can keep a data from m
+different nodes. DMA returns to DFA as soon as it acquires
+a data from exactly m randomly chosen distinct nodes. Note
+that when a DMA moves into a node it is not obliged to
+take actions there,
+the node can be used as intermediate
+hop for roaming, this way randomness of the visited nodes
+(nodes where a data has been collected) can be guaranteed.
+It is required to calculate the probability Pk(n, m, t) of DFA
+having data from exactly t distinct nodes. Note that each DMA
+gathers a data from m distinct nodes but the data gathered by
+two different DMA may intersect. [11] provides the following
+formula
+
+Pk(n, m, t) =
+(cid:19)â(kâ1)
+
+(cid:18) n
+m
+
+m
+(cid:88)
+
+(cid:18) m
+m2
+
+(cid:19)(cid:18) n â m
+m â m2
+
+(cid:19)
+Â·
+
+(cid:18)2m â m2
+m3
+
+m2,m3,...,mkâ1=0
+(cid:19)(cid:18)n â 2m + m2
+
+(cid:19)
+
+m â m3
+
+. . .
+
+(cid:18)(k â 2)m â m2 â . . . â mkâ2
+mkâ1
+(cid:18)n â (k â 2)m + m2 + . . . + mkâ2
+m â mkâ1
+
+(cid:19)
+Â·
+
+(cid:18)(k â 1)m â m2 â . . . â mkâ1
+km â t â m2 â . . . â mkâ1
+(cid:18)n â (k â 1)m + m2 + . . . + mkâ1
+t â (k â 1)m + m2 + . . . + mkâ1
+
+(cid:19)
+Â·
+
+Â·
+
+. . .
+
+Â·
+
+Â·
+
+Â·
+
+(cid:19)
+
+Â·
+
+(cid:19)
+
+, k â¥ 4.
+
+(1)
+
+Of course (1) is unobservable and simpliï¬cations or ap-
+proximations are of interest. By this same reason (1) con-
+siders computer simulations for approximating the value of
+
+Fig. 1. Matrix representation of visited nodes.
+
+Pk(n, m, t). Below we present formula simpliï¬cations that
+allow to compute the exact value of Pk(n, m, t) without
+software simulations.
+
+III. COVERAGE CHARACTERIZATION OF ROVING AGENTS
+IN ABIDE
+
+Consider a set N = {v1, ..., vn} of n nodes and subsets
+Si â N, i = 1, ..., k, where subset Si corresponds to the set of
+nodes visited by agent 1 i and is of size m (here we say a node
+is visited by agent i if i collected a date from that node, i.e.
+nodes that were used as intermediate hops for roaming are not
+considered as visited). We consider a probability distribution
+scheme over N . As the nodes visited by agents are random the
+subsets Si, i = 1, ...k will be independent and equiprobable.
+Having in total C m
+n subsets of size m the probability for one
+of them to acquire is 1/C m
+n . We are interested in probabilistic
+characteristics of union âªk
+i=1Si and its size. In particular, what
+is the probability that the union of those subsets contains
+exactly t elements.
+
+Pk(n, m, t) = P r
+
+(cid:32)(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+k
+(cid:91)
+
+i=1
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+Si
+
+(cid:33)
+
+= t
+
+.
+
+Consider a matrix AkÃn = {aij} (Figure 1) where
+
+aij =
+
+(cid:40)
+
+1
+0
+
+if vj â Si
+otherwise
+
+.
+
+(2)
+
+(3)
+
+From |Si| = m it follows that each row of matrix A will be
+composed of exactly m 1s and nâm 0s. A column j of matrix
+A represents the node vj and it composed of zeros alone, if
+and only if non of the k agents visited the node vj, i.e. non of
+the subsets Si contains vj. Therefore the union âªk
+i=1Si will
+be composed of exactly t distinct elements if and only if A
+contains exactly n â t columns composed of 0s alone and all
+the other columns contain at least one 1. It is obvious that
+the number of possibilities to get information from exactly
+t out of n nodes, with k agents equipped with a memory
+of size m is given by the number of A matrices discussed
+above. Denote the number of k Ã t sub-matrices Q (Figure
+2) that have exactly m 1 on each row and have at least one
+1 on each column by Q(k, m, t). Then the number of k Ã n
+
+1later in paper by saying agent we mean DMA
+
+IV. EXTENDED AGENT BASED INTRUSION DETECTION
+ENVIRONMENT (EABIDE)
+
+We generalize the intrusion detection system proposed in
+[11] by allowing data mining agents (DMA) to collect a
+redundant data, i.e. in contrast with the original version of
+ABIDE, where each DMA collects data from m randomly
+chosen distinct nodes, here DMA is allowed to have more
+than one instance of the same data in his memory (i.e. on each
+visit of the same node data might be calculated and stored).
+DMA do not store several copies of the same data in purpose,
+this can be unavoidable in networks where network nodes are
+indistinguishable from DMA point of view. The later might be
+required by the security system of the network (e.g. if nodes
+use randomized and encrypted IDs DMA can not recognize
+the node visited before as it will have different ID, so the data
+collected from the same node during two different visits will
+be indistinguishable). As a result when the memory of a DMA
+is full it will contain data from 1 â¤ l â¤ m distinct nodes in
+contrast with m in case of ABIDE. A data fusion agent (DFA),
+having access to security schemes deployed in the networks,
+can sort out the data received from a DMA, discard redundant
+data and keep the l pieces of distinct data.
+
+In Extended Agent Based Intrusion Detection Environment
+(EABIDE) we are interested in the same question as before.
+What is the probability of identifying intrusions in a
+network of a given size with the set of given DMAs
+in a presence of a single DFA, where DFA needs
+information from at least t distinct nodes in order to
+be able to determine whether there is an intrusion
+or not. Further this can be used to calculate the
+number of DMAs required for identifying intrusions
+in a given network with a given probability.
+
+Formally the problem we consider is the following. Given
+a set of k DMAs which roam around in a network of n nodes.
+Each DMA has a storage where it can keep m pieces of data.
+DMA returns to DFA as soon as it acquires m pieces of data,
+from randomly chosen nodes (from DMA point of view all the
+m pieces of data will be different). Note that when a DMA
+moves into a node it is not obliged to take actions there, the
+node can be used as intermediate hop for roaming, this way
+randomness of the visited nodes (nodes where a data has been
+collected) can be guaranteed. It is required to calculate the
+probability P â
+k (n, m, t) of DFA having data from exactly t
+distinct nodes. The difference with the ABIDE is that not only
+the data gathered by different DMA may intersect but also the
+data in the memory of a single DMA may be redundant.
+
+V. COVERAGE CHARACTERIZATION OF ROVING AGENTS
+IN EABIDE
+
+Consider a set N = {v1, ..., vn} of n nodes and subsets
+Sâ
+i â N, i = 1, ..., k, where subset Sâ
+i corresponds to the set
+of distinct nodes visited by agent i (after removing repeating
+nodes, i.e. a set of nodes by DFA point of view) and 1 â¤
+|Sâ
+i | â¤ m (here we say a node is visited by agent i if i
+collected a date from that node, i.e. nodes that were used as
+
+Fig. 2. Sub-matrix Q.
+
+matrices with exactly m ones on each row and with exactly
+n â t columns with no 1s will be
+
+C t
+
+n Â· Q(k, m, t)
+
+(4)
+
+where C t
+n stands for the number of possibilities to pick t out
+of n nodes (columns) and Q(k, m, t) stands for the number
+of possibilities to cover all the t nodes by k agents equipped
+with a memory of size m.
+
+Q(k, m, t) can be calculated by inclusion-exclusion princi-
+ple. First, over k Ã t matrices we take all the matrices with
+exactly m 1s on each row, then we remove all the matrices
+that have at least one column initially ï¬lled in with 0s (such
+matrices do not obey the conditions we require), then we add
+matrices with at least 2 columns ï¬lled in with 0s and so on.
+The formula representation of related quantities is
+
+Q(k, m, t) =
+
+t Â· (cid:0)C m
+
+tâ2
+
+(cid:1)k
+
+â . . .
+
+(cid:1)k
+
+tâ1
+Â· (C m
+
++ C 2
+m )k =
+
+t Â· (cid:0)C m
+t )k â C 1
+(C m
++ (â1)tâm C tâm
+tâm
+(cid:88)
+
+(â1)i C i
+
+t Â· (cid:0)C m
+
+t
+
+tâi
+
+(cid:1)k
+
+(5)
+
+i=0
+We have proven
+
+Theorem 1.
+
+Pk(n, m, t) =
+
+n Â· (cid:80)tâm
+C t
+
+=
+
+=
+
+C t
+
+n Â· Q(k, m, t)
+n )k
+t Â· (cid:0)C m
+
+(C m
+i=0 (â1)i C i
+(C m
+
+tâi
+
+(cid:1)k
+
+.
+
+(6)
+
+n )k
+Proof: The proof follows from (4), (5) and the fact that
+the number of k Ã n matrices with exactly m 1s on each row
+is (C m
+
+n )k.
+
+First of all here we receive a real simpliï¬cation of (1). The
+formula received is still complex, but it might be easily calcu-
+lated and the applied Markov inequality may give asymptotic
+estimates of t-subset probabilities [10].
+
+Another important characteristic, the mean value of subset
+
+size t, might be computed as:
+
+min(km,n)
+(cid:88)
+
+t Â· Pk(n, m, t) =
+
+t=m
+min(km,n)
+(cid:88)
+
+=
+
+t=m
+
+t Â· C t
+
+n Â· (cid:80)tâm
+
+i=0 (â1)i C i
+n )k
+(C m
+
+t Â· (cid:0)C m
+
+tâi
+
+(cid:1)k
+
+.
+
+(7)
+
+intermediate hops for roaming are not considered as visited).
+We consider a probability distribution scheme over N . We are
+interested in probabilistic characteristics of union âªk
+i and
+its size. In particular, what is the probability that the union of
+those subsets contains exactly t elements.
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+k (n, m, t) = P r
+
+(cid:32)(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+i=1Sâ
+
+k
+(cid:91)
+
+Sâ
+i
+
+= t
+
+P â
+
+(8)
+
+(cid:33)
+
+.
+
+i=1
+
+This time the matrix BkÃn = {bij} corresponding to
+
+subsets Sâ
+
+i will be
+
+bij =
+
+(cid:40)
+
+1
+0
+
+if vj â Si
+otherwise
+
+.
+
+(9)
+
+i contains vj. Therefore the union âªk
+
+From 1 â¤ |Sâ
+i | â¤ m it follows that on each row of
+matrix B there is at
+least 1 and at most m 1s and the
+rest is ï¬lled by zeros. A column j of matrix B represents
+the node vj and it composed of zeros alone, if and only
+if non of the k agents visited the node vj, i.e. non of the
+subsets Sâ
+i will be
+composed of exactly t distinct elements if and only if B
+contains exactly n â t columns composed by 0s alone and
+all the other columns contain at least one 1. It is obvious that
+the number of possibilities to get information from exactly
+t nodes, of network of n nodes, with k agents that fetch
+1 â¤ li â¤ m unique data each is given by the number of
+B matrices discussed above. Denote the number of k Ã t sub-
+matrices R, that have 1 â¤ li â¤ m ones on the i-th row (for
+all the possible li) and have at least one 1 on each column,
+by R(k, m, t). Then the number of B matrices will be
+
+i=1Sâ
+
+C t
+
+n Â· R(k, m, t)
+
+(10)
+
+where C t
+
+n stands for the number of possibilities to pick t out
+of n nodes (columns) and R(k, m, t) stands for the number
+of possibilities to cover all the t nodes by k agents.
+
+For calculating the number of B matrices ï¬rst we prove
+the following lemma which shows the similarities between
+schemes ABIDE and EABIDE.
+
+Lemma 1. The probability of covering exactly t out of n nodes
+with one agent having memory of m units in EABIDE scheme
+is equal to the probability of covering exactly t out of n nodes
+with m agents having memory of 1 unit in ABIDE scheme.
+
+P â
+
+1 (n, m, t) = Pm(n, 1, t)
+
+Proof: The proof is simple. Having in mind that at any
+point of time each node has the same probability to be visited
+by an agent in EABIDE scheme (even those nodes that have
+already been visited), each cell of the agentâs memory can be
+considered as an individual agent having a memory of size 1
+which leads to m agents with one unit of memory in ABIDE
+scheme.
+
+Corollary 1. P â
+
+k (n, m, t) = Pkm(n, 1, t)
+
+Proof: The proof is similar to the proof of Lemma 1.
+
+Theorem 2.
+
+R(k, m, t) = Q(km, 1, t) =
+
+tâ1
+(cid:88)
+
+i=0
+
+(â1)iC i
+
+t Â· (t â i)mk
+
+(11)
+
+Proof: The proof follows from Theorem 1 and Corollary
+
+1.
+
+Corollary 2.
+
+n Â· (cid:80)tâ1
+C t
+
+i=0(â1)iC i
+
+t Â· (t â i)mk
+
+nmk
+
+P â
+
+k (n, m, t) =
+C t
+
+n Â· R(k, m, t)
+nmk
+
+=
+
+(12)
+
+Proof: The proof follows from Theorem 2 and Corollary
+
+1.
+
+Finally, we note that R(k, m, t) has equivalent presentation
+
+in terms of Stirling numbers of the second kind [4]
+
+S(N, K) =
+
+1
+K!
+
+K
+(cid:88)
+
+(â1)jC j
+
+K(K â j)N .
+
+j=0
+
+(13)
+
+Formally in the formula of R(k, m, t) we may add the zero
+
+term for i = t, and then we receive
+
+R(k, m, t) = t!S(mk, t)
+
+(14)
+
+Stirling number of the second kind S(N, K) is the number
+of ways to partition a set of N objects into K non-empty sub-
+sets. Existing asymptotic estimates for them [4], [9], [16] allow
+to get simple approximations for R(k, m, t) and therefore for
+P â
+
+k (n, m, t).
+The following theorem, which is the ï¬nal postulation of this
+
+paper, can be formulated.
+
+Theorem 3.
+
+P â
+
+k (n, m, t) =
+
+C t
+
+n Â· t!S(mk, t)
+nkm
+
+(15)
+
+VI. CONCLUSION
+
+In its current state the intrusion detection system called
+ABIDE [11] considers software simulations to understand the
+number of data mining agents required for identifying intru-
+sions in a system with a given probability. In the current paper
+we gave formulas that allow to compute this number analyti-
+cally. Further we considered the extended version of ABIDE
+(EABIDE) and proved formulas for the same quantitative
+characteristics. Formulas for EABIDE are achieved in terms of
+Stirling numbers of the second kind [4], [9], [16], which allows
+to obtain asymptotic estimates and further simpliï¬cations for
+quantitative characteristics of EABIDE. In the future it will
+be interesting to consider the same quantitative characteristics
+analytically for more general cases of ABIDE and EABIDE
+schemes with more than one DFA.
+
+REFERENCES
+
+[1] I. F. Akyildiz, W. Su, Y. Sankarasubramaniam, and E. Cayirci. Wireless
+sensor networks: a survey. Comput. Netw., 38(4):393â422, 2002.
+[2] Imen Brahmi, Sadok Ben Yahia, Hamed Aouadi, and Pascal Poncelet.
+Towards a multiagent-based distributed intrusion detection system using
+the 7th international
+data mining approaches.
+conference on Agents and Data Mining Interaction, ADMIâ11, pages
+173â194. Springer-Verlag, 2012.
+
+In Proceedings of
+
+[3] Ulrik Brandes and Thomas Erlebach (Eds.).
+
+Network Analysis -
+Methodological Foundations. Springer-Verlag Berlin Heidelberg, 2005.
+[4] R. Chelluri, L.B. Richmond, and N.M. Temme. Asymptotic estimates
+for generalized stirling numbers. Report - Modelling, analysis and
+simulation ISSN 1386-3703, CWI, Amsterdam, The Netherlands, 1997.
+[5] H. S. Kremer D. J. Ingram and N. C. Rowe. Distributed intrusion
+detection for computer systems using communicating agents. The 2000
+Command and Control Research and Technology Symposium (CCRTS),
+2000.
+
+[6] Ana Paula R. da Silva, Marcelo H. T. Martins, Bruno P. S. Rocha,
+Antonio A. F. Loureiro, Linnyer B. Ruiz, and Hao Chi Wong. Decen-
+tralized intrusion detection in wireless sensor networks. Proceedings of
+the 1st ACM International Workshop on Quality of Service and Security
+in Wireless and Mobile Networks (Q2SWINETâ05), pages 16â23, 2005.
+[7] M. Dacier Debar, H. and A. Wespi. Towards a taxonomy of intrusion-
+
+detection systems. Comput. Netw., 31(9):805â822, 1999.
+
+[8] C. Krugel, T. Toth, and E. Kirda. A mobile agent based intrusion
+detection system. First International IFIP TC-11 WG 11.4 Working
+Conference on Network Security, 2001.
+
+[9] Guy Louchard. Asymptotics of the stirling numbers of the ï¬rst kind
+revisited: A saddle point approach. Discrete Mathematics & Theoretical
+Computer Science, 12(2):167â184, 2010.
+
+[10] Yu.I. Medvedev and G.I. Ivchenko. Asimptotical expansions of ï¬nite
+differences of power function in an arbitrary point. Theory of probability
+and applications, 10:151â156, 1965.
+
+[11] Ira S. Moskowitz, Myong H. Kang, Li Wu Chang, and Garth E.
+Longdon. Randomly roving agents for intrusion detection. Technical
+report, Naval research laboratory, Washington D.C., 2001.
+
+[12] M.A. Maarof Rassam, M.A. and A. Zainal. A survey of intrusion
+detection schemes in wireless sensor networks. American Journal of
+Applied Sciences, 9(10):1636â1652, 2012.
+
+[13] M. Reed. Abide: Scalability. 2000.
+[14] M. Reed. Agent based intrusion detection environment architecture. NRL
+
+Technical Report 5540/TM/117, 2000.
+
+[15] E. H. Spafford and D. Zamboni. Intrusion detection using autonomous
+
+agent. Computer Networks, 34(4):547â570, 2000.
+
+[16] N.M. Temme. Asymptotic estimates of stirling numbers. Studies in
+
+Applied Mathematics, pages 233â243, 1993.
+
+

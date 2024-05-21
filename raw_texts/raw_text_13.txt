@@ -1,0 +1,2782 @@
+9
+9
+9
+1
+
+t
+c
+O
+1
+2
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+6
+1
+0
+0
+1
+9
+9
+/
+s
+c
+:
+v
+i
+X
+r
+a
+
+Probabilistic Agent Programsâ
+
+JÂ¨urgen Dixâ 
+University of Koblenz, Dept. of Computer Science
+D-56075 Koblenz, Germany
+
+Mirco Nanni
+University of Pisa, Dept. of Computer Science
+I-56125 Pisa, Italy
+V.S. Subrahmanianâ¡
+Dept. of CS, University of Maryland
+College Park, MD 20752, USA
+
+22nd June 2021
+
+Abstract
+
+Agents are small programs that autonomously take actions based on
+changes in their environment or âstate.â Over the last few years, there
+have been an increasing number of eï¬orts to build agents that can interact
+and/or collaborate with other agents. In one of these eï¬orts, Eiter, Sub-
+rahmanian, and Pick (1999) have shown how agents may be built on top of
+legacy code. However, their framework assumes that agent states are com-
+pletely determined, and there is no uncertainty in an agentâs state. Thus,
+their framework allows an agent developer to specify how his agents will
+react when the agent is 100% sure about what is true/false in the world
+state. In this paper, we propose the concept of a probabilistic agent pro-
+gram and show how, given an arbitrary program written in any imperative
+language, we may build a declarative âprobabilisticâ agent program on top
+of it which supports decision making in the presence of uncertainty. We
+provide two alternative semantics for probabilistic agent programs. We
+show that the second semantics, though more epistemically appealing, is
+more complex to compute. We provide sound and complete algorithms to
+compute the semantics of positive agent programs.
+
+âMost proofs are contained in the appendix.
+â This work was carried out when the author was visiting the University of Maryland from
+
+January-October 1999.
+
+â¡This work was supported by the Army Research Oï¬ce under Grants DAAH-04-95-10174,
+DAAH-04-96-10297, DAAG-55-97-10047 and DAAH04-96-1-0398, by the Army Research Lab-
+oratory under contract number DAAL01-97-K0135 and by an NSF Young Investigator award
+IRI-93-57756.
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+1 Introduction
+
+Over the last few years, there has been increasing interest in the area of soft-
+ware agents. Such agents provide a wide variety of services including identi-
+ï¬cation of interesting newspaper articles, software robots that perform tasks
+(and plan) on a userâs behalf, content based routers, agent based telecommu-
+IMPACT (see
+nication applications, and solutions to logistics applications.
+|http://www.cs.umd.edu/projects/impact/â) is a multinational project whose
+aim is to deï¬ne a formal theory of software agents, implement (appropriate
+fragments of) the theory eï¬ciently, and develop an appropriate suite of appli-
+cations on top of this implementation. An IMPACT agent manages a set of
+data types/structures (including a message box) through a set of application
+program interface (API) function calls. The state of the agent at a given point
+in time is a set of objects belonging to these data types. Each agent has a set of
+integrity constraints that its state must always satisfy. When an agentâs state
+changes (due to external events such as receipt of a message), the agent tries to
+modify its state so that the integrity constraints are satisï¬ed. To do this, it has
+a suite of actions, and an agent program that speciï¬es the operating principles
+(what is permitted, what is forbidden, what is obligatory, etc., and under what
+conditions?). (Eiter, Subrahmanian, and Pick 1999; Eiter and Subrahmanian
+1999) provides a detailed study of the semantics and complexity of such agents,
+(Eiter, Subrahmanian, and Rogers 1999) contains compile-time and run-time
+algorithms, while (Arisha, Ozcan, Ross, Subrahmanian, Eiter, and Kraus 1999)
+focuses on system architecture.
+
+Past work on IMPACT assumes that all agents reason with a complete and
+certain view of the world. However, in many real world applications, agents
+have only a partial, uncertain view of what is true in the world. Though an
+agent may need to reason about uncertainty for many reasons, in this paper,
+we will assume that the main cause of uncertainty in an agent is due to its
+state being uncertain. For example, when an image processing agent is asked
+to identify an enemy vehicle, it might return the fact that vehicle v1 is a T72
+tank (with 60â70% probability) and a T-80 tank (with 20-45% probability).
+However, this raises several problems, the ï¬rst of which is that as an action
+can only be executed if its precondition is true in the current state, if the agent
+doesnât know what the state is, then it cannot determine which of its actions
+are executable, and which are not. Second, even if an action is executable, the
+state that results may not be precisely determinable either. One consequence of
+all this is that the semantics of agent programs change signiï¬cantly when such
+uncertainties arise.
+
+The main contributions (and organization) of this paper may now be summed
+
+up as follows.
+
+1. In Section 2, we present a brief overview of agents (without any uncertainty
+
+involved) as described in (Eiter, Subrahmanian, and Pick 1999).
+
+2. Then, in Section 3, we deï¬ne the concept of a probabilistic code call, which
+is the basic syntactic construct through which uncertainty in abstract data
+
+2
+
+types manifests itself.
+
+3. In Section 4, we deï¬ne the syntax of probabilistic agent programs. Specif-
+ically, we show that probabilistic agent programs allow an agent developer
+to specify the permissions, obligations, forbidden actions, etc. associated
+with an agent depending not only on the probabilities that certain con-
+ditions hold in the agentâs state, but also on the developerâs assumptions
+about the relationship between these conditions (e.g. the probability that
+a conjunction holds in a given state depends not only on the probabilities
+of the conjuncts involved, but also on the dependencies if any between the
+conjuncts).
+
+4. In Section 5, we develop three formal semantics for probabilistic agent
+programs which extend each other as well as the semantics for (ordinary,
+non probabilistic) agent programs deï¬ned by Eiter, Subrahmanian, and
+Pick (1999). We also provide results relating these diverse semantics.
+
+5. Then, in Section 6, we develop a sound and complete algorithm to compute
+the semantics deï¬ned when only positive agent programs are considered.
+We also show that the classical agent programs of Eiter, Subrahmanian,
+and Pick (1999) are a special case of our probabilistic programs.
+
+6. In Section 7, we provide an alternative, Kripke style semantics for agent
+programs. In contrast to the previous âfamilyâ of semantics which assume
+that an agentâs precondition must be true with 100% probability for the
+agent to execute it, this semantics also allows an agent to execute it when
+it is not sure (with 100% probability) that the actionâs precondition is
+true. We extend all three semantics of agent programs deï¬ned earlier in
+Section 5 to handle these intuitions. Unfortunately, as we show in this
+section, this desire for a âmore sophisticatedâ sematics comes at a high
+computational price.
+
+2 Preliminaries
+
+In IMPACT, each agent a is built on top of a body of software code (built in any
+programming language) that supports a well deï¬ned application programmer
+interface (either part of the code itself, or developed to augment the code).
+Hence, associated with each agent a is a body of software code Sa deï¬ned as
+follows.
+
+Deï¬nition 2.1 (Software Code) We may characterize the code on top of
+which an agent is built as a triple S =def (TS , FS, CS) where:
+
+1. TS is the set of all data types managed by S,
+
+2. FS is a set of predeï¬ned functions which makes access to the data objects
+
+managed by the agent available to external processes, and
+
+3
+
+3. CS is a set of type composition operations. A type composition operator
+is a partial n-ary function c which takes types Ï1, . . . , Ïn as input, and
+yields a type c(Ï1, . . . , Ïn) as output. As c is a partial function, c may
+only be deï¬ned for certain arguments Ï1, . . . , Ïn, i.e., c is not necessarily
+applicable on arbitrary types.
+
+When a is clear from context, we will often drop the superscript a. Intuitively,
+TS is the set of all data types managed by a, FS is the set of all function
+calls supported by Sâs application programmer interface (API). CS is the set of
+ways of creating new data types from existing data types. This characterization
+of a piece of software code is widely used (cf. the Object Data Management
+Groupâs ODMG standard (Cattell, R. G. G., et al. 1997) and the CORBA
+framework (Siegal 1996)). Each agent also has a message box having a well
+deï¬ned set of associated code calls that can be invoked by external programs.
+
+Example 2.2 [Surveillance Example] Consider a surveillance application where
+there are hundreds of (identical) surveillance agents, and a geographic agent.
+The data types associated with the surveillance and geographic agent include
+the standard int,bool,real,string,file data types, plus those shown below:
+
+Surveillance Agent
+
+Geographic Agent
+
+image:record of
+imageid:ï¬le;
+day:date;
+time:int;
+location:string
+
+imagedb: setof image;
+
+map:â quadtree;
+quadtree:record of
+
+place:string;
+xcoord:int;
+ycoord:int;
+pop:int
+nw,ne,sw,se:â quadtree
+
+A third agent may well merge information from these two agents, tracking a
+sequence of surveillance events.
+
+The surv agent may support a function surv : identify () which takes as input,
+an image, and returns as output, the set of all identiï¬ed vehicles in it. It may
+also support a function called surv : turret() that takes as input, a vehicle id, and
+returns as output, the type of gun-turret it has. Likewise, the geo agent may
+support a function geo : getplnode() which takes as input a map and the name
+of a place and returns the set of all nodes with that name as the place-ï¬eld,
+a function geo : getxynode() which takes as input a map and the coordinates
+of a place and returns the set of all nodes with that coordinate as the node,
+a function called geo : range() that takes as input a map, an x, y coordinate
+pair, and a distance r and returns as output, the set of all nodes in the map
+(quadtree) that are within r units of location (x, y).
+
+Throughout this paper, we will expand on this simple example and use it to
+
+illustrate and motivate the various deï¬nitions in the paper.
+
+4
+
+loc1    50,50
+
+ne
+
+se
+
+sw
+
+   Loc 4  52,60
+
+   Loc2  55,40
+
+  Loc5   37,42
+
+ne
+
+   Loc 3   53,45
+
+Figure 1: Example quadtree for Surveillance Application.
+
+Deï¬nition 2.3 (State of an Agent) The state of an agent at any given point
+t in time, denoted OS(t), consists of the set of all instantiated data objects of
+types contained in T a
+S .
+
+An agentâs state may change because it took an action, or because it received
+a message. Throughout this paper we will assume that except for appending
+messages to an agent aâs mailbox, another agent b cannot directly change aâs
+state. However, it might do so indirectly by shipping the other agent a message
+requesting a change.
+
+Example 2.4 For example, the state of the Geographic Agent may consist of
+two quadtrees (one of which, map1, is shown in Figure 1), and the type âmapâ
+may contain two objects, map1, and map2, pointing to these two quadtrees,
+respectively. (The ï¬gure doesnât show population values explicitly. Assume the
+population values are 20,000 for Loc1, 28,000 for Loc2, 15,000 for Loc3, and
+40,000 for Loc4, and 8000 for Loc5.)
+
+Queries and/or conditions may be evaluated w.r.t. an agent state using the
+
+notion of a code call atom and a code call condition deï¬ned below.
+
+Deï¬nition 2.5 (Code Call/Code Call Atom) If S is the name of a soft-
+ware package, f is a function deï¬ned in this package, and (d1, . . . , dn) is a
+tuple of arguments of the input type of f , then S : f (d1, . . . , dn) is called a code
+call.
+
+If cc is a code call, and X is either a variable symbol or an object of the
+
+output type of cc, then in(X, cc) is called a code call atom.
+
+For instance, in the Surveillance example, geo : getplnode(map1, "Loc1") returns
+the set containing just the single node referring to Loc1 in Figure 1. Likewise,
+the code call geo : range(map1, 55, 50, 11) returns the set containing the nodes
+labeled Loc1 and Loc2.
+
+5
+
+Deï¬nition 2.6 (Code Call Condition) A code call condition Ï is deï¬ned as
+follows:
+
+1. Every code call atom is a code call condition.
+
+2. If s, t are either variables or objects, then s = t is a code call condition.
+
+3. If s, t are either integers/real valued objects, or are variables over the
+integers/reals, then s < t, s > t, s â¥ t, s â¤ t are code call conditions.
+
+4. If Ï1, Ï2 are code call conditions, then Ï1 & Ï2 is a code call condition.
+
+A code call condition satisfying any of the ï¬rst three criteria above is an atomic
+code call condition.
+
+An example code call condition is shown below.
+
+Example 2.7 in(X, geo : range(map1, 55, 50, 11)) & X.pop > 25, 000 is a code
+call condition that is satisï¬ed by only one node in map1, viz. the Loc2 node.
+
+Each agent has an associated set of integrity constraintsâonly states that
+satisfy these constraints are considered to be valid or legal states. An integrity
+constraint is an implication whose consequent is a code call atom, and whose
+antecedent is a code call condition. Appendix A contains a detailed deï¬nition.
+Each agent has an action-base describing various actions that the agent is
+capable of executing. Actions change the state of the agent and perhaps the
+state of other agentsâ msgboxes. As in classical AI, all actions have an associated
+precondition (a code call condition that the agent state must satisfy for the
+action to be executable) and an add/delete list. Appendix A contains detailed
+deï¬nitions from (Eiter, Subrahmanian, and Pick 1999).
+
+For instance, the geo agent may have an insert action that adds a node to
+the map. Likewise, the surv agent may also have an insert action which inserts
+a new image into the image database. Both these agents also have an action
+that sends a message.
+
+Each agent has an associated ânotion of concurrency,â conc, which a set
+of actions and an agent state as input, and produces as output, a single action
+that reï¬ects the combination of all the input actions. (Eiter, Subrahmanian, and
+Pick 1999) provides examples of three diï¬erent notions of concurrency. We will
+sometimes abuse notation write conc(S, O) to denote the new state obtained
+by concurrently executing the actions in S in state O.
+
+Each agent has an associated set of action constraints that deï¬ne the cir-
+cumstances under which certain actions may be concurrently executed. As at
+any given point t in time, many sets of actions may be concurrently executable,
+each agent has an Agent Program that determines what actions the agent can
+take, what actions the agent cannot take, and what actions the agent must take.
+Agent programs are deï¬ned in terms of status atoms deï¬ned below.
+
+6
+
+Deï¬nition 2.8 (Status Atom/Status Set) If Î±(~t) is an action, and Op â
+{P, F, W, Do , O}, then OpÎ±(~t) is called a status atom. If A is an action status
+atom, then A, Â¬A are called status literals. A status set is a ï¬nite set of ground
+status atoms.
+
+Intuitively, PÎ± means Î± is permitted, FÎ± means Î± is forbidden, Do Î± means Î±
+is actually done, and WÎ± means that the obligation to perform Î± is waived.
+
+Deï¬nition 2.9 (Agent Program) An agent program P is a ï¬nite set of rules
+of the form
+
+A â Ï & L1 & . . . & Ln
+
+where Ï is a code call condition and L1, . . . , Ln are status literals.
+
+The semantics of agent programs are well described in (Eiter, Subrahmanian,
+and Pick 1999; Eiter and Subrahmanian 1999)âdue to space reasons, we do not
+explicitly recapitulate them here, though Appendix A contains a brief overview
+of the semantics.
+
+3 Probabilistic Code Calls
+
+Consider a code call of the form d : f (args). This code call returns a set of
+objects. If an object o is returned by such a code call, then this means that
+o is deï¬nitely in the result of evaluating d : f (args). However, there are many
+cases, particularly in applications involving reasoning about knowledge, where
+a code call may need to return an âuncertainâ answer. In our our surveillance
+example, surv : identify (image1) tries to identify all objects in a given imageâ
+however, it is well known that image identiï¬cation is an uncertain task. Some
+objects may be identiï¬ed with 100% certainty, while in other cases, it may only
+be possible to say it is either a T72 tank with 40â50% probability, or a T80
+tank with (50-60%) probability.
+
+Deï¬nition 3.1 (Random Variable of Type Ï ) A random variable of type
+Ï is a ï¬nite set RV of objects of type Ï , together with a probability distribution
+â that assigns real numbers in the unit interval [0, 1] to members of RV such
+that Î£oâRVâ(o) â¤ 1.
+
+It is important to note that in classical probability theory (Ross 1997), random
+variables satisfy the stronger requirement that Î£oâRVâ(o) = 1. However, in
+many real life situations, a probability distribution may have missing pieces,
+which explains why we have chosen a weaker deï¬nition. However, the classi-
+cal probability case when Î£oâRVâ(o) = 1 is an instance of our more general
+deï¬nition.
+
+Deï¬nition 3.2 (Probabilistic Code Call a :RV f (d1, . . . , dn))
+Suppose a : f (d1, . . . , dn) is a code call whose output type is Ï . The probabilistic
+
+7
+
+code call associated with a : f (d1, . . . , dn), denoted a :RV f (d1, . . . , dn), returns
+a set of random variables of type Ï when executed on state O.
+
+The following example illustrates the use of probabilistic code calls.
+
+Example 3.3 Consider the code call surv : identify (image1). This code call
+may return the following two random variables.
+
+h{t72, t80}, {ht72, 0.5i, ht80, 0.4i}i and h{t60, t84}, {ht60, 0.3i, ht84, 0.7i}i
+
+This says that the image processing algorithm has identiï¬ed two objects in
+image1. The ï¬rst object is either a T72 or a T80 tank with 50% and 40%
+probability, respectively, while the second object is either a T60 or a T84 tank
+with 30% and 70% probability respectively.
+
+Probabilistic code calls and code call conditions look exactly like ordinary code
+calls and code call conditions â however, as a probabilistic code call returns
+a set of random variables, probabilistic code call atoms are true or false with
+some probability.
+
+Example 3.4 Consider the probabilistic code call condition
+
+in(X, surv :RV identify (image1)) & in(A1, surv :RV turret(X)).
+
+This code call condition attempts to ï¬nd all vehicles in âimage1â with a gun
+turret of type A1. Let us suppose that the ï¬rst code call returns just one
+random variable specifying that image1 contains one vehicle which is either a
+T72 (probability 50%) or a T80 tank (probability 40%). When this random
+variable (X) is passed to the second code call, it returns one random variable
+with two valuesâA1 with probability 30% and A2 with probability 65%. What
+is the probability that the code call condition above is satisï¬ed by a particular
+assignment to X?
+
+The answer to this question depends very much upon the knowledge we have
+(if any) about the dependencies between the identiï¬cation of a tank as a T-72
+or a T-80, and the type of gun turret on these. For instance, if we know that all
+T72âs have A2 type turrets, then the probability of the conjunct being true when
+X is a T72 tank is 0. On the other hand, it may be that the turret identiï¬cation
+and the vehicle identiï¬cation are independent for T80sâhence, when X is set
+to T80, the probability of the conjunct being true is 0.4 Ã 0.3 = 0.12.
+
+Unfortunately, this is not the only problem. Other problems also arise, as shown
+in the following example.
+
+Example 3.5 Suppose we consider a code call Ï returning the following two
+random variables.
+
+RV1 = h{a, b}, â1i
+RV2 = h{b, c}, â2i
+
+8
+
+Suppose â1(a) = 0.9, â1(b) = 0.1, â2(b) = 0.8, â2(c) = 0.1. What is the proba-
+bility that b is in the result of the code call Ï?
+
+Answering this question is problematic. The reason is that we are told that
+there are at most two objects returned by Ï. One of these objects is either a or b,
+and the other is either b or c. This leads to four possibilities, depending on which
+of these is true. The situation is further complicated because in some cases,
+knowing that the ï¬rst object is b may preclude the second object from being
+bâthis would occur, for instance, if Ï examines photographs each containing
+two diï¬erent people and provides identiï¬cations for each. a, b and c may be
+potential idâs of such people returned by the image processing program. In such
+cases, the same person can never be pictured with himself or herself.
+
+Of course, in other cases, there may be no reason to believe that knowing
+the value of one of two objects tells us anything about the value of the second
+object. For example if we replace people with colored cubes (with a denoting
+amber cubes, b black, and c cyan), there is no reason to believe that two identical
+black cubes cannot be pictured next to each other.
+
+One could argue, however, that the above reasoning is incorrect because if two
+objects are completely identical, then they must be the same. This means
+that if we have two distinct black cubes, then these two black cubes must be
+distinguishable from one another via some property such as their location in
+the photo, or their Id s. This is Leibnizâs well known extensionality principle.
+Hence, we will require the results of a probabilistic code call to be coherent in
+the following sense.
+
+Deï¬nition 3.6 (Coherent Probabilistic Code Call) A probabilistic code call
+is coherent iï¬ for all distinct hX1, â1i, hX2, â2i, X1 â© X2 = â.
+
+Throughout this paper, only coherent probabilistic code calls are considered.
+Thus, the expression âprobabilistic code callâ assumes coherence.
+
+Deï¬nition 3.7 (Satisfying a Code Call Atom) Suppose a :RV f (d1, . . . , dn)
+is a ground probabilistic code call and o is an object of the output type of this
+code call w.r.t. agent state O. Suppose [â, u] is a closed subinterval of the unit
+interval [0, 1].
+
+â¢ o |=[â,u]
+
+O in(X, a :RV f (d1, . . . , dn))
+
+if there is a (Y, â) in the answer returned by evaluating a :RV f (d1, . . . , dn)
+w.r.t. O such that o â Y and â â¤ â(o) â¤ u.
+
+â¢ o |=[â,u]
+
+O not in(X, a :RV f (d1, . . . , dn))
+
+if for all random variables (Y, â) returned by evaluating a :RV f (d1, . . . , dn)
+w.r.t. O, either o /â Y or â(o) /â [â, u].
+
+Probabilistic code call conditions are deï¬ned in exactly the same way as code
+call conditions. However, extending the above deï¬nition of âsatisfactionâ to
+probabilistic code call conditions is highly problematic because (as shown in
+
+9
+
+Examples 3.4 and 3.5), the probability that a conjunction is true depends not
+only on the probabilities of the individual conjuncts, but also on the dependen-
+cies between the events denoted by these conjuncts. The notion of a probabilistic
+conjunction strategy deï¬ned below captures these diï¬erent ways of computing
+probabilities via an abstract deï¬nition.
+
+Deï¬nition 3.8 (Probabilistic Conjunction Strategy â)
+A probabilistic conjunction strategy is a mapping â which maps a pair of prob-
+ability intervals to a single probability interval satisfying the following axioms:
+
+1. Bottomline: [L1, U1]â[L2, U2] â¤ [min(L1, L2), min(U1, U2)] where [x, y] â¤
+
+[xâ², yâ²] if x â¤ xâ² and y â¤ yâ².
+
+2. Ignorance: [L1, U1] â [L2, U2] â [max(0, L1 + L2 â 1), min(U1, U2)].
+
+3. Identity: When (e1 â§ e2) is consistent and [L2, U2] = [1, 1], [L1, U1] â
+
+[L2, U2] = [L1, U1].
+
+4. Annihilator: [L1, U1] â [0, 0] = [0, 0].
+
+5. Commutativity: [L1, U1] â [L2, U2] = [L2, U2] â [L1, U1].
+
+6. Associativity: ([L1, U1] â [L2, U2]) â [L3, U3] = [L1, U1] â ([L2, U2] â
+
+[L3, U3]).
+
+7. Monotonicity:
+
+[L1, U1] â [L2, U2] â¤ [L1, U1] â [L3, U3] if [L2, U2] â¤
+
+[L3, U3].
+
+Intuitively, in the above deï¬nition, [L1, U1], [L2, U2] are intervals in which the
+probability of events e1, e2 are known to lie, and [L1, U1] â [L2, U2] returns a
+probability range for the co-occurrence of both these events. The Bottomline
+axiom says that the probability of the conjunct is smaller than the probabilities
+of the individual events. When we know nothing about the relationship between
+the events e1, e2, Boole (1854) has shown that the probability of the conjunc-
+tion must lie in the interval [max(0, L1 + L2 â 1), min(U1, U2)]. This is what
+is stated in the Ignorance axiom. The identity and annihilator axioms specify
+what happens when one of the events is deterministic (i.e. not probabilistic).
+The axioms of commutativity and associativity are self explanatory. The mono-
+tonicity axiom says that if we sharpen the probability range of one of the two
+events, then the probability range of the conjunctive event is also sharpened.
+
+The concept of a conjunction strategy is very general, and has as special
+
+cases, the following well known ways of combining probabilities.
+
+1. When we do not know the dependencies between e1, e2, we may use the
+conjunction strategy âig deï¬ned as ([L1, U1] âig [L2, U2]) â¡ [max(0, L1 +
+L2 â 1), min(U1, U2)].
+
+2. When e1, e2 have maximal overlap, use the positive correlation conjunctive
+strategy âpc deï¬ned as ([L1, U1]âpc[L2, U2]) â¡ [min(L1, L2), min(U1, U2)].
+
+10
+
+3. When e1, e2 have minimal overlap, use the negative correlation conjunc-
+tive strategy ânc deï¬ned as ([L1, U1] ânc [L2, U2]) â¡ [max(0, L1 + L2 â
+1), max(0, U1 + U2 â 1)].
+
+4. When the two events occur independently, use the independence conjunc-
+
+tion strategy ([L1, U1] âin [L2, U2]) = [L1 Â· L2, U1 Â· U2].
+
+4 Probabilistic Agent Programs: Syntax
+
+We are now ready to deï¬ne the syntax of a probabilistic agent program (pap
+for short). This syntax builds upon the well studied annotated logic paradigm
+proposed by(Subrahmanian 1987), and later studied extensively (Kifer and Sub-
+rahmanian 1992; Ng and Subrahmanian 1993b; Ng and Subrahmanian 1993a).
+
+4.1 Annotation Syntax
+
+We assume the existence of an annotation language Lann âthe constant symbols
+In addition, Lann
+of Lann are the real numbers in the unit interval [0, 1].
+contains a ï¬nite set of function symbols, each with an associated arity, and
+a (possibly inï¬nite) set of variable symbols, ranging over the unit interval [0, 1].
+All function symbols are pre-interpreted in the sense that associated with each
+function symbol f of arity k is a ï¬xed function from [0, 1]k to [0, 1].
+
+Deï¬nition 4.1 (Annotation Item) We deï¬ne annotation items inductively
+as follows:
+
+â¢ Every constant and every variable of Lann is an annotation item.
+
+â¢ If f is an annotation function of arity n and ai1, . . . , ain are annotation
+
+items, then f (ai1, . . . , ain) is an annotation item.
+
+An annotation item is ground if no annotation variables occur in it.
+
+For instance, 0, 0.9, (V +0.9), (V +0.9)2 are all annotation items if V is a variable
+in Lann and â+â, âËâ are annotation functions of arity 2.
+
+Deï¬nition 4.2 (Annotation [ai1, ai2]) If ai1, ai2 are annotation items, then
+[ai1, ai2] is an annotation. If ai1, ai2 are both ground, then [ai1, ai2] is a ground
+annotation.
+
+For instance, [0, 0.4], [0.7, 0.9], [0.1, V
+tion [0.1, V
+variable V .
+
+2 ] are all annotations. The annota-
+2 ] denotes an interval only when a value in [0, 1] is assigned to the
+
+2 ], [ V
+
+4 , V
+
+Deï¬nition 4.3 (Annotated Code Call Condition Ï : h[ai1, ai2], âi) If Ï is
+a probabilistic code call condition, â is a conjunction strategy, and [ai1, ai2]
+is an annotation, then Ï : h[ai1, ai2], âi is an annotated code call condition.
+Ï : h[ai1, ai2], âi is ground if there are no variables in either Ï or in [ai1, ai2].
+
+11
+
+Intuitively, the ground annotated code call condition Ï : h[ai1, ai2], âi says that
+the probability of Ï being true (under conjunction strategy â) lies in the interval
+[ai1, ai2]. For example, when X, A1 are ground,
+
+in(X, surv :RV identify (image1)) & in(A1, surv :RV turret(X)) : h[0.3, 0.5], âigi
+
+is true if and only if the probability that X is identiï¬ed by the surv agent and
+that the turret is identiï¬ed as being of type A1 lies between 30 and 50% assuming
+that nothing is known about the dependencies between turret identiï¬cations and
+identiï¬cations of objects by surv.
+
+We are now ready to deï¬ne the concept of a probabilistic agent program.
+
+Deï¬nition 4.4 (Probabilistic Agent Programs PP) Suppose Î is a con-
+junction of annotated code calls, and A, L1, . . . , Ln are action status atoms.
+Then
+
+A â Î, L1, . . . , Ln
+
+(1)
+
+is a probabilistic action rule. For such a rule r, we use B+
+positive action status atoms in {L1, . . . , Ln}, and Bâ
+negative action status liters in {L1, . . . , Ln}.
+
+as(r) to denote the
+as(r) to denote the set of
+
+A probabilistic agent program is a ï¬nite set of probabilistic action rules.
+
+A simple example of a probabilistic agent program is given below.
+
+Example 4.5 [Probabilistic Agent Program] Consider an intelligent sensor agent
+that is performing surveillance tasks. The following rules specify a small pap
+that such an agent might use.
+
+Do send warn(X) â in(F, surv : ï¬le(imagedb)) &
+in(X, surv :RV identify (F)) &
+in(A1, surv :RV turret(X))) : h[0.7, 1.0], âigi
+Â¬Fsend warn(X).
+
+Fsend warn(X) â in(X, surv :RV identify (F)) &
+
+in(L, geo :RV getplnode(X.location)) &
+in(L, geo :RV range(100, 100, 20)).
+
+This agent operates according to two very simple rules. The ï¬rst rule says
+that it sends a warning whenever it identiï¬es an enemy vehicle as having a gun
+turret of type A1 with over 70% probability, as long as sending such a warning
+is not forbidden. The second rule says that sending a warning is forbidden if
+the enemy vehicle is within 20 units of distance from location (100,100).
+
+12
+
+5 Probabilistic Agent Programs: Semantics
+
+We are now ready to deï¬ne the semantics of paps. The semantics of paps will
+be deï¬ned via the concept of a probabilistic status set (deï¬ned below).
+
+Deï¬nition 5.1 (Probabilistic Status Set PS) A probabilistic status set is
+any set PS of ground action status atoms over S. For any operator Op â
+{P, Do , F, O, W}, we denote by Op(PS) the set {Î± | Op(Î±) â PS}. Similarly,
+we use Â¬PS to denote the set {Â¬A | A â PS}.
+
+It will turn out that given any probabilistic agent program, and an (uncertain)
+agent state evaluated using probabilistic code calls, the meaning of the pap w.r.t.
+the state may be deï¬ned via a set of probabilistic status sets that have some
+desirable properties. These properties fall into three broad categories:
+
+1. the probabilistic status set must be âclosedâ under the rules in the pap;
+
+2. the probabilistic status set must be deontically consistent (e.g. it cannot
+require something to be both permitted and forbidden) and it must not
+violate the action constraints;
+
+3. the probabilistic status set must not lead to a new state that violates the
+
+integrity constraints associated with the agent;
+
+5.1 Satisfaction of Annotated Formulae
+
+In this section, we deï¬ne what it means for an agent state to satisfy an annotated
+code call condition.
+
+Deï¬nition 5.2 (Satisfying an Annotated Code Call Condition) Suppose
+O is an agent state, and Ï : h[ai1, ai2], âi is a ground annotated code call condi-
+tion. O is said to satisfy Ï : h[ai1, ai2], âi, denoted O |=[ai1,ai2] Ï : h[ai1, ai2], âi
+iï¬:
+
+â¢ Ï is of the form o = o (where o is an object), or
+
+â¢ Ï is of the form r1 < r2, where r1, r2 are real numbers (or integers) such
+
+that r1 is less than r2, or
+
+â¢ Ï is of the form in(X, a :RV f (d1, . . . , dn)) and o |=[ai1,ai2]
+
+O
+
+or
+
+in(X, a :RV f (d1, . . . , dn)),
+
+â¢ Ï is of the form not in(o, a :RV f (d1, . . . , dn)) and the following holds
+
+o |=[ai1,ai2]
+
+O
+
+not in(X, a :RV f (d1, . . . , dn)), or
+
+â¢ Ï is of the form Ï1 â§ Ï2 and [â1, u1], [â2, u2] are the tightest intervals such
+that O |=[â1,u1] Ï1 and O |=[â2,u2] Ï2 and [ai1, ai2] â [â1, u1] â [â2, u2].
+
+O is said to satisfy a non-ground annotated code call Ï : h[ai1, ai2], âi iï¬ O
+
+satisï¬es all ground instances of Ï : h[ai1, ai2], âi.
+
+13
+
+5.2 Closure and AppPP,OS (PS)
+We may associate with any pap PP, an operator AppPP,OS (PS) which maps
+probabilistic status sets to probabilistic status sets.
+
+Deï¬nition 5.3 (Operator AppPP,OS (PS)) Suppose PP is a probabilistic agent
+program, OS is an agent state, and PS is a probabilistic status set. Then
+
+AppPP,OS (PS) = {Op Î± | Op Î± is the head of a ground instance r of a rule
+
+in PP satisfying the 4 conditions below }
+
+1. B+
+
+as(r) â PS and Â¬.Bâ
+
+as(r) â© PS = â, and
+
+2. For every annotated code call condition Ï : h[ai1, ai2], âi in the body of r,
+
+it is the case that OS |=[ai1,ai2] Ï : h[ai1, ai2], âi and
+
+3. if Op â {P, O, Do }, then OS |=[1,1] P re(Î±) and
+
+4. for every action status atom of the form Op Î² in B+
+
+as(r) such that Op â
+
+{P, O, Do }, OS |=[1,1] P re(Î²).
+
+The ï¬rst part of this deï¬nition says that for a rule to ï¬re, the action status atoms
+in its body must be âtrueâ w.r.t. PS. The second condition says that annotated
+code call conditions in a rule body must be satisï¬ed in the current object state
+for the rule to ï¬re. The third part is more tricky. It says that if OÎ± or Do Î±
+or PÎ± is in the head of a rule, then for the rule to ï¬re, the precondition of the
+action must be true with 100% probability. The ï¬nal condition is similar w.r.t.
+to positive action status atoms in the body. Thus, for now, we are assuming that
+for an agent to perform an action (or even be permitted to perform an action),
+it must be 100% sure that the actionâs precondition is true (later in Section 8, we
+will provide an alternate, more complex semantics that does not require this).
+
+Deï¬nition 5.4 (Closure under Program Rules) PS is said to be closed
+under the rules of pap PP in state Op iï¬ AppPP,OS (PS) â PS.
+
+5.3 Deontic/Action Consistency/Closure
+
+The concept of deontic/action consistency requires that probabilistic status sets
+satisfy the agentâs action constraints and commonsense axioms about deontic
+modalities.
+
+Deï¬nition 5.5 (Deontic and Action Consistency) A probabilistic status set
+PS is deontically consistent with respect to an agent state O iï¬ it satisï¬es the
+following rules for any ground action Î±:
+
+â¢ If OÎ± â PS, then WÎ± /â PS.
+
+â¢ If PÎ± â PS, then FÎ± /â PS.
+
+â¢ If PÎ± â PS, then O |=[1,1] P re(Î±).
+
+14
+
+A probabilistic status set PS is action consistent w.r.t. O iï¬ for every action
+constraint of the form
+
+{Î±1( ~X1), . . . , Î±k( ~Xk)} âÖ Ï
+
+(2)
+
+either O 6|=[1,1] Ï or {Î±1( ~X1), . . . , Î±k( ~Xk)} 6â Do (PS).
+
+The following example illustrate the concept of deontic and action consistency.
+
+Example 5.6 Suppose we have a resource allocation agent having two actions
+â send A() and send B() â each of which sends a unit of the resource respec-
+tively to agents A B. To execute either of them, we need to have at least one
+unit of resource, and to execute them together we need at least 2 units:
+
+Pre(send A()) = in(X, allocator : avail rsc()) & X > 0.
+Pre(send B()) = in(X, allocator : avail rsc()) & X > 0.
+{send to A(), send to B()} âÖ in(X, allocator : avail rsc()) & X < 2
+
+Suppose the agentâs current state O is one in which avail rsc() returns 1. Then
+
+PS = {Psend to A(), Do send to A(),
+Do send to B(), Osend to B()}
+
+is deontically consistent (there are no W and F atoms at all, and the action
+
+preconditions are true), but not action consistent.
+
+The deontic and action closure of a probabilistic status set PS is deï¬ned in
+exactly the same way (see appendix, Deï¬nition A.3 on page 39) as in the non-
+probabilistic case.
+
+5.4 Probabilistic State Consistency
+
+The ï¬nal requirement of a feasible probabilistic status set ensures that the new
+state that results after concurrently executing a set of actions is consistent with
+the integrity constraints.
+
+O satisï¬es the integrity constraint Ï â Ï iï¬ either O 6|=[1,1] Ï or O |=[1,1] Ï.
+
+Deï¬nition 5.7 (Probabilistic State Consistency) A probabilistic status set
+PS is probabilistically state consistent w.r.t. OS iï¬ the new state, Oâ²
+S =
+conc(Do (PS), OS) obtained after concurrently executing all actions of the form
+Do Î± â PS satisï¬es all integrity constraints.
+
+The following example illustrates the concept of probabilistic state consistency.
+
+Example 5.8 Suppose we have a vehicle coordination agent that tracks vehicle
+on a road (line), and makes sure that two vehicles do not collide. Such an agent
+may have the integrity constraint
+
+in(X, geo : getposition (a)) & in(Y, geo : getposition (b)) â X 6= Y
+
+15
+
+It may be able to perform an action move f orward(a):
+
+Pre(move f orward(a)) = in(X, geo : getposition (a))
+Del (move f orward(a)) = in(X, geo : getposition (a))
+Add (move f orward(a)) = in(X + 1, geo : getposition (a))
+
+In a state O where geo : getposition(a) returns 200, and geo : getposition (b)
+returns 201, the status set
+
+PS = {Pmove f orward(a), Do move f orward(a)}
+
+is not state consistent, as executing Do (PS) leads to where both agent a and
+agent b are in position 201, violating the above integrity constraint.
+
+5.5 Feasible Probabilistic Status Sets
+
+The meaning of a pap (w.r.t. a given state) may be characterized via those prob-
+abilistic status sets that satisfy the conditions of closure under program rules,
+deontic/action consistency and probabilistic state consistency. Such probabilis-
+tic status sets are said to be feasible.
+
+Deï¬nition 5.9 (Feasible Probabilistic Status Set) Suppose PP is an agent
+program and OS is an agent state. A probabilistic status set PS is feasible for
+PP on OS if the following conditions hold:
+
+(PS 1): AppPP,OS (PS) â PS (closure under the program rules);
+
+(PS 2): PS is deontically and action consistent (deontic/action consistency);
+
+(PS 3): PS is action closed and deontically closed (deontic/action closure);
+
+(PS 4): PS is state consistent (state consistency).
+
+paps may have zero, one or many feasible status sets, as seen via the following
+examples.
+
+Example 5.10 Consider the following agent program.
+
+Psend warn(t80) â .
+Fsend warn(t80) â .
+
+In any agent state OS such that OS |=[1,1] Pre(send warn(t80)), the above
+program cannot have any feasible probabilistic status set PS. This is because
+closure under program rules requires that Psend warn(t80), Fsend warn(t80)
+are both in PS, but this causes PS to violate deontic consistency.
+
+In contrast, consider the following one-rule program for checking the power
+
+level of surveillance equipment.
+
+Opower warn() â in(X, surv : powerlevel ()) & X < 2000.
+
+16
+
+Suppose surv : powerlevel () returns 1000 in some state OS , and suppose power warn()
+has no preconditions. If no integrity and action constraints are present, then
+this pap has exactly one feasible status set, viz. for power warn(), and without
+action
+
+{Opower warn(), Do power warn(), Ppower warn()}
+
+in OS.
+
+Now let us consider a pap which says that one of the two agents a, b must
+be warned (if it is active). Furthermore, if b is to be warned, its regular (non
+emergency) channel must not be on.
+
+Fopen ch(b) â Â¬Fopen ch(b) & Do warn ag(b).
+
+Do warn ag(a) â in(a, surv : activeagents()) & Â¬Do warn ag(b).
+Owarn ag(b) â in(b, surv : activeagents()) & Â¬Do warn ag(a).
+
+We assume the absence of integrity constraints, and preconditions for all actions.
+However, the following action constraint is present:
+
+{warn ag(a), warn ag(b)} âÖ .
+
+If surv : activeagents() returns {a, b} in state OS, then the above program has
+several feasible status sets:
+
+{Fopen ch(b), Owarn ag(b), Do warn ag(b), Pwarn ag(b)}
+{Fopen ch(b), Do warn ag(a), Pwarn ag(a)}
+{Do warn ag(a), Pwarn ag(a)}
+
+Notice that no feasible status set contains both Do warn ag(a) and Do warn ag(b).
+
+5.6 Rational Probabilistic Status Sets
+
+As seen from the above examples, feasible status sets may contain action status
+atoms that are not required for feasibility. Rational probabilistic status sets
+reï¬ne this deï¬nition.
+
+Deï¬nition 5.11 (Groundedness; Rational Probabilistic Status Set)
+A probabilistic status set PS is grounded if there is no probabilistic status set
+PSâ² 6= PS such that PSâ² â PS and PSâ² satisï¬es conditions (PS1)â(PS3) of a
+feasible probabilistic status set.
+
+PS is rational iï¬ it is feasible and grounded.
+
+Example 5.12 Consider the last case in Example 5.10. Only two of the listed
+feasible status sets are rational, viz.
+
+{Fopen ch(b), Owarn ag(b), Do warn ag(b), Pwarn ag(b)} and
+{Do warn ag(a), Pwarn ag(a)}
+
+17
+
+5.7 Reasonable Probabilistic Status Sets
+
+As we can see from the preceding example, certain action status atoms may be
+true in a rational status set even though there is no rule whose head contains
+(or implies) that action status atom. The concept of a reasonable status set
+(which is derived from the well known stable model semantics of logic programs
+(Gelfond and Lifschitz 1988)) prevents this.
+
+Deï¬nition 5.13 (Reasonable Probabilistic Status Set) Suppose PP is a
+pap, OS is an agent state, and PS is a probabilistic status set.
+
+1. If PP is a positive (i.e. Bâ
+
+reasonable probabilistic status set for PP on OS ,
+a rational probabilistic status set for PP on OS.
+
+as(r) = â for all r â PP), then PS is a
+if, by deï¬nition, PS is
+
+2. Otherwise, the reduct of PP w.r.t. PS and OS , denoted by redPS(PP, OS),
+is the program which is obtained from the ground instances of the rules in
+PP over OS as follows.
+
+(a) First, remove every rule r such that Bâ
+(b) Remove all atoms in Bâ
+
+as(r) â© PS 6= â;
+as(r) from the remaining rules.
+
+Then PS is a reasonable probabilistic status set for PP w.r.t. OS, if it
+is a reasonable probabilistic status set of the program redPS(PP, OS) with
+respect to OS.
+
+The following example illustrates the concept of a reasonable status set.
+
+Example 5.14 Consider again the last case in Example 5.10. Only one of the
+listed feasible status sets is reasonable, viz.
+
+PS = {Do warn ag(a), Pwarn ag(a)}
+
+To see why this probabilistic status set is feasible, note that the reduct of PP
+w.r.t. PS is:
+
+Do warn ag(a) â in(a, surv : activeagents()).
+
+whose (unique) rational status set is obviously PS.
+
+5.8 Semantical Properties
+
+In this section, we prove some properties about the diï¬erent semantics described
+above.
+
+Proposition 5.15 (Properties of Feasible Status Sets) Let PS be a fea-
+sible probabilistic status set. Then,
+
+1. If Do (Î±) â PS, then OS |=[1,1] Pre(Î±);
+
+18
+
+2. If PÎ± /â PS, then Do (Î±) /â PS;
+
+3. If OÎ± â PS, then OS |=[1,1] Pre(Î±);
+
+4. If OÎ± â PS, then FÎ± /â PS.
+
+The following theorem says that reasonable status sets are rational.
+
+Theorem 5.16 (Reasonable Status Sets are Rational) Let PP be a prob-
+abilistic agent program and OS an agent state. Every reasonable probabilistic
+status set of PP on OS is a rational probabilistic status set of PP on OS.
+
+Given any pap PP and agent state OS , we may deï¬ne an operator that maps
+probabilistic status sets to probabilistic status sets as follows. We use then
+notation D-Cl(PS) to denote the closure of PS under the rule OÎ± â PS â
+PÎ± â PS and A-Cl(PS) to denote the closure of PS under the rules OÎ± â
+PS â Do Î± â PS and Do Î± â PS â OÎ± â PS.
+
+Deï¬nition 5.17 (TPP,OS Operator) Suppose PP is a probabilistic agent pro-
+gram and OS is an agent state. Then, for any probabilistic status set PS,
+
+TPP,OS (PS) = AppPP,OS (PS) âª D-Cl(PS) âª A-Cl(PS).
+
+Note that as D-Cl(PS) â A-Cl(PS), we may equivalently write this as
+
+TPP,OS (PS) = AppPP,OS (PS) âª A-Cl(PS).
+
+The following property of feasible probabilistic status sets is easily seen.
+
+Lemma 5.18 (PS as Preï¬xpoint of TPP,OS ) Let PP be a probabilistic agent
+program, OS be any agent state, and PS be any probabilistic status set. If PS
+satisï¬es conditions (PS1) and (PS3) of feasibility, then PS is pre-ï¬xpoint of
+TPP,OS , i.e., TPP,OS (PS) â PS.
+
+Suppose Op(Î±) â TPP,OS (PS) = AppPP,OS (PS) âª A-Cl(PS).
+Proof:
+Then we have either Op(Î±) â AppPP,OS (PS) or Op(Î±) â A-Cl(PS). By
+condition (PS 1) deï¬ning a feasible probabilistic status set, we know that
+AppPP,OS (PS) â PS. By condition (PS 3), PS = A-Cl(PS) and hence,
+A-Cl(PS) â PS. Therefore, TPP,OS (PS) â PS.
+
+The following theorem says that in the absence of integrity constraints, a
+
+pap has a rational probabilistic status set if and only if it has a feasible one.
+
+Theorem 5.19 (Existence of Rational Probabilistic Status Sets) Let PP
+be a probabilistic agent program. If IC = â, then PP has a rational probabilistic
+status set if and only if PP has a feasible probabilistic status set.
+
+19
+
+6 Computing Probabilistic Status Sets of Posi-
+
+tive paps
+
+In this section, we present a sound and complete algorithm to compute the
+unique reasonable status set of a positive pap. For this purpose, we use a variant
+of the TPP,OS operator introduced earlier. This operator, denoted SPP,OS , is
+deï¬ned as
+
+SPP,OS (PS) = A-Cl(AppPP,OS (PS)).
+Computationally, we may compute the operator SPP,OS using algorithm 6.1
+below.
+
+Algorithm 6.1 (SPP,OS Computation for Positive paps)
+Compute-SPP,OS (OS: agent state, PS: probabilistic status set)
+
+â)
+(â the probabilistic agent program PP is positive;
+(â Input:
+â)
+(â Output: a deontically and action consistent set SPP,OS (PS) (if existent) â)
+â)
+(â
+
+an agent state OS, and a prob. status set PS
+
+or âno consistent set existsâ
+
+1. X := PS;
+2. for each rule r â PP
+3.
+4.
+
+for each ground instance rÎ¸ of r
+if rÎ¸ = Op Î± â Î, L1, . . . , Ln and
+
+OS |= Î and {L1, . . . , Ln} â PS and
+for every atom Opâ²(Î²) â {L1, . . . , Ln} âª {Op(Î±)}
+such that Opâ² â {P, O, Do }: OS |=[1,1] P re(Î²)
+
+then X := X âª A-Cl({Op Î±}),
+
+if X contains (OÎ± and WÎ±) or (PÎ± and FÎ±)
+then Return âno consistent set existsâ.
+
+5.
+6.
+7.
+8. Return X.
+end.
+
+The behavior of Algorithm 6.1 is illustrated by the following example.
+
+Example 6.1 Consider the following program, saying that whenever a (prob-
+ably) enemy vehicle Y is detected, a warning message about Y is sent to a
+friendly source and the agent perfroming the detection is not allowed to move.
+
+Osend warn(Y ) â in(F, surv : ï¬le(imagedb)) &
+
+in(Y, surv :RV identify (F))h[0.5, 1.0], âigi &
+Osend warn(X).
+
+Fmove() â Do send warn(X).
+Osend warn(X) â in(F, surv : ï¬le(imagedb)) &
+in(X, surv :RV identify (F)) &
+in(X, surv : enemyvehicles ())) : h[0.5, 1.0], âigi.
+
+20
+
+Moreover, assume that in the current state OS, surv : ï¬le(imagedb) returns
+image1, surv : identify (image1) returns the random variables h{t80}, {ht80, 0.6i}i
+and h{t72}, {ht72, 0.5i}i, and surv : enemyvehicles () returns t80.
+
+Now we apply Algorithm 6.1 to compute SPP,OS (OS, â): Step 1 sets X = â,
+step 2 selects the ï¬rst rule, while step 3 considers all ground instances (of the ï¬rst
+rule) whose bodyâs truth is checked in step 4: no instance satisï¬es it (because
+PS is empty), so nothing happens. The same result is obtained when step 2
+considers the second rule. Eventually, step 2 considers the third rule, which
+satisï¬es the condition of step 4 with its head instantiated to Osend warn(t80).
+Step 5 inserts Osend warn(t80), Do send warn(t80), Psend warn(t80) into X.
+There is no deontic inconsistency, so the check n step 6 fails and then we jump
+to step 8, which returns the result:
+
+X = { Osend warn(t80), Do send warn(t80), Psend warn(t80) }.
+
+The operator SPP,OS may be iteratively applied as follows.
+
+S0
+PP,OS = â.
+Si+1
+PP,OS = SPP,OS (Si
+
+PP,OS ).
+
+SÏ
+
+PP,OS =
+
+â
+
+[i=0
+
+Si
+
+PP,OS .
+
+The following theorem says that for positive paps, operator SPP,OS is mono-
+tonic, continuous, and has a (unique) least ï¬xpoint.
+
+Lemma 6.2 (Monotonicity and Continuity of SPP,OS ) Suppose PP is a
+positive pap. Then the operator SPP,OS is monotone and continuous, i.e.
+
+1. PS1 â PS2 â SPP,OS (PS1) â SPP,OS (PS2),
+
+2. SPP,OS (
+
+â
+i=0 PS0) =
+
+â
+i=0 SPP,OS (PSi) for any chain PS0 â PS1 â
+
+PS2 â Â· Â· Â· of probabilistic status sets,
+
+S
+
+S
+
+3. SÏ
+
+PP,OS is a ï¬xpoint of SPP,OS . Moreover, it is the least ï¬xpoint of
+
+SPP,OS .
+
+Proof: By the well known Knaster/Tarski theorem, 3. follows from 1. and 2..
+
+To show 1., let PS1 â PS2. But then
+
+AppPP,OS (PS1) â AppPP,OS (PS2),
+
+because of the monotonicity of AppPP,OS () (see (Lloyd 1987; Apt 1990)). This
+implies A-Cl(AppPP,OS (PS1)) â A-Cl(AppPP,OS (PS2)).
+
+2. follows similarly from the continuity of AppPP,OS () and the fact that
+
+â
+
+A-Cl(
+
+[i=0
+
+AppPP,OS (PSi)) =
+
+â
+
+[i=0
+
+A-Cl(AppPP,OS (PSi)).
+
+21
+
+The following example shows the computation of SÏ
+
+PP,OS .
+
+Example 6.3 Consider the program in Example 6.1. Applying the operator
+SPP,OS iteratively, we obtain:
+
+S0
+PP,OS = â.
+S1
+PP,OS = {Osend warn(t80), Do send warn(t80), Psend warn(t80)}
+PP,OS = S1
+S2
+
+PP,OS âª {Osend warn(t72), Do send warn(t72),
+
+PP,OS = S2
+S3
+
+Psend warn(t72), Fmove()}
+PP,OS = SÏ
+
+PP,OS
+
+The following results tell us that Lemma 5.18, which holds for arbitrary
+
+programs, can be strengthened to the case of positive probabilistic programs.
+
+Theorem 6.4 (Rational Probabilistic Status Sets as Least Fixpoints)
+Suppose PP is a positive pap, and OS is an agent state. Then: PS is a ratio-
+nal probabilistic status set if and only if PS = lfp(SPP,OS ) and PS is a feasible
+probabilistic status set. Recall that lfp stands for least ï¬xpoint.
+
+Corollary 6.5 Let PP be a positive probabilistic agent program. Then, on
+every agent state OS, the rational probabilistic status set of PP (if one exists)
+is unique, i.e., if PS, PSâ² are rational probabilistic status sets for PP on OS ,
+then PS = PSâ².
+
+An important corollary of this theorem is that to compute a reasonable feasible
+status set of a pap, all we need to do it to compute lfp(SPP,OS ). This may be
+done via Algorithm Compute-lfp below.
+
+Algorithm 6.2 (Reas. Prob. Status Set Computation for Positive paps)
+
+Compute-lfp (TPP,OS ): agent state, PP: probabilistic agent program)
+
+(â the probabilistic agent program PP is positive; â)
+(â Input: an agent state OS , and a pap PP
+â)
+(â Output: a reasonable probabilistic status set
+â)
+
+change := true; X := â;
+
+1.
+2. while change do
+3.
+4.
+5.
+6.
+7.
+8. end while;
+
+newX = Compute-SPP,OS (X);
+if newX := âno consistent set existsâ
+then return no reasonable prob. status set exists.
+if X 6= newX then X := newX
+else change := false.
+
+22
+
+9. if X satisï¬es all the following conditions
+â¢ Do Î± â X â O |=[1,1] P re(Î±);
+10.
+â¢ The new state obtained by executing conc({Do Î± | Do Î± â X}
+11.
+12.
+13.
+14. then return X
+15. else return no reasonable prob. status set exists.
+end.
+
+â¢ {Do Î± | Do Î± â X} satisï¬es the action constraints.
+
+satisï¬es the integrity constraints;
+
+Theorem 6.6 (Polynomial Data Complexity) Algorithm Compute-lfp has
+polynomial data-complexity.
+
+It is easy to see that the while loop of the algorithm can be executed in
+Proof:
+polynomial time (data-complexity). Checking if X satisï¬es the three conditions
+at the end of the algorithm are each polynomial time checks (assuming the
+existence of a polynomial oracle to compute code call conditions).
+
+The following example walks the reader through the detailed working of this
+
+algorithm on the motivating example pap introduced earlier on in this paper.
+
+Example 6.7 We apply the above algorithm to the program (and agent state)
+of Example 6.1:
+
+â¢ Step 1 initialize X to â, i.e. to S0
+
+PP,OS , while steps 2â8 iteratively apply
+
+the procedure which implements the operator SPP,OS .
+
+â¢ At the ï¬rst iteration, in step 3 newX becomes S1
+
+PP,OS (shown in Exam-
+ple 6.3); since there are no deontic inconsistencies, the test in step 4 fails,
+and then we skip to step 6 which will assign X := newX, and then the
+cycle starts again.
+
+â¢ At the second iteration newX becomes S2
+
+PP,OS , then it is still inconsistency-
+
+free and diï¬erent from X, so that we go on for another iteration.
+
+â¢ The third iteration is also the last one, since S3
+
+PP,OS = S2
+
+PP,OS , and so
+
+we skip to the tests in steps 10â13.
+
+â¢ In our example, the preconditions of all actions are empty and then sat-
+isï¬ed, there are not integrity constraint and then X is trivially integrity
+consistant, and eventually, there are no action constraints and then X
+is also action consistent. X is then returned as the (unique) reasonable
+status set of the program.
+
+6.1 Agent Programs are Probabilistic Agent Programs
+
+In this section, we show that the concept of an agent program deï¬ned by
+Eiter, Subrahmanian, and Pick (1999) is a special case of the framework de-
+ï¬ned here. Hence, paps generalize the Eiter et. al. semantics. Furthermore,
+
+23
+
+algorithm Compute-lfp may be used to compute reasonable status sets of pos-
+itive agent programs. First, we show how agent programs may be captured as
+paps.
+
+Deï¬nition 6.8 Let PP be a probabilistic agent program, PS a probabilistic
+status set and O a probabilistic agent state. Assume further that each random
+variable contains exactly one object with probability 1. Then we can deï¬ne the
+following mappings:
+
+Red1(Â·), which maps every probabilistic code call of the form h{o}, 1i to o:
+
+Red1(h{oRV}, 1i) = o.
+
+Red2(Â·), which maps annotated code call conditions to code call conditions by
+
+simply removing the annotations and the conjunction strategy:
+
+Red2(Ï : h[ai1, ai2], âi) = Ï.
+
+We can easily extend Red2(Â·) to a mapping from arbitrary conjunctions of
+annotated code calls to conjunctions of code calls.
+
+Red3(Â·), which maps every probabilistic agent program to a non-probabilistic
+agent program: it clearly suï¬ces to deï¬ne Red3(Â·) on probabilistic agent
+rules. This is done as follows
+
+Red3(A â Î, L1, . . . , Ln) = A â Red2(Î), L1, . . . , Ln.
+
+Under the above assumptions, the following theorem holds.
+
+Theorem 6.9 (Semantics of Agent Programs as an Instance of paps)
+Suppose all random variables have the form
+
+h{objectRV}, 1i.
+
+Then: (Ï : h[ai1, ai2], âi is a ground annotated code call condition, OS an agent
+state)
+
+Satisfaction: the satisfaction relations coincide, i.e.
+
+O |=[ai1,ai2] Ï : h[ai1, ai2], âi if and only if O |= Red2(Ï : h[ai1, ai2], âi).
+
+App-Operators: the App-Operators coincide, i.e.
+
+AppRed3(PP),OS (PS) = AppPP,OS (PS),
+
+where the operator on the left hand side is the one introduced in Deï¬ni-
+tion A.4 on page 39.
+
+24
+
+Feasibility: Feasible probabilistic status sets coincide with feasible status sets
+under our reductions, i.e. PS is a feasible probabilistic status set w.r.t.
+PP if and only if PS is a feasible status set w.r.t. Red3(PP).
+
+Rational: Rational probabilistic status sets coincide with rational status sets
+under our reductions, i.e. PS is a rational probabilistic status set w.r.t.
+PP if and only if PS is a rational status set w.r.t. Red3(PP).
+
+Reasonable: Reasonable probabilistic status sets coincide with reasonable sta-
+tus sets under our reductions, i.e. PS is a reasonable probabilistic status
+set w.r.t. PP if and only if PS is a reasonable status set w.r.t. Red3(PP).
+
+Computation of Status Sets: The computations of probabilistic status sets
+given in Algorithms 6.1 on page 20 and 6.2 on page 22 for a pap PP
+reduce to the computation of status sets for Red3(PP).
+
+Proof: The ï¬rst two statements are immediate. Feasibility requires checking
+conditions (PS1)â(PS4), and therefore reduces to the ï¬rst two statements. Ra-
+tional and reasonable status sets are handled in a completely analogous manner.
+That our algorithms reduce to the non-probabilistic case under our general
+assumption is trivial: the diï¬erence is only the satisfaction relation |=[1,1] which,
+by the ï¬rst statement, coincides with |=.
+
+7 Probabilistic Agent Programs: Kripke Seman-
+
+tics
+
+The deï¬nition of a feasible status set given in Section 5 makes several simpli-
+fying assumptions. First (see Deï¬nition 5.3), it assumes that an action can be
+executed only if its precondition is believed by the agent to be true in the agent
+state with probability 1. Second (see Deï¬nition 5.5), every action that is per-
+mitted must also have a precondition that is believed to be true with probability
+1. In this section, we propose a Kripke-style semantics for agent programs that
+removes these conditions.
+
+To do this, we will start by noting that in a probabilistic state Op, the agent
+returns a set of random variables for each code call. Every probabilistic state
+implicitly determines a set of (ordinary) states that are âcompatibleâ with it.
+We use the notation eval(a : f (d1, . . . , dn), O) to denote the result of evaluating
+the code call a : f (d1, . . . , dn) w.r.t. the state O.
+
+Deï¬nition 7.1 (Compatibility of State w.r.t. a Probabilistic State) Let
+Op be a probabilistic agent state. An (ordinary) agent state O is said to be com-
+patible with Op iï¬ for every ground code call a : f (d1, . . . , dn), it is the case that
+for every object o â eval(a : f (d1, . . . , dn), O), there exists a random variable
+(X, â) â eval(a : f (d1, . . . , dn), Op) such that o â X and â(o) > 0, and there is
+no other object oâ² â X such that oâ² â eval(a : f (d1, . . . , dn), O).
+
+25
+
+The following example illustrates this concept.
+
+Example 7.2 Consider a probabilistic agent state Op with only two code calls
+surv : identify (image1) and surv : location(image1), which respectively return
+the random variables
+
+h{t80, t72, t70}, {ht80, 0.3i, ht72, 0.7i, ht70, 0.0i}i
+
+and h{Loc2}, {hLoc2, 0.8i}i. The agent states compatible w.r.t. Op are described
+in the following table:
+
+State Vehicle Location
+
+State Vehicle Location
+
+1
+2
+3
+
+none
+t80
+t72
+
+none
+none
+none
+
+4
+5
+6
+
+none
+t80
+t72
+
+Loc2
+Loc2
+Loc2
+
+The object ât70â in the ï¬rst random variable has a null probability, and hence
+it does not appear in any compatible agent state. In states 1â3, the location is
+unknown. In states 1 and 4, the vehicle in the image is unknown.
+
+We use the notation COS(Op) to denote the set of all ordinary agent states
+that are compatible with a Op. We now deï¬ne the notion of a probabilistic
+Kripke structure.
+
+Deï¬nition 7.3 (Probabilistic Kripke Structure)
+A probabilistic Kripke structure is a pair (S, â) where S is a set of ordinary
+states, and â : S â [0, 1] is a mapping such that
+
+OâS â(O) = 1.
+
+P
+
+Deï¬nition 7.4 (Compatible Probabilistic Kripke Structure) Let Op be
+a probabilistic agent state. A coherent probabilistic Kripke structure (COS(Op), â)
+is said to be compatible with Op iï¬ for every ground code call a : f (d1, . . . , dn),
+for every random variable (X, ââ²) â eval(a : f (d1, . . . , dn), Op), and for each
+object o, it is the case that:
+
+X
+oâeval(a : f (d1,... ,dn),O)
+
+â(O) =
+
+ââ²(o)
+0
+
+(cid:26)
+
+if o â X
+otherwise
+
+By deï¬nition, two distinct objects from the same random variable cannot ap-
+pear in the same compatible state. If such a random variable has a complete
+probability distribution, then in any compatible Kripke structure, the sum of
+the probabilities of the states containing one of its objects is equal to 1. This
+means that any (compatible) agent state containing no such objects will have a
+null probability, avoiding the intuitive inconsistency pointed in example 7.2.
+
+Example 7.5 Considering the situation in example 7.2 on the previous page,
+a probabilistic Kripke structure compatible with Op is hCOS(Op), âi, with the
+following probability distribution:
+
+26
+
+State Probability
+
+State Probability
+
+1
+2
+3
+
+0
+0.1
+0.1
+
+4
+5
+6
+
+0
+0.2
+0.6
+
+The following result says that compatible Kripke structures always exist.
+
+Theorem 7.6 (Existence of Compatible Probabilistic Kripke Structure)
+Suppose Op is a probabilistic agent state. Then there is at least one probabilistic
+Kripke structure which is compatible with it.
+
+Hence, given a probabilistic agent state Op, we use the notation PKS(Op) to
+denote the set of all probabilistic Kripke structures compatible with Opâthis
+set is guaranteed to be nonempty by the preceding result. However, in almost
+all cases, PKS(Op) contains an inï¬nite number of elements.
+
+Theorem 7.7 (Existence of Inï¬nitely Many Kripke Structures) If a prob-
+abilistic state Op contains at least two random variables (returned by the same
+code call or by two distinct ones) containing at least one object with associated
+probability 0 < p < 1, then there exist an inï¬nite number of probabilistic Kripke
+structures compatible with Op.
+
+We are now in a position to specify what it means to execute an action in a
+probabilistic Kripke structure.
+
+Deï¬nition 7.8 (Action Execution) Suppose Op is a probabilistic agent state.
+A ground action Î± is said to be possibly executable in Op iï¬ there is at least one
+probabilistic Kripke structure (COS(Op), â) â PKS(Op), and an ordinary agent
+state O in COS(Op) in which the precondition of Î± is true such that â(O) > 0.
+In this case, O witnesses the executability of Î±.
+
+We say that Î± is executable with probability p in Op if, by deï¬nition,
+
+p = min{â(O) | O â COS(Op) witnesses the executability of Î±}.
+
+The following example illustrates this deï¬nition.
+
+Example 7.9 Let us consider the probabilistic agent state of examples 7.2 and 7.5
+and the following actions:
+
+Î±1 : Pre(Î±1) = in(t70, surv : identify (image1))
+Î±2 : Pre(Î±2) = in(X, surv : location(image1)) & X 6= Loc2
+Î±3 : Pre(Î±3) = in(Loc2, surv : location(image1)) &
+
+in(t80, surv : identify (image1))
+
+As stated before, the object ât70â cannot appear in any compatible agent state,
+and hence the action Î±1 is not possibly executable. On the other hand, the
+precondition of Î±2 requires the existence of an object other than âLoc2â, which
+is known to be the only one possibly returned by the corresponding code call,
+
+27
+
+and hence Î±2 is not possibly executable either. Eventually, the precondition
+of Î±3 requires the presence of both objects âLoc2â and ât80â, which is true in
+the agent state number 5 described in the above examples. As this state has a
+non null probability, Î±3 is possibly executable and the agent state witnesses its
+executability.
+
+We are now ready to deï¬ne the new probabilistic Kripke structure that
+
+results when an action is executed in it.
+
+Deï¬nition 7.10 (Result of Action (Î¸, Î³)-Execution) Suppose Op is a prob-
+abilistic agent state, Î±( ~X) is an action and Î³ is a ground substitution for all
+variables occurring in the precondition, add, and delete list of Î±( ~X)Î¸. Let
+(COS(Op), â) be a probabilistic Kripke structure that contains a witness O to
+the possible executability of Î±( ~X)Î¸. The result of executing action Î±( ~X) under
+substitutions Î¸, Î³ in probabilistic Kripke structure PKS(Op) = (S, â) is a new
+Kripke structure (Sâ², ââ²) deï¬ned in the following way:
+
+1. Sâ² = {mapÎ±( ~X),Î¸,Î³(O) | O â S} where map is deï¬ned as follows:
+
+mapÎ±( ~X),Î¸,Î³(O) =
+
+apply(Î±( ~X), Î¸, Î³, O)
+O
+
+(cid:26)
+
+if O â W
+otherwise
+
+2. ââ² is deï¬ned as follows:
+
+ââ²(Oâ²) =
+
+X
+
+{â(O) | Oâ² = mapÎ±( ~X),Î¸,Î³(O)}
+
+In the above deï¬nitions, W is the set of all witnesses in S to the executability
+
+of Î±( ~X)Î¸Î³.
+
+The result of executing action Î±( ~X) under substitutions Î¸, Î³ in a set K of
+probabilistic Kripke structures is {Sâ² | Sâ² is obtained by executing Î±( ~X) under
+substitutions Î¸, Î³ on S â K}.
+
+The deï¬nition causes the agent states in which Î±âs precondition is true to change,
+while those in which Î±âs precondition is false stay unchanged. The probability of
+each ï¬nal state is the sum of the probabilities of the corresponding (old) states.
+This is illustrated by the following example.
+
+Example 7.11 Let us consider the compatible probabilistic Kripke structure in
+Example 7.5, and the action erase(X):
+
+Pre: in(X, surv : identify (image1))
+
+Del: in(X, surv : identify (image1))
+
+Add: â
+
+The result of executing action erase(X) under substitutions {X/t80}, Ç«, is the
+probabilistic Kripke structure hSâ², ââ²i, brieï¬y described by the following table:
+
+28
+
+State Vehicle Location Probability
+
+a
+b
+c
+d
+
+none
+t72
+none
+t72
+
+none
+none
+Loc2
+Loc2
+
+0.1
+0.1
+0.2
+0.6
+
+i.e., the states 1 and 2 merge together yielding the new state âaâ and their
+probabilities are summed. Similarly, states 4 and 5 yield the new state âcâ.
+
+The following result states that our deï¬nitions are coherent.
+
+Proposition 7.12 (Closure of Probabilistic Kripke Structures) The re-
+sult of (Î¸, Î³)-execution of an action in a probabilistic Kripke structure is also a
+probabilistic Kripke structure.
+
+Proof: Let hS, âi be the original Kripke structure, and hSâ², ââ²i the result of
+{ââ²(Oâ²)|Oâ² â Sâ²} = 1. Using
+executing the action. We just need to show that
+Deï¬nition 7.10 on the preceding page:
+
+P
+
+ââ²(Oâ²) =
+
+â(O) =
+
+â(O) = 1
+
+XOâ²âS â²
+
+XOâ²âS â² XOâ²=map(O)
+
+XOâS
+
+8 p-Feasible Status Sets
+
+Probabilistic Feasible Status Sets prevent an action from being executed unless
+its precondition is known for sure to be true (which is exactly the intuitive
+reading of Op |=[1,1] P re(Î±), for a probabilistic agent state Op and an action
+Î±). Analogously, an action constraint has to be checked only if its precondition
+is certainly true. Finally, state consistency requires that the execution of the
+actions does not corrupt the consistency of the original agent state, i.e. it has to
+lead to an agent state where the integrity constraints are with 100% probability,
+In this section, we deï¬ne the concept of p-feasibility, where p is a probability.
+p-feasibility weakens the above requirements to only requiring that preconditions
+are true with probability p (or higher).
+
+Deï¬nition 8.1 (Operator p-AppPP,Op (PS)) Suppose PP is a probabilistic
+agent program, Op is a probabilistic agent state, and PS is a probabilistic status
+set. Then
+
+p-AppPP,Op(PS) = {Op Î± | Op Î± is the head of a ground instance of a rule
+
+r in PP and:
+
+1. B+
+
+as(r) â PS and Â¬.Bâ
+
+as(r) â© PS = â;
+
+2. For every annotated code call condition Ï : h[ai1, ai2], âi in the body of r,
+
+it is the case that Op |=[ai1,ai2] Ï : h[ai1, ai2], âi;
+
+29
+
+3. if Op â {P, O, Do }, then the preconditions of Î± are true with probability
+
+p or greater, i.e. Op |=[p,1] P re(Î±);
+
+4. for every action status atom of the form Op Î² in B+
+
+as(r) such that Op â
+{P, O, Do }, the preconditions of Î² are true with probability p or greater,
+i.e. Op |=[p,1] P re(Î²) }
+
+The only diï¬erence between this deï¬nition and that of AppPP,OS (PS) is that
+the entailment |=[1,1] is replaced by the more general |=[p,1].
+
+Deï¬nition 8.2 (Deontic and Action p-Consistency) A probabilistic status
+set PS is deontically p-consistent with respect to a probabilistic agent state Op
+if, by deï¬nition, it satisï¬es the following rules for any ground action Î±:
+
+â¢ If OÎ± â PS, then WÎ± /â PS.
+
+â¢ If PÎ± â PS, then FÎ± /â PS.
+
+â¢ If PÎ± â PS, then the preconditions of Î± are true with probability p or
+
+greater, i.e. Op |=[p,1] P re(Î±).
+
+A probabilistic status set PS is action p-consistent with respect to an agent state
+Op iï¬ for every action constraint of the form
+
+{Î±1( ~X1), . . . , Î±k( ~Xk)} âÖ Ï
+
+(3)
+
+either Op 6|=[p,1] Ï or {Î±1( ~X1), . . . , Î±k( ~Xk)} 6â PS.
+
+Generalizing probabilistic state consistency to p-probabilistic state consistency
+may be done in two ways.
+
+â²
+
+Deï¬nition 8.3 (Probabilistic State p-Consistency) A probabilistic status
+set PS is weakly probabilistically state p-consistent w.r.t. state Op iï¬ the new
+= conc(Do (PS), Op) obtained after concurrently executing all ac-
+state, Op
+tions of the form Do Î± â PS satisï¬es all integrity constraints with probability
+for every integrity constraint Ï â Ï either
+greater than or equal to p, i.e.
+Op
+We say that a probabilistic status set PS is strongly probabilistically state p-
+consistent w.r.t. state Op iï¬ the new state Op
+satisï¬es the following condition:
+if Op satisï¬es the integrity constraints with probability â¥ q (q â [0, 1]) then also
+Op
+
+6|=[p,1] Ï or Op
+
+|=[p,1] Ï.
+
+does so.
+
+â²
+
+â²
+
+â²
+
+â²
+
+These deï¬nitions induce two types of feasibility for arbitrary probabilities p.
+
+Deï¬nition 8.4 (Weak (resp. Strong) p-Feasibility) Let PP be an agent
+program and let Op be an agent state. Then, a probabilistic status set PS is
+a p-feasible probabilistic status set for PP on Op, if the following conditions
+hold:
+
+30
+
+(p-PS 1): p-AppPP,Op(PS) â PS (closure under the program rules);
+
+(p-PS 2): PS is deontically and action p-consistent (deontic and action p-
+
+consistency);
+
+(p-PS 3): PS is action closed and deontically closed (deontic and action clo-
+
+sure);
+
+(p-PS 4): PS is weakly (resp. strong) state p-consistent (state p-consistency).
+
+Remark 8.1 If S is a p-feasible probabilistic status set for PP on Op and
+0 â¤ q â¤ p, then S is not always q-feasible.
+Indeed, [q, 1] â [p, 1], and then
+for any formula Ï Op |=[p,1] Ï implies that Op |=[q,1] Ï (and analogously for
+6|=[p,1] and 6|=[q,1]). This means that all preconditions of actions, preconditions
+of action constraints and integrity constraints which are veriï¬ed for p are also
+veriï¬ed for q.
+The problem is that p-AppPP,Op(PS) is anti-monotonic w.r.t. p, as a smaller
+value for p may allow a larger set of rules to be ï¬rable. Then the closure under
+the program rules is not guaranteed any more.
+
+The following example illustrates this point.
+
+Example 8.5 Consider the following trivial program:
+
+Do Î± â .
+
+where Pre(Î±) = in(a, d : f ()), and eval(d : f (), Op) = {h{a}, h0.7ii}. Suppose
+PS = â. Conditions p-PS 2â4 are true for any value of p. Note that 0.8-
+AppPP,OS (PS) = â nd hence, PS is 0.8-feasible.
+In contrast, we see that
+0.6-AppPP,OS (PS) = {Do Î±} 6â PS, and hence PS is not 0.6-feasible.
+
+We can easily see that probabilistic feasibility is a particular case p-feasibility:
+
+Proposition 8.6 Let PP be a probabilistic agent program and let Op be a con-
+sistent (or equivalently 1-consistent) agent state. Then, a probabilistic status
+set PS is a feasible probabilistic status set if and only if it is weakly 1-feasible
+if and only if it is strongly 1-feasible.
+
+Proof: All deï¬nitions for weak p-feasibility trivially coincide with those for
+feasibility if p=1. The distinction between weak and strong p-feasibility is just in
+the deï¬nition of p-consistency, and we can easily see that for p=1 they coincide,
+since a probability greater or equal to 1 cannot be but equal to 1.
+
+31
+
+8.1 p-Rational and p-Reasonable Status Sets
+
+The notions of Rational and Reasonable Status Sets can be straightforwardly
+extended to those of p-Rational and p-Reasonable status sets.
+
+Deï¬nition 8.7 (p-Rational Status Set) A probabilistic status set PS is a
+p-rational probabilistic status set, if PS is a p-feasible probabilistic status set
+and there exists no probabilistic status set PSâ² â PS satisfying conditions (p â
+PS1)â(p â PS3) of a p-feasible probabilistic status set.
+
+Obviously, in the case that IC = â (i.e., there are no integrity constraints)
+
+p-rational status sets are simply inclusion-minimal feasible status sets.
+
+Deï¬nition 8.8 (p-Reasonable Probabilistic Status Set) Let PP be a prob-
+abilistic agent program, let OS be an agent state, and let PS be a probabilistic
+status set.
+
+1. If PP is a positive probabilistic agent program, then PS is a p-reasonable
+probabilistic status set for PP on OS , if, by deï¬nition, PS is a p-rational
+probabilistic status set for PP on OS.
+
+2. Exploiting the deï¬nition of redPS(PP, OS) (see Deï¬nition 5.13 on page 18),
+PS is a p-reasonable probabilistic status set for PP w.r.t. OS, if it is a
+p-reasonable probabilistic status set of the program redPS(PP, OS ) with
+respect to OS.
+
+It is easy to verify that all p-reasonable probabilistic status sets are p-rational
+
+probabilistic status sets:
+
+Proposition 8.9 (p-Reasonable Status Sets are p-Rational) Let PP be
+a probabilistic agent program and OS an agent state. Then, every p-reasonable
+probabilistic status set of PP on OS is a p-rational probabilistic status set of
+PP on OS .
+
+Proof:
+
+Identical to the proof of Proposition 5.16 on page 19.
+
+As in Section 6 on page 20, we can deï¬ne a ï¬xpoint operator and build an
+algorithm on its top to compute p-reasonable status sets for positive programs.
+
+Deï¬nition 8.10 (Operator pâSPP,OS )
+
+pâSPP,OS (PS) = A-Cl(pâAppPP,OS (PS)),
+
+Operator pâSPP,OS can be computed by an algorithm identical to Algo-
+rithm 6.1 on page 20, but for step 4, where the entailment |=[1,1] has to be
+replaced by |=[p,1]. pâSPP,OS is monotonic and continuous and has a unique
+least ï¬xpoint.
+
+32
+
+Lemma 8.11 (Monotonicity and Continuity of pâSPP,OS ) Suppose PP is
+a positive pap. Then the operator pâSPP,OS is monotone and continuous, i.e.
+
+1. PS1 â PS2 â p â SPP,OS (PS1) â p â SPP,OS (PS2),
+
+2. pâSÏ
+
+PP,OS is a ï¬xpoint of pâSPP,OS . Moreover, it is the least ï¬xpoint
+of pâSPP,OS . (We assume the iterations of pâSPP,OS are deï¬ned in the
+same way as the iterations of SPP,OS ).
+
+The following result now follows immediately and has a proof similar to that of
+Theorem 6.4 on page 22.
+
+Theorem 8.12 (p-Rational Probab. Status Sets as Least Fixpoints)
+Let PP be a positive probabilistic agent program, and let OS be an agent state.
+Then, PS is a p-rational probabilistic status set of PP on OS, if and only if
+PS = lfp(pâSPP,OS ) and PS is a p-feasible probabilistic status set.
+
+Uniqueness of the p-reasonable status set (if it exists) holds too, and then we
+can compute it by Algorithm 6.2 on page 22, replacingâas usualâthe entailment
+|=[1,1] with |=[p,1].
+
+Unfortunately, the resulting algorithm is not polynomial because of the in-
+tegrity constraint check in steps (11)â(12). This will be discussed in detail
+in Section 8.2 below. However, when no integrity constraints are present, the
+algorithm is still polynomial.
+
+Theorem 8.13 (Polynomial Data Complexity) The problem of computing
+p-reasonable probabilistic status sets of positive paps without Integrity Con-
+straints (i.e., IC = â) has polynomial data-complexity.
+
+8.2 Checking p-Consistency of Integrity Constraints
+
+In this section, we provide an algorithm to check p-consistency of an integrity
+constraint IC after an action have been executed in state Op, leading to a new
+state Opâ² assuming that all integrity constraints are true in the original state
+Op. Suppose O1, . . . , ON are all states compatible with Op while Oâ²
+N â²
+are those compatible with the new state Op
+i denote the probabilities
+of Oi, Oâ²
+
+i respectively. Then consider the following system of constraints:
+
+. Let pi, pâ²
+
+1, . . . , Oâ²
+
+â²
+
+i such that:
+
+i|=ICpâ²
+N
+i=1 pi = 1
+âi â {1, . . . , E}.
+P
+âIC â IC.1 â¥
+
+minimize Î£Oâ²
+(K)
+(CK)
+Oi:Oi|=IC pi â¥ p
+(IC)
+P
+(K â Kâ) âi â {1, . . . , N â²}.pâ²
+i =
+(IG)
+
+P
+âi â {1, . . . , N }. max{0,
+â¤ pi â¤ minObjkâOi {p(Objk)}
+
+Oj :Oj
+
+P
+
+P
+
+Î±
+ââOâ²
+i
+
+ObjkâOi
+
+j:Obji âOj pj = p(Obji)
+
+pj
+p(Objk) + 1 â |Oi|} â¤
+
+33
+
+The objective function captures the probability of IC being true in the new
+Kripke structure. (K) and (CK) deï¬ne any arbitrary compatible Kripke struc-
+ture over N states w.r.t. Op (which cointains E objects), (IC) expresses the fact
+that our actual state has to be p-consistent, while (Kâââ Kâ) deï¬nes the Kripke
+structure obtained after the execution of action Î±. Eventually, (IG) gives an
+upper and a lower bound to the probability of worlds (it extends the Bool ex-
+pression for conjunction of events of unknown inter-relation). It is easy to see
+that a straightforward implementation of this algorithm requires exponential
+time and space.
+
+9 Related Work
+
+There has been an incredible amount of work on uncertainty in knowledge based
+and database systems (Shafer and Peal 1990). However, almost all this work
+assumes that we are reasoning with logic or with Bayesian nets (Koller 1998)
+and most work proceeds under strong assumptions about the relationships be-
+tween events (e.g. most Bayesian approaches assume conditional independence
+between events, while other approaches such as (Fagin, Halpern, and Megiddo
+1990; Ng and Subrahmanian 1993b) assume that we have no knowledge of the
+dependencies between events).
+
+This paper introduces techniques to allow an agent developer to encode dif-
+ferent assumptions about the relationships between events, when writing prob-
+abilistic agent programs. The idea of conjunction strategies to facilitate this
+was ï¬rst introduced in the ProbView system (Lakshmanan, Leone, Ross, and
+Subrahmanian 1997) in an attempt to allow users querying probabilistic rela-
+tional databases to express in their query, their knowledge of the dependencies
+between events. Later, (Dekhtyar and Subrahmanian 1997) extended the use
+of conjunction and disjunction strategies to the case of logic programs. In this
+paper, the idea of conjunction strategies are applied in the context of deontic-
+logic based agent programs. We are not aware of any extant work on allowing
+ï¬exible dependency assumptions in the context of logics and actions.
+
+Research on epistemic logic (e.g., (Morgenstern 1988; Moore 1985; Kraus and
+Lehmann 1988)) enables reasoning about what is known and is not known at
+a given time. However, epistemic logics have not been used as a representation
+in decision making and in automated planning systems, perhaps, because the
+richness of these languages makes eï¬cient reasoning very diï¬cult. In contrast,
+our framework has polynomial data complexity.
+
+Halpern and Tuttle (1992) study the semantics of reasoning about dis-
+tributed systems when uncertainty is present. They develop a logic where a
+process has knowledge about the probability of events which facilitates decision-
+making by the process. We, on the other hand, consider probabilistic states,
+and as argued in (Dix, Subrahmanian, and Pick 2000) this also allows us to
+reason about probabilistic beliefs, i.e. probabilities are assigned to the agentsâ
+beliefs about events, rather than to the events themselves. That is, in Halpernâs
+work (Halpern and Tuttle 1992), the beliefs of the agent are CERTAIN, but in
+
+34
+
+our framework, the beliefs of the agent may themselves be uncertain (with the
+phenomenon when they are certain being a special case of our framework).
+
+Poole (1997) presented a framework that allows a natural speciï¬cation of
+multi-agent decision problems. It extends logic with a new way to handle and
+think about non-determinism and uncertainty in terms of independent choices
+made by various agents, including nature and a logic program that gives the
+consequence of choices. It has general independence assumption. This work is
+more expressive than ours, but its generality leads to complexity problems and
+to diï¬culties in using the framework.
+
+Haddawy (1991) developed a logic that allows to write sentences that de-
+scribe uncertainty in the state of the world, uncertainty of action eï¬ects, com-
+bine possibility and chance, distinguish between truth and chance and express
+information about probability distributions. He uses model theoretic semantics
+and demonstrates how his logic can be used to speciï¬cation various reasoning
+and planning problems. The main purpose of the speciï¬cation is to prove cor-
+rectness, and not for programming of agents. Kushmerick, Hanks, and Weld
+(1995) model uncertainty about the true state of the world with a probability
+distribution over the state space. Actions have uncertain eï¬ects, and each of
+these eï¬ects is also modeled with a probability distribution. They seek plans
+whose probability of success exceeds the threshold. They describe BURIDAN,
+an implemented algorithm for probabilistic planning. In contrast, we focus on
+programming agents, rather than on how agents will construct plans. Other
+researchers extended Kushmerick et al.âs model to increase the eï¬ciency of the
+planning (Haddawy, Doan, and Goodwin 1996) or to more realistic domains
+(Doan 1996). ThiÂ´ebaux, Hertzberg, Shoaï¬, and Schneider (1995) developed a
+framework for anytime generation of plans under incomplete and ambiguous
+knowledge and actions with alternative and context dependent eï¬ects.
+
+Kaelbling, Littman, and Cassandra (1998) propose using partially observable
+Markov decisionprocesses (POMDPs) for planning under uncertainty. Similar
+to BURIDAN they use a probability distributions over states to express uncer-
+tainty about the situation of the agent. They also consider the problem of
+non-deterministic actions and getting feedback from the environment which we
+mentioned only brieï¬y.
+
+10 Conclusions
+
+Agents are programs that autonomously react to changes in their environment
+by taking appropriate actions. In (Eiter, Subrahmanian, and Pick 1999), the
+authors have proposed a framework within which agents may be built on top
+of an existing body of legacy code, and/or on top of specialized data structures
+appropriate for the intended functionality of the agent being built.
+
+However, there are an increasing number of applications where agents are
+uncertain about what is true in their state (or environment). Such situations
+occur all the time in image identiï¬cation programs, in programs that predict
+future events (such as battleï¬eld events, stock market events, etc.), and in
+
+35
+
+scenarios where an agent a attempts to predict what an agent b will do.
+
+In this paper, we ï¬rst introduce the concept of a probabilistic code call,
+which is a mechanism to describe uncertain application program interfaces for
+arbitrary functions over arbitrary data types. Based on this concept, we deï¬ne
+probabilistic agent programs â sets of rules that encode the operating principles
+of an agent. Such rules encode the probabilistic conditions under which an agent
+is obliged to take some actions, permitted to take some actions and/or forbidden
+to take some actions.
+
+We then provide two broad classes of semantics for such âprobabilistic agents.â
+In the ï¬rst class of semantics, actions that are permitted, obligatory or done,
+must have preconditions that are true with 100% probability in the current
+agent state. In the second class of semantics (which use probabilistic variants
+of Kripke structures), the actions that are permitted, obligatory or done, must
+have preconditions that are true with at least a given probability. This latter
+class of semantics allows reasoning by cases. We provide complexity arguments
+showing that though the second family of semantics is perhaps epistemologically
+more appealing than the ï¬rst, the second family of semantics is also computa-
+tionally more complex.
+
+Finally, the paper includes algorithms to compute the semantics of proba-
+
+bilistic agent programs, as long as such programs are negation free.
+
+Future work on probabilistic agent programs will focus on computing the
+semantics of paps that contain negation. A detailed study of computational
+complexity is also envisaged. We are also interested in identifying polynomially
+computable fragments of paps and implementing them on top of the current
+IMPACT implementation. Last, but not least, IMPACT has been used in a
+battleï¬eld monitoring application where there is considerable uncertainty in
+predicting tactical enemy movements. We hope to build an application of paps
+addressing this problem, once the implementation of paps is complete.
+
+References
+
+Apt, K. (1990). Logic Programming. In J. van Leeuwen (Ed.), Handbook
+of Theoretical Computer Science, Volume B, Chapter 10, pp. 493â574.
+Elsevier Science Publishers B.V. (North-Holland).
+
+Arisha, K., F. Ozcan, R. Ross, V. S. Subrahmanian, T. Eiter, and S. Kraus
+(1999, March/April). IMPACT: A Platform for Collaborating Agents.
+IEEE Intelligent Systems 14, 64â72.
+
+Boole, G. (1854). The Laws of Thought. Macmillan, London.
+
+Cattell, R. G. G., et al. (Ed.) (1997). The Object Database Standard: ODMG-
+
+93. Morgan Kaufmann.
+
+Dekhtyar, A. and V. S. Subrahmanian (1997). Hybrid Probabilistic Logic
+Programs. In L. Naish (Ed.), Proceedings of the 14th International Con-
+ference on Logic Programing, Leuven, Belgium, pp. 391â405. MIT Press.
+
+36
+
+Extended version accepted for publication in Journal of Logic Program-
+ming, |http://www.cs.umd.edu/TRs/authors/Alex Dekhtyar.htmlâ.
+
+Dix, J., V. S. Subrahmanian, and G. Pick (2000). Meta Agent Programs.
+accepted for publication in Journal of Logic Programming, to appear 2000.
+
+Doan, A. (1996). Modeling Probabilistic Actions for Practical Decision-
+Theoretic Planning. In Proceedings of the Third International Concerence
+on Artiï¬cial-Intelligence Planning Systems, Edinburgh, Scotland, UK.
+
+Eiter, T., V. Subrahmanian, and G. Pick (1999). Heterogeneous Active
+
+Agents, I: Semantics. Artiï¬cial Intelligence 108 (1-2), 179â255.
+
+Eiter, T., V. Subrahmanian, and T. Rogers (1999, May). Heterogeneous
+Active Agents, III: Polynomially Implementable Agents. Technical Re-
+port INFSYS RR-1843-99-07, Institut fÂ¨ur Informationssysteme, Technis-
+che UniversitÂ¨at Wien, A-1040 Vienna, Austria.
+
+Eiter, T. and V. S. Subrahmanian (1999). Heterogeneous Active Agents, II:
+Algorithms and Complexity. Artiï¬cial Intelligence 108 (1-2), 257â307.
+
+Fagin, R., J. Y. Halpern, and N. Megiddo (1990, July/August). A logic for
+reasoning about probabilities. Information and Computation 87 (1/2), 78â
+128.
+
+Gelfond, M. and V. Lifschitz (1988). The Stable Model Semantics for Logic
+Programming. In Logic Programming: Proceedings Fifth International
+Conference and Symposium, Cambridge, Massachusetts, pp. 1070â1080.
+MIT Press.
+
+Haddawy, P. (1991). Representing Plans under Uncertainty: A Logic of Time,
+Chance and Action. Ph. D. thesis, University of Illinois. Technical Report
+UIUCDCS-R-91-1719.
+
+Haddawy, P., A. Doan, and R. Goodwin (1996). Eï¬cient Decision-Theoretic
+Planning: Techniques and Empirical Analysis. In Proceedings of the Third
+International Concerence on Artiï¬cial-Intelligence Planning Systems, Ed-
+inburgh, Scotland, UK.
+
+Halpern, J. Y. and M. Tuttle (1992). Knowledge, Probability and Adversaries.
+
+Technical report, IBM. IBM Research Report.
+
+Kaelbling, L. P., M. L. Littman, and A. R. Cassandra (1998). Planning
+and Acting in Partially Observable Stochastic Domains. Artiï¬cial Intelli-
+gence 101, 99â134.
+
+Kifer, M. and V. S. Subrahmanian (1992). Theory of Generalized Anno-
+tated Logic Programming and its Applications. Journal of Logic Program-
+ming 12 (4), 335â368.
+
+Koller, D. (1998). Structured Probabilistic Models: Bayesian Networks and
+Beyond. In Proceedings of the Fifteenth National Conference on Artiï¬-
+cial Intelligence, AAAIâ98, Madison, Wisconsin. AAAI Press/MIT Press.
+|http://robotics.Stanford.EDU/â¼koller/Invited98â.
+
+37
+
+Kraus, S. and D. Lehmann (1988). Knowledge, Belief and Time. Theoretical
+
+Computer Science 58, 155â174.
+
+Kushmerick, N., S. Hanks, and D. Weld (1995). An Algorithm for probabilistic
+
+planning. Artiï¬cial Intelligence 76 (1-2), 239â286.
+
+Lakshmanan, V. S., N. Leone, R. Ross, and V. S. Subrahmanian (1997,
+September). ProbView: A Flexible Probabilistic Database System. ACM
+Transactions on Database Systems 22 (3), 419â469.
+
+Lloyd, J. (1984, 1987). Foundations of Logic Programming. Berlin, Germany:
+
+Springer-Verlag.
+
+Moore, R. (1985). A Formal theory of Knowledge and Action. In J. Hobbs and
+R. Moore (Eds.), Formal Theories of the Commonsesnse World. Norwood,
+N.J.: ABLEX publishing.
+
+Morgenstern, L. (1988). Foundations of a Logic of Knowledge, Action, and
+
+Communication. Ph. D. thesis, New York University.
+
+Ng, R. and V. S. Subrahmanian (1993a). A Semantical Framework for Sup-
+porting Subjective and Conditional Probabilities in Deductive Databases.
+Journal of Automated Reasoning 10 (2), 191â235.
+
+Ng, R. and V. S. Subrahmanian (1993b). Probabilistic Logic Programming.
+
+Information and Computation 101 (2), 150â201.
+
+Poole, D. (1997). The independent choice logic for modelling multiple agents
+
+under uncertainty. Artiï¬cial Intelligence 94 (1-2), 7â56.
+
+Ross, S. (1997). A First Course in Probability. Prentice-Hall.
+
+Shafer, G. and J. Peal (Eds.) (1990). Readings in uncertain reasoning. Morgan
+
+Kaufmann.
+
+Siegal, J. (1996). CORBA Fundementals and Programming. New York: John
+
+Wiley & Sons.
+
+Subrahmanian, V. S. (1987, September). On the Semantics of Quantitative
+Logic Programs. In Proceedings of the 4th IEEE Symposium on Logic Pro-
+gramming, pp. 173â182. Computer Society Press.
+
+ThiÂ´ebaux, S., J. Hertzberg, W. Shoaï¬, and M. Schneider (1995). A stochas-
+tic model of actions and plans for anytime planning under uncertainty.
+International Journal for Intelligent Systems 10 (2).
+
+A Agent Programs without Uncertainty
+
+The following deï¬nitions are taken from (Eiter, Subrahmanian, and Pick 1999).
+
+A.1 Feasible, Rational and Reasonable Semantics
+
+Deï¬nition A.1 (Status Set) A status set is any set S of ground action status
+atoms over S. For any operator Op â {P, Do , F, O, W}, we denote by Op(S)
+the set Op(S) = {Î± | Op(Î±) â S}.
+
+38
+
+Deï¬nition A.2 (Deontic and Action Consistency) A status set S is called
+deontically consistent,
+if, by deï¬nition, it satisï¬es the following rules for any
+ground action Î±:
+
+â¢ If OÎ± â S, then WÎ± /â S
+
+â¢ If PÎ± â S, then FÎ± /â S
+
+â¢ If PÎ± â S, then OS |= ââPre(Î±), where ââPre(Î±) denotes the existential
+closure of Pre(Î±), i.e., all free variables in Pre(Î±) are governed by an
+existential quantiï¬er. This condition means that the action Î± is in fact
+executable in the state OS.
+
+A status set S is called action consistent, if S, OS |= AC holds.
+
+Besides consistency, we also wish that the presence of certain atoms in S
+entails the presence of other atoms in S. For example, if OÎ± is in S, then we
+expect that PÎ± is also in S, and if OÎ± is in S, then we would like to have Do Î±
+in S. This is captured by the concept of deontic and action closure.
+
+Deï¬nition A.3 (Deontic and Action Closure) The deontic closure of a sta-
+tus S, denoted D-Cl(S), is the closure of S under the rule
+
+If OÎ± â S, then PÎ± â S
+
+where Î± is any ground action. We say that S is deontically closed, if S =
+D-Cl(S) holds.
+
+The action closure of a status set S, denoted A-Cl(S), is the closure of S
+
+under the rules
+
+If OÎ± â S, then Do Î± â S
+
+If Do Î± â S, then PÎ± â S
+
+where Î± is any ground action. We say that a status S is action-closed, if S =
+A-Cl(S) holds.
+
+The following straightforward results shows that status sets that are action-
+closed are also deontically closed, i.e.
+
+Deï¬nition A.4 (Operator AppP,OS (S)) Suppose P is an agent program, and
+OS is an agent state. Then, AppP,OS (S) is deï¬ned to be the set of all ground
+action status atoms A such that there exists a rule in P having a ground instance
+of the form r : A â L1, . . . , Ln such that
+
+1. B+
+
+as(r) â S and Â¬.Bâ
+
+as(r) â© S = â, and
+
+2. every code call Ï â B+
+
+cc(r) succeeds in OS, and
+
+3. every code call Ï â Â¬.Bâ
+
+cc(r) does not succeed in OS, and
+
+39
+
+4. for every atom Op(Î±) â B+(r) âª {A} such that Op â {P, O, Do }, the
+
+action Î± is executable in state OS.
+
+Note that part (4) of the above deï¬nition only applies to the âpositiveâ
+modes P, O, Do . It does not apply to atoms of the form FÎ± as such actions are
+not executed, nor does it apply to atoms of the form WÎ±, because execution of
+an action might be (vacuously) waived, if its prerequisites are not fulï¬lled.
+
+Our approach is to base the semantics of agent programs on consistent and
+closed status sets. However, we have to take into account the rules of the
+program as well as integrity constraints. This leads us to the notion of a feasible
+status set.
+
+Deï¬nition A.5 (Feasible Status Set) Let P be an agent program and let OS
+be an agent state. Then, a status set S is a feasible status set for P on OS, if
+the following conditions hold:
+
+(S1): (closure under the program rules) AppP,OS (S) â S;
+
+(S2) (deontic and action consistency)
+
+S is deontically and action consistent;
+
+(S3) (deontic and action closure)
+
+S is action closed and deontically closed;
+
+(S4) (state consistency) Oâ²
+
+S |= IC, where Oâ²
+state which results after taking all actions in Do (S) on the state OS.
+
+S = apply(Do (S), OS ) is the
+
+Deï¬nition A.6 (Groundedness; Rational Status Set) A status set S is
+grounded, if there exists no status set Sâ²
+6= S such that Sâ² â S and Sâ² sat-
+isï¬es conditions (S1)â(S3) of a feasible status set.
+
+A status set S is a rational status set, if S is a feasible status set and S is
+
+grounded.
+
+Deï¬nition A.7 (Reasonable Status Set) Let P be an agent program, let
+OS be an agent state, and let S be a status set.
+
+1. If P is a positive agent program, then S is a reasonable status set for P
+
+on OS, if and only if S is a rational status set for P on OS.
+
+2. The reduct of P w.r.t. S and OS, denoted by redS(P, OS), is the program
+which is obtained from the ground instances of the rules in P over OS as
+follows.
+
+(a) First, remove every rule r such that Bâ
+(b) Remove all atoms in Bâ
+
+as(r) from the remaining rules.
+
+as(r) â© S 6= â;
+
+Then S is a reasonable status set for P w.r.t. OS, if it is a reasonable
+status set of the program redS(P, OS) with respect to OS.
+
+40
+
+B Proofs of Theorems
+
+Proof: (of Proposition 5.15)
+
+1. Suppose Do Î± â PS. Then, as PS is feasible, we know that PS =
+A-Cl(PS), and hence PÎ± â PS. As PS is feasible, and hence deonti-
+cally consistent, the third condition of deontic consistency speciï¬es that
+Î±âs precondition is true in state OS .
+
+2. This follows immediately because as PS is feasible, we have PS = A-Cl(PS).
+The second condition deï¬ning A-Cl(PS), when written in contrapositive
+form, states that PÎ± /â PS implies that Do Î± /â PS.
+
+3. As PS is feasible, PS = A-Cl(PS). The ï¬rst condition specifying A-Cl(PS)
+allows us to infer that OÎ± â PS implies that Do Î± â PS. The result fol-
+lows immediately from part (1) of this proposition.
+
+4. From the above argument, as PS = A-Cl(PS), we can conclude that
+OÎ± â PS implies that PÎ± â PS. By the deontic consistency requirement,
+FÎ± /â PS.
+
+Proof: (of Theorem 5.16)
+In order to show that a reasonable probabilistic status set PS of PP is a rational
+status of PP, we have to verify (1) that PS is a feasible probabilistic status set
+and (2) that PS is grounded.
+
+Since PS is a reasonable probabilistic status set of PP, it is a rational
+probabilistic status set of PP â² = redPS(PP, OS), i.e., a feasible and grounded
+probabilistic status set of PP â². Since the conditions (PS2)â(PS4) of the deï¬-
+nition of feasible probabilistic status set depend only on PS and OS but not on
+the program, this means that for showing (1) it remains to check that (PS1)
+(closure under the program rules) is satisï¬ed.
+
+Let thus r be a ground instance of a rule from PP. Suppose the body
+B(r) of r satisï¬es the conditions 1.â4. of (PS1). Then, by the deï¬nition of
+redPS(PP, OS), we have that the reduct of the rule r, obtained by removing all
+as(r) from the body, is in PP â². Since PS is closed under the rules
+literals of Bâ
+of PP â², we have H(r) â PS. Thus, PS is closed under the rules of PP, and
+hence (PS1) is satisï¬ed. As a consequence, (1) holds.
+
+For (2), we suppose PS is not grounded, i.e., that some smaller PSâ² â PS
+satisï¬es (PS1)â(PS3) for PP, and derive a contradiction. If PSâ² satisï¬es (PS1)
+for PP, then PSâ² satisï¬es (PS1) for PP â². For, if r is a rule from PP â² such
+that 1.â4. of (PS1) hold for PSâ², then there is a ground rule râ² of PP such
+that r is obtained from râ² in the construction of redPS(PP, OS) and, as easily
+seen, 1.â4. of (PS1) hold for PSâ². Since PSâ² satisï¬es (PS1) for PP, we have
+H(r) â PSâ². It follows that PSâ² satisï¬es (PS1) for PP â². Furthermore, since
+(PS2) and (PS3) do no depend on the program, also (PS2) and (PS3) are
+satisï¬ed for PSâ² w.r.t. PP â². This means that PS is not a rational probabilistic
+status set of PP â², which is the desired contradiction.
+
+41
+
+Thus, (1) and (2) hold, which proves the result.
+
+Proof: (of Theorem 5.19)
+By deï¬nition of rationality, we know that if PS is a rational status set of PP
+then it must be a feasible probabilistic status set as well.
+
+Suppose PP has a feasible probabilistic status set. Then the set of all
+feasible probabilistic status sets of PP on OS has a non-empty set of inclusion-
+minimal elements. Indeed, from the grounding of the probabilistic agent pro-
+gram, we can remove all rules which violate the conditions 2.-4. of the operator
+AppPP,OS (PS), and can remove literals involving code calls from the remaining
+rules. Moreover, the deontic and action closure conditions can be incorporated
+into the program via rules. Thus, we end up with a set T of propositional
+clauses, whose models are feasible probabilistic status sets of PP. Since PP
+has a feasible probabilistic status set, T has a model, i.e., an assignment to the
+propositional atoms which satisï¬es all clauses in T . Now, each satisï¬able set
+of clauses in a countable language posseses at least one minimal model (w.r.t.
+inclusion, i.w., a â-minimal set of atoms is assigned the value true); this can be
+shown applying the same technique which proves that every such set of clauses
+can be extended to a maximal satisï¬able set of clauses. Thus, T has at least
+one minimal model. As easily seen, any such model is a minimal feasible prob-
+abilistic status set of PP.
+
+Suppose now PSâ² is one of the minimal feasible probabilistic status sets of
+PP on OS . Then (as we show below) PSâ² is grounded, and hence a rational
+probabilistic status set.
+
+To show that PSâ² is grounded, we need to show that PSâ² satisï¬es conditions
+(PS 1)â(PS 3) of the deï¬nition of feasible probabilistic status setâthis is true
+because PSâ² is feasible. In addition, we need to show that no strict subset PSâ
+of PS satisï¬es conditions (PS 1)â(PS 3).
+
+Suppose there is a strict subset PSâ of PS satisfying conditions (PS 1)â
+(PS 3). Then, as IC = â, PSâ also satisï¬es condition (PS 4) of the deï¬nition
+of feasibility, and hence PSâ is a feasible probabilistic status set. But this
+contradicts the inclusion minimality of PSâ², and hence, we may infer that PSâ²
+has no strict subset PSâ of PS satisfying conditions (PS 1)â(PS 3). Thus, PSâ²
+is grounded, and we are done.
+
+Proof: (of Theorem 7.6)
+For each random variable Vi = (Xi, âi) returned by some ground code call
+condition in the probabilistic state Op, let us deï¬ne its normalized version V â²
+i =
+(X â²
+
+i, ââ²
+
+i) where:
+
+X â²
+
+ââ²
+
+i = {x | x â Xi and âi(x) > 0} âª {Ç« |
+if x â X â²
+i \ {Ç«}
+P
+if x = Ç« and Ç« â X â²
+i
+
+âi(x)
+1 â
+
+xâXi âi(x)
+
+i(x) =
+
+xâXi
+
+(cid:26)
+
+âi(x) < 1};
+
+P
+
+i.e., we delete the zero-probability elements and add the extra one Ç« (which
+stands for ânone of the aboveâ) whenever the distribution âi is incomplete.
+Now we can see that each tuple x = hx1, . . . , xni in the Cartesian product
+
+42
+
+1 Ã Â· Â· Â· Ã X â²
+
+n corresponds to a distinct compatible state O w.r.t. Op.
+X â² = X â²
+In O, a ground code call returns an object o iï¬ in the probabilistic state Op it
+returns a variable Vi such that xi = o. Let associate to each state O of this kind
+the value
+
+ââ(O) = ââ²
+
+1(x1) Â· Â· Â· ââ²
+
+n(xn)
+
+and set ââ(O) = 0 for all the other states. We can easily verify that hCOS(Op), ââi
+is a compatible probabilistic Kripke structure for Op: for each random variable
+Vi returned in state Op and each object o â Xi if âi(o) = 0 then o 6â X â², so it
+could appear only in the zero-probability states; otherwise:
+
+ââ(O) =
+
+n
+
+j(xj) = ââ²
+ââ²
+
+i(o)
+
+XoâO
+
+XxâX â²,xi=o
+
+Yj=0
+
+XxâX â²,xi=o Yj6=i
+
+j(xj ) = ââ²
+ââ²
+
+i(o) = âi(o)
+
+Both cases satisfy the condition for compatibility. Finally, it is easy to verify
+that hCOS(Op), ââi is really a probabilistic Kripke structure:
+
+ââ(O) =
+
+n
+
+ââ²
+
+j(xj ) =
+
+XO
+
+XxâX â²
+
+Yj=0
+
+Xx1âX â²
+
+1
+
+ââ²
+
+1(x1) = 1
+
+Proof: (of Theorem 7.7)
+Let us consider the compatible Kripke structure described in the proof of Propo-
+sition 7.6 on page 27, and let us assume that V1 and V2 are the variables required
+in the thesis. The corresponding completed versions V â²
+2 will then contain
+at least two non zero-probability objects (one of them could be the extra object
+Ç«), respectively a1, b1 and a2, b2. Now let choose an arbitrary real number Î´
+such that:
+
+1 and V â²
+
+0 â¤ Î´ â¤
+
+min
+xâ{a1,b1},yâ{a2,b2}
+
+{ââ²
+
+1(x)ââ²
+
+2(y)}
+
+We can build a Kripke structure hCOS(Op), âÎ´i, where âÎ´ is deï¬ned in the same
+way as ââ but replacing ââ²
+2(x2) by Ï(x1, x2), which in turn is deï¬ned in
+the following way:
+
+1(x1)ââ²
+
+Ï(x1, x2) = ï£±
+ï£²
+
+ââ²
+1(x1)ââ²
+1(x1)ââ²
+ââ²
+1(x1)ââ²
+ââ²
+
+2(x2) â Î´
+2(x2) + Î´
+2(x2)
+
+if hx1, x2i â {ha1, a2i, hb1, b2i}
+if hx1, x2i â {ha1, b2i, hb1, a2i}
+otherwise
+
+ï£³
+
+It is easy to verify that it is a compatible Kripke structure. Since Î´ can be
+arbitrarily chosen within a non-point interval, we can obtain an inï¬nite number
+of distinct compatible Kripke structures.
+
+Proof: (of Theorem 8.12)
+(â) Suppose PS = lfp(SPP,OS ) a rational probabilistic status set of PP on
+
+43
+
+OS. Then, PS is feasible by deï¬nition of rational probabilistic status set. By
+Lemma 5.18, PS is a pre-ï¬xpoint of SPP,OS . Since SPP,OS is monotone, it
+has by the Knaster-Tarski Theorem a least pre-ï¬xpoint, which coincides with
+lfp(SPP,OS ) (see (Apt 1990; Lloyd 1987)). Thus, lfp(SPP,OS ) â PS. Clearly,
+lfp(SPP,OS ) satisï¬es (PS1) and (PS3); moreover, lfp(SPP,OS ) satisï¬es (PS2),
+as PS satisï¬es (PS2) and this property is hereditary. By the deï¬nition of
+rational probabilistic status set, it follows lfp(SPP,OS ) = PS.
+
+(â) Suppose PS = lfp(SPP,OS ) is a feasible probabilistic status set. Since
+every probabilistic status set PSâ² which satisï¬es (PS1)â(PS3) is a pre-ï¬xpoint
+of SPP,OS and lfp(SPP,OS ) is the least preï¬x point, PSâ² â PS implies PS =
+PSâ². It follows that PS is rational.
+
+Notice that in case of positive programs, lfp(SPP,OS ) always satisï¬es the
+conditions (PS1) and (PS3) of a feasible probabilistic status set (i.e., all closure
+conditions), and thus is a rational probabilistic status set if it satisï¬es (PS2) and
+(PS4), i.e., the consistency criteria. The uniqueness of the rational probabilistic
+status set is immediate from the previous theorem.
+
+44
+
+

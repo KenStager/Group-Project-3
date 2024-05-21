@@ -1,0 +1,3094 @@
+Maximum-Entropy Multi-Agent Dynamic Games:
+Forward and Inverse Solutions
+Negar Mehr1, Mingyu Wang2, and Mac Schwager3
+
+1
+
+1
+2
+0
+2
+
+t
+c
+O
+3
+
+]
+
+C
+O
+.
+h
+t
+a
+m
+
+[
+
+1
+v
+7
+2
+0
+1
+0
+.
+0
+1
+1
+2
+:
+v
+i
+X
+r
+a
+
+AbstractâIn this paper, we study the problem of multiple
+stochastic agents interacting in a dynamic game scenario with
+continuous state and action spaces. We deï¬ne a new notion
+of stochastic Nash equilibrium for boundedly rational agents,
+which we call the Entropic Cost Equilibrium (ECE). We show
+that ECE is a natural extension to multiple agents of Maximum
+Entropy optimality for single agents. We solve both the âforwardâ
+and âinverseâ problems for the multi-agent ECE game. For the
+forward problem, we provide a Riccati algorithm to compute
+closed-form ECE feedback policies for the agents, which are
+exact in the Linear-Quadratic-Gaussian case. We give an iterative
+variant to ï¬nd locally ECE feedback policies for the nonlinear
+case. For the inverse problem, we present an algorithm to infer
+the cost functions of the multiple interacting agents given noisy,
+boundedly rational
+input and state trajectory examples from
+agents acting in an ECE. The effectiveness of our algorithms
+is demonstrated in a simulated multi-agent collision avoidance
+scenario, and with data from the INTERACTION trafï¬c dataset.
+In both cases, we show that, by taking into account the agentsâ
+game theoretic interactions using our algorithm, a more accurate
+model of agentsâ costs can be learned, compared with standard
+inverse optimal control methods.
+
+I. INTRODUCTION
+
+In this article, we seek to learn the cost functions of a
+group of interacting dynamic agents from a set of trajectory
+demonstrations of those interactions. We call this problem an
+Inverse Dynamic Game (IDG), analogously to Inverse Rein-
+forcement Learning (IRL) and Inverse Optimal Control (IOC)
+in the single-agent setting. To solve the inverse dynamic game,
+we ï¬rst formulate a new notion of stochastic Nash equilibrium
+to describe the boundedly rational equilibrium condition found
+in natural human demonstrations. We call this equilibrium
+an Entropic Cost Equilibrium (ECE). We then present an
+algorithm to ï¬nd feedback policies for agents engaged in
+an ECE game, that is, we solve the âforwardâ problem. We
+then use this forward solution within an algorithm to infer
+the cost functions of the multiple agents given trajectory
+demonstrations from those agents, i.e., we solve the âinverseâ
+problem.
+
+For many robotic applications, it is not trivial to design
+a cost function that mimics an expertâs behavior, such as a
+human driverâs actions. In such applications, a miss-speciï¬ed
+
+This work was supported in part by ONR grant N00014-18-1-2830. Toyota
+
+Research Institute provided funds to support this work.
+
+1Negar Mehr is with the Aerospace Engineering department, University of
+
+Illinois Urbana-Champaign, Urbana, IL. negar@illinois.edu
+
+2Mingyu Wang is with the Department of Mechanical Engineering, Stan-
+
+ford University, Stanford, CA. mingyuw@stanford.edu
+
+3Mac Schwager is with Department of Aeronautics and Astronautics,
+
+Stanford University, Stanford, CA. schwager@stanford.edu
+
+cost function may lead to undesired behaviors, and design-
+ing the correct cost function is notoriously challenging. A
+common practice is to infer the cost function from expertsâ
+demonstrations through the framework of Inverse Reinforce-
+ment Learning (IRL), also sometimes called Inverse Optimal
+Control (IOC). An IRL algorithm infers the cost function
+by observing an agentâs behavior assuming that the agent
+behaves approximately optimally. However, real-world robotic
+applications, such as autonomous driving, usually involve mul-
+tiple interactive agents whose behaviors are coupled through
+the feedback interactions between the agents. Consequently,
+when learning from interactive agentsâ behaviors, we cannot
+treat them as acting in isolation. Instead, we need to take
+the game theoretic coupling between agentâs
+into account
+behaviors. In this paper, we develop inverse methods for
+such interactive multi-agent settings, where we learn each
+agentâs cost function while taking into account their feedback
+interactions. We call this an inverse dynamic game (IDG).
+
+One of the main challenges in solving IDGs is that agents no
+longer optimize their own cost functions in isolation. Rather,
+they reach a notion of game theoretic equilibrium. Hence,
+agentsâ cost functions must be learned such that the learned
+cost functions rationalize the set of demonstrations as game
+theoretic equilibrium strategies, rather than optimal strategies.
+Moreover, when learning from experts such as humans, we
+need to account for the humansâ noisy behavior and bounded
+rationality. Reaching exact equilibria requires perfect rational-
+ity of agents; however, in decision-making settings, humansâ
+rationality is normally bounded due to the limited information
+they have, their cognitive limitations and the ï¬nite amount of
+time available for decision making. Thus, we need to account
+for the noise in humansâ decision making in a multi-agent
+setting.
+
+In this paper, we address these challenges by deï¬ning a
+notion of ânoisyâ equilibrium for capturing the outcome of
+interactions between multiple boundedly rational agents. We
+call this equilibrium an Entropic Cost Equilibrium (ECE) and
+show its connections to the maximum entropy framework
+common in IRL [1]. We prove that the ECE concept is indeed
+an extension of maximum-entropy optimality to multi-agent
+settings. Once we formalize the notion of Entropic Cost Equi-
+librium, to assess the quality of a set of learned agentsâ cost
+functions, one must ï¬nd the ECE policies under the learned
+costs and compare them to the set of agentsâ demonstrations.
+To enable such comparisons, we develop an algorithm to
+ï¬nd ECE policies for a given set of agentsâ cost functions.
+We prove how ECE policies can be obtained in closed-
+form for a special class of games, namely linear-quadratic-
+
+ 
+ 
+ 
+ 
+ 
+ 
+Gaussian games, using a Riccati solution reminiscent of the
+well-known Linear-Quadratic Regulator (LQR) and Linear-
+Quadratic Game (LQGame) solutions. Leveraging this result,
+we provide an iterative algorithm for approximating ECE
+policies in general multi-agent games with general nonlinear
+dynamics and costs.
+
+Knowing how to approximate ECE policies for a set of
+given costs, we propose a multi-agent inverse dynamic game
+algorithm for learning agentsâ costs. Similar to the common
+practice in IRL [1], [2], [3], [4], we assume that each agentâs
+cost function is parameterized as a linear combination of a set
+of known features. We then propose an iterative algorithm for
+learning the weights of the features in each agentâs cost func-
+tion such that the feature expectations under the learned costs
+match the empirical feature average from the demonstrations.
+
+To demonstrate the effectiveness of our algorithm, we verify
+our algorithm using both synthetic datasets and real-world
+trafï¬c data. First, we consider a goal-reaching and collision-
+avoidance scenario involving two and three agents. We show
+that by taking into account the agentsâ feedback interactions, a
+more accurate model of agentsâ costs can be learned. We then
+validate the performance of our algorithm on the INTERA-
+CION dataset [5] which involves highly interactive multi-agent
+driving scenarios collected from different countries. We again
+demonstrate that by taking into account the agentsâ interactions
+through our inverse dynamic game framework, more accurate
+predictions of agentsâ behavior can be made. We show that
+the prediction accuracy of our framework is very close to
+the intelligent driverâs model (IDM) [6], which is a highly
+accurate human-designed driving model used for modeling
+human driversâ leader-following behavior.
+
+We summarize our contributions as follows:
+
+â¢ We deï¬ne and formalize the notion of Entropic Cost
+Equilibrium (ECE) for capturing the interaction of noisy
+agents.
+
+â¢ We develop an algorithm for computing approximate
+ECE policies for general nonlinear multi-agent systems
+(the forward problem).
+
+â¢ We propose an iterative algorithm for learning the agentsâ
+costs from a set of interactive demonstrations (the inverse
+problem).
+
+â¢ We validate our proposed inverse dynamic game algo-
+rithm in both synthetic and real-world driving scenarios.
+
+The organization of this paper is as follows. Section II
+provides an overview of the related work. In Section III, we
+introduce our notation and discuss the preliminaries. In IV, we
+deï¬ne the notion of Entropic Cost Equilibrium and discuss its
+connection to the maximum-entropy framework. We discuss
+ï¬nding ECE policies for general nonlinear multi-agent systems
+in Section V. Section VI provides the description of our inverse
+dynamic game algorithm. Simulations and experiments with
+the analysis of the resulting performance are incorporated in
+Section VII. Finally, we conclude the paper and discuss future
+directions in Section VIII.
+
+2
+
+II. RELATED WORK
+
+A. Single-Agent Inverse Reinforcement Learning
+
+Inferring and learning cost functions from system trajec-
+tories has been widely studied for single-agent systems. The
+problem of inferring an agentâs cost function was ï¬rst studied
+by Kalman in the context of inverse optimal control for linear
+quadratic systems with a linear control
+law [7]. Learning
+an agentâs cost was later studied in [8] and [9] where the
+assumption was that
+the demonstrations satisfy optimality
+conditions. This assumption was relaxed to take into account
+the bounded rationality and humanâs noisy demonstrations in
+the framework of maximum entropy inverse reinforcement
+learning in [1].
+
+Despite the success of these IRL methods,
+
+they were
+mostly developed for discrete state and action spaces. In [3],
+maximum-entropy cost inference was studied for systems with
+continuous state and action spaces. The common assumption
+in these works is that the agentâs cost function is paramter-
+ized as a weighted sum of features. This assumption was
+further relaxed in [10], where the underlying cost function
+was learned as a neural network in a maximum-entropy
+framework. In [11], a framework was proposed for directly
+extracting a policy from an agentâs demonstrations, as if it
+were obtained by reinforcement learning following maximum
+entropy inverse reinforcement learning. Inferring an agentâs
+cost function was also studied as a bilevel optimization where,
+in the outer loop, the cost parameters were found such that
+the estimation error of system trajectories or the likelihood
+of demonstrations was optimized [12], [13]. Recent works
+have proposed learning cost parameters that minimize the
+the
+residual of KarushâKuhnâTucker (KKT) conditions at
+demonstrations [14], [15], [16]. Our work draws inspiration
+from the Maximum Entropy IRL framework where the noisy
+behavior of the agent is captured.
+
+B. Multi-Agent Inverse Reinforcement Learning
+
+Extension of single-agent IRL algorithms to the multi-
+agent settings have been studied in the past. Multi-agent IRL
+was studied for discrete state and action spaces in [17]. The
+inverse equilibrium problem was considered in [18] where the
+maximum entropy principle and the notion of regret were
+employed for solving the inverse equilibrium problem. No
+systems dynamics were considered in [18], and the inverse
+equilibrium problem was considered in matrix games. Inverse
+reinforcement learning was considered in [19] for two-person
+zero-sum stochastic games with discrete state and action
+spaces where the cost learning problem was formulated as
+an optimization problem. This framework was later extended
+to general-sum games with discrete state and action spaces
+in [20]. In [21], a new framework for multi-agent inverse
+reinforcement learning utilizing adversarial machine learning
+was proposed for high-dimensional state and action spaces
+with unknown dynamics. In [22], generative adversarial imi-
+tation learning in the single agent case [11] was extended to
+the multi-agent setting. The current work is distinct in that it
+focuses on multi-agent IRL in general-sum games with known
+system dynamics and continuous state and action spaces.
+
+Multi-agent IRL has been studied as an estimation problem
+too. In [23], a particle ï¬ltering algorithm was utilized for
+online estimation of human behavior parameters where the
+critical role of accurate human motion prediction was demon-
+strated. In [24], a ï¬ltering technique based on an unscented
+Kalman ï¬lter was developed for online estimation of cost pa-
+rameters in multi-agent settings. In [25], inverse reinforcement
+learning was considered for the class of linear quadratic games
+where the equilibrium strategies of all but one agent were
+known. This assumption simpliï¬ed the problem and reduced
+it to effectively an instance of the single-agent cost inference
+problem. [26] extended this by proposing to minimize the
+residuals of the ï¬rst-order necessary conditions for open-
+loop Nash equilibria. In [27], residual errors of optimality
+conditions for open-loop Nash equilibria were minimized in
+a maximum-entropy framework. In [28], state and input con-
+straints are also considered in a maximum-entropy residual-
+minimization framework. In [29], agentsâ cost functions were
+estimated under partial observability. In this work, we focus
+on cost learning for general nonlinear games, and ï¬nd cost
+parameters which rationalize interactions under feedback in-
+formation structure. We further capture the noisy behavior of
+humans with our Entropic Cost Equilibrium concept. In [27],
+maximum-entropy MA-IRL was considered as a maximum
+likelihood problem. However, when computing the probability
+distribution over agentsâ trajectories, the coupling between the
+agents was not considered. Moreover, in this work, it was
+assumed that agentsâ feedback policies were known a-prioi
+which is a restrictive assumption. In this paper, we show how
+the maximum-entropy framework can be formalized in a multi-
+agent game theoretic setting to account for agentsâ feedback
+interactions. We further provide an algorithm which does not
+require knowledge of the agentsâ policies and verify it on a
+real-world data set.
+
+III. PRELIMINARIES
+
+Consider N â¥ 1 agents interacting in an environment. We
+use [N ] = {1, Â· Â· Â· , N } to refer to the set of all agentsâ indices.
+Let st â S denote the vector of joint states of all agents at each
+time t, where the set S â Rn is the joint state space observed
+by all agents, and n is the dimension of the state space. Each
+agent i â [N ] decides on its action ai
+t â Ai at time step
+t, where Ai â Rmi
+is the action space of agent i, and mi
+is the dimension of the action space of agent i. Throughout
+this paper, we use bold letters to refer to the concatenation
+of variables for all agents. For a given time step t, we use
+at = (a1
+
+t ) to denote the
+
+t , Â· Â· Â· , aN
+
+vector of all agentsâ actions at
+
+time t. Following the
+conventional notation used in the game theory literature, we
+utilize the superscript âi to indicate all agents expect agent
+i. For example, aâi
+represents the vector of all agentsâ
+actions excluding the action of agent i at time t. We deï¬ne
+A = {Ai}N
+i=1 to denote the collection of the action spaces of
+all the agents.
+
+t
+
+We assume that agents choose their actions through a
+t(.|st)
+t|st) encodes the
+
+stochastic Markovian policy. For each agent i, we use Ïi
+to denote such a policy for agent i where Ïi
+
+t(ai
+
+3
+
+probability of agent i taking the action ai
+t at time t given that
+the system is in state st. Note that we are assuming that each
+agent selects its action independently i.e., Ïi
+t ) =
+Ïi
+t|st). For a ï¬nite horizon T , we use Ïi = {Ïi
+t(ai
+t=1 to
+refer to the agent iâs policy for the entire horizon T . Moreover,
+we use Ï = {Ïi}N
+i=1 to refer to the set of all agentsâ time-
+dependent policies. The discrete-time dynamics of the system
+are represented by state updates of the following form
+
+t|st, aâi
+t}T
+
+t(ai
+
+st+1 = f (t, st, at) + g(st)wt,
+s1 â¼ p1(s1), wt â¼ pw.
+
+(1)
+
+where p1 and pw are the distributions of the system initial
+state and system noise respectively. We assume that each agent
+i has a bounded per-stage cost function ci : S Ã A1 Â· Â· Â· Ã
+AN â R. We further let c = {ci}N
+i=1 represent the vector
+of all agentsâ per-stage costs. We assume that each agent
+i is seeking to minimize its own expected cumulative cost
+EÏ
+
+t=1 ci(st, at).
+
+(cid:80)T
+
+We model the agentsâ interaction as a dynamic game. We
+use the notation G = (S, A, f, g, c, T ) to refer to a game with
+a time horizon of length T between N agents whose action
+spaces and costs are deï¬ned via A and c on the state space
+S with the prespeciï¬ed dynamics (1).
+
+It is well known that the outcome of interaction between
+perfectly rational agents is best represented via Nash equilibria
+of the underlying game. Given a game G = (S, A, f, g, c, T ),
+a set of (mixed strategy) Nash equilibrium policies are deï¬ned
+through the following.
+
+Deï¬nition 1. Given a game G = (S, A, f, g, c, T ), a set of
+agentsâ policies Ïâ is a (mixed-strategy) Nash equilibrium if
+and only if for each agent i â [N ], we have
+
+E
+
+Ïiâ ,Ïâiâ
+
+T
+(cid:88)
+
+k=1
+
+ci(sk, ai
+
+k, aâi
+
+k ) â¤
+
+E
+
+Ïi,Ïâiâ
+
+T
+(cid:88)
+
+k=1
+
+ci(sk, ai
+
+k, aâi
+
+k ), âÏi.
+
+(2)
+
+Deï¬nition 1 implies that, at a Nash equilibrium, no agent will
+reduce its accumulated cost by unilaterally changing its policy
+from the equilibrium policy Ïiâ
+
+to another policy Ïi.
+
+Although Nash equilibrium is a powerful concept for model-
+ing the interaction of agents, achieving Nash euilibria requires
+perfect rationality of agents. Moreover, it is well known that
+computing Nash equilibria is in general intractable even in
+normal-form games [30]. Thus, when learning from a set of
+demonstrations that are collected from experts such as humans,
+assuming that humans have achieved a Nash equilibrium
+may be unreasonable. Not only are humans computationally
+bounded, but
+they also may act under noisy information,
+or produce actions that are different than what they intend,
+making them appear to act irrationally to some degree. This
+is known in game theory as bounded rationality.
+concept
+Instead of making the âbestâ choices, humans often make
+choices that are âsatisfactory on averageâ [31], [32]. In the
+next section, we generalize the notion of Nash equilibrium
+to capture the bounded rationality of experts such as humans
+during their interactions.
+
+IV. ENTROPIC COST EQUILIBRIUM
+
+In the seminal work of [33], [34], it was shown that to take
+into account the bounded-rationality of humans, their interac-
+tion can be modeled via the notion of quantal response equilib-
+rium in normal form and extended games. It was demonstrated
+that the quantal response equilibrium can successfully model
+humansâ choices in a set of lab experiments, while the pre-
+dictions made by the Nash equilibrium deviated largely from
+the lab experiments. At quantal response equilibrium, every
+agent maintains a probability distribution over its actions. In
+fact, in quantal response equilibrium, the noisy behavior of
+humans is captured, where the probability of an action taken
+by a human is related to the cost associated to that action
+for the human. In [35], a continuous version of the notion
+of quantal response equilibrium, called logit equilibrium, was
+developed for repeated continuous games from the perspective
+of evolutionary game theory. In this setup, at logit equilibrium,
+every agent computes its expected cost with respect to the
+probability distribution over actions of all agents. Each agent
+takes actions that are exponentially proportional to the negative
+of this expectation. In the following, we extend this notion of
+logit equilibrium to dynamic games with continuous state and
+action spaces. We use the multi-agent extension of Q functions
+and prove certain properties of this notion of equilibrium.
+
+Given a game G = (S, A, f, g, c, T ), at every time step
+t < T , for each agent i â [N ], we deï¬ne the quality of a
+state st and a vector of agentsâ actions at under a given set
+of agentsâ policies Ï via the following
+t,Ï(st, at) = ci(st, at)+
+
+Qi
+
+Est+1:T ,Ï
+
+T
+(cid:88)
+
+k=t+1
+
+(cid:2)ci(sk, ak)|st, at
+
+(cid:3) .
+
+(3)
+
+For the ï¬nal time step T , the cost associated with a state
+
+sT and a vector of actions aT for an agent i is
+
+Qi
+
+T,Ï(sT , aT ) = ci(sT , aT ).
+
+(4)
+
+Equations (3) and (4) are the extensions of the deï¬nition
+of the Q function to the multi-agent game theoretic setting.
+Following [35], for each agent i â [N ] and every time step
+t â¤ T , we deï¬ne
+
+(ECE) if and only if for every agent i â [N ] and every action
+ai
+t, the following holds at every time step t â¤ T :
+
+4
+
+â
+
+Ïi
+t
+
+(ai
+
+t|st) =
+
+eâ Â¯Qi
+(cid:82) eâ Â¯Qi
+
+t,Ïâ (st,ai
+t)
+
+t,Ïâ (st,Ëai
+
+t)dËai
+t
+
+.
+
+(6)
+
+Ïâ (st, ai
+
+Note that (6) must hold for all agents. An equilibrium policy
+Ïâ is indeed the ï¬xed point of (6), and Â¯Qi
+t) depends on
+the policy of all agents. It is important to note that in entropic
+cost equilibrium (ECE), at every time step t,
+the agentsâ
+actions ai
+t are independent. No agent needs to know the action
+choice of any other agent to choose its own action. However,
+the probability of taking an action is implicitly dependent on
+the policies of other agents Ïâiâ
+through the expectation with
+respect to agentsâ policies in Â¯Qi
+t). Therefore, although
+the agentsâ instantanous actions are independent, their policies,
+i.e. the probability distribution over their actions, are related
+in ECE through (6), and the ECE policies Ïâ are indeed the
+ï¬xed points of (6) for all agents. This is in contrast to the
+deï¬nition of equilibrium in [21] where a stochastic version
+of correlated equilibrium was developed, and the actions were
+assumed to be correlated.
+
+Ïâ (st, ai
+
+We would like to highlight the connection between (6)
+and the maximum entropy framework. If there exists only
+one single agent in the environment, (6) reverts to the well-
+known maximum entropy formulation, which is widely used
+in the development of both reinforcement learning and inverse
+reinforcement learning algorithms [3], [36], [37], [38], [39].
+If there is only one agent, the probability of taking an action
+at given a state st is proportional to the exponential of the
+negative accumulated cost from that state (st, at).
+
+Now that we have deï¬ned ECE as our equilibrium notion for
+capturing humansâ noisy interactions, we will prove a property
+of ECE which demonstrates its applicability and relevance
+to modeling the interaction of multiple agents with bounded
+rationality.
+
+Theorem 1. For a game G = (S, A, f, g, c, T ), a set of
+agentsâ policies Ïâ = {Ïiâ}N
+i=1 is an ECE if and only if Ïâ is
+a (mixed-strategy) feedback Nash equilibrium for the maximum
+entropy game ËG = (S, A, f, g, Ëc, T ) where Ëc = {Ëci}N
+i=1 is
+deï¬ned as
+
+Â¯Qi
+
+t,Ï(st, ai
+
+t) = Eaâiâ¼ÏâiQi
+
+t,Ï(st, at).
+
+(5)
+
+Ëci(st, at) = ci(st, at) â H(Ïi(Â·|st)),
+
+(7)
+
+In (5), the expectation of the Q function is computed with
+respect to the actions of all the other agents aâi.
+
+Note that Â¯Qi
+
+Ï(st, ai
+
+Ï(st, ai
+
+t) depends only on the action of agent
+i and the state, not the actions of the other agents. In fact,
+Â¯Qi
+t) determines the quality of a pair of the system state
+and an agentâs action given the set of other agentsâ policies
+Ïâi. Ideally, if agents were perfectly rational, given knowl-
+edge of the other agentsâ policies, at every time step, each
+agent would have taken actions that minimize Â¯Qi
+t) at
+equilibrium. However, when agents are boundedly rational, we
+propose that agentsâ noisy behavior can be modeled through
+the following notion of equilibrium.
+
+Ï(st, ai
+
+and H(Ïi
+
+t(Â·|st)) is the entropy of policy Ïi(Â·|st).
+
+Proof. First, we show that if Ïâ is a feedback Nash equilib-
+rium for the game ËG, then, Ïâ is an ECE for the game G. Let
+Ïâ be a feedback Nash equilibrium of game ËG. Fix an agent
+i â [N ] and the policy of all the other agents Ïâiâ
+. Then, at
+Nash equilibrium of game ËG, the agentâs policy Ïiâ
+optimizes
+the following
+
+E
+
+min
+Ïi
+
+T
+(cid:88)
+
+(cid:16)
+
+k=1
+
+ci(sk, ai
+
+k, aâiâ
+
+k
+
+) â H(Ïi
+
+k(Â·|sk))
+
+(cid:17)
+
+,
+
+(8)
+
+Deï¬nition 2. For a given game G = (S, A, f, g, c, T ), a set of
+agentsâ policies Ïâ = {Ïiâ}N
+i=1 is an entropic cost equilibrium
+
+where the expectation is with respect to aâiâ
+k â¼ Ïi
+ai
+
+, and
+k. We can solve the above for ï¬nding Nash equilibrim
+
+k â¼ Ïâiâ
+
+k
+
+policies Ïiâ
+ï¬nal time step T , for each state sT , we have
+
+using dynamic programming. Starting from the
+
+Thus, similar to minimizing (13), to minimize (19), the equi-
+librium policy for agent i at time step T â 1 is
+
+5
+
+(cid:16)
+
+E
+
+min
+Ïi
+T
+
+ci(sT , ai
+
+T , aâiâ
+
+T ) â H(Ïi
+
+T (Â·|sT ))
+
+(cid:17)
+
+,
+
+(9)
+
+Ïiâ
+T â1(ai
+
+T â1|sT â1) =
+
+eâ Â¯Qi
+
+T â1(sT â1,ai
+eV i
+
+T â1(sT â1)
+
+T â1)
+
+,
+
+(20)
+
+where the cost-to-go V i
+
+T â1(sT â1) is deï¬ned as
+
+(cid:17)
+
+.
+
+(10)
+
+V i
+T â1(sT â1) = log
+
+(cid:90)
+
+eâ Â¯Qi
+
+T â1(sT â1,Ëai
+
+T â1)dËai
+
+T â1.
+
+where the expectation is with respect to aâiâ
+T â¼ Ïi
+ai
+
+T â¼ Ïâiâ
+
+T , and
+
+T . (9) can be rewritten as
+T , aâiâ
+
+(cid:2)ci(sT , ai
+
+E
+
+(cid:16)
+
+Ïâiâ
+
+Ïi
+T
+
+E
+
+T
+
+min
+Ïi
+T
+
+T )(cid:3) â H(Ïi
+
+T (Â·|sT ))
+
+Deï¬ne the following
+
+Â¯ci(sT , ai
+
+T ) = E
+
+aâiâ
+T â¼Ïâiâ
+
+T
+
+(cid:16)
+
+ci(sT , ai
+
+T , aâiâ
+T )
+
+(cid:17)
+
+.
+
+Then, (10) can be rewritten as minimizing the following:
+
+E
+
+Ïi
+T
+
+E
+
+Ïi
+T
+
+(cid:2)Â¯ci(sT , ai
+(cid:2)Â¯ci(sT , ai
+
+T ) â H(Ïi
+T ) + log(Ïi
+
+T (Â·|sT ))(cid:3) =
+T (Â·|sT ))(cid:3)
+
+(11)
+
+(12)
+
+(13)
+
+Now, following the results in [40], (13) can be rewritten as
+
+(cid:16)
+
+Ï(.|st)(cid:13)
+(cid:13)
+
+DKL
+
+1
+exp (cid:0)V i
+
+T (sT )(cid:1) exp (cid:0)âÂ¯ci(sT , ai
+
+T )(cid:1)(cid:17)
+
++ V i
+
+T (sT ),
+
+(14)
+
+(15)
+
+where DKL denotes the KL divergence, and V i
+
+T (sT ) is
+
+V i
+T (sT ) = log
+
+(cid:90)
+
+eâÂ¯ci(sT ,Ëai
+
+T )dËai
+
+T .
+
+T (sT )(cid:1) is a constant
+Now, to minimize (14), note that exp (cid:0)V i
+for a given state sT . Since the KL divergence is minimum
+when the two arguements are the same, the policy which
+minimizes (14) is
+
+Ïiâ
+T (ai
+
+T |sT ) =
+
+eâÂ¯ci(sT ,ai
+T )
+eV i
+T (sT )
+
+.
+
+(16)
+
+For every state sT , V i(sT ) is indeed the cost-to-go (or value
+function) of agent i at time T . We can use using dynamic
+programming to propagate this cost-to-go backwards in time
+and ï¬nd the equilibrium policy for agent i at time T â 1. At
+time t â 1, we need to solve for
+
+E(cid:2)ci(sT â1, ai
+
+T â1, aâiâ
+
+T â1)
+
+min
+Ïi
+T â1
+
+â H(Ïi
+
+T â1(Â·|sT â1)) + EsT (V i
+
+where the ï¬rst expectation is with respect to ai
+and aâiâ
+in (17) as
+
+T â1
+T â1. Again, we can separate the expectations
+
+T â1 â¼ Ïâiâ
+
+E
+
+Ïi
+
+T â1
+
+(cid:104)
+
+(cid:16)
+
+E
+
+Ïâiâ
+
+T â1
+
+ci(sT â1, ai
+
+T â1, aâiâ
+
+T â1) + EsT V i
+
+T (sT )
+
+min
+Ïi
+T â1
+
+âH(Ïi
+
+T â1(Â·|sT â1))
+
+(cid:17)
+
+.
+
+Then, using (5) we see that (18) can be rewritten as
+
+E
+
+Ïi
+
+T â1
+
+min
+Ïi
+T â1
+
+(cid:104) Â¯Qi
+
+T â1(sT â1, ai
+
+T â1) â H(Ïi
+
+T â1(Â·|sT â1))
+
+(18)
+
+(cid:105)
+
+. (19)
+
+(17)
+
+T (sT ))(cid:3),
+T â1 â¼ Ïi
+
+Repeating this procedure, we can solve for the mixed-
+strategy Nash equilibrium policies backwards in time. Thus,
+we show via induction that mixed-strategy Nash equilibrium
+policies of the game ËG = (S, A, f, g, Ëc, T ) are in fact the ECE
+policies of the original game G = (S, A, f, g, c, T ). To prove
+the reverse, i.e., every ECE of the game G is a mixed strategy
+Nash equilibrium for ËG = (S, A, f, g, Ëc, T ), we follow the
+same reasoning. Starting from the ï¬nal time step, one can
+show that ECE policies optimize the cost-to-go in the game
+ËG, and use induction to prove that ECE policies of G are
+indeed Nash equilibria of ËG.
+
+Theorem 1 connects ECE to the Nash equilibria of a
+game between agents who aim to maximize the entropy
+of their policy while minimizing their accumulated cost. In
+other words, ECE is in fact an extension of the maximum
+entropy-framework in the single-agent setting to the setting
+of multiple interactive agents. It is well known that when
+it comes to learning from demonstrations in the single-agent
+scenarios, to capture the bounded rationality and noisiness of
+the demonstrator, the demonstrator is best modeled via the
+maximum-entropy framework [1], [2]. Theorem 1 extends this
+notion to multi-agent games. We will use Theorem 1 in the
+remainder of this paper for computing the ECE policies in
+general dynamic games.
+Remark 1. The notion of ECE can incorporate a temper-
+for each agent such that p(ai|st) â
+ature parameter Î³i
+exp
+lead to an additional
+weight Î³i on the entropy of each agentâs policy in (7).
+The temperature weight Î³i captures each agentâs rationality.
+The higher Î³i
+the noisier the agent acts. If for each
+agent i â [N ], Î³i â â, then in the limit, all agents act
+completely randomly with a uniform probability distribution
+over actions. On the other hand, when Î³i â 0 for all agents,
+the Nash equilibrium policies are recovered. Therefore, the
+temperature coefï¬cient Î³i reï¬ects the rationality of each agent.
+For simplicity, in this paper, we assume that Î³i = 1 for all
+agents.
+
+. This in turn will
+
+Ï(st,ai
+t)
+Î³i
+
+(cid:16) â Â¯Qi
+
+is,
+
+(cid:17)
+
+(cid:105)
+
+V. SOLVING FOR ECE POLICIES
+
+So far, we have deï¬ned ECE for capturing the interaction
+of boundedly rational and noisy agents. In this section, we
+give an algorithm for computing ECE policies for a given
+game G = (S, A, f, g, c, T ) using Theorem 1. In the next
+section we use this âforwardâ solution to learn cost function
+parameters given trajectory demonstrations,
+i.e., we solve
+the inverse dynamic game. To solve the maximum entropy
+dynamic game, ï¬rst, we prove that ECE policies can be
+
+computed in closed-form for the class of linear quadratic
+Gaussian games using a Riccati solution similar to the classic
+LQR [7] and LQGames [41] solutions. Then, we extend this
+algorithm to general nonlinear dynamic games through iter-
+ative linear-quadratic approximations, similar to Differential
+Dynamic Programming [42], iLQR [43], and iLQGames [44].
+
+A. Maximum Entropy Linear Quadratic Gaussian Games
+
+Consider a class of games G = (S, A, f, g, c, T ) where the
+system dynamics are linear, and the system noise is normally
+distributed, i.e., the state update (1) is of the following form
+
+st+1 = Ast +
+
+(cid:88)
+
+jâ[N ]
+
+Bjaj
+
+t + wt,
+
+wt â¼ N (0, I),
+
+(21)
+
+where A â RnÃn, and Bj â Rmj Ãmj
+are known time-
+invariant matrices of appropriate dimensions, and wt is a zero-
+mean normally distributed random variable with covariance
+matrix being identity. Note that
+the dynamics
+matrices can be time-variant, and the process noise can be
+any normal distribution. Here, for the ease of description, we
+assume system dynamics are linear time-invariant subject to
+process noise with covariance matrix being identity. Moreover,
+consider the class of cost functions where every agent i â [N ]
+minimizes a convex quadratic cost function for every time step
+t â¤ T :
+
+in general,
+
+6
+
+Theorem 2. Consider a linear quadratic Gaussian game
+G = (S, A, f, g, c, T ). For every agent i â [N ], at every
+time step t < T , the ECE policy Ïiâ
+is a normal distribution
+t
+Ïiâ
+t and the covariance Î£i
+t) where the mean Âµi
+t, Î£i
+t â¼ N (Âµi
+t
+are computed by
+
+t st â Î±i
+t = âP i
+Âµi
+t,
+t = (Rii + BiT
+Z i
+Î£i
+t and the vectors Î±i
+
+t+1Bi)â1.
+
+t satisfy the following sets
+
+(24)
+
+(25)
+
+The matrices P i
+of linear equations
+
+(cid:104)
+Rii + BiT
+
+t+1Bi(cid:105)
+Z i
+
+t + BiT
+P i
+
+Z i
+
+t+1
+
+(cid:88)
+
+BjP j
+
+t =
+
+jâ[N ],j(cid:54)=i
+
+BiT
+
+Z i
+
+t+1A,
+
+(cid:104)
+Rii + BiT
+
+t+1Bi(cid:105)
+Z i
+
+t + BiT
+Î±i
+
+Z i
+
+t+1
+
+(cid:88)
+
+BjÎ±j
+
+t =
+
+jâ[N ],j(cid:54)=i
+
+BiT
+
+Î¾i
+t+1,
+
+(26)
+
+(27)
+
+where Z i
+
+t , Î¾i
+
+t are recursively computed from the following
+
+Z i
+
+t = F T
+
+t Z i
+
+t+1Ft +
+
+(cid:88)
+
+T
+
+P j
+t
+
+RijP j
+
+t + Qi
+
+jâ[N ]
+
+t = F T
+Î¾i
+
+t (Î¾i
+
+t+1 + Z i
+
+t+1Î²t) +
+
+(cid:88)
+
+T
+
+P j
+t
+
+RijÎ±j
+t ,
+
+jâ[N ]
+
+Ft = At â
+
+(cid:88)
+
+BjP j
+t
+
+Î²t = â
+
+jâ[N ]
+
+(cid:88)
+
+BjÎ±j
+t .
+
+jâ[N ]
+
+(28)
+
+(29)
+
+(30)
+
+(31)
+
+(32)
+
+ci(st, a1
+
+t , Â· Â· Â· , aN
+
+t ) =
+
+1
+2
+
+(cid:0)sT
+
+t Qist + liT
+(cid:88)
+aj
+t
+
+T
+
+Rijaj
+t
+
+st+
+(cid:1),
+
+where
+
+(22)
+
+jâ[N ]
+
+where Qi â RnÃn is a positive semi-deï¬nite matrix, and li
+is a vector capturing the afï¬ne penalty of agent i for the
+system state. Moreover for every agent j â [N ], j (cid:54)= i,
+Rij â Rmj Ãmj
+is a positive semi-deï¬nite matrix while Rii is
+a positive deï¬nite matrix. Equations (21) and (22) deï¬ne the
+class of linear quadratic games where the dynamics are linear
+and the stage costs are quadratic in the states and actions.
+
+Deï¬nition 3. A given game G = (S, A, f, g, c, T ) is a linear
+quadratic Gaussian game if its dynamics are of the form (21),
+and further, for each agent i â [N ], the cost function ci is of
+the form (22).
+
+Note that for a linear quadratic Gaussian game G, in the
+resulting maximum entropy game ËG, every agent i â [N ]
+minimizes the following accumulated cost when we ï¬x the
+policy of all the other agents to be Ïâi,
+
+EÏiEÏâi
+
+min
+Ïi
+
+T
+(cid:88)
+
+k=1
+
+1
+2
+
+(cid:32)
+
+k Qisk + liT
+sT
+
+sk+
+
+(cid:88)
+
+T
+
+aj
+k
+
+Rijaj
+k
+
+jâ[N ]
+
+(cid:33)
+
+â
+
+T
+(cid:88)
+
+k=1
+
+H(Ïi(.|sk).
+
+Now that we have deï¬ned the class of linear-quadratic
+games, using (23) and Theorem 1, we will prove how ECE
+policies can be obtained in closed form for this class of games.
+
+The terminal conditions for Equations (28) and (29) are
+
+Î¾i
+T = li, ZT = Qi.
+
+Proof. The proof can be found in Appendix (A).
+
+Note that Theorem 2 is in fact an extension of Maxi-
+mum Entropy LQR derived in [2] to the multi-agent setting.
+Equations (26), (27), (28), (29) are the extensions of the
+Riccati backward recursion to the multi-agent setting. Indeed,
+these equations are similar to the backward recursions for
+deterministic LQ games derived in [41]. Theorem 2 suggests
+that for Maximum Entropy linear quadratic games, the optimal
+policy is obtained by a normal distribution whose mean is
+found by solving LQ games. Then, the variance of the normal
+policies at every time step is found via (25).
+
+(23)
+
+B. General Nonlinear Games
+
+Theorem 2 provides a closed-loop expression for computing
+ECE policies of linear quadratic Gaussian games over a ï¬nite
+horizon of time T . Inspired by [44], [45], we will leverage this
+result for approximating the ECE trajectories in general games
+with nonlinear dynamics and non-quadratic cost functions. We
+
+assume that each agent i can minimize a possibly nonlinear
+cost function of the form
+
+ci(st, at) = vi
+
+s,t(st) +
+
+(cid:88)
+
+ajT
+t Rijaj
+t ,
+
+(33)
+
+jâ[N ]
+
+where vi
+s,t(st) is a nonlinear state cost. Note that in general,
+we could have non-quadratic nonlinear costs on the actions as
+well; however, since (33) captures a wide range of applica-
+tions, we consider cost functions of the form (33).
+
+To approximate ECE policies, we propose an iterative
+algorithm where we start by a nominal trajectory. Then, we
+linearize the dynamics, ï¬nd a quadratic approximation of
+the cost function for every agent, and solve the resulting
+Maximum Entropy linear quadratic Gaussian game. We then
+update our reference trajectory and repeat this process until
+convergence (see Algorithm 1). Consequently, our algorithm
+shares a similar structure with DDP [42], [43] and iLQR
+methods [46]. More precisely, we start with a nominal se-
+quence of the gain matrices and offset vectors {P i
+t} for
+every time step t â T, and every agent i â [N ]. If such a
+nominal sequence of control matrices is not available, a trivial
+initialization is initializing all matrices to zeros. We choose
+the mean value found by (24) as our reference controller.
+Then, at every iteration, a sequence of states and actions
+Î· = {Â¯s, Â¯a1 = (Âµ1
+T )} is
+found by forward simulating the system dynamics using the
+nominal control inputs (which are chosen to be Âµi
+t for each
+agent i at time t). We then linearize the system dynamics (1)
+around this nominal trajectory to obtain
+
+T ), Â· Â· Â· , Â¯aN = (ÂµN
+
+1 , Â· Â· Â· , ÂµN
+
+1, Â· Â· Â· , Âµ1
+
+t , Î±i
+
+Î´st+1 â AtÎ´st +
+
+(cid:88)
+
+jâ[N ]
+
+Bj
+
+t Î´aj
+t ,
+
+(34)
+
+t â Â¯ai
+
+t = ai
+
+t = Daj
+
+where Î´st = st â Â¯st, Î´ai
+t, and At = Dsf (Â·) and
+Bj
+f (Â·) are the Jacobians of the system dynamics (1)
+with respect to the state st, and actions aj
+t , respectively. We
+further acquire a quadratic approximation of the cost function
+for each agent. For each agent i â [N ], we let
+
+t
+
+ci(Â¯st + Î´st, Â¯a + Î´a) â vi
+
+s,t(Â¯st) +
+
+1
+2
+
+Î´sT
+
+t H i
+
+t Î´st + liT
+
+t Î´st, (35)
+
+t = Dststvi
+
+denote such an approximation where H i
+s,t(Â·) and
+li
+t = Dstvi
+s,t(Â·) are the Hessian and the gradient of the cost
+function vi
+s,t(Â·) with respect to st. Note that our formulation
+only considers nonlinear costs on state variables, and the
+dependence on agentsâ actions is quadratic. For a more general
+case, where the cost function is nonlinear in control actions
+too, a similar approximation could be used to derive the
+quadratic terms and linear terms in ai
+the
+approximations At, Bj
+
+t. Note that all
+
+t are evaluated at Î·.
+
+t , H j
+
+t , lj
+
+For the linearized system dynamics (34) and quadratized
+cost (35), we reach a new approximated linear quadratic Gaus-
+sian game with new variable sequences Î´s, Î´a1, Â· Â· Â· , Î´aN .
+These approximations result in a new game that can be solved
+using Theorem 2. Once the approximated game is solved, we
+obtain a new sequence of mean control actions
+
+{Â¯ai
+
+t + Î´aiâ
+
+t , t = 0, Â· Â· Â· , T â 1},
+
+(36)
+
+7
+
+where Î´aiâ
+is the mean value of the action distribution found
+t
+by solving for the ECE policies of the approximated linear
+quadratic Gaussian game. A new Â¯st
+is attained from the
+forward simulation of the original system dynamics (1) using
+the newly obtained nominal control actions. We repeat the
+above process until convergence, i.e., the deviation of the
+new state trajectory from the state trajectory in the previous
+iteration lies within a desired tolerance. Note that
+in our
+iterative process, we always forward simulate the mean value
+of the distribution of agentsâ action. Once the mean trajectories
+converge, we sample ECE policies by sampling control actions
+from (24) and (25) computed around the converged mean
+trajectory.
+Remark 2. Applying ai
+t directly from (36) may lead to non-
+convergence since the resulting trajectory could deviate too
+much from the original non-linear system which we approxi-
+mated around Î·t. As in other iterative linear quadratic methods
+[47], [48], [44], we only take a small step in the proposed
+direction. At each iteration, rather than (36), we apply the
+following control input
+
+t â P i
+Â¯ai
+
+t Î´st â (cid:15)Î±i
+t,
+
+(37)
+
+where (cid:15) is the step size for improving our control strategy.
+Initially, we set (cid:15) = 1. Drawing inspiration from line search
+method in optimization problems, we decrease (cid:15) by half until
+the new trajectoryâs deviation from the nominal trajectory is
+within a threshold.
+
+Algorithm 1 Approximating ECE Trajectories
+
+1: Inputs
+2: system dynamics (1), agentsâ cost functions (33)
+3: Initialization
+4: initialize the control policy using P i
+
+t = 0, and Î±i
+
+t = 0,
+
+âi â [N ]
+
+5: forward simulation and obtain (Â¯s0, Â¯s1, Â· Â· Â· , Â¯sT ), Â¯ai,
+
+Â· Â· Â· , Â¯aN
+
+6: while not converged do
+7:
+8:
+9:
+10:
+
+linear approximation of (1)
+quadratic approximation of (33)
+solve the backward recursion with (24-32)
+forward simulation using Âµjâs and obtain the new
+
+trajectories
+11: end while
+12: return P i
+
+t , Î±i
+
+t, and Z i
+
+t+1
+
+VI. LEARNING AGENTSâ COSTS
+
+So far, we have discussed the concept of noisy equilib-
+rium, ECE, that we adopt and how to solve for approximate
+equilibrium policies under this model. Now, we are ready to
+discuss how to learn agentsâ cost functions ci from a set of
+interaction demonstrations from humans or other experts. The
+main intuition behind our algorithm is similar to the single-
+agent Maximum Entropy IRL [1]. The common assumption in
+single-agent IRL is that the agentâs cost function is parameter-
+ized as a linear combination of a set of features, and the weight
+
+of features is learned such that the expectation of the features
+under the learned cost function matches the empirical feature
+means under the demonstrations. This is achieved through
+an iterative algorithm where at every iteration, the difference
+between the feature expectations under the demonstrations and
+under the learned cost functions is utilized for updating the
+cost parameters.
+
+We extend such an iterative cost learning framework to the
+multi-agent game setting. We assume that agentsâ dynamics
+are known and each agentâs cost function ci(Â·) is parameterized
+as a weighted sum of features, i.e., for each agent i â [N ], we
+have
+
+ci(st, at) = wiT
+
+Ïi(st, at),
+
+(38)
+
+where wi is the vector of weight parameters for agent i and
+Ïi(st, at) is the vector of features for agent i. Note that for
+each agent i, the vector of features Ïi(st, at) depends on the
+entire state vector and the actions of all agents. We deï¬ne
+w = (w1, Â· Â· Â· , wN ) to be the collection of cost weights for
+all agents.
+
+Our goal is to ï¬nd the weight parameters w such that the
+feature expectation under the learned cost weights matches
+the empirical feature mean under the demonstrations. Let Dw
+be the probability distribution over equilibrium trajectories
+induced by the cost parameters w. We further let Â¯D be
+the emirical distrubution of equilibrium trajectories in the
+interaction demonstrations. Moreover, we deï¬ne a trajectory
+(s, a) = (st, at)T
+t=1 to be the vector of agentsâ states and
+actions over a trajectorty of length T . We assume that agents
+maintain an entropic cost equilibrium in their demonstrations.
+With a slight abuse of notation, for each agent i, we
+denote the empirical mean of the features under the inter-
+action demonstrations by E
+(s,a)â¼ Â¯D Ïi(s, a). Likewise, we let
+E(s,a)â¼Dw Ïi(s, a) be the expected value of the features under
+the equilibrium trajectories induced by the weight vector w.
+to ï¬nd weight parameters w to induce a
+probability distribution D over equilibrium trajectories such
+that
+the learned cost weights
+matches the empirical feature mean under demonstrations,
+(s,a)â¼ Â¯D Ïi(s, a) = E(s,a)â¼Dw Ïi(s, a) for all agents
+i.e., E
+i â [N ]. To this end, we propose an iterative algorithm.
+We initialize the cost weights w for all agents. At each
+iteration of the algorithm, we iterate over all
+the agents.
+For agent i, we compute the difference between the feature
+expectations under the demonstrations and the current model
+E
+(s,a)â¼ Â¯D Ïi(s, a)âE(s,a)â¼Dw Ïi(s, a) and use this difference
+for updating the weight parameters
+
+feature expectation under
+
+We want
+
+wi â wi â Î³ (cid:0)E
+
+(s,a)â¼ Â¯D Ïi(s, a) â E(s,a)â¼Dw Ïi(s, a)(cid:1) ,
+
+(39)
+
+where Î³ is the learning rate. Note that once wi is updated,
+the entire vector of cost weights w is in fact updated. In the
+single-agent setting where an agent is nosily optimizing a cost
+function, the update rule (39) is the gradient of the likelihood
+of trajectories under weight parameters w. In other words,
+in the single-agent setting, (39) solves a maximum likelihood
+problem for ï¬nding weight parameters w that maximize the
+likelihood of demonstrations. In the multi-agent setting, if we
+
+8
+
+ï¬x the policy and cost parameters of all agents except agent i,
+the equilibrium policy of agent i is the optimal policy which
+minimizes agent iâs cost, i.e., the problem reduces to a single-
+agent setting where agent i noisly minimizes its cost. Thus,
+if we ï¬x all agents except agent i, similar to the single-agent
+setting, we can interpret (39) as a gradient-descent update rule.
+Once the cost parameters of agent i are updated, we compute
+the feature expectations under the new set of cost parameters,
+and update the cost parameters for the next agent. We iterate
+over all i, and repeat this process until convergence. This can
+be interpreted as a block coordinate descent method for solving
+the coupled parameter estimation problems for the multi-agent
+game.
+
+Algorithm 2 summarizes the algorithm steps. Note that in
+a multi-agent setting, once the cost parameters of one agent
+are updated, we need to recompute the feature expectation for
+updating the next agentâs cost, since agentsâ cost parameters
+and feature expectations are interdependent, i.e., a change in
+one agentâs cost parameters affects the expectation of features
+for other agents. This is due to the coupling between agents
+at entropic cost equilibrium.
+
+Algorithm 2 Multi-Agent Inverse Reinforcemenr Leaning
+
+1: Inputs
+2: system dynamics (1), agentsâ cost features Ïi(Â·), and the
+
+set of interaction demonstrations.
+
+3: Initialization
+4: for each agent i â [N ], compute the empirical feature
+
+(s,a)â¼ Â¯D Ïi(s, a)
+
+mean under demonstrations E
+5: initialize the cost weights w
+6: while not converged do
+7:
+8:
+9:
+
+for each agent i â [N ] do
+
+Compute feature expectations E(s,a)â¼Dw Ïi(s, a)
+Compute the difference
+
+(s,a)â¼ Â¯D Ïi(s, a) â E(s,a)â¼Dw Ïi(s, a)
+E
+
+10:
+
+Update cost weight for agent i:
+
+wi â wi â Î³ (cid:0)E
+
+(s,a)â¼ Â¯D Ïi(s, a) â E(s,a)â¼Dw Ïi(s, a)(cid:1)
+
+end for
+11:
+12: end while
+13: return cost parameters wi for all agents i â [N ]
+
+Each iteration of Algorithm 2 at line 8 requires computing
+agentsâ feature expectation E(s,a)â¼Dw Ïi(s, a) under ECE
+policies. However, computing E(s,a)â¼Dw Ïi(s, a) for general
+nonlinear games is not tractable. We propose to approximate
+this by sampling ECE policies through Algorithm 1 under the
+current cost parameter estimates. In each iteration, we sample
+p ECE equilibrium trajectories (s1, a1), Â· Â· Â· , (sp, ap) using
+Algorithm 1, and approximate these through the following
+
+E(s,a)â¼Dw Ïi(s, a) â
+
+1
+p
+
+p
+(cid:88)
+
+j=1
+
+Ïi(sj, aj).
+
+(40)
+
+Thus, with known system dynamics, Algorithm 1 lets us com-
+pare equilibrium trajectories under the learned cost parameters
+
+with the demonstration trajectories and update the cost param-
+eters if needed. Algorithm 3 summarizes the computation of
+feature expectations.
+
+Algorithm 3 Approximating Feature Expectations
+
+1: Inputs
+2: system dynamics (1), agentsâ cost features Ïi(Â·), agentsâ
+
+cost wights wi, number of samples p
+
+Sample an ECE trajectory (sj, aj)
+
+3: for 1 â¤ j â¤ p do
+4:
+5: end for
+6: return 1
+p
+
+(cid:80)
+
+j Ïi(sj, aj)
+
+VII. EXPERIMENTS
+
+In this section, we evaluate the performance of the MA-
+IRL algorithm in two different scenarios. In the ï¬rst scenario,
+we consider a motion planning task with multiple agents that
+navigate to goal locations while avoiding collisions with each
+other. In the second scenario, we use the INTERACTION
+dataset [5] which contains trajectories in interactive trafï¬c
+scenes, such as intersection, roundabouts, and highway merg-
+ing, collected from different locations in different countries.
+
+We compare our algorithm with a baseline method, con-
+tinuous inverse optimal control (CIOC) [3], [49], which is
+an IOC algorithm for large, continuous domains and does
+not assume any feedback interaction among the observed
+agents. Additionally, for the INTERACTION dataset, we also
+compare with the intelligent driver model (IDM) [6], [50] as
+our reference model. IDM is a widely used expert-designed
+model to simulate trafï¬c ï¬ow that is known to yield accurate
+predictions of driversâ trajectories.
+
+A. Motion Planning with Collision Avoidance
+
+We ï¬rst consider a synthetic environment where 2 or 3
+agents move to their goal locations and try to avoid colli-
+sions with each other. Demonstrations for all scenarios are
+generated by solving an approximate entropic cost equilibrium
+as described in Sec. V. Fig. 1 illustrates the demonstration
+trajectories for 2 and 3 agents scenarios. Each agent wants to
+minimize a cost function which is linear in the set of features:
+tracking a reference trajectory, penalizing close proximity to
+other agents, and control effort. Plots of different features are
+shown in Fig. 2. The reference trajectory is a straight line
+between initial location and goal location. Each agent has
+different weightings on the features, which leads to different
+interactive behaviors as shown in Fig. 1.
+
+The demonstration dataset contains 200 trajectories. We
+use MA-IRL to learn the cost function coefï¬cients for all
+agents jointly. To apply CIOC method, we learn the cost
+coefï¬cients of each agent individually and treat all other agents
+as obstacles. In our implementation of the CIOC method,
+we use a generic optimization solver. The computation time
+scales cubically with the planning horizon. For computational
+tractability, we partition the demonstration trajectories into
+sections of shorter trajectories.
+
+9
+
+(a) Two-player case
+
+(b) Three-player case
+
+Fig. 1: Demonstrations for two-player and three-player col-
+lision avoidance motion planning. Trajectories of different
+players are shown in green, yellow, and blue, respectively.
+Players have different cost functions. Due to the stochastic
+policy, we observe different modes of interactions.
+
+(a) Collision avoidance feature
+
+(b) Reach goal location feature.
+
+Fig. 2: Cost features for motion planning with collision
+avoidance task. Costs are high close to other agents and away
+from the goal location.
+
+We evaluate the performance of both algorithms in test sce-
+narios where the initial conï¬gurations are generated randomly
+and are different from the demonstration data set. To evaluate
+the performance, we ï¬rst solve the ECE solutions with the
+learned cost functions using both our MA-IRL approach and
+the CIOC approach, as well as with the true cost functions
+in test scenarios. Then, we simulate the stochastic equilibrium
+policies for 200 trials in each case and compute the feature
+expectations. The cost of each simulation for all agents are
+then computed with the true cost function. If the feature
+distribution from the learned cost functions is similar to the
+feature distribution in the demonstration data set, it means our
+learned costs are close to the true costs. The simulation results
+are shown in Table I and II.
+
+KL DIV
+
+agent 1
+
+agent 2
+
+tracking
+
+control
+
+obstacle
+
+tracking
+
+control
+
+obstacle
+
+task 1
+
+task 2
+
+MA-IRL (ours)
+CIOC
+
+MA-IRL (ours)
+CIOC
+
+0.054
+1.701
+
+0.025
+1.904
+
+0.024
+0.165
+
+0.080
+0.146
+
+0.044
+1.766
+
+0.061
+1.086
+
+0.134
+0.836
+
+0.034
+0.152
+
+0.059
+0.065
+
+0.053
+0.144
+
+0.044
+1.766
+
+0.061
+1.086
+
+TABLE I: Two-agent collision avoidance simulations. KL-
+divergence of feature distribution between demonstrations and
+simulations from learned costs. Smaller values are better.
+
+We compute the KullbackâLeibler divergence, which cap-
+tures the difference between two distributions. Lower values
+means the distributions are closer. In the two different test
+
+goal10
+
+KL DIV
+
+agent 1
+
+agent 2
+
+agent 3
+
+tracking
+
+control
+
+obstacle
+
+tracking
+
+control
+
+obstacle
+
+tracking
+
+control
+
+obstacle
+
+task 1
+
+task 2
+
+MA-IRL (ours)
+CIOC
+
+MA-IRL (ours)
+CIOC
+
+0.031
+2.583
+
+0.096
+1.104
+
+0.063
+0.054
+
+0.019
+0.073
+
+0.167
+0.939
+
+0.116
+0.701
+
+0.074
+1.083
+
+0.054
+1.685
+
+0.144
+0.039
+
+0.019
+0.032
+
+0.052
+0.489
+
+0.148
+0.780
+
+0.050
+0.082
+
+0.030
+2.198
+
+0.066
+0.022
+
+0.108
+0.171
+
+0.127
+0.629
+
+0.080
+0.487
+
+TABLE II: Three-agent collision avoidance simulations. KL-divergence of feature distribution between demonstrations and
+simulations from learned costs. Smaller values are better.
+
+avg. dist. to goal
+
+true
+
+MA-IRL
+
+CIOC
+
+Task 1
+
+Task 2
+
+agent 1
+agent 2
+
+agent 1
+agent 2
+
+0.205Â±0.103
+0.319Â±0.153
+
+0.229Â±0.117
+0.323Â±0.160
+
+0.144Â±0.083
+0.248Â±0.101
+
+0.720Â±0.702
+2.079Â±1.880
+
+0.864Â±0.737
+1.797Â±1.953
+
+0.381Â±0.428
+1.347Â±1.624
+
+TABLE III: Task-relevant statistics for two player collision
+the end of
+avoidance case. Distances to goal
+simulations are shown. The statistics of the MA-IRL approach
+are closer to the true cost samples.
+
+location at
+
+tasks, MA-IRL algorithm achieves closer similarity to true
+feature distribution, which means the MA-IRL learned cost
+functions generalize to different tasks better than CIOC.
+
+In addition, we follow prior work and also compute task-
+relevant statistics to evaluate how much the recovered cost and
+corresponding stochastic policy resembles the demonstrations.
+We compute the distance to goal
+the end of
+simulation (6 seconds) and the results are shown in Table. III.
+We can see that MA-IRL better resembles the true cost
+functions.
+
+location at
+
+B. INTERACTION dataset
+
+We further apply the MA-IRL algorithm on a real world
+trafï¬c dataset,
+the INTERACTION dataset [5], which has
+highly interactive driving scenarios collected from different
+countries. Scenarios such as a roundabout, highway merging,
+and intersections are included.
+
+1) Data Processing: We pick a highway merging scenario
+as it involves the vehicles negotiating their merging actions,
+leading to challenging game-theoretic planning for all vehicles.
+Among all the merging trajectories, each data point consists
+of three vehicles: a merging vehicle whose trajectory starts
+from the onramp and ends on a main highway lane, a leader
+vehicle that is ahead of the merging vehicle, and a follower
+vehicle that is behind the merging vehicle in the highway.
+Leader vehicles are treated as obstacles which do not interact
+with the other two vehicles, and we assume that the merging
+vehicle and the follower vehicle follow an ECE solution. We
+discard the trajectories that are too long or too short (longer
+than 9 seconds or shorter than 5 seconds) and end up with
+87 trajectories in total. All 87 data points are recorded in the
+same highway onramp in China from different recordings. The
+average time to ï¬nish merging is 6.3 seconds in the data set.
+Fig. 3 shows an example snapshot, where car 8 is merging
+onto highway after car 13.
+
+2) Features: For this challenging and complex driving task,
+we propose features that capture efï¬ciency (driving forward
+and achieving the lane merge for the merging vehicle), comfort
+and energy efï¬ciency (penalizing large accelerations), and
+safety (penalizing relative speed and a Gaussian-cost on close
+proximity with other cars). In total, we learn the cost coefï¬-
+cients for 9 features for both merging and follower vehicles.
+To evaluate the learning results on the INTERACTION
+data set, since we do not know the true cost function, we
+cannot compute the corresponding cost distribution. Instead,
+we compute the root mean squared error on trajectories
+that are generated from the learned cost functions. For each
+trajectory tuple in the data set, we run 10 trials using the
+ECE policy with the learned cost function from both MA-
+IRL and CIOC. Then, we compute the average deviation from
+true trajectories over 5 seconds. For position errors, MA-IRL
+achieves signiï¬cantly better prediction accuracy than the CIOC
+model due to the interactive nature of this scenario. IDMâs
+performance is roughly on par with MA-IRL. We note that
+IDM is a popular expert designed, and empirically validated
+driving model for trafï¬c simulation, and is only applicable
+for car following scenarios. Hence, IDM acts as aproxy for
+the unknown ground truth policy in this scenario. Moreover,
+we learn the parameters of IDM to speciï¬cally ï¬t this data
+set, thereby directly approximating the control policy of the
+vehicles in the data set.
+
+In addition, we follow previous work and evaluate the
+learned policy by computing task-related statistics from
+demonstrations and generated samples. We measure average
+speed of both merging and following cars, the average Eu-
+clidean distance between leader and merging cars, and average
+Euclidean distance between merging and following cars. The
+results are summarized in Table IV. In Fig. 4, the position
+rmse of MA-IRL is similar to that of IDM and better than
+CIOC. From Table IV, we can see that MA-IRL achieves good
+approximation results in average speed of merging vehicle and
+follower vehicle, which is on par with IDMâs performance and
+better than CIOC. For average distance between merging vehi-
+cle and other vehicles, the performance of all three algorithms
+are similar and have larger deviation than speed statistics. We
+think the reason is that average distance is subject to more
+uncertainty.
+
+VIII. CONCLUSION
+
+In this paper, we presented an algorithm for Maximum
+Entropy Inverse Reinforcement Learning in multi-agent set-
+
+11
+
+Fig. 3: A snapshot of highway merging scenario in the INTERACTION data set. Vehicle 8 is a merging vehicle between car
+13 and 6.
+
+learn accurate models of agentsâ costs.
+
+Limitations and Future Work: While our simulations and
+experiments show the effectiveness of our MA-IRL algorithm,
+a key future direction is to enable learning general nonlinear
+costs. In this paper, we assumed that agentsâ costs can be
+represented as weighted sum of a set of features. An important
+future direction is to relax this assumption. Moreover, to avoid
+handpicking the set of relevant features a-priori, we would
+like to study the extensions of this work to enable learning
+cost functions that are represented in the form of function
+approximators such as neural networks. Finally, the current
+work can be extended to the case of unknown system dynamics
+as well. We assumed that the system dynamics were known
+and ï¬xed. We believe that our method can be further extended
+to systems with unknown dynamics.
+
+APPENDIX A
+PROOF OF THEOREM 2
+
+We provide the proof for Theorem 2. We know from
+Theorem 1 that to ï¬nd the ECE policies of a linear quadratic
+game G = (S, A, f, g, p0, c), we can equivalently ï¬nd
+the Nash equilibrium policies of the auxiliary game ËG =
+(S, A, f, g, p0, Ëc, T ). The key idea is that at Nash equilibria
+of the game ËG, the cost-to-go or the value function for each
+agent at any given state can be represented in closed form via
+a quadratic function of the state. Using dynamic programming,
+the closed-form solution of the cost-to-go function can be
+propagated backwards in time to ï¬nd both the Nash equili-
+birum policy and the cost-to-go of agent i.
+
+More precisely, let Ïâ denote a set of Nash equilibirum
+policies of the game ËG. Consider an agent i â [N ]. Fix the
+policies of all the other agents Ïâiâ
+. Then, using Deï¬nition 1,
+for the game ËG, the (Nash) equilibirum policy of the agent Ïiâ
+optimizes
+
+min
+Ïi
+
+E
+
+Ïi,Ïâiâ
+
+T
+(cid:88)
+
+k=1
+
+1
+2
+
+(cid:32)
+
+k Qisk + lT
+sT
+
+i sk +
+
+(cid:88)
+
+T
+
+aj
+k
+
+Rijaj
+k
+
+jâ[N ]
+
+(cid:33)
+
+â
+
+T
+(cid:88)
+
+k=1
+
+H(Ïi
+
+k(.|st)).
+
+(41)
+
+First, note that for any policy Ïi(.|st), since the dynamics are
+linear and the cost is quadratic, the expectation of the terms
+
+Fig. 4: Root Mean Square Error
+
+task statistics
+
+true
+
+MA-IRL
+
+IDM CIOC
+
+M avg. speed [m/s]
+F avg. speed [m/s]
+ML avg. dist [m]
+MF avg. dist [m]
+
+3.272
+2.893
+7.770
+7.447
+
+3.372
+2.592
+7.438
+8.716
+
+2.876
+2.574
+7.951
+6.844
+
+2.949
+2.410
+8.041
+7.009
+
+TABLE IV: Task statistics for generated simulations using
+learned cost function/policy compared to human demonstra-
+tions from the same initial conï¬guration.
+
+tings. To enable learning from boundedly rational agents such
+as humans, we deï¬ned a notion of noisy equilibrium called
+Entropic Cost Equilibrium (ECE). We proved that this noisy
+equilibrium is indeed an extension of the maximum entropy
+principle to the multi-agent setting. We then proved that ECE
+policies can be obtained in closed form for the special class of
+linear quadratic Gaussian games. We further presented an al-
+gorithm for approximating ECE policies for general nonlinear
+games. Finally, knowing how to ï¬nd maximum-entropy multi-
+agent policies, we provided an iterative algorithm for learning
+agentsâ costs from a set of demonstrations when cost functions
+are represented as a linear combination of a set of features. We
+veriï¬ed and validated our algorithm using both synthetic and
+real-world data set demonstrating that our MA-IRL algorithm
+can successfully capture the interactions between agents and
+
+012345time [s]0.00.51.01.52.02.53.03.54.0rmse position [m]ma-irlidmciocinside the parenthesis in (41), depends only the ï¬rst and second
+order moments of the policy Ïi. Therefore, for any ï¬xed ï¬rst
+and second order moments of the policy Ïi, the optimal policy
+Ïiâ
+will be the distribution with maximum entropy subject
+to ï¬xed ï¬rst and second order moments. Leveraging the fact
+that with ï¬xed ï¬rst and second order moments, the maximum
+entropy distribution is a normal distribution (see for instance,
+Theorem 8.6.5 in [51]), we can conclude that the optimal
+policy for each agent i at any time step Ïiâ
+is normally
+t
+distributed. Hence, it remains to ï¬nd the mean and covariance
+of the optimal policy at any given time step. For every agent i,
+let the mean and covariance of agent iâs policy be represented
+by Âµi
+t at every time step t. The optimal solution to (41)
+can be found using dynamic programming. Let V iâ
+t (st) denote
+the cost-to-go of agent i at Nash equilibrium at a given time
+step t
+
+t and Î£i
+
+V iâ
+t (st) := min
+Ïi
+
+E
+
+Ïi,Ïâiâ
+
+T
+(cid:88)
+
+k=t
+
+1
+2
+
+(cid:32)
+
+k Qisk + liT
+sT
+
+sk+
+
+(cid:88)
+
+T
+
+aj
+k
+
+Rijaj
+k
+
+jâ[N ]
+
+(cid:33)
+
+â
+
+T
+(cid:88)
+
+k=t
+
+H(Ïi
+
+k(.|sk)).
+
+(42)
+
+We prove via induction that the cost-to-go for each agent
+at a given time step is a quadratic function of the state. We
+assume for time t + 1, we have
+
+V iâ
+t+1(st+1) =
+
+1
+2
+
+sTZ i
+
+t+1st+1 + Î¾i
+
+t+1
+
+T
+
+st+1 + ni
+
+t+1,
+
+(43)
+
+t+1, Î¾i
+
+t+1, and ni
+
+where Z i
+t+1 are the coefï¬cients of the
+quadratic cost-to-go at time t + 1. We will propagate the cost-
+to-go structure (43) backwards in time to prove that
+1
+2
+
+V iâ
+t (st) =
+
+st + ni
+t.
+
+t st + Î¾i
+t
+
+sTZ i
+
+(44)
+
+T
+
+We prove this via dynamic programming. For time step t, we
+have
+
+V iâ
+t (st) = min
+Ïi
+t
+
+E
+
+t,Ïâiâ
+Ïi
+
+t
+
+1
+2
+
+t Qist +
+sT
+
+(cid:88)
+
+T
+
+aj
+t
+
+Rijaj
+t
+
+jâ[N ]
+
+(cid:32)
+
+(cid:33)
+
+â
+
+H(Ïi
+
+t(.|st)) + Est+1 V iâ
+
+t+1(st+1).
+(45)
+
+Using dynamics (21), the structure of cost-to-go function for
+time t + 1 from (43), and the fact that the policies for every
+time step are normally distributed, one can verify that
+
+jâ[N ]
+(cid:17)T
+
+E V iâ
+
+t+1(st+1) =
+
+(cid:104)
+
+1
+2
+
+t ATZ i
+sT
+
+t+1Ast +
+
+(cid:88)
+
+T
+
+Bj T
+
+Âµj
+t
+
+Z i
+
+t+1Ast+
+
+t ATZ i
+sT
+
+t+1
+
+(cid:88)
+
+BjÂµj
+
+t +
+
+(cid:88)
+
+(cid:16)
+
+BjÂµj
+t
+
+Z i
+
+t+1 + ni
+
+t+1 + tr
+
+(cid:16)
+
+jâ[N ]
+BjÎ£j
+
+t Bj T
+
+(cid:88)
+
+Z i
+
+t+1
+
+jâ[N ]
+
+jâ[N ]
+(cid:17)
+
++ Z i
+
+t+1
+
++ Î¾iT
+
+t+1
+
+(cid:0)Ast +
+
+(cid:88)
+
+BjÂµj
+t
+
+(cid:1)(cid:105)
+.
+
+jâ[N ]
+
+Moreover, we know that for a normal policy Ïi
+and covariance Î£i
+t, the entropy of the policy is
+
+(46)
+t with mean Âµi
+t
+
+H(Ïi
+
+t(.|st)) =
+
+mi
+2
+
+log(2Ïe) +
+
+1
+2
+
+log det(Î£i
+
+t),
+
+(47)
+
+12
+
+where mi is the dimension of the action space of agent i, and
+e is the Eulerâs number. Using (46) and (47), (45) which is the
+cost-to-go at time t, (45) can be rewritten as a minimization
+with respect to Âµi
+t and Î£i
+t when we ï¬x the mean and covariance
+of other agentsâ policies
+
+V iâ
+t (st) = min
+Âµi,Î£i
+
+E
+
+Ïi,Ïâiâ
+
+1
+2
+
+[sT
+
+t Qist +
+
+(cid:88)
+
+ÂµjT
+t RijÂµj
+
+t +
+
+jâ[N ]
+
+t ATZ i
+sT
+
+t+1Ast +
+
+(cid:88)
+
+t BjT
+Âµj
+
+Z i
+
+t+1Ast+
+
+t ATZ i
+sT
+
+t+1
+
+(cid:88)
+
+jâ[N ]
+BjÂµj + (
+
+(cid:88)
+
+BjÂµj
+
+t )TZ i
+
+t+1(
+
+(cid:88)
+
+BjÂµj
+
+t )]+
+
+Î¾iT
+t+1(Ast +
+
+j
+(cid:88)
+
+jâ[N ]
+
+jâ[N ]
+
+jâ[N ]
+
+BjÂµj) + ni
+
+t+1 â
+
+1
+2
+
+log det(Î£i
+
+t) â
+
+1
+2
+
+mi2Ïe
+
++
+
+1
+2
+
+(cid:88)
+
+jâ[N ]
+
+tr(RijÎ£j
+
+t + Z i
+
+t+1(
+
+(cid:88)
+
+BjÎ£j
+
+t BjT
+
+) + Z i
+
+t+1). (48)
+
+jâ[N ]
+
+t
+
+2 sTZ i
+
+t st + Î¾i
+t
+
+t and Î£i
+
+t (st) = 1
+
+t and a convex function of Î£i
+
+The objective function of (48) is a convex quadratic function
+of Âµi
+t. Taking the derivative of
+the objective function in (48) with respect to Âµi
+t and
+setting the derivative equal to zero, one can verify that Âµiâ
+t
+and Î£iâ
+t have the structure of (24) and (25). By replacing
+t and Î£iâ
+Âµiâ
+in (48) and rearranging the terms, one can see
+that V iâ
+t (st) is also a quadratic function of the state st. This
+Tst +
+proves that at every time step t, V iâ
+ni
+t. By matching the coefï¬cients of this quadratic function,
+recursions (28), (29), (30) and (31) are obtained. Note that we
+also need to verify the base case for our induction, i.e, the
+cost-to-go at the ï¬nal time step V iâ
+T (sT ) is quadratic. At the
+ï¬nal time step T , the optimal policy Ïiâ
+T is a zero mean normal
+T = (Ri)â1
+distribution with covariance matrix Î£i
+. Plugging in
+this policy, we verify that in the ï¬nal time step the cost-to-go
+is also quadratic in state. This proves the base case for our
+induction, which completes our proof that the optimal cost-to-
+go at any time step is quadratic in states. Now that we have
+proved that at every time step, V iâ
+t (st) is of the form (44), we
+can obtain the recursions (26) and (27) on the matrix P i
+t and
+the vector Î±i
+t by replacing (24) and (25) in (45) and matching
+the coefï¬cients.
+
+REFERENCES
+
+[1] B. D. Ziebart, A. L. Maas, J. A. Bagnell, and A. K. Dey, âMaximum
+entropy inverse reinforcement learning.â in Proceedings of the Twenty-
+Third AAAI Conference on Artiï¬cial Intelligence, vol. 8. Chicago, IL,
+USA, 2008, pp. 1433â1438.
+
+[2] B. D. Ziebart, âModeling purposeful adaptive behavior with the principle
+of maximum causal entropy,â Ph.D. dissertation, Department of Machine
+Learning, Carnegie Mellon University, December 2010.
+
+[3] S. Levine and V. Koltun, âContinuous inverse optimal control with
+locally optimal examples,â in Proceedings of the 29th International
+Coference on International Conference on Machine Learning, 2012, pp.
+475â482.
+
+[4] D. Hadï¬eld-Menell, A. Dragan, P. Abbeel, and S. Russell, âCooperative
+inverse reinforcement learning,â arXiv preprint arXiv:1606.03137, 2016.
+[5] W. Zhan, L. Sun, D. Wang, H. Shi, A. Clausse, M. Naumann,
+J. KÂ¨ummerle, H. KÂ¨onigshof, C. Stiller, A. de La Fortelle, and
+M. Tomizuka, âINTERACTION Dataset: An INTERnational, Adversar-
+ial and Cooperative moTION Dataset in Interactive Driving Scenarios
+with Semantic Maps,â arXiv:1910.03088 [cs, eess], Sep. 2019.
+
+[6] M. Treiber, A. Hennecke, and D. Helbing, âCongested trafï¬c states in
+empirical observations and microscopic simulations,â Physical review E,
+vol. 62, no. 2, p. 1805, 2000.
+
+[7] R. E. Kalman, âWhen is a linear control system optimal?â Journal of
+
+Basic Engineering, vol. 86, no. 1, pp. 51â60, 03 1964.
+
+[8] A. Y. Ng, S. J. Russell et al., âAlgorithms for inverse reinforcement
+
+[32] ââ, âRational decision making in business organizations,â The Amer-
+
+ican economic review, vol. 69, no. 4, pp. 493â513, 1979.
+
+[33] R. D. McKelvey and T. R. Palfrey, âQuantal response equilibria for
+normal form games,â Games and economic behavior, vol. 10, no. 1, pp.
+6â38, 1995.
+
+[34] ââ, âQuantal response equilibria for extensive form games,â Experi-
+
+13
+
+mental economics, vol. 1, no. 1, pp. 9â41, 1998.
+
+[35] S. P. Anderson, J. K. Goeree, and C. A. Holt, âNoisy directional learning
+and the logit equilibrium,â Scandinavian Journal of Economics, vol. 106,
+no. 3, pp. 581â602, 2004.
+
+[36] S. Levine and V. Koltun, âGuided policy search,â in International
+
+Conference on Machine Learning, 2013, pp. 1â9.
+
+[37] ââ, âLearning complex neural network policies with trajectory opti-
+mization,â in International Conference on Machine Learning, 2014, pp.
+829â837.
+
+[38] T. Haarnoja, H. Tang, P. Abbeel, and S. Levine, âReinforcement learning
+with deep energy-based policies,â in Proceedings of the 34th Interna-
+tional Conference on Machine Learning, ser. Proceedings of Machine
+Learning Research, vol. 70. PMLR, 06â11 Aug 2017, pp. 1352â1361.
+[39] J. Schulman, X. Chen, and P. Abbeel, âEquivalence between policy
+gradients and soft q-learning,â arXiv preprint arXiv:1704.06440, 2017.
+[40] S. Levine, âReinforcement learning and control as probabilistic infer-
+ence: Tutorial and review,â arXiv preprint arXiv:1805.00909, 2018.
+[41] T. BasÂ¸ar and G. J. Olsder, Dynamic noncooperative game theory. SIAM,
+
+1998.
+
+[42] D. H. Jacobson, âNew second-order and ï¬rst-order algorithms for deter-
+mining optimal control: A differential dynamic programming approach,â
+Journal of Optimization Theory and Applications, vol. 2, no. 6, pp. 411â
+440, 1968.
+
+[43] Y. Tassa, N. Mansard, and E. Todorov, âControl-limited differential
+dynamic programming,â in 2014 IEEE International Conference on
+Robotics and Automation (ICRA).
+
+IEEE, 2014, pp. 1168â1175.
+
+[44] D. Fridovich-Keil, E. Ratner, L. Peters, A. D. Dragan, and C. J. Tomlin,
+âEfï¬cient iterative linear-quadratic approximations for nonlinear multi-
+player general-sum differential games,â in 2020 IEEE International
+Conference on Robotics and Automation (ICRA).
+IEEE, 2020, pp.
+1475â1481.
+
+[45] M. Wang, N. Mehr, A. Gaidon, and M. Schwager, âGame-Theoretic
+Planning for Risk-Aware Interactive Agents,â in 2020 IEEE/RSJ Inter-
+national Conference on Intelligent Robots and Systems (IROS).
+Las
+Vegas, NV, USA (Virtual): IEEE, Oct. 2020, pp. 6998â7005.
+
+[46] W. Li and E. Todorov, âIterative linear quadratic regulator design for
+Citeseer,
+
+nonlinear biological movement systems.â in ICINCO (1).
+2004, pp. 222â229.
+
+[47] S. Yakowitz, âAlgorithms and computational techniques in differential
+dynamic programming,â Control and Dynamical Systems: Advances in
+Theory and Applications, vol. 31, pp. 75â91, 2012.
+
+[48] J. Van Den Berg, S. Patil, and R. Alterovitz, âMotion planning under
+uncertainty using iterative local optimization in belief space,â The
+International Journal of Robotics Research, vol. 31, no. 11, pp. 1263â
+1278, 2012.
+
+[49] D. Sadigh, S. Sastry, S. A. Seshia, and A. D. Dragan, âPlanning for
+autonomous cars that leverage effects on human actions.â in Robotics:
+Science and Systems, vol. 2. Ann Arbor, MI, USA, 2016.
+
+[50] R. P. Bhattacharyya, R. Senanayake, K. Brown, and M. J. Kochenderfer,
+âOnline parameter estimation for human driver behavior prediction,â in
+2020 American Control Conference (ACC).
+IEEE, 2020, pp. 301â306.
+[51] T. Cover and J. Thomas, Elements of Information Theory. Wiley, 2012.
+
+learning.â in Icml, vol. 1, 2000, p. 2.
+
+[9] P. Abbeel and A. Y. Ng, âApprenticeship learning via inverse rein-
+forcement learning,â in Proceedings of the twenty-ï¬rst international
+conference on Machine learning, 2004, p. 1.
+
+[10] C. Finn, S. Levine, and P. Abbeel, âGuided cost learning: Deep inverse
+optimal control via policy optimization,â in International conference on
+machine learning. PMLR, 2016, pp. 49â58.
+
+[11] J. Ho and S. Ermon, âGenerative adversarial imitation learning,â in
+Proceedings of the 30th International Conference on Neural Information
+Processing Systems, 2016, pp. 4572â4580.
+
+[12] S. Albrecht, K. Ramirez-Amaro, F. Ruiz-Ugalde, D. Weikersdorfer,
+M. Leibold, M. Ulbrich, and M. Beetz, âImitating human reaching
+motions using physically inspired optimization principles,â in 2011 11th
+IEEE-RAS International Conference on Humanoid Robots.
+IEEE, 2011,
+pp. 602â607.
+
+[13] K. Mombaur, A. Truong, and J.-P. Laumond, âFrom human to humanoid
+locomotionâan inverse optimal control approach,â Autonomous robots,
+vol. 28, no. 3, pp. 369â383, 2010.
+
+[14] P. Englert, N. A. Vien, and M. Toussaint, âInverse kkt: Learning cost
+functions of manipulation tasks from demonstrations,â The International
+Journal of Robotics Research, vol. 36, no. 13-14, pp. 1474â1488, 2017.
+[15] C. Awasthi, âForward and inverse methods in optimal control and
+dynamic game theory,â Masterâs thesis, the University of Minnesota,
+2019.
+
+[16] M. Menner and M. N. Zeilinger, âMaximum likelihood methods for in-
+verse learning of optimal controllers,â arXiv preprint arXiv:2005.02767,
+2020.
+
+[17] S. Natarajan, G. Kunapuli, K. Judah, P. Tadepalli, K. Kersting, and
+J. Shavlik, âMulti-agent inverse reinforcement learning,â in 2010 Ninth
+International Conference on Machine Learning and Applications. IEEE,
+2010, pp. 395â400.
+
+[18] K. Waugh, B. D. Ziebart, and J. A. Bagnell, âComputational rationaliza-
+tion: The inverse equilibrium problem,â arXiv preprint arXiv:1308.3506,
+2013.
+
+[19] X. Lin, P. A. Beling, and R. Cogill, âMulti-agent inverse reinforcement
+
+learning for zero-sum games,â arXiv preprint arXiv:1403.6508, 2014.
+
+[20] X. Lin, S. C. Adams, and P. A. Beling, âMulti-agent inverse reinforce-
+ment learning for certain general-sum stochastic games,â Journal of
+Artiï¬cial Intelligence Research, vol. 66, pp. 473â502, 2019.
+
+[21] L. Yu, J. Song, and S. Ermon, âMulti-agent adversarial inverse rein-
+
+forcement learning,â arXiv preprint arXiv:1907.13220, 2019.
+
+[22] J. Song, H. Ren, D. Sadigh, and S. Ermon, âMulti-agent generative
+adversarial imitation learning,â arXiv preprint arXiv:1807.09936, 2018.
+[23] W. Schwarting, A. Pierson, J. Alonso-Mora, S. Karaman, and D. Rus,
+âSocial behavior for autonomous vehicles,â Proceedings of the National
+Academy of Sciences, vol. 116, no. 50, pp. 24 972â24 978, 2019.
+[24] S. Lecleacâh, M. Schwager, and Z. Manchester, âLucidgames: Online
+unscented inverse dynamic games for adaptive trajectory prediction and
+planning,â IEEE Robotics and Automation Letters, 2021.
+
+[25] F. KÂ¨opf, J. Inga, S. RothfuÃ, M. Flad, and S. Hohmann, âInverse
+reinforcement
+learning for identiï¬cation in linear-quadratic dynamic
+games,â IFAC-PapersOnLine, vol. 50, no. 1, pp. 14 902â14 908, 2017.
+[26] S. RothfuÃ, J. Inga, F. KÂ¨opf, M. Flad, and S. Hohmann, âInverse optimal
+control for identiï¬cation in non-cooperative differential games,â IFAC-
+PapersOnLine, vol. 50, no. 1, pp. 14 909â14 915, 2017.
+
+[27] J. Inga, E. Bischoff, F. KÂ¨opf, and S. Hohmann, âInverse dynamic
+learning,â
+
+games based on maximum entropy inverse reinforcement
+arXiv preprint arXiv:1911.07503, 2019.
+
+[28] C. Awasthi and A. Lamperski, âInverse differential games with mixed
+inequality constraints,â in 2020 American Control Conference (ACC).
+IEEE, 2020, pp. 2182â2187.
+
+[29] L. Peters, D. Fridovich-Keil, V. Rubies-Royo, C. J. Tomlin, and C. Stach-
+niss, âInferring objectives in continuous dynamic games from noise-
+corrupted partial state observations,â arXiv preprint arXiv:2106.03611,
+2021.
+
+[30] C. Daskalakis, P. W. Goldberg, and C. H. Papadimitriou, âThe com-
+plexity of computing a nash equilibrium,â SIAM Journal on Computing,
+vol. 39, no. 1, pp. 195â259, 2009.
+
+[31] H. A. Simon, âA behavioral model of rational choice,â The quarterly
+
+journal of economics, vol. 69, no. 1, pp. 99â118, 1955.
+
+

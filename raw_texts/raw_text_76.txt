@@ -1,0 +1,1086 @@
+3
+2
+0
+2
+
+g
+u
+A
+2
+2
+
+]
+
+C
+H
+.
+s
+c
+[
+
+1
+v
+6
+8
+7
+1
+1
+.
+8
+0
+3
+2
+:
+v
+i
+X
+r
+a
+
+Building Better Human-Agent Teams: Tradeoffs in Helpfulness and Humanness
+in Voice
+
+SAMUEL WESTBY, Northeastern University, USA
+RICHARD J. RADKE, Rensselaer Polytechnic Institute, USA
+CHRISTOPH RIEDL, Northeastern University, USA
+BROOKE FOUCAULT WELLES, Northeastern University, USA
+
+We manipulate the helpfulness and voice type of a voice-only agent teammate to examine subjective and objective outcomes in twenty
+
+teams with one agent and at least three humans during a problem solving task. Our results show that agent helpfulness, but not the
+
+humanness of the agentâs voice, significantly alters perceptions of agent intelligence and trust in agent teammates, as well as affects
+
+team performance. Additionally, we find that the humanness of an agentâs voice negatively interacts with agent helpfulness to flip its
+
+effect on perceived anthropomorphism and perceived animacy. This means human teammates interpret the agentâs contributions
+
+differently depending on its vocal type. These findings suggest that function matters more than form when designing agents for
+
+effective human-agent teams and help to explain contradictory findings in the literature. Practitioners should be aware of the interactive
+
+effects of voice and helpfulness on subjective outcomes such as perceived anthropomorphism and animacy.
+
+CCS Concepts: â¢ Human-centered computing â Empirical studies in collaborative and social computing; Empirical studies
+
+in HCI.
+
+Additional Key Words and Phrases: human-agent teams, anthropomorphism, team performance, virtual agents
+
+ACM Reference Format:
+
+Samuel Westby, Richard J. Radke, Christoph Riedl, and Brooke Foucault Welles. 2023. Building Better Human-Agent Teams: Tradeoffs
+
+in Helpfulness and Humanness in Voice. 1, 1 (August 2023), 13 pages. https://doi.org/10.1145/nnnnnnn.nnnnnnn
+
+1 INTRODUCTION
+
+Voice agents have become an essential part of our daily lives. They help us select songs to play in the car, maintain our
+
+shopping list, and search for information in real-time. These agents have also made their way into more complicated
+
+settings such as mental health treatment [4] and improving collective intelligence [40]. For future applications of agents
+
+supporting groups of humans, we must understand the fundamental components of human-agent teamwork to leverage
+
+the full potential of this technology. While research on teamwork has provided valuable insights into the components
+
+of human-human team dynamics, the agent in human-agent teams (HATs) adds complexity and new challenges. This
+
+study seeks to answer how two factors influence the dynamics between human teams and voice agents: the helpfulness
+
+and humanness of the agent. Understanding this issue will enable better design and implementation of voice agents in
+
+team settings across multiple domains.
+
+Authorsâ addresses: Samuel Westby, westby.s@northeastern.edu, Northeastern University, Boston, MA, USA, 02115; Richard J. Radke, Rensselaer
+Polytechnic Institute, Troy, NY, USA, 12180; Christoph Riedl, Northeastern University, Boston, MA, USA, 02115; Brooke Foucault Welles, Northeastern
+University, Boston, MA, USA, 02115.
+
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not
+made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components
+of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to
+redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+
+Â© 2023 Association for Computing Machinery.
+Manuscript submitted to ACM
+
+Manuscript submitted to ACM
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+Westby, et al.
+
+We conducted a team experiment using a 2 Ã 2 between-subjects design with random treatment assignment. Twenty
+teams of three or four people collaborated using an online video conferencing software to complete a puzzle solving
+
+task. We added a voice-only agent participant to the meeting and recorded each participantâs audio and video. We
+
+used a post-experiment questionnaire to measure perceptions of the agent. Our results uncover second-order effects
+
+between the helpfulness and humanness of agent teammates. This clarifies contradictory findings in studies that only
+
+manipulated the helpfulness of an agent teammate [27, 35, 36].
+
+We found that the voice of our agent (human or robotic) negatively interacts with its helpfulness to flip its effect on
+
+perceived humanness (animacy and anthropomorphism). A human-sounding agent making unhelpful contributions is
+
+perceived as more human than when it makes helpful contributions. The converse is true for a robotic-sounding agent.
+
+Computers Are Social Actors (CASA) [28] and similar frameworks provide a clear explanation for this. Participants
+
+create expectations for how the agent should act and sound, and violations of those expectations decrease perceived
+
+humanness. Notably, the agentâs voice did not affect perceived trustworthiness or intelligence. This may be because
+
+participants were given enough time with the agent to make objective judgements. They were able to distinguish helpful
+
+from unhelpful agents, despite how the agent sounded. Helpfulness of the agent significantly affected performance at
+
+the three-quarter mark, but was insignificant at the end of the task (vocal type was insignificant for both time points).
+
+Perhaps learning that an agent teammate was unhelpful allowed teams to progress through the puzzle while ignoring
+
+its bad advice.
+
+We make the following contributions:
+
+â¢ We offer novel insights to a literature that has suffered from conflicting findings. The effects of agent helpfulness
+on subjective and objective outcomes are inconsistent and difficult to generalize. We contextualize these effects
+
+by introducing a second variable, the humanness of the agent.
+
+â¢ We show that the perceived humanness of our artificial teammate is subject to a negative interactive effect
+
+between the content our agent shares and the sound of its voice.
+
+â¢ We affirm that our helpful agent improves performance more than our unhelpful agent.
+â¢ We uncover an effect of agent helpfulness on perceived trustworthiness and intelligence. This is independent of
+
+whether the agentâs voice sounds robotic or human.
+
+2 BACKGROUND
+
+The developing relationships between humans and technology allow us to augment human-human teams. Scientists
+
+have investigated this issue for decades [5, 25], and each advancement in technology invites new opportunities to
+
+improve human cooperation. Despite the extensive literature on human-human teams, technologically-augmented
+
+teams show novel behavior that is not a direct extension of their non-augmented counterparts [29, 30]. In this paper,
+
+we limit âtechnologically-augmented teamsâ to situations with at least one human working cooperatively with at least
+
+one voice-only autonomous agent [26]. All of our teams in our study involve three or four humans working with one
+
+agent. Through different lenses, this agent could be an algorithm [22], autonomy [9], or AI [2]. We recognize nuance in
+
+each sub-definition and use the term âagentâ.
+
+Designing an effective HAT (a team that is more effective than a human-only team) requires understanding both team
+
+success and human-agent interaction. An important factor that changes a teamâs receptivity to their agent teammate is
+
+trust [9]. A team must give the agent an appropriate amount of trust in order to be effective. Over-trusting a flawed
+
+agent or under-trusting a flawless agent will both lead to worse outcomes than having no agent teammate at all
+
+Manuscript submitted to ACM
+
+Tradeoffs in Helpfulness and Humanness of Agent Voice
+
+3
+
+[18, 33]. The team must calibrate their trust to find a stable point that aligns with the agentâs ability [12, 24]. Work
+
+on trust in automation such as auto-pilot systems or factory machines shows that humans form their initial trust
+
+based on judgements of subjective variables such as context or appearance [24]. After interacting with the automation,
+
+trust becomes more objective and ability-based [13, 24]. Recent studies show a positive correlation between trust and
+
+perceived humanness of agents in HATs [37], but more work is needed to understand the calibration of a human teamâs
+
+trust in agents over time.
+
+More generally, the Computers Are Social Actors (CASA) paradigm states that human perceptions of agent teammates
+
+come from social scripts and behavioral expectations [17, 28]. We have expections for each interaction ranging from
+
+logging into a website, interacting with Siri, or talking to a friend. Semi-intelligent actors like Siri are less than human
+
+but more than objects, which creates ambiguity for how we should interact with them. Which heuristics apply? Which
+
+traits matter? To answer these questions, an ontological category is forming for these semi-human actors [20]. Even
+
+this new category is a moving target [15]. What is âhumanâ appears to be shrinking, and the space between human and
+
+object appears to be growing. For actors that fit in this growing category, we must understand how different attributes
+
+affect their interactions with humans.
+
+3 THEORY DEVELOPMENT
+
+3.1 Agent Humanness
+
+The form of agent teammates can transform the relationship between agent and person. Changing how human-like an
+
+agent appears or sounds can alter how much humans prefer an agent [10, 34, 35] or trust an agent [8, 10, 19, 32, 37].
+
+It can also have no effect on perceived trustworthiness [7]. Depending on the task and environment, altering the
+
+humanness of an agent can lead to negative outcomes such as reduced task focus, less efficient communication, and
+
+lower task performance [6, 29].
+
+Two common measures of perceived humanness are anthropomorphism and animacy. Anthropomorphism captures
+
+the attribution of human traits to non-human entities [14]. To measure this, questionnaires ask for comparisons such as
+
+fake vs. natural or unconscious vs. conscious [3]. Animacy is the perception of acting on oneâs own accord [3]. Is the
+
+agent mechanical or organic? Is the agent apathetic or responsive? This is similar to the concept of agency, which is
+
+oneâs right to act on oneâs will [38].
+
+Both perceived anthropomorphism and perceived animacy may correlate with the form of the agent teammate,
+
+but neither are solely dependent on form. Designers and researchers should take caution to not conflate the two. An
+
+agent that acts more human may not be perceived as such. In this paper, agent humanness refers to the characteristics
+
+of the agent, while perceived humanness involves subjective judgements by humans about the humanness of the
+
+agent. These subjective judgements depend on many factors that can interact and trigger different outcomes. This can
+
+alter perceptions of humanness and shift the human-agent dynamic [17]. Some factors include the specific goals and
+
+characteristics of the team and task, individual preferences and expectations of team members [30], and the helpfulness
+
+of the agent teammate.
+
+Building upon these findings, we now present a set of hypotheses aimed at understanding the influence of vocal
+
+humanness on perceived trustworthiness, perceived intelligence, and perceived humanness of the agent teammate:
+
+H1a: Vocal type of the agent will affect perceived trustworthiness. Participants will perceive the agent with a human
+
+voice as more trustworthy than the agent with a robotic voice.
+
+Manuscript submitted to ACM
+
+4
+
+Westby, et al.
+
+H1b: Vocal type of the agent will affect perceived intelligence. Participants will perceive the agent with a human voice
+
+as more intelligent than the agent with a robotic voice
+
+H1c: Vocal type of the agent will affect perceived humanness. Participants will perceive the agent with a human voice
+
+as more human than the agent with a robotic voice.
+
+3.2 Agent Helpfulness
+
+If an agent is not useful to the team, then it is a distraction or a hindrance. Its benefits must outweigh the additional
+
+cognitive load it adds to the team [16, 17, 31]. With technology deployed in real-world teams, it is inevitable that the
+
+complexity of human interaction will result in the technology executing faulty or unhelpful actions. How do these errors
+
+affect perceptions of the agent and outcomes of the team? It seems obvious that an error-free agent should improve
+
+team performance more than an error-prone agent. This is sometimes true [35, 36], but not always. Participants may
+
+like error-prone agents more and thus be more receptive to their suggestions [21]. Measures of perceived intelligence
+
+[3] and perceived trustworthiness [32] are designed to report on perceptions of ability. A helpful agent, regardless of
+
+voice or form, should be perceived as intelligent and trustworthy. Form may cause temporary subjective differences,
+
+but users should be able to assess an agentâs true helpfulness.
+
+Considering the importance of agent helpfulness in shaping team dynamics and outcomes, we now propose a set of
+
+hypotheses to examine the relationship between agent helpfulness and team performance, as well as perceptions of
+
+intelligence and trustworthiness:
+
+H2a: Teams with a helpful agent will perform better than teams with an unhelpful agent.
+
+H2b: Helpful agents will be perceived as more intelligent than unhelpful agents.
+
+H2c: Helpful agents will be perceived as more trustworthy than unhelpful agents.
+
+3.3 Helpfulness Combined With Humanness
+
+The helpfulness of an agent partner may interact with its form to change objective and subjective outcomes in HATs.
+
+One study found that humans learned better from a human voice than a robotic voice [1]. They posit that students in
+
+the human voice condition were willing to put more effort into the interaction because they liked the human agent
+
+more. Similarly, a human-like agent may cause users to be more forgiving of its errors than a non-human-like agent [11].
+
+Because trust is dynamic, it can be less or more resilient depending on task, environment, or person [12, 13]. In [23], the
+
+humanness and advice quality (helpfulness) of a virtual agent were manipulated in a web-based single-player puzzle
+
+game. The results show that agent helpfulness, rather than agent humanness, had a positive effect on behavioral trust.
+
+It may be the case that humanness can magnify the effects of advice quality. Unhelpful agents that are also human may
+
+have a harsher impact on performance than unhelpful agents with a robotic voice because humans are more lenient
+
+with the human-voiced agentâs errors and care more about its contributions.
+
+In [35], researchers used a Wizard of Oz technique to give tasks to participants through a robot teammate. This robot
+
+had three versions: neutral, flawless, and flawed. Neutral had no gestures, flawless had congruent co-verbal gestures,
+
+and flawed had incongruent gestures. The instructions and voice remained the same across all three conditions, but the
+
+manipulation of gestures affected subjective and objective outcomes. Participants in the flawed condition performed
+
+worse than the other two conditions, but rated their robot partner highest in anthropomorphism. In a similarly designed
+
+study, researchers again used Wizard of Oz techniques and a robot to ask participants a set of questions and requests
+
+[36]. These questions started as benign as, "Would you like to listen to some music?" with the options, "Yes, Rock",
+
+Manuscript submitted to ACM
+
+Tradeoffs in Helpfulness and Humanness of Agent Voice
+
+5
+
+"Yes, Classical", and "No, thanks." In the flawless condition, the robot would obey the participantâs choice. In the flawed
+
+condition, the robot would take an action different from the participantâs choice. Next, the robot asked participants
+
+a series of unusual requests such as, "pour orange juice into the plant on the windowsill". Contrary to [35], robots
+
+with faulty behavior were rated lowest in perceived anthropomorphism, while treatment had no effect on participantsâ
+
+behavioral trust in the agent. To further complicate the effect of flawed or flawless actions on HATs, another study found
+
+no evidence that manipulating agent functionality alters perceived anthropomorphism or perceived intelligence of agent
+
+teammates [27]. The incongruent results of these three studies suggest that additional variables such as environment
+
+or form may moderate the effect of agent helpfulness on HAT outcomes. Additionally, differences in combinations
+
+of movement and voice can lead to altered perceptions of humanness [39]. This motivates our isolation of only one
+
+modality, voice.
+
+We now propose the following hypotheses to examine the combined influence of vocal type and helpfulness on team
+
+performance and perceptions of humanness:
+
+H3a: Vocal type will magnify the effects of helpfulness/unhelpfulness. Teams with a human-voiced unhelpful agent
+
+will perform worse than any other team. Teams with a human-voiced helpful agent will perform the best.
+
+H3b: There will be an interaction between vocal type and helpfulness to affect perceptions of humanness.
+
+Our results offer a new perspective on the complex relationship between humans and technology and can guide the
+
+design for effective human-agent teaming systems of the future.
+
+4 METHODOLOGY
+
+We conducted an IRB-approved experimental study with a 2 Ã 2 between-subjects design and random treatment
+assignment. We manipulated an audio-only agent teammateâs contribution quality and vocal humanness. During the
+
+experiment, teams of three or four people collaborated to solve a puzzle task using online video conferencing software
+
+and an automated agent helper. Upon completion, they completed a post-experiment questionnaire and were paid
+
+$20/hour in Amazon gift cards for 60-90 minutes of their time.
+
+4.1 Participants
+
+69 people from the Northeast United States participated in this study. They were divided into 20 teams of three or four
+people, five teams for each treatment. Participant ages ranged from 18 to 34 (mean 21.7 Â± 3.67, Table 1). Team size was
+based on convenience. Four participants were scheduled for each session, and if three or more attended then the session
+
+continued. For one session only one participant attended, and they were given the option to receive payment or be
+
+placed in a future team.
+
+4.2 The Agent
+
+The âAI Puzzle Masterâ communicated to participants through audio alone and displayed a black screen with its name in
+
+the online video conferencing software. Although it would not respond to participant communication, an experimenter
+
+read a script to introduce the Puzzle Master as an AI assistant that could offer new perspectives and information.
+
+The Puzzle Master gave six clues over 40 minutes to guide participants toward different milestones in the puzzle. We
+
+standardized each clue and gave them in the same order at the same time for every team.
+
+Manuscript submitted to ACM
+
+6
+
+Westby, et al.
+
+Table 1. Participant demographics in each of the four agent treatments: human-helpful (HH), human-unhelpful (HU), robotic-helpful
+(RH), and robotic-unhelpful (RU). English fluency is self-reported as Native Proficiency (NP), Full Proficiency (FP), and Proficiency (P).
+No participants reported a lower fluency.
+
+Treatment
+
+Participants
+
+Female Teams Mean Age (SD) NP
+
+FP
+
+P
+
+HH 17
+HU 17
+RH 18
+RU 17
+
+All
+
+69
+
+65%
+47%
+56%
+71%
+
+59%
+
+5
+5
+5
+5
+
+22.2 (4.56)
+21.9 (3.37)
+20.9 (2.78)
+21.8 (3.62)
+
+65% 35% 0%
+47% 53% 0%
+67% 17% 17%
+59% 41% 0%
+
+20
+
+21.7 (3.67)
+
+59% 36% 4%
+
+4.3 The Puzzle
+
+Jay Lorch and Michelle Teague designed the Cursed Treasure Puzzle for the 2005 Microsoft Intern Puzzle Day (https:
+
+//jaylorch.net/puzzles/CursedTreasure/). The puzzle involves a set of cursed treasure chests; players need to uncover
+
+the meanings of each curse to determine a final secret word. For example, the octopus curse is present only if no gems
+
+in a chest are touching, and absent if any gems are touching.(Figure 1). There are five curses to determine, and two
+
+additional steps to decode the final word, resulting in seven milestones that each team can achieve during the time
+
+allotted. This gives us a granular measure of team performance embedded into a complex and interesting task.
+
+Fig. 1. A sample of three chests in the Cursed Treasure puzzle. Notice that the octopus curse relates to the separation of gems.
+
+4.3.1 Experimental Manipulation. In a 2 Ã 2 design, we manipulated the agentâs clue content and voice. Its clues were
+either helpful or unhelpful and its voice was either human or robotic. The helpful agent gave clues such as, âThe
+
+octopus rule relates to separation between the gemsâ (which is correct) while the unhelpful agent misled teams with
+
+information such as, âThe octopus rule has to do with the sizes of the gemsâ (which is incorrect). This was intended
+
+to motivate teams to start looking for patterns within the octopus category. A female voice actor recorded the audio
+
+for the human voice condition, and a text-to-speech program generated the audio for the robotic voice condition. The
+
+robotic voice sounded female, but was clearly computer generated with non-human paralanguage.
+
+4.3.2 Treatment Validation. We ran a pre-test validation to check if the robotic voice was perceived as non-human. We
+
+recruited 400 participants from Amazon Mechanical Turk. Participants listened to audio clips of our robotic agentâs
+
+clues and then answered, "Is this voice a human or ___?â on a seven-point Likert scale of agreement from âDefinitely
+
+___â to âDefinitely humanâ. There were eight groups of fifty participants each with a different word for the voice. We
+compared the proportion of responses forâDefinitely ___â and âVery likely ___â to an expected proportion of 2/7 using
+a one-tailed Z-test. Participants were able to accurately label the voice as non-human, even when we manipulated
+the word referring to the robotic voice. We used the following words: a machine (ð§ = 3.111, ð = 0.002), a computer
+Manuscript submitted to ACM
+
+Tradeoffs in Helpfulness and Humanness of Agent Voice
+
+7
+
+(ð§ = 3.677, ð < 0.001), a robot (ð§ = 2.263, ð = 0.024), a digital assistant (ð§ = 3.394, ð = 0.001), a virtual assistant
+(ð§ = 3.394, ð = 0.001), an automated assistant (ð§ = 2.828, ð = 0.005), automation (ð§ = 3.677, ð < 0.001), and artificial
+intelligence (ð§ = 2.546, ð = 0.011). This validation confirmed that the robotic voice was perceived as non-human. We
+found no substantial difference between the specific labels (robot, computer, etc.).
+
+4.4 Post-Test Questionnaire
+
+At the conclusion of the puzzle, either after 40 minutes or when teams solved the puzzle (ð = 3), participants completed
+a questionnaire. The questionnaire consisted of five sections, two of which are used in this paper and described below.
+
+4.4.1 The Godspeed Questionnaire. We used a subset of the Godspeed Questionnaire [3] to measure perceived an-
+
+thropomorphism, perceived animacy, and perceived intelligence. Anthropomorphism is the attribution of human
+
+characteristics to non-human entities [14], animacy is the perception of acting on oneâs own accord [3], and perceived
+
+intelligence is the evaluation of the agentâs intelligence [3]. Participants answered five questions per category using a
+
+five-point semantic differential scale between opposing dyads. For example, âThe Puzzle Master was Artificial verses
+
+Lifelike), 1 - 5â.
+
+4.4.2 Trustworthiness of the Puzzle Master. To measure trust in the Puzzle Master and perceptions of the Puzzle Masterâs
+
+contributions, we adapted a six-item questionnaire designed to measure trust in online avatars [32]. Participants rated
+
+the following items on a five-point Likert scale from Strongly Disagree to Strongly Agree:
+
+(1) I trusted the Puzzle Masterâs clues.
+
+(2) I was well informed by the Puzzle Master.
+
+(3) The Puzzle Master gave helpful clues.
+
+(4) The Puzzle Master was competent.
+
+(5) The Puzzle Master was intentionally misleading the team.
+
+(6) The Puzzle Master was useful in helping the team solve the puzzle.
+
+Notice that item (5) is reverse coded. No participants failed this attention check.
+
+5 RESULTS
+
+Of the sixty-nine participants, all sixty-nine completed the experiment and questionnaire. For each questionnaire section,
+
+we measured internal consistency using Cronbachâs Alpha and found that all sections were reliable (anthropomorphism
+ð¼ = 0.79, animacy ð¼ = 0.81, perceived intelligence ð¼ = 0.84, and perceived trustworthiness ð¼ = 0.93). We then used
+regressions to determine the effects of our manipulations and interactions between helpfulness and humanness of
+
+agents in HATs.
+
+Regressions on questionnaire items. The questionnaire connects our manipulations of agent humanness and helpfulness
+
+to subjective outcomes such as perceived humanness and trustworthiness. A multiple regression analysis with covariance
+
+clustered by team was conducted using ordinary least squares (OLS) to fit a model for each questionnaire measure using
+
+the following equation,
+
+measure = ð½1 isHumanVoice + ð½2 isHelpfulClues + [ð½3 isHumanVoice Ã isHelpfulClues] + ð
+
+(1)
+
+where isHumanVoice and isHelpfulClues are binary {0, 1} variables depending on treatment assignment. isHumanVoice=0
+
+indicates an agent with a robotic voice instead of with a human voice. isHelpfulClues=0 indicates an agent who gave
+
+Manuscript submitted to ACM
+
+8
+
+Westby, et al.
+
+unhelpful clues instead of helpful clues. Cluster-robust standard errors are used to account for clustering in standard
+
+errors between independent teams.
+
+Regressions on team performance. Team performance was measured as the number of milestones a team achieved (min.
+
+1, max. 7). We calculated a multiple linear regression using OLS to predict team performance based on the treatment
+
+category with the following equation,
+
+Team Performance = ð½1 isHumanVoice + ð½2 isHelpfulClues + ð
+
+(2)
+
+We tested adding an interaction term between isHumanVoice and isHelpfulClues, but removed it due to insignificance
+(ð = 0.713). Performances at two different time points were used. The first was the number of milestones achieved at
+the three-quarter time point (thirty minutes), and the second was the number of milestones achieved at the final time
+
+point (forty minutes).
+
+Fig. 2. These three plots show the presence or absence of interactive effects caused by the helpfulness or humanness of the agent
+for individual questionnaire responses. For both perceived anthropomorphism and animacy, the agentâs voice flips the effect of
+helpfulness. In some cases, being helpful makes the agent seem more human, and in other cases it makes the agent seem less human.
+Figure 2C shows that perceptions of agent intelligence were only significantly changed by the helpfulness of the agent teammate.
+
+Fig. 3. This plots shows that agent humanness does not affect perceived trustworthiness. Agent helpfulness was the only factor that
+caused differences in perceived trustworthiness (ð < 0.001, Table 2 Model 4).
+
+Manuscript submitted to ACM
+
+HelpfulUnhelpful510152025Perceived AnthropomorphismHumanRobotHelpfulUnhelpful510152025Perceived AnimacyHelpfulUnhelpful510152025Perceived IntelligenceInteraction Plots for Godspeed Questionnaire ResponsesPuzzle Master HelpfulnessAverage Response Scorea)b)c)HelpfulUnhelpful102030Average Response ScorePerceived TrustworthinessHumanRobotTradeoffs in Helpfulness and Humanness of Agent Voice
+
+9
+
+Fig. 4. These plots show the effect of treatment categories on team performance. After 30 minutes which was 75% of the allotted time,
+treatment significantly predicted 22.1% of the variance in team performance (ð = 0.047, Table 2 Model 5). Only agent helpfulness
+had a significant coefficient in the regression equation (ð = 0.015, Table 2 Model 5) which means agent voice type did not affect
+performance. After 40 minutes at the end of the task, there was no significant effect of treatment on performance (ð = 0.247, Table 2
+Model 6.)
+
+Table 2. Results for multiple regressions of questionnaire items verses treatment with cluster-robust standard errors to account for
+clustering in standard errors between independent teams following Equation 1. This table also includes results for multiple regressions
+of team performance verses treatment following Equation 2.
+
+Questionnaire Item
+(Individual Level)
+
+Performance
+(Team Level)
+
+Dependent Variable:
+
+Helpful
+
+Human
+
+Helpful Ã Human
+
+Adj. R2
+Num. obs.
+
+âââð < 0.001; ââð < 0.01; âð < 0.05
+
+Anthro
+(1)
+
+3.53**
+(1.19)
+2.53*
+(1.19)
+-4.88**
+(1.67)
+
+0.06
+69
+
+Animacy
+(2)
+
+3.95**
+(1.14)
+3.47*
+(1.71)
+-6.48**
+(2.12)
+
+0.08
+69
+
+Intell.
+(3)
+
+6.52***
+(1.68)
+2.41
+(1.81)
+-4.05
+(2.29)
+
+0.22
+69
+
+Trust
+(4)
+
+30 min.
+(5)
+
+40 min.
+(6)
+
+15.64***
+(1.53)
+1.94
+(2.33)
+-3.28
+(2.78)
+
+0.73
+69
+
+1.40*
+(0.52)
+-0.20
+(0.52)
+
+1.20
+(0.70)
+-0.20
+(0.70)
+
+0.22
+20
+
+0.05
+20
+
+5.1 Agent Humanness
+
+The voice of the agent had no significant effect on perceived intelligence or perceived trustworthiness of the agent (intell.:
+ð = 0.183; trust: ð = 0.405), although the full regression predicted perceived intelligence (Adj. ð2 = 0.219, ð¹ (3, 65) =
+6.51, ð = 0.003) and perceived trustworthiness (Adj. ð2 = 0.733, ð¹ (3, 65) = 50.4, ð < 0.001). There was no evidence
+to support that voice type affects perceived intelligence or perceived trustworthiness, so we reject Hypotheses H1a
+and H1b. However, the human or robotic voice manipulation did alter anthropomorphism (ð = 0.033) and animacy
+(ð = 0.042), partially supporting Hypothesis H1c that vocal humanness will affect perceptions of humanness. The human
+voice was not always perceived as more human than the robotic voice. This is discussed further in the Helpfulness and
+
+Humanness section.
+
+Manuscript submitted to ACM
+
+HelpfulUnhelpful0246Milestones SolvedMilestones Solved after 30 MinutesHelpfulUnhelpful0246Milestones Solved after 40 MinutesHumanRobotPuzzle Master Helpfulness10
+
+5.2 Agent Helpfulness
+
+Westby, et al.
+
+The outcomes of learning whether an agent was helpful or unhelpful may be reflected in perceived intelligence
+
+and perceived trustworthiness. The helpfulness treatment assignment significantly predicted perceived intelligence
+(ð < 0.001, Table 2 Model 3) and perceived trustworthiness (ð < 0.001, Table 2 Model 4). Over the course of forty
+minutes, participants saw past the voice of the agent to objectively and correctly assess if the agent was intelligent
+
+or trustworthy. This supports Hypotheses H2b and H2c, that helpful agents will be perceived as more intelligent and
+
+trustworthy than unhelpful agents.
+
+5.3 Helpfulness and Humanness
+
+Treatment assignment significantly affected perceived humanness, but it was not voice alone that contributed to
+
+this. Agent voice, agent helpfulness, and the interaction between the two were significant factors for regressions
+on anthropomorphism and animacy. The interaction term (âHelpful Ã Humanâ in Table 2) for perceived humanness
+(anthropomorphism and animacy) is negative, meaning agent helpfulness flips the effect of voice type on perceived
+
+humanness. Helpfulness increases the perceived humanness of robotic-voiced agents whereas helpfulness decreases
+
+perceived humanness of human-voiced agents. This supports Hypothesis H3b that there will be an interaction between
+
+vocal type and helpfulness.
+
+5.4 Team Performance
+
+Treatment assignment caused differences in team performance at the three-quarter time point (ð¹ (2, 18) = 3.70, ð = 0.047,
+Table 2 Model 5). With an adjusted ð2 of 0.221, treatment assignment predicted 22.1% of the variance in a teamâs
+performance at the three-quarter mark. Of the two treatment variables, only agent helpfulness was a significant
+factor (humanness, ð = 0.705; helpfulness, ð = 0.015) indicating agent helpfulness predicts team performance at
+the three-quarter mark while agent voice type does not. This difference was not significant by the end of the puzzle
+(ð¹ (2, 18) = 1.52, ð = 0.247, Adj. ð2 = 0.05, Table 2 Model 6). At the three-quarter mark, teams were less likely to know
+whether the agent was helpful or unhelpful than at the end of the puzzle. Upon realizing the agent was unhelpful,
+
+several teams showed fast achievement of milestones before the 40 minute stopping time. Teams in the helpful agent
+condition correctly solved 1.40 Â± 0.520 more milestones than teams in the unhelpful condition irrespective of the vocal
+type manipulation. These results provide partial support for Hypothesis H2a, that teams with a helpful agent will
+
+perform better than teams with an unhelpful agent.
+
+Because no significant differences were found between the performances of teams with human-voiced agents and
+
+robotic-voiced agents, we reject Hypothesis H3a. Voice type did not affect a teamâs receptivity to a helpful agentâs clues
+
+or susceptibility to a robotic agentâs clues.
+
+6 DISCUSSION
+
+We manipulated the humanness and helpfulness of an audio-only agent in human-agent teams to study how the two
+
+factors affect subjective and objective outcomes. Humanness of an agentâs voice had a negative interaction with an
+
+agentâs helpfulness, resulting in flipped perceived anthropomorphism and animacy. A helpful robotic-voiced agent was
+
+perceived as more human than an unhelpful robotic-voiced agent, and a helpful human-voiced agent was perceived as
+
+less human than an unhelpful human-voiced agent. The agentâs vocal type only affected perceived humanness. It did not
+
+Manuscript submitted to ACM
+
+Tradeoffs in Helpfulness and Humanness of Agent Voice
+
+11
+
+change perceived intelligence, trust in the agent, or team performance, while the helpful/unhelpful agent manipulation
+
+significantly affected all three.
+
+6.1 Perception
+
+The effect of being helpful on how human-like an artificial teammate appears has been the subject of conflicting research.
+
+Faulty and less helpful teammates, when compared to flawless and more helpful teammates, have been rated higher
+
+[35], lower [36], and the same [27] in perceived anthropomorphism. To isolate the potential confound of appearance,
+
+voice, task, and environment, we designed audio-only agents with human or robotic voices. This factor interacted with
+
+the manipulated helpfulness of its clues to alter human perceptions of the agent.
+
+The observed interaction may be due to participantsâ expectations of the agent, which could be either met or
+
+violated. Humans may approach interactive situations with a set of scripts specifically developed for the subject of
+
+their interaction [17, 28]. There are scripts for logging into a website, interacting with Siri, or talking to a friend. Here,
+
+human-voiced agents may activate different scripts than robotic-voiced agents, producing different perceptions and
+
+expectations. The robotic-voiced agent is seen as more human when it gives helpful clues, but the human-voiced agent
+
+is seen as more human when it gives unhelpful clues. This may be because participants expected a human-voiced agent
+
+to act more like them. The puzzle was difficult for most teams, with only three of the twenty teams completing it before
+
+time expired. It is plausible that participants viewed the puzzle as beyond the human-voiced agentâs abilities, thus the
+
+agent would struggle to be helpful just like the humans would struggle. On the other hand, they may have expected the
+
+robotic-voiced agent to be more of an oracle with insights beyond human abilities. This also explains when the agents
+
+were seen as less human. An all-knowing human-voiced agent did not fit with participantâs expectations for what a
+
+human should know, and an unhelpful robotic-voiced agent violated established social scripts for interactions with
+
+semi-intelligent technology. Designers who optimize for perceived humanness should be aware of the many factors
+
+that change this experience.
+
+Unlike perceived anthropomorphism and animacy, only helpfulness affected participant perceptions of agent in-
+
+telligence and trustworthiness. This shows that perceived intelligence and trustworthiness can be objective once
+
+participants have time to interact with the agent. They successfully learn when agents are unhelpful and rate the agent
+
+as such. This aligns with prior work on trust calibration [12, 24] and on the effect of helpfulness versus humanness
+
+on trust [23]. Designers who want to increase perceived intelligence and trustworthiness of agents in HATs should
+
+improve agent functionality before fine-tuning appearances. We find that participants saw beyond the differences in
+
+vocal type and objectively rated the agentâs intelligence and trustworthiness based on ability and contribution.
+
+6.2 Performance
+
+Teams with a helpful agent solved significantly more milestones than teams with an unhelpful agent after 30 minutes.
+
+Looking deeper, that influence was not from whether the agent had a human or robotic voice. Instead it was only from
+
+whether the agent gave helpful clues or unhelpful clues. Although treatment assignment did not significantly influence
+
+final team performance, this result contextualizes design priorities for performance-focused human-agent teams. Similar
+
+to our recommendation for optimizing intelligence and trust, designers should fully optimize agent ability before making
+
+marginal gains with appearance and physical characteristics. A helpful agent with non-human-like presentation or
+
+communication will be more effective than a less helpful agent with human-like presentation or communication. With
+
+time, human teammates can calibrate their interpretation of actions that an agent takes [12] and move past short-term
+
+subjective effects caused by the agentâs form. Function matters more.
+
+Manuscript submitted to ACM
+
+12
+
+7 CONCLUSIONS
+
+Westby, et al.
+
+We show that voice-type mixed with the abilities of an agent combine in counter-intuitive ways to alter perceived
+
+humanness. This interaction does not apply to other measures. Team performance, perceived agent intelligence, and
+
+agent trustworthiness were all dependent on agent ability, not voice type. These are more objective measures of team
+
+contributions, so it is unlikely that the form of an agent will have more effect than the function.
+
+Limitations. Two major factors that we do not manipulate are task type and environment. Every team was on a
+
+video-conferencing call on identical laptops in unfamiliar rooms with a team of strangers solving a difficult puzzle.
+
+Changing any of these variables may change perceptions and performance. Regardless, the purpose of this study is to
+
+reveal the sensitive nature of perceived humanness and the objective nature of performance, intelligence, and trust.
+
+ACKNOWLEDGMENTS
+
+We gratefully acknowledge the contributions of Kristen Flaherty, Robin Lange, and Eri Lee. This work was supported
+
+by the Army Research Laboratory [Grant W911NF-19-2-0135].
+
+REFERENCES
+
+[1] Robert K Atkinson, Richard E Mayer, and Mary Margaret Merrill. 2005. Fostering social agency in multimedia learning: Examining the impact of an
+
+animated agentâs voice. Contemporary Educational Psychology 30, 1 (2005), 117â139.
+
+[2] Gagan Bansal, Besmira Nushi, Ece Kamar, Daniel S Weld, Walter S Lasecki, and Eric Horvitz. 2019. Updates in human-ai teams: Understanding and
+
+addressing the performance/compatibility tradeoff. In Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 33. 2429â2437.
+
+[3] Christoph Bartneck, Dana KuliÄ, Elizabeth Croft, and Susana Zoghbi. 2009. Measurement instruments for the anthropomorphism, animacy, likeability,
+
+perceived intelligence, and perceived safety of robots. International journal of social robotics 1, 1 (2009), 71â81.
+
+[4] Caterina BÃ©rubÃ©, Theresa Schachner, Roman Keller, Elgar Fleisch, Florian v Wangenheim, Filipe Barata, and Tobias Kowatsch. 2021. Voice-based
+conversational agents for the prevention and management of chronic and mental health conditions: systematic literature review. Journal of medical
+Internet research 23, 3 (2021), e25933.
+
+[5] Vannevar Bush et al. 1945. As we may think. The Atlantic Monthly 176, 1 (1945), 101â108.
+[6] Jessie YC Chen and Michael J Barnes. 2012. Supervisory control of multiple robots: Effects of imperfect automation and individual differences.
+
+Human Factors 54, 2 (2012), 157â174.
+
+[7] Emna ChÃ©rif and Jean-FranÃ§ois Lemoine. 2019. Anthropomorphic virtual assistants and the reactions of Internet users: An experiment on the
+
+assistantâs voice. Recherche et Applications en Marketing (English Edition) 34, 1 (2019), 28â47.
+
+[8] Erin K Chiou, Noah L Schroeder, and Scotty D Craig. 2020. How we trust, perceive, and learn from virtual humans: The influence of voice quality.
+
+Computers & Education 146 (2020), 103756.
+
+[9] Myke C Cohen, Mustafa Demir, Erin K Chiou, and Nancy J Cooke. 2021. The Dynamics of Trust and Verbal Anthropomorphism in Human-Autonomy
+
+Teaming. In 2021 IEEE 2nd International Conference on Human-Machine Systems (ICHMS). IEEE, 1â6.
+
+[10] Filipa Correia, Samuel Mascarenhas, Rui Prada, Francisco S Melo, and Ana Paiva. 2018. Group-based emotions in teams of humans and robots. In
+
+2018 13th ACM/IEEE International Conference on Human-Robot Interaction (HRI). IEEE, 261â269.
+
+[11] Ewart J De Visser, Samuel S Monfort, Ryan McKendrick, Melissa AB Smith, Patrick E McKnight, Frank Krueger, and Raja Parasuraman. 2016. Almost
+
+human: Anthropomorphism increases trust resilience in cognitive agents. Journal of Experimental Psychology: Applied 22, 3 (2016), 331.
+
+[12] Mustafa Demir, Nathan J McNeese, Jaime C Gorman, Nancy J Cooke, Christopher W Myers, and David A Grimm. 2021. Exploration of teammate
+
+trust and interaction dynamics in human-autonomy teaming. IEEE Transactions on Human-Machine Systems 51, 6 (2021), 696â705.
+
+[13] Mary T Dzindolet, Scott A Peterson, Regina A Pomranky, Linda G Pierce, and Hall P Beck. 2003. The role of trust in automation reliance. International
+
+journal of human-computer studies 58, 6 (2003), 697â718.
+
+[14] Nicholas Epley, Adam Waytz, and John T Cacioppo. 2007. On seeing human: a three-factor theory of anthropomorphism. Psychological review 114, 4
+
+(2007), 864.
+
+[15] Janik Festerling and Iram Siraj. 2022. Anthropomorphizing technology: a conceptual review of anthropomorphism research and how it relates to
+
+childrenâs engagements with digital voice assistants. Integrative Psychological and Behavioral Science 56, 3 (2022), 709â738.
+
+[16] Christopher Flathmann, Beau G Schelble, Patrick J Rosopa, Nathan J McNeese, Rohit Mallick, and Kapil Chalil Madathil. 2023. Examining the impact
+
+of varying levels of AI teammate influence on human-AI teams. International Journal of Human-Computer Studies (2023), 103061.
+
+[17] Andrew Gambino, Jesse Fox, and Rabindra A Ratan. 2020. Building a stronger CASA: Extending the computers are social actors paradigm.
+
+Human-Machine Communication 1 (2020), 71â85.
+
+Manuscript submitted to ACM
+
+Tradeoffs in Helpfulness and Humanness of Agent Voice
+
+13
+
+[18] Peter A Hancock, Deborah R Billings, Kristin E Schaefer, Jessie YC Chen, Ewart J De Visser, and Raja Parasuraman. 2011. A meta-analysis of factors
+
+affecting trust in human-robot interaction. Human factors 53, 5 (2011), 517â527.
+
+[19] Allyson I Hauptman, Wen Duan, and Nathan J Mcneese. 2022. The Components of Trust for Collaborating With AI Colleagues. In Companion
+
+Publication of the 2022 Conference on Computer Supported Cooperative Work and Social Computing. 72â75.
+
+[20] Peter H Kahn Jr, Aimee L Reichert, Heather E Gary, Takayuki Kanda, Hiroshi Ishiguro, Solace Shen, Jolina H Ruckert, and Brian Gill. 2011. The new
+ontological category hypothesis in human-robot interaction. In Proceedings of the 6th international conference on Human-robot interaction. 159â160.
+[21] Kohei Kawaguchi. 2021. When will workers follow an algorithm? A field experiment with a retail business. Management Science 67, 3 (2021),
+
+1670â1695.
+
+[22] Katherine C Kellogg, Melissa A Valentine, and Angele Christin. 2020. Algorithms at work: The new contested terrain of control. Academy of
+
+Management Annals 14, 1 (2020), 366â410.
+
+[23] Philipp Kulms and Stefan Kopp. 2019. More human-likeness, more trust? The effect of anthropomorphism on self-reported and behavioral trust in
+
+continued and interdependent human-agent cooperation. In Proceedings of mensch und computer 2019. 31â42.
+
+[24] John D Lee and Katrina A See. 2004. Trust in automation: Designing for appropriate reliance. Human factors 46, 1 (2004), 50â80.
+[25] Joseph CR Licklider. 1960. Man-computer symbiosis. IRE transactions on human factors in electronics 1 (1960), 4â11.
+[26] Nathan J McNeese, Mustafa Demir, Nancy J Cooke, and Christopher Myers. 2018. Teaming with a synthetic teammate: Insights into human-autonomy
+
+teaming. Human factors 60, 2 (2018), 262â273.
+
+[27] Nicole Mirnig, Gerald Stollnberger, Markus Miksch, Susanne Stadler, Manuel Giuliani, and Manfred Tscheligi. 2017. To err is robot: How humans
+
+assess and act toward an erroneous social robot. Frontiers in Robotics and AI (2017), 21.
+
+[28] Clifford Nass and Youngme Moon. 2000. Machines and mindlessness: Social responses to computers. Journal of social issues 56, 1 (2000), 81â103.
+[29] National Academies of Sciences, Engineering, and Medicine et al. 2021. Human-AI teaming: State-of-the-art and research needs. (2021).
+[30] Thomas OâNeill, Nathan McNeese, Amy Barron, and Beau Schelble. 2022. Humanâautonomy teaming: A review and analysis of the empirical
+
+literature. Human factors 64, 5 (2022), 904â938.
+
+[31] Rohan Paleja, Muyleng Ghuy, Nadun Ranawaka Arachchige, Reed Jensen, and Matthew Gombolay. 2021. The utility of explainable ai in ad hoc
+
+human-machine teaming. Advances in Neural Information Processing Systems 34 (2021), 610â623.
+
+[32] Ye Pan and Anthony Steed. 2017. The impact of self-avatars on trust and collaboration in shared virtual environments. PloS one 12, 12 (2017),
+
+e0189078.
+
+[33] Raja Parasuraman and Victor Riley. 1997. Humans and automation: Use, misuse, disuse, abuse. Human factors 39, 2 (1997), 230â253.
+[34] Alisha Pradhan, Leah Findlater, and Amanda Lazar. 2019. " Phantom Friend" or" Just a Box with Information" Personification and Ontological
+Categorization of Smart Speaker-based Voice Assistants by Older Adults. Proceedings of the ACM on Human-Computer Interaction 3, CSCW (2019),
+1â21.
+
+[35] Maha Salem, Friederike Eyssel, Katharina Rohlfing, Stefan Kopp, and Frank Joublin. 2013. To err is human (-like): Effects of robot gesture on
+
+perceived anthropomorphism and likability. International Journal of Social Robotics 5, 3 (2013), 313â323.
+
+[36] Maha Salem, Gabriella Lakatos, Farshid Amirabdollahian, and Kerstin Dautenhahn. 2015. Would you trust a (faulty) robot? Effects of error, task type
+and personality on human-robot cooperation and trust. In 2015 10th ACM/IEEE International Conference on Human-Robot Interaction (HRI). IEEE,
+1â8.
+
+[37] William Seymour and Max Van Kleek. 2021. Exploring Interactions Between Trust, Anthropomorphism, and Relationship Development in Voice
+
+Assistants. Proceedings of the ACM on Human-Computer Interaction 5, CSCW2 (2021), 1â16.
+
+[38] Susan P Shapiro. 2005. Agency theory. Annu. Rev. Sociol. 31 (2005), 263â284.
+[39] Christiana Tsiourti, Astrid Weiss, Katarzyna Wac, and Markus Vincze. 2019. Multimodal integration of emotional signals from voice, body, and
+context: Effects of (in) congruence on emotion recognition and attitudes towards robots. International Journal of Social Robotics 11 (2019), 555â573.
+[40] Samuel Westby and Christoph Riedl. 2023. Collective intelligence in human-AI teams: A Bayesian theory of mind approach. In Proceedings of the
+
+AAAI Conference on Artificial Intelligence, Vol. 37. 6119â6127.
+
+Received 15 July 2023
+
+Manuscript submitted to ACM
+
+

@@ -1,0 +1,1796 @@
+Evolving Agents: Interactive Simulation of Dynamic and Diverse
+Human Personalities
+Jiayang Liâ
+2233666@tongji.edu.cn
+Tongji University
+Shanghai, China
+
+Jiale Liâ
+2233676@tongji.edu.com
+Tongji University
+Shanghai, China
+
+Jiahao Chen
+Tongji University
+Shanghai, China
+
+Yifan Li
+Tongji University
+Shanghai, China
+
+Shijie Wang
+Tongji University
+Shanghai, China
+
+Hugo Zhou
+Tongji University
+Shanghai, China
+
+Minjun Ye
+Tongji University
+Shanghai, China
+
+Yunsheng Suâ 
+Tongji University
+Shanghai, China
+
+4
+2
+0
+2
+
+r
+p
+A
+3
+
+]
+
+C
+H
+.
+s
+c
+[
+
+1
+v
+8
+1
+7
+2
+0
+.
+4
+0
+4
+2
+:
+v
+i
+X
+r
+a
+
+Figure 1: Evolving Agents could exhibit differentiated behaviors corresponding to their personalities and undergo continuous
+personality evolution based on external information during the interactive simulation system
+
+âBoth authors contributed equally to this research.
+â Corresponding author
+
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or
+republish, to post on servers or to redistribute to lists, requires prior specific permission
+and/or a fee. Request permissions from permissions@acm.org.
+
+ABSTRACT
+Human-like Agents with diverse and dynamic personality could
+serve as an important design probe in the process of user-centered
+
+xxx,
+,
+Â© 2024 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+ACM ISBN 978-x-xxxx-xxxx-x/YY/MM
+https://doi.org/XXXXXXX.XXXXXXX
+
+ 
+ 
+ 
+ 
+ 
+ 
+xxx,
+,
+
+design, thereby enabling designers to enhance the user experience
+of interactive application.
+
+In this article, we introduce Evolving Agents, a novel agent archi-
+tecture that consists of two systems: Personality and Behavior. The
+Personality system includes three modules: Cognition, Emotion
+and Character Growth. The Behavior system comprises two mod-
+ules: Planning and Action. We also build a simulation platform that
+enables agents to interact with the environment and other agents.
+Evolving Agents can simulate the human personality evolution
+process. Compared to its initial state, agentsâ personality and behav-
+ior patterns undergo believable development after several days of
+simulation. Agents reflect on their behavior to reason and develop
+new personality traits. These traits, in turn, generate new behavior
+patterns, forming a feedback loop-like personality evolution.
+
+In our experiment, we utilized simulation platform with 10 agents
+for evaluation. During the evaluation, these agents experienced be-
+lievable and inspirational personality evolution. Through ablation
+and control experiments, we demonstrated the outstanding effec-
+tiveness of agent personality evolution and all modules of our agent
+architecture contribute to creating believable human-like agents
+with diverse and dynamic personalities. We also demonstrated
+through workshops how Evolving Agents could inspire designers.
+
+CCS CONCEPTS
+â¢ Human-centered computing â Interactive systems and
+tools; â¢ Computing methodologies â Natural language pro-
+cessing.
+
+KEYWORDS
+Human-AI interaction, Human-Like agents, generative AI, large
+language models, cognitive psychology, personality psychology
+
+ACM Reference Format:
+Jiale Li, Jiayang Li, Jiahao Chen, Yifan Li, Shijie Wang, Hugo Zhou, Minjun
+Ye, and Yunsheng Su. 2024. Evolving Agents: Interactive Simulation of
+Dynamic and Diverse Human Personalities. In Proceedings of xxx. ACM,
+New York, NY, USA, 17 pages. https://doi.org/XXXXXXX.XXXXXXX
+
+1 INTRODUCTION
+Embodied agents are capable of simulating the humans behaviors
+[1]. By observing and interacting with these human-like agents, we
+can gain a better understanding of ourselves as humans. Within
+a design context, analyzing how these agents operate in specific
+scenarios allows designers to uncover insights into potential user
+behaviors, needs, and experiences, making the embodied agents an
+inspirational design probe in the user-centered design process.
+
+Numerous studies have already proposed embodied agentsâ ca-
+pable of simulating human-like behaviors within virtual environ-
+ments. Agents can actively interact with objects and other agents
+in the simulation environment[2][3][4] or continuously learn new
+behaviors guided by predefined tasks in the environment[5][6].
+
+One of the foremost objectives in the development of embodied
+agents is to enhance their behaviorâs similarity to human actions
+within the simulation environment[7][8][9][10]. Real humans ex-
+hibit a wide array of personality traits and corresponding behavior
+patterns[11] that dynamically evolve through interacting with the
+external world[12]. However, current embodied agents show a
+
+Jiale Li and Jiayang Li, et al.
+
+constrained range of personality expressions and, notably, their
+behaviors and personalities do not undergo evolution over time
+via continuous interaction with the simulation environments. In
+previous sandbox simulation studies, there are seldom instances of
+the personality evolution process occurring without task-oriented
+guidance.Agents that do not undergo continuous evolution seem
+to experience each day as one long moment, repeating itself over
+and over.
+
+Furthering this point, we find that current agents rarely exhibit
+diversified and dynamic personalities within the interactive sim-
+ulation process. This results in a lack of variation in behavioral
+patterns both among different agents and across different simula-
+tion periods of the same agent. Therefore, we aim to design a novel
+agent architecture that enables agents to possess their own diversi-
+fied and dynamic personalities, that could make agents experience
+their days as thousands of single and different moments, which is
+called personality evolution in previous work.[13]
+
+To realize agents personality evolution, enabling agents to ex-
+hibit differentiated behaviors corresponding to their various per-
+sonalities and undergo continuous personality evolution based on
+external information, during the interactive simulation system, we
+drew inspiration from psychological theories and proposed a novel
+architecture - Evolving Agents. Through simulation and experi-
+mental analysis in the sandbox environments, Evolving Agents are
+capable of simulating believable personality traits and personalized
+behavioral patterns. Moreover, their personalities and behaviors
+undergo continuous evolution throughout the simulation process.
+Evolving Agents exhibit differentiated behavioral patterns based
+on their diverse personality, while their behavioral experiences
+also influence the changes in agent personalities at the same time,
+forming a feedback loop-like process of behavior-personality de-
+velopment. For example, Benjamin, committed to changing his
+Introverted personality, so he makes efforts to engage in more inter-
+personal communication. His enjoyable social experiences further
+enhance Benjaminâs extroversion, ultimately leading to a more
+open-minded attitude towards interpersonal interactions. Similarly,
+Isabella actively explores her personal values during the process,
+and the encouragement she receives from others reinforces her
+determination to live for herself, consequently enhancing Isabellaâs
+self-awareness.
+
+The architectural design of Evolving Agents incorporates in-
+sights from both psychology and computer science. By adopting
+the stimulus-response concept from behavioral psychology, we
+have developed two main systems: the Behavior System, which
+is responsible for planning specific behaviors and execution. The
+Personality system, constructed with Emotion, Cognition, and Char-
+acter Growth modules, cognitively processes external information
+to enable continuous evolution. The interaction between these two
+systems allows agents to exhibit human-like personalized behavior
+patterns and undergo dynamic personality evolution. Additionally,
+we have developed a new sandbox environment where agents can
+interact with environmental scenarios and other agents. This plat-
+form allows users to edit environments and interact with agents,
+providing intuitive and engaging simulations.
+
+To validate the perception and believability of Evolving Agents
+simulating human diverse personality traits and dynamic personal-
+ity evolution, we proposed several research hypotheses:
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+â¢ Evolving Agents can construct agents with perceptible and
+
+believable differentiated personality traits.
+
+â¢ Evolving Agentsâ personality descriptions undergo percepti-
+ble and believable evolution during interactive simulations.
+â¢ Evolving Agentsâ dynamic personality evolution can induce
+
+perceptible and believable changes in their behavior.
+
+We conducted both objective data analysis and subjective human
+evaluation, with both sets of results preliminarily confirming our
+research hypotheses. In the objective data analysis, we utilized the
+Big Five personality traits scale and behavioral similarity analysis to
+verify whether Evolving Agents have undergone differentiated and
+dynamic personality evolution, and whether the behavior pattern
+develops continuously. In human evaluation, we engaged 30 human
+assessors to evaluate the believability of personality differences
+and the personality evolution in Evolving Agents. They were also
+asked to compare several ablations that restrict the agentsâ access to
+Character Growth module and complete Character Structure. These
+demonstrates that Evolving Agents can perceptibly and believably
+exhibit differentiated behaviors in alignment with their person-
+alities, as well as undergo continuous and believable personality
+evolution, and each of these components is critical to strong perfor-
+mance.Furthermore, we organized designer workshops around this
+system to discuss the inspiring effect of Evolving Agents as design
+probes for designers, yielding valuable insights into integrating
+such systems into user-oriented design processes.
+
+In sum, this paper makes the following contributions:
+
+â¢ Evolving Agents, perceptible and believable simulacra of
+diverse and dynamic human personalities in the interactive
+simulation system.
+
+â¢ A novel agent architecture, having behavior and personality
+two main systems, makes it possible to execute planning, ac-
+tion, emotion, cognition and character growth in the Virtual
+Simulation Environment, enabling agents to exhibit differen-
+tiated behaviors corresponding to their various personalities
+and undergo continuous personality evolution based on ex-
+ternal information during the interactive simulation.
+
+â¢ An evaluation procedure was established that includes two
+methods: objective data verification and human evaluation,
+for assessing the effectiveness of agent personality evolution
+and the contributions of each module within the architecture
+during this process. Additionally, a supportive workshop was
+conducted to discuss the inspirational effects of Evolving
+Agents on designers.
+
+2 RELATED WORK
+2.1 Interaction Between Humans And Agents
+As generative models advance rapidly in general capabilities and
+intent recognition[11][14][15], agents powered by these models
+have found widespread application across various fields and task
+types[16][17][18], demonstrating a broad spectrum of application
+prospects. With the enrichment of application scenarios for agents,
+novel patterns of interaction between humans and agents are con-
+tinually emerging.
+
+Human-agent interaction, as the name suggests, involves agents
+collaborating with humans to accomplish tasks[16]. Such as intro-
+ducing agents to assist in peer psychological counseling[19], using
+
+xxx,
+,
+
+agents in telemarketing scenarios[20], or co-creating literature or
+artworks with agents[20][21][22].
+
+In recent years, the human-like behavior exhibited by embodied
+agents in simulation environments has attracted widespread so-
+cial attention[23][19][24][25]. Among these, the Generative Agent
+discussed human social and communication behaviors within so-
+cieties. By observing simulated behaviors of agents in a sandbox
+environment[2], we can know ourselves as humans better.
+
+Some research focuses on multi-agent simulation in more goal-
+oriented settings, such as collaborative efforts in software produc-
+tion within software studios[26]. While some others focused on
+creating agents capable of autonomous exploration and continu-
+ous learning within game worlds[5]. Additionally, there are studies
+aimed at developing human-like NPCs, enabling text-based strategy
+game interactions with users, provide imaginative possibilities for
+future interaction possibilities between game players and NPCs or
+companions.
+
+When focusing on the interaction between designers and agents,
+designers can observe the simulated behaviors and feedback of
+agents representing target users, gaining valuable design analysis
+materials to assist in the user-oriented design process[20][27]. Cur-
+rent research has explored this direction; for example, one study
+aimed to simulate doctor-patient communication scenarios in psy-
+chological counseling to provide references and suggestions for real
+treatment[8]. Another study simulated user behaviors in scenarios
+like online movie ratings, offering insights for further exploration
+in these areas[28].
+
+2.2 Human-like Agents In Virtual Simulation
+
+Environment
+
+Simulation of human behavior in real-world like environment has
+been an interesting and important area for a long time[29].Ushered
+in by the landmark paper on Generative Agents[29], the promise of
+modelling conceivable human-like behavior in Virtual Simulation
+Environment has sparked the imagination of many[30].
+
+The human-like dimension of embodied agents can be subdi-
+vided into intrinsic and extrinsic aspects[31][16], as informed by
+sociological opinions. The extrinsic aspect encompasses behaviors
+at both the individual and group levels, whereas the intrinsic aspect
+comprises emotions, characteristics, and cognition. These delin-
+eated dimensions afford researchers numerous opportunities to
+enhance the human-likeness of agents[32][8][33][4][29].
+
+Current research on human-like agents in simulation environ-
+ments predominantly focuses on their extrinsic aspects. At the
+level of individual behavior, Danny Driess[34][9][35] proposed a
+multi-modal task-executing agent designed for real-world scenarios.
+Projects such as MINEDOJO and Voyager, leveraging the expansive
+game world of Minecraft, explore the individual learning behaviors
+of agents within such virtual settings[4][36][6].
+
+Regarding group-level behaviors, Generative Agents have been
+developed to enable agents to perform social actions. Addition-
+ally, AgentSim offers a comprehensive architecture for simulating
+standardized agent behaviors, incorporating a module for tool use
+among agents.
+
+Nowadays, Researchers are gradually realizing the practical com-
+putational significance of an Agentâs personality on human-like
+
+xxx,
+,
+
+behaviors[12][37][23][38]. In the study of Humanoid Agents[3],
+researchers explored how emotions and needs influence an Agentâs
+planning, largely addressing the overly rational and stable machine-
+like state exhibited by former Agents. However, research on embod-
+ied agents in virtual environments seldom discuss other intrinsic
+dimensions. Expanding the scope to other Agent application sce-
+narios, such as conversational interaction Chatbots[39], we can still
+find some works focusing on the intrinsic aspects of Agents, such as
+employing psychological theories, especially cognitive psychology,
+to test and enhance the cognitive abilities of personality agents[40],
+and some works focusing on modeling emotions, especially emo-
+tional recognition and empathy[40]. In terms of character, some
+works simulate the static personality and knowledge of histori-
+cal figures based on external data[32], and others create chatbots
+with different static personalities based on personality psychology
+theories[39].
+
+It should be noted that the intrinsic personality of real humans is
+not immutable. In the field of psychology, researchers believe that
+personality is continuously influenced and changed by external
+factors[1]. In existing discussions on research involving embod-
+ied agents, we rarely find studies that detail the process of such
+human-like intrinsic personality evolution or studies on how in-
+trinsic personality evolution affects an agentâs extrinsic behavior.
+
+2.3 Personality Evolution Architecture
+The term "personality" refers to the sets of predictable behaviors
+by which individuals are recognized and identified[12]. Person-
+ality analysis and description are widely studied in the field of
+personality psychology, a field that proposes well-known personal-
+ity classification methods such as the Big Five personality traits[41]
+and the Myers-Briggs Type Indicator (MBTI)[42].
+
+Regarding the mechanisms of personality affect behavior, the
+widely accepted definition of personality refers to cognitive, emo-
+tional and character traits that shape behaviors[11]. In previous
+work, researchers believe that personality changes are related to
+cognitive complexity[12]. Another study have proposed cognitive
+conceptual frameworks including reasoning, retrieval, learning and
+grounding[43]. Further research has summarized the conceptual
+architecture of agents in more human-like terms of perception,
+brain, action[16]. In research related to agents, Some agents can
+adjust emotional responses and engage in emotional resonance[24].
+Additionally, some work has explored character portrayal based
+on large language models[44]. However, current architectural ap-
+proaches to agent personality are mostly partial simulations, not
+yet producing simulations of an integrated personality that can
+influence behavior.
+
+Whatâs more, in real word human behavior and personality are al-
+ways evolving over time, which presents a substantial challenge for
+agent simulation. A realistic approach to representing this changing
+process is dynamic personality, which considers the variability of
+personality traits on the basis of changes at the corresponding per-
+sonality levels. In early research, some works used discontinuous
+personality update models to achieve the purpose of personality evo-
+lution, and some works dynamically simulated personality through
+the establishment of fuzzy logic agents. These works, trained on
+traditional models and primarily utilizing a parametric approach to
+
+Jiale Li and Jiayang Li, et al.
+
+control personality traits, are often constrained by the number of
+parameters. This limitation results in a lack of realism in the process
+of agent personality changes. At the same time, different parame-
+ter change processes are often directly inferred by the AI model,
+lacking an interpretive description of the intermediate process, and
+observers cannot intuitively understand the reasons for character
+personality changes. As for current work discussing generative
+model-based agents, they only simulate static personality at a spe-
+cific time point and have not yet simulated dynamic personality
+agents that evolve over time.
+
+3 AGENT ARCHITECTURE
+To enable agents evolution, we first need to understand how human
+personalities are composed and evolve. The field of psychology al-
+ready has many rich studies related to this issue[30]. Inspired by the
+stimulus-response theory in behaviorist psychology[45], we wish
+for agents to gain stimulation and feedback through interaction
+with simulation environments, thereby affecting the development
+of the agentâs personality.
+
+Based on the psychology theory discussed[11], we propose a
+novel agent architecture - Evolving Agents, which encompasses
+two subsystems: Behavior and Personality, as shown in figure 2. The
+Behavior system guides the execution of observable, personalized
+actions. The Personality system establishes a cognitive mechanism
+with individual characteristics, capable of continuously updating
+personality based on feedback based on the external information.
+During simulation, the Behavior and Personality systems continu-
+ously influence each other. The planning and behavior of the Agent
+will take its own characteristic into comprehensive consideration.
+Simultaneously, the experiences generated from an agentâs daily
+actions also impact personality through memory and insight. This
+process of mutual influence forms a feedback loop pattern, facili-
+tating continuous personality evolution.
+
+In detail, the Behavior system comprises two main modules:
+Plan and Action. Its execution includes personalized planning for
+the Agent, social engagements and responses, and behavior execu-
+tion functionalities. The Personality system contains three main
+modules: Emotion, Cognition and Character Growth. Its execution
+involves subjective emotional perception, daily information filter-
+ing and memory decay management, comprehensive context-aware
+idea summarization, and the growing of the Agentâs character. Each
+module is empowered by large language models like GPT-4 when
+dealing with its input.
+
+3.1 Agent Behavior
+The Behavior system is responsible for executing planned actions[30]
+within a simulated environment. Building on the existed archi-
+tecture of Agent simulation[44][46][43], which includes planning
+(Plan)[47] and executing plans (Action), we introduce three innova-
+tive elements in the Plan Module: Characteristic Plan, Goal-based
+Mechanism, and Specific Post-Process. In the Action Module, we
+propose a new method to describe the Agentâs social relationships
+and enhance the continuity of conversations between Agents.
+
+3.1.1 Plan Module. Characteristic Plan: We aim to reflect the per-
+sonality differences of agents in the behaviors of Evolving Agents.
+Therefore, in the design of the planning module, we consider not
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+xxx,
+,
+
+Figure 2: Evolving Agents architecture is inspired from psychology stimulus-response theory, encompasses two subsystems:
+Behavior and Personality
+
+only environmental information as inputs but also integrate agentsâ
+character and memory as references for GPT-4 to generate plans.
+This ensures that each agent can create a schedule that is align with
+its personality. The specific mechanism by which the Personality
+system affects the Plan module will be discussed in the following
+section3.2.
+
+Goal-based Mechanism: We aim to construct a mechanism that
+can easily analyze the variations between agent behavior and per-
+sonality. Therefore, we referenced relevant perspectives on behavior
+and motivation from self-determination theory[48], considering
+planning as an expression of behavioral motivation. In our specific
+design, we defined categories of goals (such as learning, relaxation,
+exercise, etc.) and required agents to understand and refer to these
+goals while planning as shown in figure 3. This is to ensure that
+agents consider the motivations behind each planned behavior, guid-
+ing their thought process effectively. Such a goal-based mechanism
+also aids observers in summarizing user behavior patterns, making
+it easier to analyze related pattern evolutions. We will discuss this
+in detail in Chapter 5.
+
+Specific Post-Process:We provide different planning goals with
+unique post-processes. Taking "Appointment" as an example, most
+existing Agent simulation systems use distance-based and probability-
+based triggering logic for Agent interactions, as is shown in figure
+4. We aim to enhance the proactivity of Agents in interacting with
+others, fostering more "conscious" and "prepared" social activities
+
+Figure 3: Each agent can create a schedule that aligns with its
+character. For example, the enthusiastic and open Isabella
+prefers to leave her own dorm and make social plans com-
+pared to the shy Benjamin
+
+in the simulated world. In the planning phase, Agents can consider
+their relationships with other Agents and their current state to
+
+xxx,
+,
+
+decide whether to extend social invitations. The invited Agents re-
+spond to the invitation, giving reasons for acceptance or rejection.
+For overlapping appointments, Agents weigh existing social plans
+against new ones, prioritizing based on personal development ben-
+efits. Following this request-response process, both parties adjust
+their plans based on the outcome.
+
+For example, Sophia wants to meet Isabella at a cafe at 16:00
+to discuss, believing that Isabellaâs appreciation for creative ex-
+pression aligns with her own dream of becoming an inspiring and
+successful writer. Subsequently, Isabella accepts Sophiaâs invitation,
+reasoning that her own preference for in-depth conversations over
+superficial socializing perfectly complements Sophiaâs personality,
+suggesting that their meeting could lead to deeper and more mean-
+ingful discussions. Interestingly, when faced with simultaneous
+social invitations, even though Isabella initially planned to engage
+with another friend, Benjamin, during this time, she considers the
+conversation with Sophia potentially more crucial for her personal
+development, and thus decides to accept this invitation.Please refer
+to the image for the detailed process.
+
+Jiale Li and Jiayang Li, et al.
+
+the dialogue memory. Whenever a conversation occurs, the Agents
+will review the summary of content previously discussed with the
+current interlocutor. Then, it determines a "further" new topic based
+on the previously discussed topics, and discuss around this new
+topic. This dialogue mechanism enhances the inspiration and view-
+point generation. For example, Isabella and Sophiaâs discussions
+deepened from personal development and societal needs to spe-
+cific methods for maintaining creativity and mental health under
+social pressure, the procedure of which is shown in figure 5. This
+mechanism mirrors real-world communication, where familiarity
+and discussion depth lead to increasingly inspiring and detailed
+insights on certain topics. Abstract Agent Relationship: Evolving
+
+Figure 4: post process procedure of appointment plan
+
+3.1.2 Action Module. Action Mechanism: When the game time
+reaches the scheduled plan time, the Agent starts executing the
+specific plan. By considering the current plan and personality in-
+formation, GPT-4-turbo generates a detailed, objective natural lan-
+guage description of the Agentâs actions regarding the plan. Before
+executing the plan, the Agent must first check if the environmental
+conditions meet the planâs objectives, adopting the item interaction
+condition logic from Generative Agents. If the target interaction
+object is occupied, the Agent will replan until conditions are met.
+Once the environmental object target for executing the plan is
+secured, the Agent will take over the interaction spot (in social
+scenarios, reserving adjacent spots for its social peers) and perform
+the action.
+
+Continously Developing Communication: When two Agents
+come within a certain distance of each other, thereâs a probability
+of triggering a dialogue, depending on their social tendencies and
+current state (for example, if an Agentâs plan is social, it will actively
+initiate a conversation). From a social psychology perspective, such
+interactions allow Agents to gain insights from others with differ-
+ent personalities, serving as a vital external stimulus for their own
+personality development. We aim for the depth of conversation
+between agents to gradually increase, enabling the agents to gener-
+ate more valuable insights. To achieve this, we have implemented
+
+Figure 5: Agent choose their communication partner and
+define the topic to talk based on the dialog memory
+
+Agents does not use parameters or specific categories to describe
+agentsâ relationship with others. We found that doing so would ex-
+cessively predetermine interactions with certain Agents. We enable
+large language models to select preferred conversation partners
+based on agentsâ dialogue memory. Simultaneously, we requires
+agents to provide reasons for their choices. This approach results
+in more rational and intriguing social choices, enabling agents to
+openly choose conversation partners and gain diverse perspectives
+on their dilemmas. For instance, Isabella, who is balancing external
+expectations with personal aspirations might focus on issues like
+personal dreams and social responsibility with Sophia, a literary
+writer interested in social insights, or focus on balancing personal
+pursuits and intimate relationships with Isla, a romantic filmmaker,
+as is shown in figure 6. We believe this process can help agents
+explore more possibilities during their Personality Evolution.
+
+3.2 Agent Personality
+In the Agent Behavior System described above, Agents produce
+a variety of objective behaviors through interactions with their
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+xxx,
+,
+
+Figure 6: The agent discusses different topics with various
+partners, and the depth of each topic continuously increases
+
+environment and other Agents. From the perspective of cognitive
+psychology, these behaviors can be viewed as stimuli. The Agent
+Personality system is responsible for processing these stimuli, gen-
+erating feedback, and thus driving the evolution of the Agentâs
+personality. In the field of psychology, the widely accepted defini-
+tion of personality encompasses cognitive, emotional and character
+traits that influence behaviors. We adapt these elements from psy-
+chology theory to fit the operational logic of Agent Architecture,
+ultimately identifying three main modules within the personality
+system: Emotion, Cognition and Character Growth.
+
+3.2.1 Character Structure. Five Dimension Based Character Struc-
+ture: In psychology, character is defined as a set of information that
+includes habits and tendencies in thought and action[49], which
+play a crucial role in their behavior. From the perspective of system
+design, character directly describes an individualâs traits and state.
+A structure that can precisely and comprehensively describe
+characteristics is essential for the effective integration and trans-
+mission of personality information to each module within an agent
+architecture. We constructed a five-dimension Character Struc-
+ture based on psychological theories, including Basic Information,
+Current State, Traits[41][50], Conflict[51], and Preference[16],as is
+shown in figure 7. "Basic Information" encompasses fundamental
+information about the Agent that does not change, such as gender,
+age, profession, etc. In the Current State, we detail the agentâs initial
+life and psychological state. In Personality Traits, we describe the
+agent based on the Big Five personality dimensions. In conflict,
+we detail contradictions within the agentâs personality, facilitating
+personality evolution around these conflicts. To better describe
+agentâs behavior characteristics, in Behavior Preference we set a
+six-dimension criteria which is composed of the ultimate goal, long-
+term goal(derived by ultimate goal), short-term goal(derived by
+ultimate goal), daily routine(based on agentâs overall personality),
+hobbies and venue preference. In practice, we initialize specific
+agentsâ personality using GPT-4-turbo based on this Five Dimen-
+sion Character structure.
+
+Two Versions of Character Structure: To enhance the efficiency
+and accuracy of the system development process, we employ two
+versions of the Character Structure within the system: a full version
+
+Figure 7: Five Dimension Based Character Structure
+
+and a summary version. The full version includes complete descrip-
+tion, while the summary version condenses and summarizes the
+full version. In specific modules, we differentiate between utilizing
+the full version and the summary version based on the variance
+in information weight. For instance, in the Behavior systemâs Plan
+module discussed earlier, we emphasize the information weight of
+Behavior Preference from the Character Structure. Therefore, we
+provide a full description of Behavior Preference to GPT-4-turbo,
+but only the summary versions for other dimensions. As for other
+dimensions, we only provide the summary version. This approach
+helps the model focus more on the alignment between Plan and
+Behavior Preference, also effectively reducing the generation time
+for large language models meanwhile.
+
+3.2.2 Emotion. Timely Experience and Feeling: Human feelings
+towards the same objective behavior are not constant. Specific
+subjective experiences and emotional responses are generated in
+response to external stimuli under particular circumstances. In
+specific circumstances, outworldâs stimuli affects us to generate
+emotional behavior and subjective feelings. As a result, our cog-
+nitive process such as attention, thinking pattern and decision
+is influenced, leading us to differentiated perceptions of external
+information[52]. Therefore, itâs crucial to build a system that can
+not only comprehensively consider the current state and perform
+emotional perception on ongoing behaviors, but also ensure that
+later cognition process receive information aligned with the char-
+acterâs current emotional state. At the implementation level, we
+categorize the Agentâs current emotional state into seven categories.
+The Emotion module considers the current personality conflicts
+and other personality information to update emotion based on the
+behavior being executed. In detail, we request GPT4 to choose the
+current emotion class with a first-person perspective description of
+
+xxx,
+,
+
+inner feeling. This module allows Agents to generate subjective de-
+scriptions that vary and align with their experiences, such as Sophia
+feeling excited about writing her personal novel due to anticipation
+of creating her literary work, or feeling anxious and self-doubtful
+after hearing the technological innovation in the writing process
+told by Benjamin, as is shown in Figure 8.
+
+Jiale Li and Jiayang Li, et al.
+
+Figure 8: Agents generate subjective descriptions that vary
+and align with their experiences
+
+Emotion-Based Plan Evaluation: Previous research has noted that
+humans donât rigidly follow the plans they set for themselves. In
+the design of Humanoid Agent architecture, researchers proposed
+a dual-system structure of emotion and behavior to allow Agents
+to constantly adapt their plans based on internal feelings.
+
+The Evolving Agentsâ Emotion module also supports continuous
+evaluation and adjustment in the Behavior systemâs Plan module.
+We simplified the adjustment mechanism of Emotion on Plan, using
+a more systematic decision-making mechanism to trigger plan
+adjustments. Emotions are categorized on a scale from negative
+to positive, mapped within a 0-7 interval. Significant emotional
+shifts during an action (e.g., from excitement to calm, crossing a
+3-interval span) indicate substantial emotional fluctuations, as a
+result of which, agents should reevaluate the forthcoming plans.
+This straightforward strategy, as is shown in Figure 9, demonstrates
+believable and dynamic planning capabilities. For example, after a
+conversation with Sophia, Isabellaâs mood shifted from excitement
+to fear (due to the discussion regarding social responsibilities caused
+pressure), leading her to adjust her original plan and go to a square
+for relaxation to calm her emotions.
+
+3.2.3 Cognition. Emotion perceives external objective events pro-
+duced by the Behavior system, generating subjective emotions for
+each behavior. However, this perception is immediate and frag-
+mented. Real humans are not directly shaped by every single occur-
+rence and emotion; instead, through unique cognitive processes, in-
+formation is filtered and holistically evaluated and summarized. in-
+stead,humans will filter and evaluate information we received.Such
+process is Interestingly, psychologists also apply computational
+
+Figure 9: Agent evaluate and modify existed plans based on
+the emotional fluctuations
+
+thinking to understand how humans absorb, comprehend infor-
+mation, and shape their personalities, viewing the human brain as
+an information processing system that identifies, stores, and ulti-
+mately reorganizes and reconstructs its system[38]. Based on this
+concept, we developed the Memory and Insight processes within
+the Cognition module.
+
+Memory - Characteristic Information Filter: Memory serves as
+a universal module in current Agent design, with the Generative
+Agent architecture introducing the Memory-stream architecture
+for storing, encoding, and retrieving relevant experiences. Cogni-
+tive psychology suggests that people with different personalities
+tend to notice and acquire information about the objective world
+differently[13], indicating the need for a Memory system tailored to
+individual traits. Therefore, the Evolving Agents places greater em-
+phasis on differentiated information weight assessment. It includes
+two types of memory data structures: short-term and long-term
+memory. Short-term memory stores all executed actions along with
+their corresponding emotions as temporary data. Long-term mem-
+ory, on the other hand, archives information that has been filtered
+and summarized from short-term memory. The Agent selects from
+its existing short-term memory based on the personality features
+within its Character Structure. It subjectively describes multiple sets
+of behaviors and emotions, storing the outcomes in its long-term
+memory database. In practice, Agents indeed develop long-term
+memories that align with personal traits, especially personality
+contradictions. For example, Benjamin, who is contemplating in-
+terdisciplinary development, pays attention to information outside
+his field of study, such as reading a literature book in the library. Is-
+abella, grappling with personal versus societal conflicts, takes great
+interest in the social philosophy discussions provided by Sophia.
+Cognitive psychologyâs memory processing theory[53] suggests
+that even long-term memories fade over time, understood as the
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+gradual blurring of information. The design of long-term memory
+also incorporates this fading mechanism by setting a capacity limit
+for the memory pool. Upon reaching this threshold, the Agent
+abstracts and condenses the earliest memories to blur them which
+is shown in Figure 10.
+
+xxx,
+,
+
+Figure 11: Insight enables agents to engage in personalized
+reflection on daily events.
+
+comprehensive descriptions updated within the agentâs Character
+Structure. This structure doesnât involve complex algorithmic logic
+but demands high precision in prompt engineering to accurately
+depict personality changes. We designed the Character Growth pro-
+cess in a chain-like pattern after extensive testing and consideration
+of the interrelations within the Character Structure, dividing it into
+four sequential sub-processes based on the Character Structure
+dimensions, excluding Basic Information: State Modify, Feature
+Modify, Contradiction Modify and Preference Modify. In the design
+of specific prompts, we maintain Character Structure dimensions,
+continuously summarizing new personality information based on
+the current state of the agent and filling it into the corresponding
+dimensions. In the continuous assessment of subsequent develop-
+ment, this growth mechanism has provided us with traceable and
+observable descriptions of personality changes.
+
+For example, compared to Day 1âs Benjamin, who was immersed
+in technology, his character now includes the realization that life
+encompasses more than work or academics, emphasizing health
+and happiness maintenance. This change was influenced by Zoeâs
+encouragement for a healthy lifestyle during their conversation, as
+is shown in Figure 12, highlighting Benjaminâs personality trans-
+formation. Similarly, Isabellaâs interactions with Sophia and her
+solitary reflections in the square prompt her to shift from a person-
+ality of conformity to one that is more free and authentic.
+
+4 SIMULATION PLATFORM
+Like the sandbox simulation environment proposed in the former
+work, we create a Sandbox using the Unity engine as shown in
+Figure 12. In this sandbox Agents will move and exhibit their actions
+based on the computational results of Evolving Agents architecture,
+making it easier for observers to interact.
+
+4.1 Building System
+4.1.1 Three Level Based Environment. Describing information con-
+tained in the environment to the large language model is vital.
+Agents need to be aware of the objects in the environment; whether
+they are interactable and how to interact. When describing infor-
+mation contained in the environment,we offer a novel thought. We
+design a Building-Place-Goal three level data structure, shown in
+Figure 15, to describe the environment. This structure enables us to
+efficiently convey structured environmental information to large
+
+Figure 10: The long-term memory mechanism of characters
+involves extracting information of interest from short-term
+memory and the blurring of older information.
+
+Insight - Overall Process of the Contextual Incident: Cognitive
+psychology emphasizes the holism of cognition, where people com-
+bine information and relevant contexts to complete an integrated
+cognitive process[53]. However, in our system, the information
+filtered through the memory module remains a vast amount of
+fragmented data, making it difficult for agents to integrate them for
+holistic thinking. Therefore, we designed the Insight submodule
+within the Cognition module to help simulate this holistic thinking
+process. Whatâs more, we aim for Insight to reflect the diversity of
+individual cognitive processes. Thus, we enable Insight to reference
+the complete character structure, summarizing and reflecting on
+all events of the day and the long-term memory. In practical tests,
+we can intuitively perceive that each agent has distinctly unique
+insights into daily events.
+
+For example, on the first day, Benjamin realizes that becoming a
+well-rounded individual requires not only technical breakthroughs
+but also efforts in humanitarian care and social skills. On the second
+day, Benjamin sees the potential for integrating technology with
+the humanities, beginning to incorporate a humanitarian perspec-
+tive into his technical explorations, seeking a harmonious balance
+between the two. The procedure of such is shown in Figure 11.
+
+3.2.4 Character Growth. Chain-like Update Process: After pro-
+cessing external events through the Emotion and Cognition mod-
+ules, the foundational materials for Agent evolution are prepared.
+The Character Growth module is responsible for simulating the
+personality update of agents, transforming daily evolutions into
+
+xxx,
+,
+
+Jiale Li and Jiayang Li, et al.
+
+Figure 12: In the sandbox world, users can observe the Agentâs daily behavioral activities and inner thoughts.
+
+language models, thus allowing Agents to fully consider existing en-
+vironmental information and locations during their planning phase,
+improving the efficiency of Agents to understand the environment.
+The direct manifestation of this is that large language models will
+aim to align their planning objectives as closely as possible with
+the existing environmental functions and descriptions.
+
+Figure 13: Environment data structure
+
+4.1.2 NPC Action Execute. The daily plans generated by the Agent
+planning module are read and translated into ScriptableObject-type
+task description files in Unity. When the game time reaches the next
+plan, the engine will drive the Agent to move to the target location
+using the A-star algorithm, and upon arrival, play the correspond-
+ing animation. To enhance the decoupling of work between the
+agent architecture and the sandbox, we have detailed programmatic
+descriptions of the operational rules in sandbox, such as the Agentâs
+moving speed and spatial information descriptions. This way, the
+agent architecture can directly generate Agent performance data
+that fits the logic of the sandbox (for example, if the Sandbox screen
+running time from the dormitory to the college is 15 minutes, then
+the agent architecture will take this 15-minute moving time into
+consideration in advance when executing). This approach not only
+ensures the decoupling level during the team development process,
+
+but also enables user to design and iterate environment setting
+when art resource for sandbox is not available.
+
+4.2 Using System
+4.2.1 Environment Editing. Inspired by behavioral psychology, Evolv-
+ing Agents is also envisioned as a research tool for the field. In be-
+havioral psychology, external stimuli is one of the primary variables
+in personality development or change. In this potential demand
+scenario, we hope the system will allow users to easily modify
+the environmental settings of the system to meet their needs in
+the future. Environmental updates in the game interface require
+corresponding art resources, but it is impractical to expect users
+to provide these resources. However, as mentioned in section 4.2,
+agent architecture and sandbox are highly decoupled. Users can
+edit the environment and obtain simulation results without waiting
+for the art scenes to update. To lower the learning threshold for
+user editing, we have developed a tabular operation experience
+for environmental editing. Users can directly control environmen-
+tal variables by adjusting an online csv table, thereby achieving
+adjustments to the living space of the Agent.
+
+Figure 14: Users can directly update environmental setting
+by adjusting an online csv table
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+4.2.2 Chat With Agent. Although the current research theme does
+not encourage users to provide artificial stimuli beyond the simu-
+lation process for Agents, we also build relevant user interaction
+experiences in the Simulative System. We aim for interactions from
+users to be consistent with other Agents from the perspective of
+an Agent. Therefore, users can choose to initiate a conversation
+with any Agent that is not currently engaged in a dialogue during
+the systemâs operation. This conversation will also be recorded and
+summarized in the Agentâs own Dialog-memory, contributing to
+the Agentâs cognitive process.
+
+5 OBJECTIVE DATA VERIFICATION
+The goal of Evolving Agents is to enable them to perform embodied
+behaviors according to differentiated personalities in the interactive
+simulation system and to evolve their personalities continuously
+based on external information during interaction processes. Around
+this goal, we propose three more specific research hypotheses:
+
+â¢ Evolving Agents can construct agents with perceivable and
+
+believable differentiated personality traits.
+
+â¢ Evolving Agentsâ personalities can undergo perceivable and
+believable evolution during interactive simulation processes.
+â¢ The personality evolution of Evolving Agents can lead to per-
+ceivable and believable changes in their behavior patterns.
+
+The evaluation of believability and perceivability mentioned above
+relies on human usersâ observation and subjective assessment. How-
+ever, before recruiting users for experimentation, we can first ana-
+lyze the operational logs of the Agents to verify changes in personal-
+ity and behavior patterns that have occurred during the simulation
+from a machine metrics standpoint (like alpha and beta testing in
+software development processes).
+
+We implemented two types of objective data validations, using
+the Big Five personality assessment and behavior difference analy-
+sis respectively. By comparing with the ablation architecture, we
+objectively verified that the Evolving Agents indeed exhibited per-
+sonality evolution and corresponding behavioral changes during
+the simulation process.
+
+5.1 Big Five Personality Traits Assessment
+We aim for Agents to define their current personality based on
+objective scale questionnaires throughout the simulation process
+and find the objective evidence of personality changes in Evolving
+Agents by comparing results over time. The character structure of
+Evolving Agents is represented based on the Big Five personality
+traits. Therefore, we refer to existing Big Five personality analysis
+questionnaires and equip Evolving Agents with the ability to fill out
+questionnaires, enabling them to continuously undertake Big Five
+Personality Inventory (BFI-44) assessments[41]and to output the
+analysis results of the Big Five personality traits during the simula-
+tion process. In the specific implementation of enabling Evolving
+Agents to fill out questionnaires, we discover that even when we
+constrain the Agent to the same state, the results of each BFI-44
+assessment vary significantly. The large language models lack a
+clear standard for reference and comparison. As a Result, we design
+a process for filling out the same set of questions across multiple
+days in parallel, asking the model to focus on the differences from
+
+xxx,
+,
+
+day to day for a comprehensive questionnaire completion which ef-
+fectively resolves the issue of lacking a clear standard and reference
+for questionnaire completion across sessions.
+
+Contrasted with the complete Evolving Agents architecture, we
+have an ablated architecture that lacks the Insight, and Character
+Growth components of the Personality system. The reason for this
+ablation is that this version of the Evolving Agents architecture is
+somewhat similar to previous Agent architectures, including the
+basic processes of Plan-Action-Memory-Reflect, hence it has certain
+referential value.
+
+We use three Agents: Isabella, Benjamin, Sophia, for a seven-day
+simulation within a sandbox, calculating their daily scores across
+the five dimensions of the Big Five personality traits, as is shown
+in Figure 16 and Figure 17, with the scoring method referenced.
+Finally, we determine the difference values between each dimension
+over two days for each person. Let
+
+ð· = {BFI_EXT, BFI_AGR, BFI_CON, BAI_NEU, BAI_OPEN}
+
+be the set of dimensions evaluated. For each dimension ð â ð·,
+given a series of scores ð ð defined as shown in below
+
+ð ð = {ð ð1, ð ð2, . . . , ð ðð },
+where ð is the number of days, we assess the overall personality
+change activityÎoverall for each person using the following formula:
+ð·
+âï¸
+
+ðâ1
+âï¸
+
+(1)
+
+(cid:12)
+(cid:12)ð ðð â ð ð,ð+1
+
+(cid:12)
+(cid:12)
+
+(2)
+
+Îoverall =
+
+1
+ð· (ð â 1)
+
+ð=1
+
+ð=1
+
+The Big Five personality change states of Isabella, Benjamin and
+Sophia, who have different initial personality settings, over seven
+days are shown below
+
+Figure 15: Results of the Big Five personality traits assess-
+ment
+
+xxx,
+,
+
+We can see that the Agents in the ablated group show no change
+in their personality assessment results over the seven days, with
+an average personality difference of 0 between every two days
+for all three Agents. In contrast, Agents in the Full Architecture
+clearly exhibit active personality change states. For Benjamin, the
+Îoverall is 4.37; for Isabella, it is 6.52; and for Sophia, it is 6.77. This
+data supports our claim to a great extent that the Evolving Agents
+can lead to personality evolution in Agents during the simulation
+process.
+
+From the trends in changes across various dimensions, we also
+discover that Agents with different personality exhibit distinct pat-
+tern of personality evolution. For example, Benjamin, an introverted
+and stable computer science student, is slowly adjusting his per-
+sonality towards his target. In contrast, Sophia, a more creative
+and active writer, experiences rapid changes in both neuroticism
+and extraversion dimensions, which intuitively aligns with our
+understanding of their individual personalities.
+
+However, while displaying divergent changes, the three indi-
+viduals also show certain similar development directions. Overall,
+all three have shown a decrease in neuroticism, which might be
+due to the positive bias in the content of large language models,
+making it easier for agents to evolve towards more self-consistent
+and peaceful personality directions.
+
+5.2 Behavioral Similarity
+In the Agent architecture, we limit the goal selection in the planning
+phase to a finite number of abstract categories. This allows us
+to conveniently measure the similarity of daily plan by encoding
+each dayâs plan and analyze them based on the Euclidean distance,
+thereby providing a measure of behavioral differences between
+days. Given a dataset representing daily goal counts, the Euclidean
+distance between the behavior on two different days, day ð and day
+ð, is defined by the formula:
+
+ð¸ (ð, ð) =
+
+(cid:118)(cid:117)(cid:116) ð
+âï¸
+
+ð=1
+
+(ð¥ðð â ð¥ ðð )2
+
+(3)
+
+where ð¸ (ð, ð) represents the Euclidean distance between day ð and
+day ð, ð¥ðð is the count of goal ð on day ð, and ð¥ ðð is the count of
+the same goal on day ð. ð is the total number of distinct goals
+observed over all days. This calculation assumes that for any goal
+not observed on a given day, its count is taken as 0.
+
+Given a distance matrix ð· of size ð Ã ð, where ð·ð ð represents
+the Euclidean distance between the behavior on days ð and ð, the
+overall activity level, denoted as ð´, is calculated as the average of
+all upper triangular elements of ð· excluding the diagonal. This
+overall activity level is given by the formula:
+
+ð´ =
+
+(cid:205)ðâ1
+ð=1
+
+(cid:205)ð
+
+ð=ð+1
+
+ð·ð ð
+
+ð (ðâ1)
+2
+
+(4)
+
+ð (ðâ1)
+where ð is the total number of days. The denominator,
+,
+2
+represents the count of elements in the upper triangular part of ð·
+excluding the diagonal, effectively counting each pair of days once.
+We use the same ablation control group as in the Big Five per-
+sonality trait analysis for the same reason. This is the version of
+
+Jiale Li and Jiayang Li, et al.
+
+Evolving Agents most similar in architectural description to past
+studies, hence it holds referential value.
+
+We use three Agents: Isabella, Benjamin, Sophia for a seven-day
+simulation within a Sandbox, calculating the behavioral differences
+between days. The analysis results of behavioral similarity are as
+follows: For Isabella, the activity level in the full architecture is
+
+Figure 16: Results of the Behavioral similarity assessment
+
+2.293, while the overall activity level in the ablated architecture is
+1.416; for Benjamin, the overall activity level in the full architecture
+is 2.152, while in the ablated architecture it is 1.742; for Sophia, the
+overall activity level in the full architecture is 1.949, while in the
+ablated architecture it is 1.474. It is evident that compared with the
+ablated Agent architecture, Agents in the full architecture exhibited
+more active behavioral changes.
+
+When specifically planning behavior in the Plan module, there
+are no differences in the input data composition between the full
+architecture and the ablated architecture of Agent planning. The
+only difference is that the full architecture agents receive evolved
+personalities every day, whereas the ablated architecture repeats
+the initial personality settings. This also indirectly verifies that
+personality differences are one of the reasons affecting changes in
+behavior patterns.
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+6 HUMAN EVALUATION
+After validating the objective data, we prepared and conducted a
+human evaluation experiment, continuing with the research hy-
+potheses mentioned earlier. For Hypothesis 1, we asked human
+evaluators whether the personality differences between different
+Agents are perceptible and believable. Regarding Hypotheses 2 and
+3, we asked human evaluators whether the personality differences
+between different Agents are perceptible and believable to the users.
+
+6.1 Evaluation Procedure
+We recruited a total of 30 human evaluators (14 male, 16 female)
+who signed informed consent forms to participate in our study.
+Their ages ranged from 18 to 34 years, encompassing a variety of
+disciplines and professions, with good reading and analytical skills,
+and all having a bachelorâs degree or higher education.
+
+Before the formal experiment, we conducted a preliminary study.
+In this pre-experiment, we first selected a 10-day log of one of the
+agents and presented it through front-end animations on the sim-
+ulation platform for two human evaluators to assess. During the
+pre-experiment, we identified the following issues: 1) In practice,
+we found that human evaluators were overly distracted by images
+and other irrelevant information, making it difficult for them to
+focus on the agentâs personality growth and behavioral changes
+themselves. 2) The amount of textual information from 10 days of
+evolution was too overwhelming for general evaluators, making it
+difficult for them to fully understand the complete process of the
+agentâs changes over the 10 days; 3) The evolution of the agentâs
+personality and behavior is a highly abstract and generalized simu-
+lation of human personality evolution. Because we cannot observe
+an agent for over a decade or more like we do with humans. Human
+evaluators need to detach from the normal human perception of
+time and focus on evaluating the evolution process itself.
+
+Therefore, in the formal experiment, we used text records of
+an agentâs logs over three consecutive days for user assessment.
+Additionally, before the experiment, we emphasized to the human
+evaluators the importance of reducing consideration of the time
+factor and focusing on the believability of the evolutionary process
+itself.
+
+In the formal experiment, we first asked human evaluators to
+spend about an hour reading and taking notes on the logs of three
+agents and the logs of four ablated versions of one agent. We also
+asked them to use the think aloud method to communicate their
+thoughts to the experimenters during the reading process. After
+completing the reading, we asked them to fill out questionnaires
+for both the control and ablation experiments based on their notes.
+During this process, they could continually refer back to the reading
+materials to ensure the accuracy of their choices. The questionnaires
+we set up focused on two main aspects: user believability rating,
+and ablation control experiments.
+
+6.2 User Believability Rating
+In the user believability rating, we posed two questions regarding
+the human-like effects of Evolving Agents: "How similar are the
+personality and behavioral differences among the three groups of
+agents to those between real humans?" and "How similar is the
+growth trajectory of personality and behavior of the three groups
+
+xxx,
+,
+
+of agents to that of real humans?" We asked the human evaluators
+to score these two questions on a scale of 0 to 5.
+
+In the user believability rating, the scores for the human-likeness
+of personality and behavioral differences of Evolving Agents, after
+a Wilcoxon signed-rank test, yielded a statistic of T = 11.0, p < 0.001.
+This very small p-value indicates that the assessed personality dif-
+ferences are statistically significant compared to a neutral rating (3).
+This can be interpreted to mean that the scores in the survey were
+generally above the median, with participants broadly considering
+the personality differences to be significant and reasonable. This
+effectively supports Hypothesis 1: Evolving Agents can construct
+agents with perceptible and believable differentiated personality
+traits. For the scores on the human-likeness of the growth trajectory
+
+Figure 17: believability of personality and behavioral differ-
+ences of Evolving Agents
+
+of personality and behavior of Evolving Agents, after a Wilcoxon
+signed-rank test, the statistic was T = 11.5, p < 0.001. The very low p-
+value indicates that the null hypothesis can be rejected, suggesting
+there is sufficient evidence to claim that the growth trajectory and
+personality development scores are statistically significantly higher
+than the median level (3), meaning participants generally found the
+growth trajectory and personality development to be obvious and
+reasonable within the assessed context. This effectively supports
+Hypotheses 2 and 3: In interactive simulations, the personalities of
+Evolving Agents can undergo perceptible and believable evolution.
+
+6.3 Ablation Experiment
+To validate the positive impact of various modules within the Evolv-
+ing Agents on both personality differentiation and personality evo-
+lution in terms of perceptibility and believability, we conducted
+two degrees of ablation studies on the architecture of the Evolving
+Agent. Compared to the full Evolving Agents architecture, Group 2
+had the Cognitive Feelings, Insight, and Character Growth parts
+of the Personality system removed, consistent with section 5.1,
+while Group 3 was further simplified from Group 2 by simplifying
+the Character Structure, adopting a character description method
+similar to those used in other existing embodied agent sandbox
+simulation systems. We asked human evaluators to rank the human-
+likeness of the growth trajectories of personality and behavior for
+
+xxx,
+,
+
+Figure 18: believability of the growth trajectory of personal-
+ity and behavior of Evolving Agents
+
+Figure 19: Result of ablation experiment
+
+four experimental groups and to describe in words the reasons for
+their rankings.
+
+In the ablation experiment, we obtained 30 sets of ranking data
+from user studies. Based on this data, we calculated the TrueSkill
+ranking scores for the four experimental groups and computed
+Cohenâs d values to quantify the strength of differences between
+groups. In the TrueSkill scoring system, the ð value represents the
+average performance level of an experimental group, while the ð
+value measures the uncertainty of the scores. Additionally, to ex-
+plore the statistical significance of these results, we conducted
+a Kruskal-Wallis test, a non-parametric alternative to one-way
+ANOVA, to confirm the overall statistical significance of differences
+under different experimental groups. To pinpoint the exact sources
+of differences, namely which specific group comparisons showed
+significant differences, we used the Dunn test for pairwise compar-
+isons between experimental groups, and p-values were adjusted
+using the Holm-Bonferroni method. The experimental results are
+illustrated in a bar chart, with the height of the bars corresponding
+
+Jiale Li and Jiayang Li, et al.
+
+to the ð value and the top of the bars marked with error lines,
+indicating the ð value.
+
+The final result shows, Group 1 achieved the best scoring re-
+sults (ð=29.89; ð=1.61), followed by Group 2 (ð=23.18; ð=1.13), and
+then Group 3 (ð=22.95; ð=1.15). Comparing the highest-scoring
+Group 1 with the composite scores of the other three groups, the
+Cohenâs d value of 5.33 indicates that Group 1 performed signifi-
+cantly better than Groups 2, 3, and 4 combined. The Dunn post-hoc
+test, both uncorrected and corrected using the Holm-Bonferroni
+method, showed that the difference between Group 1 and all other
+groups (Groups 2, 3, and 4) remained significant, while there was
+no significant difference among Groups 2, 3, and 4.
+
+Among all experimental control groups, Group 4 performed the
+worst (ð=21.16; ð=1.18 ). Surprisingly, the human group was per-
+ceived by users to have the lowest level of anthropomorphism.
+Following the experiment, feedback from users based on the low-
+est scores of Group 4 suggested that they found the behavior and
+personality change process of real humans too stable, with barely
+any changes observable. This points to a potential issue in experi-
+mental design: real humans indeed do not exhibit many behavioral
+or personality changes over short periods and our routines might
+be somewhat mechanical and dull in a sense. However, overall, the
+comparison of the first three groups in the ablation experiment,
+combined with the user credibility rating, effectively supports the
+three research hypotheses focused on in the study: 1) Evolving
+Agents can construct agents with perceptible and believable differ-
+entiated personality traits; 2) In the interactive simulation process,
+the personalities of Evolving Agents can undergo perceptible and be-
+lievable evolution; 3) The personality evolution of Evolving Agents
+can influence their behavior patterns to undergo perceptible and
+believable changes, and the ablation experiment method confirmed
+that Evolving Agents plays a key role in supporting these research
+hypotheses.
+
+7 SUPPLEMENT INSIGHT WORKSHOP
+During the inspiration experiment phase, we primarily evaluated
+the inspirational effects and limitations of Evolving Agents as design
+probes on designersâ thinking and design processes. We recruited
+9 users from the design field, aged between 22-50 years, covering
+multiple design directions such as architectural design, industrial
+design, interaction design, game design, etc., all with at least a
+bachelorâs degree.
+
+In the experiment, we first had the designer participants spend
+30 minutes observing the daily logs of personality and behavior
+for 3 agents, discussing these logs, and writing down design in-
+sights generated from them on paper. Following that, we facilitated
+a brainstorming session where each designer discussed and asso-
+ciated their own and othersâ insights, continuously adding new
+insights.
+
+Lastly, we asked each designer to step forward to present their
+summary of views and fill out a five-point scale questionnaire on
+the inspirational effect of Evolving Agents as design probes. The
+scoring results are as shown in the following graph.
+
+Most designers were surprised by such a system design and
+provided us with many innovative ideas on how such embodied
+agent simulation systems could be integrated with design processes.
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+Figure 20: Evolving agents score as heuristic effects of design-
+ing probes
+
+For example, a discussant with a background in environmental
+design believed that this system could be used to simulate usersâ
+experiences and feedback in certain spatial environments, thus
+obtaining firsthand design opinions. A student specializing in drama
+and film thought it could be possible to draw inspiration from the
+Agentsâ lives in a sandbox world to aid in their story creation, while
+a student of service design believed this system could help explore
+new service scenarios tailored to specific groups.
+
+8 DISCUSSION
+8.1 Interdisciplinary Perspectives on Agent
+architecture Construction Thinking
+
+Currently, there are many simulation Agent architectures with rel-
+atively complete capabilities in behavior, learning and interaction.
+The architecture of these architectures essentially continues the
+traditional design philosophy of agents, built around a machine ar-
+chitecture concept that encompasses input, processing, and output
+from Perception to Mind-like thinking and then to Action. With the
+development of large language models to this day, their emergent
+general abilities and intent recognition greatly facilitate interdisci-
+plinary theoretical transfer for researchers designing AI systems or
+Human-Agent Interaction (HAI), focusing on the question of "how
+to create embodied agents with diverse and dynamic personalities."
+In the era of natural language models, AI can exhibit stronger
+transfer abilities and general capabilities, and can interact with
+humans through natural language. This characteristic endows nat-
+ural language models with the ability to "think about problems
+through natural language." This feature allows us to imitate the
+entire human cognitive process, simulating human thinking and
+output in various modules in a natural language manner.
+
+Based on such technological transformation, we believe that the
+current approach to constructing agent architectures can be divided
+into two steps. Firstly, map the analysis architecture used in psy-
+chology for such human behaviors into computationally feasible
+processes and architectures. Secondly, in the specific module design,
+based on relevant psychological theories and combined with hu-
+man analysis and processing experience, write and debug prompt
+structures that the natural language models can understand. This
+
+xxx,
+,
+
+ensures that the entire process and specific processing steps are
+more human-like for large language models.
+
+8.2 The Potential and Limitations of Embodied
+
+Agentsâ Applications
+
+8.2.1 The Prospects of Embodied Agents in Sandbox Simulation Sys-
+tems. During the actual experiments, many human evaluators are
+confused, feeling that the experiences from all four experimental
+groups are quite human-like, making it difficult to clearly distin-
+guish which one is a real human. Surprisingly, the performance
+of real humans is actually the lowest (possibly because our hu-
+man actor has a stable mood and a rather mundane life). Most
+experimenters tell us they mainly rely on language style and subtle
+emotional differences to judge whether an agent is human or AI,
+but the overall feeling is already very close, reaching a degree of
+verisimilitude.
+
+Furthermore, users interact with embodied agent simulation sys-
+tems primarily through natural language, a mode of interaction that
+is very friendly to researchers from all fields, especially non-expert
+users, as they can easily observe and study an agentâs personality,
+thoughts, and behaviors directly. We believe the outputs from each
+module in this process can greatly aid research in design studies,
+psychology, sociology, anthropology, and other disciplines.
+
+Perhaps in the future, developed AI will be able to construct
+highly abstract, high-dimensional models of human personality
+development. AI can predict a personâs personality development
+changes more accurately and directly without the need for us to
+build a simulation system to continuously supply the environment
+and events needed for this prediction process. The "one-click pre-
+diction" technology model may become the main technical route
+for our future research on individual development and even most
+of human behavioral psychology.
+
+However, we believe sandbox-style simulation systems still hold
+very positive value. Although black-box AI models are used in the
+system to execute specific units such as charactersâ thinking and
+behavior, when we look at the entire system, the journey from
+planning to behavior, from behavior to thinking, and finally to
+personality development, is actually an interpretable and trace-
+able "white-box mode." Compared to letting future developed AI
+directly provide answers, we believe the process information and
+forward-deriving logic provided by the simulation system will bet-
+ter enhance the interpretability and transparency of HAI systems.
+Users can also better understand the system and the human behav-
+ioral psychology explored behind it through interaction with such
+a system.
+
+8.2.2
+Limitations of large model foundational capabilities on agents.
+During the actual design and testing process of Evolving Agents,
+we also discovered several limitations in the application of embod-
+ied agents. First, due to the positive bias in the content of large
+language models, the growth trajectory of agents simulated over
+time may be overly positive, which could lead to a convergence in
+the development direction of agents as time progresses. Secondly,
+the state of Agents simulated by large language models are akin to
+role-playing which may prevent Agents from fully understanding
+the complex and subtle emotions humans experience in response to
+real-life events and often resulting in emotions that are too positive
+
+xxx,
+,
+
+or somewhat confusing. Finally, since real humans are more contra-
+dictory and complex, and more perplexed and repetitive, whether
+it is possible to simulate humans in a more complex and realistic
+manner may require further in-depth research by psychologists
+and computer scientists together.
+
+8.3 Ethics and Societal Impact
+As the technology of large language models and agent architec-
+tures evolves, this field will also trigger more reflection on ethics
+and morality. Firstly, during the usage process, designers and re-
+searchers from other fields need to be cautious of becoming overly
+reliant on embodied agents. These agents can only simulate the
+thinking and behavior processes of humans but cannot fully display
+the complexity and diversity of real humans. Due to the limitations
+of the architecture, the characteristics of underlying models, and
+the differences between human cognition and AI cognition, AI will
+inevitably have instances of inaccurately simulating real humans.
+Therefore, we suggest using embodied agents only as divergent
+tools in the early stages of design or research. In actual design and
+in-depth study, real humans should still be the subject of research
+to truly understand people.
+
+Secondly, for the whole society, the increasing capabilities and
+human-likeness of embodied agents will make it increasingly diffi-
+cult for humans to distinguish between AI and people. Humans may
+form broader and more profound emotional connections with AI
+agents, leading to changes in social relationships. This may inspire
+us to reflect on connections between humans and society. Although
+we will inevitably enter a world where virtual and reality merge,
+we still recommend employing more means and methods to help
+humans focus more on real life and establish more connections
+with people around them.
+
+9 CONCLUSION
+This paper introduces Evolving Agents, interactive computational
+agents that simulate the diverse and dynamic human personality.
+We describe an novel architecture based on psychological model
+mapping, which can perform embodied behaviors according to dif-
+ferentiated personalities in an interactive simulation system and
+undergo continuous personality evolution based on external infor-
+mation during the interaction process. Evaluations in the sandbox
+simulation system show that our architecture creates agents with
+believable and perceptible personalized behaviors as well as a bidi-
+rectional evolution process of personality behaviors. Additionally,
+through workshops, we have preliminarily verified that such sys-
+tems have a significant design inspiration during the interaction
+process with designers, demonstrating the development potential of
+embodied agents. Looking ahead, we suggest that Evolving Agents
+can be applied in the early stages of design, as well as in related
+research in psychology, sociology, and anthropology.
+
+10 ACKNOWLEDGEMENTS
+This article was funded by the Important International Academic
+Conference Award Fund for Graduate Students of Tongji University
+and the Key Technology Research and Demonstration Project of
+Hydrogen Town Fuel Cell Integrated Energy System.
+
+Jiale Li and Jiayang Li, et al.
+
+REFERENCES
+[1] Christian Erik Kampmann.
+
+ior (1996).
+https://onlinelibrary.wiley.com/doi/pdf/10.1002/sdr.1483.
+
+System Dynamics Review, 28(4):370â395, 2012.
+
+Feedback loop gains and system behav-
+_eprint:
+
+[2] Generative Agents: Interactive Simulacra of Human Behavior | Proceedings of
+the 36th Annual ACM Symposium on User Interface Software and Technology.
+[3] Zhilin Wang, Yu Ying Chiu, and Yu Cheung Chiu. Humanoid Agents: Platform
+for Simulating Human-like Generative Agents, October 2023. arXiv:2310.05418
+[cs].
+
+[4] Jiaju Lin, Haoran Zhao, Aochi Zhang, Yiting Wu, Huqiuyue Ping, and Qin Chen.
+AgentSims: An Open-Source Sandbox for Large Language Model Evaluation,
+August 2023. arXiv:2308.04026 [cs].
+
+[5] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke
+Zhu, Linxi Fan, and Anima Anandkumar. Voyager: An Open-Ended Embodied
+Agent with Large Language Models, October 2023. arXiv:2305.16291 [cs].
+[6] Linxi Fan, Guanzhi Wang, Yunfan Jiang, Ajay Mandlekar, Yuncong Yang, Haoyi
+Zhu, Andrew Tang, De-An Huang, Yuke Zhu, and Anima Anandkumar. Mine-
+Dojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge.
+Advances in Neural Information Processing Systems, 35:18343â18362, December
+2022.
+
+[7] Xizhou Zhu, Yuntao Chen, Hao Tian, Chenxin Tao, Weijie Su, Chenyu Yang,
+Gao Huang, Bin Li, Lewei Lu, Xiaogang Wang, Yu Qiao, Zhaoxiang Zhang,
+and Jifeng Dai. Ghost in the Minecraft: Generally Capable Agents for Open-
+World Environments via Large Language Models with Text-based Knowledge
+and Memory, June 2023. arXiv:2305.17144 [cs].
+
+[8] Siyuan Chen, Mengyue Wu, Kenny Q. Zhu, Kunyao Lan, Zhiling Zhang, and
+Lyuchun Cui. LLM-empowered Chatbots for Psychiatrist and Patient Simulation:
+Application and Evaluation, May 2023. arXiv:2305.13614 [cs].
+
+[9] Yilun Du, Shuang Li, Antonio Torralba, Joshua B. Tenenbaum, and Igor Mordatch.
+Improving Factuality and Reasoning in Language Models through Multiagent
+Debate, May 2023. arXiv:2305.14325 [cs].
+
+[10] Hongxin Zhang, Weihua Du, Jiaming Shan, Qinhong Zhou, Yilun Du, Joshua B.
+Tenenbaum, Tianmin Shu, and Chuang Gan. Building Cooperative Embodied
+Agents Modularly with Large Language Models, February 2024. arXiv:2307.02485
+[cs].
+
+[11] Marvin Zuckerman. Psychobiology of Personality. Cambridge University Press,
+
+May 1991. Google-Books-ID: TA01Duy4RLwC.
+
+[12] Nasser Ghasem-Aghaee and Tuncer I. Ãren. Cognitive complexity and dynamic
+personality in agent simulation. Computers in Human Behavior, 23(6):2983â2997,
+November 2007.
+
+[13] Tuncer I. Ãren. Dynamic Templates and Semantic Rules for Simulation Advisors
+and Certifiers. In Paul A. Fishwick and Richard B. Modjeski, editors, Knowledge-
+Based Simulation: Methodology and Application, pages 53â76. Springer, New York,
+NY, 1991.
+
+[14] Sil Hamilton. Blind Judgement: Agent-Based Supreme Court Modelling With
+
+GPT, January 2023. arXiv:2301.05327 [cs].
+
+[15] Melanie Swan, Takashi Kido, Eric Roland, and Renato P. dos Santos. Math Agents:
+Computational Infrastructure, Mathematical Embedding, and Genomics, July
+2023. arXiv:2307.02502 [cs, q-bio].
+
+[16] Zhiheng Xi, Wenxiang Chen, Xin Guo, Wei He, Yiwen Ding, Boyang Hong,
+Ming Zhang, Junzhe Wang, Senjie Jin, Enyu Zhou, Rui Zheng, Xiaoran Fan, Xiao
+Wang, Limao Xiong, Yuhao Zhou, Weiran Wang, Changhao Jiang, Yicheng Zou,
+Xiangyang Liu, Zhangyue Yin, Shihan Dou, Rongxiang Weng, Wensen Cheng,
+Qi Zhang, Wenjuan Qin, Yongyan Zheng, Xipeng Qiu, Xuanjing Huang, and Tao
+Gui. The Rise and Potential of Large Language Model Based Agents: A Survey,
+September 2023. arXiv:2309.07864 [cs].
+
+[17] Izzeddin Gur, Hiroki Furuta, Austin Huang, Mustafa Safdari, Yutaka Matsuo,
+Douglas Eck, and Aleksandra Faust. A Real-World WebAgent with Planning, Long
+Context Understanding, and Program Synthesis, February 2024. arXiv:2307.12856
+[cs].
+
+[18] Yue Wu, So Yeon Min, Yonatan Bisk, Ruslan Salakhutdinov, Amos Azaria,
+Yuanzhi Li, Tom Mitchell, and Shrimai Prabhumoye. Plan, Eliminate, and
+Track â Language Models are Good Teachers for Embodied Agents, May 2023.
+arXiv:2305.02412 [cs].
+
+[19] Shang-Ling Hsu, Raj Sanjay Shah, Prathik Senthil, Zahra Ashktorab, Casey Dugan,
+Werner Geyer, and Diyi Yang. Helping the Helper: Supporting Peer Counselors
+via AI-Empowered Practice and Feedback, May 2023. arXiv:2305.08982 [cs].
+[20] J.D. Zamfirescu-Pereira, Richmond Y. Wong, Bjoern Hartmann, and Qian Yang.
+Why Johnny Canât Prompt: How Non-AI Experts Try (and Fail) to Design LLM
+Prompts. In Proceedings of the 2023 CHI Conference on Human Factors in Computing
+Systems, CHI â23, pages 1â21, New York, NY, USA, April 2023. Association for
+Computing Machinery.
+
+[21] Advait Bhat, Saaket Agashe, Parth Oberoi, Niharika Mohile, Ravi Jangir, and
+Interacting with Next-Phrase Suggestions: How Suggestion
+Anirudha Joshi.
+Systems Aid and Influence the Cognitive Processes of Writing. In Proceedings
+of the 28th International Conference on Intelligent User Interfaces, IUI â23, pages
+436â452, New York, NY, USA, March 2023. Association for Computing Machinery.
+
+Evolving Agents: Interactive Simulation of Dynamic and Diverse Human Personalities
+
+xxx,
+,
+
+[22] 3DALL-E: Integrating Text-to-Image AI in 3D Design Workflows | Proceedings
+
+of the 2023 ACM Designing Interactive Systems Conference.
+
+[23] Vishesh Kalvakurthi, Aparna S. Varde, and John Jenq. Hey Dona! Can you help
+me with student course registration?, March 2023. arXiv:2303.13548 [cs].
+[24] Masum Hasan, Cengiz Ozel, Sammy Potter, and Ehsan Hoque. SAPIEN: Affective
+Virtual Agents Powered by Large Language Models*. In 2023 11th International
+Conference on Affective Computing and Intelligent Interaction Workshops and
+Demos (ACIIW), pages 1â3, September 2023.
+
+[47] Denny Zhou, Nathanael SchÃ¤rli, Le Hou, Jason Wei, Nathan Scales, Xuezhi Wang,
+Dale Schuurmans, Claire Cui, Olivier Bousquet, Quoc Le, and Ed Chi. Least-to-
+Most Prompting Enables Complex Reasoning in Large Language Models, April
+2023. arXiv:2205.10625 [cs].
+
+[48] The "What" and "Why" of Goal Pursuits: Human Needs and the Self-
+
+Determination of Behavior: Psychological Inquiry: Vol 11, No 4.
+
+[49] RobeRt Snowden. Oxford, UK: Oxford University Press, 2006 375 pages (Â£27.99
+
+paperback).
+
+[25] Human-level play in the game of Diplomacy by combining language models with
+
+[50] An Introduction to the Five-Factor Model and Its Applications - McCrae - 1992 -
+
+Journal of Personality - Wiley Online Library.
+
+[51] APA Dictionary of Psychology.
+[52] Robert L. Solso, M. Kimberly MacLin, and Otto H. MacLin. Cognitive psychology,
+7th ed. Cognitive psychology, 7th ed. Pearson Education New Zealand, Auckland,
+New Zealand, 2005. Pages: xxi, 602.
+
+[53] Marvin Minsky. Society Of Mind. Simon and Schuster, March 1988. Google-
+
+Books-ID: bLDLllfRpdkC.
+
+Received 20 February 2007; revised 12 March 2009; accepted 5 June 2009
+
+strategic reasoning | Science.
+
+[26] Guohao Li, Hasan Abed Al Kader Hammoud, Hani Itani, Dmitrii Khizbullin, and
+Bernard Ghanem. CAMEL: Communicative Agents for "Mind" Exploration of
+Large Scale Language Model Society. March 2023. Publisher: arXiv.
+
+[27] J.D. Zamfirescu-Pereira, Heather Wei, Amy Xiao, Kitty Gu, Grace Jung, Matthew G
+Lee, Bjoern Hartmann, and Qian Yang. Herding AI Cats: Lessons from Designing
+a Chatbot by Prompting GPT-3.
+In Proceedings of the 2023 ACM Designing
+Interactive Systems Conference, DIS â23, pages 2206â2220, New York, NY, USA,
+July 2023. Association for Computing Machinery.
+
+[28] Ruiyang Ren, Peng Qiu, Yingqi Qu, Jing Liu, Wayne Xin Zhao, Hua Wu, Ji-Rong
+Wen, and Haifeng Wang. BASES: Large-scale Web Search User Simulation with
+Large Language Model based Agents, February 2024. arXiv:2402.17505 [cs].
+[29] Joon Sung Park, Joseph OâBrien, Carrie Jun Cai, Meredith Ringel Morris, Percy
+Liang, and Michael S. Bernstein. Generative Agents: Interactive Simulacra of
+Human Behavior. In Proceedings of the 36th Annual ACM Symposium on User
+Interface Software and Technology, UIST â23, pages 1â22, New York, NY, USA,
+October 2023. Association for Computing Machinery.
+
+[30] Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang,
+Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei,
+and Ji-Rong Wen. A Survey on Large Language Model based Autonomous Agents,
+March 2024. arXiv:2308.11432 [cs].
+
+[31] Becoming Modern.
+[32] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan,
+and Yuan Cao. ReAct: Synergizing Reasoning and Acting in Language Models,
+March 2023. arXiv:2210.03629 [cs].
+
+[33] Danny Driess, Fei Xia, Mehdi S. M. Sajjadi, Corey Lynch, Aakanksha Chowdh-
+ery, Brian Ichter, Ayzaan Wahid, Jonathan Tompson, Quan Vuong, Tianhe Yu,
+Wenlong Huang, Yevgen Chebotar, Pierre Sermanet, Daniel Duckworth, Sergey
+Levine, Vincent Vanhoucke, Karol Hausman, Marc Toussaint, Klaus Greff, Andy
+Zeng, Igor Mordatch, and Pete Florence. PaLM-E: An Embodied Multimodal
+Language Model, March 2023. arXiv:2303.03378 [cs].
+
+[34] Greg Serapio-GarcÃ­a, Mustafa Safdari, ClÃ©ment Crepy, Luning Sun, Stephen Fitz,
+Peter Romero, Marwa Abdulhai, Aleksandra Faust, and Maja MatariÄ. Personality
+Traits in Large Language Models, September 2023. arXiv:2307.00184 [cs].
+[35] Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu,
+Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, Ahmed Hassan Awadallah,
+Ryen W. White, Doug Burger, and Chi Wang. AutoGen: Enabling Next-Gen LLM
+Applications via Multi-Agent Conversation, October 2023. arXiv:2308.08155 [cs].
+[36] [2305.16291] Voyager: An Open-Ended Embodied Agent with Large Language
+
+Models.
+
+[37] Ruibo Liu, Ruixin Yang, Chenyan Jia, Ge Zhang, Denny Zhou, Andrew M. Dai,
+Diyi Yang, and Soroush Vosoughi. Training Socially Aligned Language Models
+on Simulated Social Interactions, October 2023. arXiv:2305.16960 [cs].
+
+[38] Francisco J. Varela, Evan Thompson, and Eleanor Rosch. The Embodied Mind,
+revised edition: Cognitive Science and Human Experience. MIT Press, January 2017.
+Google-Books-ID: bxLiDQAAQBAJ.
+
+[39] Quan Tu, Chuanqi Chen, Jinpeng Li, Yanran Li, Shuo Shang, Dongyan Zhao, Ran
+Wang, and Rui Yan. CharacterChat: Learning towards Conversational AI with
+Personalized Social Support, August 2023. arXiv:2308.10278 [cs].
+
+[40] Reza Habibi, Johannes Pfau, Jonattan Holmes, and Magy Seif El-Nasr. Empathetic
+AI for Empowering Resilience in Games, February 2023. arXiv:2302.09070 [cs].
+[41] Oliver P. John and Sanjay Srivastava. The Big Five Trait taxonomy: History,
+measurement, and theoretical perspectives. In Handbook of personality: Theory
+and research, 2nd ed, pages 102â138. Guilford Press, New York, NY, US, 1999.
+[42] Charles K. Coe. The MBTI: Potential Uses and Misuses in Personnel Administra-
+tion. Public Personnel Management, 21(4):511â522, December 1992. Publisher:
+SAGE Publications Inc.
+
+[43] Theodore R. Sumers, Shunyu Yao, Karthik Narasimhan, and Thomas L. Griffiths.
+Cognitive Architectures for Language Agents, March 2024. arXiv:2309.02427
+[cs].
+
+[44] Graham Caron and Shashank Srivastava.
+
+Identifying and Manipulating the
+Personality Traits of Language Models, December 2022. arXiv:2212.10276 [cs].
+[45] Yongliang Shen, Kaitao Song, Xu Tan, Dongsheng Li, Weiming Lu, and Yueting
+Zhuang. HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hug-
+ging Face. Advances in Neural Information Processing Systems, 36:38154â38180,
+December 2023.
+
+[46] Alba Curry and Amanda Cercas Curry. Computer says "No": The Case Against
+
+Empathetic Conversational AI, July 2023. arXiv:2212.10983 [cs].
+
+

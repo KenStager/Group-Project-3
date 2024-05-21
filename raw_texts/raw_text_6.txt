@@ -1,0 +1,1435 @@
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+1
+
+Fact-based Agent modeling for Multi-Agent
+Reinforcement Learning
+
+Baofu Fang, Caiming Zheng and Hao Wang
+
+3
+2
+0
+2
+
+t
+c
+O
+8
+1
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+0
+9
+2
+2
+1
+.
+0
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+AbstractâIn multi-agent systems, agents need to interact and
+collaborate with other agents in environments. Agent modeling
+is crucial to facilitate agent interactions and make adaptive
+cooperation strategies. However, it is challenging for agents to
+model the beliefs, behaviors, and intentions of other agents
+in non-stationary environment where all agent policies are
+learned simultaneously. In addition, the existing methods realize
+agent modeling through behavior cloning which assume that
+the local information of other agents can be accessed during
+execution or training. However, this assumption is infeasible
+in unknown scenarios characterized by unknown agents, such
+as competition teams, unreliable communication and federated
+learning due to privacy concerns. To eliminate this assumption
+and achieve agent modeling in unknown scenarios, Fact-based
+Agent modeling (FAM) method is proposed in which fact-based
+belief inference (FBI) network models other agents in partially
+observable environment only based on its local information. The
+reward and observation obtained by agents after taking actions
+are called facts, and FAM uses facts as reconstruction target
+to learn the policy representation of other agents through a
+variational autoencoder. We evaluate FAM on various Multiagent
+Particle Environment
+(MPE) and compare the results with
+several state-of-the-art MARL algorithms. Experimental results
+show that compared with baseline methods, FAM can effectively
+improve the efficiency of agent policy learning by making adap-
+tive cooperation strategies in multi-agent reinforcement learning
+tasks, while achieving higher returns in complex competitive-
+cooperative mixed scenarios.
+
+Index TermsâMulti-agent Reinforcement Learning, Multi-
+
+agent Systems, Agent Modeling.
+
+I. INTRODUCTION
+
+R EINFORCEMENT Learning (RL) has achieved rapid
+
+progress in cooperative and competitive multi-agent
+games, such as OpenAI Five[1] and AlphaStar[2]. In multi-
+agent environments, agents must
+interact with each other,
+where the interaction relationship includes competition and
+cooperation. Due to the policy of all agents are simulta-
+neously learning, it affects the state transitions and reward
+functions experienced by an individual agent[3]. From the
+perspective of a single agent, interacting with other agents
+whose policies change makes the environment non-stationary.
+Therefore, other agents cannot be simply treated as part of the
+environment. Agent modeling promotes the agent to adjust its
+own policy to adapt to the policy changes of other agents by
+
+Manuscript received 4, June 2023. This work was supported by the Univer-
+sity Synergy Innovation Program of Anhui Province (Grant No.GXXT-2022-
+055), Open Fund of Key Laboratory of Flight Techniques and Flight Safety,
+CAAC (Grant No.FZ2022KF09), and the R&D Program of Key Laboratory
+of Flight Techniques and Flight Safety, CAAC(Grant No.FZ2022ZZ02).
+
+The authors are with the School of Computer Science and Information
+Engineering, Hefei University of Technology, Hefei, 230601, China (e-mail:
+fangbf@hfut.edu.cn; 2502282770@@qq.com; jsjwangh@hfut.edu.cn).
+
+explicitly modeling the beliefs, behaviors and intentions of
+other agents[4]. Since the agent learns in the same partially
+observable environment while other agents whose strategies
+are complex, diverse, and time-varying. Therefore, modeling
+other agents in non-stationary environments is a major chal-
+lenge for multi-agent reinforcement learning.
+
+Traditional agent modeling assumes that agents can access
+the local information of other agents during execution and
+including the local observations and
+training[4], [5], [6],
+actions taken by other agents. However, this assumption often
+does not hold in many multi-agent scenarios. In practical,
+agents may have limited visibility of their surrounding en-
+vironment and communication with competing agents may be
+prohibited, while communication between cooperating agents
+is often unreliable[7], for example in federated learning tasks.
+In such situations, agents must inference and make decisions
+based on their local information. To weaken this assumption,
+information of
+LIAM[8] and SMA2C[9] utilize the local
+agents, including their own observations, actions, and rewards,
+to infer the representations of other agents in a recurrent man-
+ner. These methods relax the assumption of traditional agent
+modeling by allowing access to the local information of other
+agents only during the training stage. However, in unknown
+scenarios, agents may also be prohibited from accessing the
+information of other agents during both execution and training
+stages. It is infeasible for behavior cloning-based approaches
+to explicitly minimize the difference between an agentâs policy
+model and the true policy. Therefore, the agent modeling in
+this case requires the agent to rely on its own local information,
+that is, it does not access the local information of other agents
+during the training and execution phases.
+
+Consider a simple real-world scenario as shown in Figure
+1, where the fruits collection task requires three people (Alice,
+Bob and Carol) to collect three fruits include apples, oranges,
+and pears with the shortest time. In order to achieve this
+task without communication, each person should go through
+four stages: 1).Preliminary decision making, 2).Observing and
+inferring, 3).Interacting, 4).Repeating steps 2) and 3) to avoid
+conflits and achieve collaborative consensus until the fruits
+collection task is complete. In this process, each person needs
+to start from the recent observation to infer other person policy
+representations to help itself make adaptive decisions. At the
+same time, the facts that happened after decision making are
+used to verify the inference result. In multi-agent systems, the
+rewards and observation received by the agent after performing
+the action imply rich information about the actions of other
+agents at the same moment.
+
+Based on this viewpoint, We propose Fact-based Agent
+
+ 
+ 
+ 
+ 
+ 
+ 
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+2
+
+Fig. 1. Fruit collection example. Everyone needs to cooperate to collect three konds of fruits which are apple, orange, and pear in shortest possible time. The
+whole process of fruit collection can be divided into 4 stages: 1).Preliminary decision making: Observing the surrounding environment, independently select
+fruits, and making effective decisions. 2).Observing and inferring: Observing information related others and inferring their behavioral intentions. 3).Interacting:
+Making adaptive decisions based on the inferred results to interact with environment and other agents and verifying the previous inferences through the fact
+of consequences after decisions. 4).Repeating steps 2). and 3). to avoid cooperative goal conflicts and achieve collaborative consensus until the fruit collection
+task is completed.
+
+Modeling (FAM) for multi-agent learning, which eliminates
+the assumption of accessing local information of other agents
+during execution and training phases. We build fact-based
+belief inference (FBI) network to model other agents based
+on own local information which is a variational autoEncoder
+(VAE) that has the advantage of being able to compensate
+for the information difference between the execution and
+training phases. The difference from the existing work is that
+SMA2C[9] adopts the method of behavior cloning during
+training phase. Howerver, in this paper, the reward signal
+containing global information and the observation of local
+information received by the agent after performing the action
+are used as the reconstruction target. The proposed FAM
+is suitable for non-stationary and partially observable envi-
+ronments. In addition, the complexity of agent modeling of
+SMA2C[9] and LIAM[8] is O(N ) while FAM is O(1) that
+is independent of the number of agents. FAM is also more
+suitable for unknown scearios. The main contributions of this
+article as follows.
+
+1) In order to elimate the assumption of accessing the local
+information of other agents for agent modeling, fact-
+based belief inference (FBI) network is proposed, which
+models other agents based on own local information
+using variational autoencoder.
+
+2) Combining FBI with Actor-Critc, Fact-based Agent
+Modeling (FAM) is proposed for multi-agent learning,
+which learns adaptive collaboration strategies by con-
+sidering the policies of other agents. It can effectively
+applicable to partially observable environments.
+
+3) Extensive experimental was conducted to verify the
+effectiveness and feasibility of the proposed FAM, and
+analyze the information encoded by FBI.
+
+The remainder of this article is organised as follows. Section
+II describes the background of deep reinforcement learning
+and variational autoencoder. Section III reviews the related
+work about multi-agent reinforcement
+learning and agent
+modeling. Section IV presents the proposed FBI and FAM.
+Section V describes the detailed results and analysis of the
+experiments. Ultimately, conclusions are provided in Section
+VI.
+
+II. NOTATION AND BACKGROUND
+
+It
+
+The fully cooperative multi-agent
+
+task can be modeled
+as a decentralized partially observable Markov decision
+process(Dec-POMDP)[10].
+is represented by the tuple
+G =< I, S, U, P, r, Z, O, Î³ >, where I = {1, 2, ..., n} is a
+finite set of agents, and n represents the number of agents.
+s â S describes the global state of the environment. At each
+timestep t, each agent a â I receives an observation oa
+t â O
+through the observation function Z(s, a) : S Ã I â O and
+selects an action ua
+t , forming a joint action ut â U. After
+executing the actions, the agents receive rewards signal rt,
+where all agents share the same reward function r(s, u) :
+S Ã U â R, and transition to the next state according to
+transition probability function P (sâ²|s, u) : S Ã U Ã S â [0, 1].
+The action-observation history of each agent is denoted as
+Ï a â T â¡ (O Ã U)â, and the policy Ï(ua
+1:t; Î¸a) :
+T Ã U â [0, 1]
+is based on its own action-observation
+history, with policy parameters Î¸a. The goal of Dec-POMDP
+is to learn a joint policy Ï = (Ï1, ..., Ïn) that maximizes
+the team cumulative discounted return Rt = (cid:80)â
+l=0 Î³lrt+l,
+where Î³ â [0, 1) is the discount factor. The joint action-
+value function of the joint policy Ï is denoted as QÏ(st, ut) =
+Est+1:â,ut+1:â [Rt|st, ut], the joint state-value function is de-
+
+t |Ï a
+
+ABCABCAlice wants to collect oranges, if so, then she will be closer to oranges!Bob wants to collect oranges, but I am faster than him!ABCOrange is closest to me and I will collect it.Apple is closest to me and I will collect it.Orange is closest to me and I will collect it.ABCAlice is closer to the orange, I am sure she wants to collect them, but she is faster than me. Also, Carol wants to collect apple, so I am going to collect pear.Step 1. Preliminary decision makingStep 2. Observing and inferringStep 3. InteractingStep 4. Repeating Steps 2). and 3)JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+3
+
+noted as V Ï(st) = Est+1:â, ut:â [Rt|st], and the advantage
+function is denoted as AÏ(st, ut) = QÏ(st, ut) â V Ï(st).
+Policy Gradient: Vanilla Policy Gradient (REINFORCE) is
+an on-policy algorithm that directly uses a parameterized
+model[11] to approximate the policy Ï(ut|st; Î¸). REINFORCE
+does not require a separate behavior policy because ÏÎ¸(ut|st)
+naturally explores and exploits the environment. The policy
+parameters Î¸ are updated at each step by increasing the log-
+likelihood of the chosen actions with respect to the sampled
+trajectory return Rt. The gradient update direction is given by:
+g = Et [âÎ¸ log Ï(ut|st; Î¸)Rt]
+
+(1)
+
+The baseline bt(st)[12] is subtracted from the return to
+reduce the variance of the estimated return while remaining
+unbiased, and the gradient update direction becomes:
+
+g = Et [âÎ¸ log Ï(ut|st; Î¸)(Rt â bt(st))]
+
+(2)
+
+This allows for more stable learning and potentially faster
+convergence. The baseline can be a value function estimate
+or a learned function that approximates the expected return at
+state st.
+Advantage Actor-Critic (A2C): A2C is an on-policy Actor-
+Critic method that utilizes parallel environments to break the
+correlation between consecutive samples. It introduces a state
+value function estimator Vw(st) to approximate the state value
+E [Rt|st], and used as a baseline to reduce the variance of
+sampling returns to improve policy gradient updates. Since
+Q(st, ut) is an approximate estimate of Rt, A(st, ut) = Rt â
+V (st) is expressed as the advantage of action at under state st,
+then the direction of A2C policy gradient update is as follows,
+g = Et [âÎ¸ log Ï(ut|st; Î¸)(A(st, ut))]
+
+(3)
+
+By using the advantage function A(st, ut), A2C facilitates
+more stable and efficient learning. And the loss function for
+the state value function is given by:
+
+La2c(Ï) = E(st,ut,rt+1,st+1)â¼B(Rt â VÏ(st))2
+
+(4)
+
+where B denotes the sampled batch trajectory.
+Proximal Policy Optimization (PPO): PPO is an Actor-Critic
+algorithm whose core idea is to achieve stable training by
+limiting the distance between old and new policies. The PPO
+algorithm uses a loss function called "clipped surrogate objec-
+tive" to control the step size of policy update, thus achieving
+stability in training without slowing down the training speed.
+Unlike A2C, PPO employs a technique called importance
+sampling, which allows multiple gradient descent updates to
+be performed using the same batch of trajectories. The loss
+function of actor for PPO as follows:
+Lppo(Î¸) = EÏ â¼B [min(rt(Î¸), clip(ratiot(Î¸), 1 â Ïµ, 1 + Ïµ))At]
+(5)
+where ratiot(Î¸) = ÏÎ¸(ut|st)
+ÏÎ¸old (ut|st) represents the ratio between the
+new and old policies, and Ïµ is a hyperparameter used to control
+the difference between the new and old policies. Compared to
+A2C, PPO has a higher sample efficiency.
+Variational Autoencoder (VAE): VAE is a generative model
+used to approximate the true posterior distribution p(z|x),
+where the dataset samples X = {xi}N
+i=1 are generated from an
+
+unknown parameterized generative distribution p(x|z; Î¸) with
+the latent variable z being unobserved. The prior distribution
+of the latent variable z is assumed to be a Gaussian distribution
+p(z) = N (z; 0, I) with mean 0 and variance 1. The goal of
+VAE is to learn a variational distribution q(z|x; Ï) parameter-
+ized by Ï to approximate the true posterior distribution p(z|x),
+where q(z|x; Ï) = N (z; Âµ, Ï, Ï) is a Gaussian distribution
+with mean Âµ and variance Ï.
+
+Variational inference uses the KL divergence as a distance
+measure function to minimize the distance between the ap-
+proximate posterior distribution q(z|x; Ï) and the true poste-
+rior distribution p(z|x) , the Evidence Lower Bound(ELBO)
+as follows:
+log p(x) â¥ ELBO(Ï, Ï|x)
+
+= Ezâ¼q(z|x;Ï) [log p(x|z; Ï) â DKL(q(z|x; Ï)||p(z))]
+(6)
+where DKL represents the Kullback-Leibler (KL) divergence.
+The first term on the right-hand side of the equation is the
+reconstruction loss, which measures the quality of the gener-
+ated samples. The second term is a regularization term, which
+is used to constrain the distribution of the latent variables.
+Higgins et al.[13] proposes Î²-VAE, where the parameter Î² â¥ 0
+is used to balance the reconstruction loss and the regularization
+term. The overall optimization objective of the Î²-VAE is as
+follows:
+Lvae(Ï, Ï) = Ezâ¼qÏ [log p(x|z; Ï) â Î²DKL(q(z|x; Ï)||p(z))]
+(7)
+
+III. RELATED WORK
+
+Multi-agent system (MAS) consists of multiple agents in-
+teracting in the shared environment to accomplish tasks. For
+complex tasks, Multi-Agent Reinforcement Learning (MARL)
+enables agents to learn effective policies through interaction
+with the environment. One of the main challenges in MARL
+is the inherent non-stationarity of the environment where all
+agents learn simultaneousl. Since the policies of other agents
+are unknown, it is unstable for agents to learn policies if
+they are considered part of the environment. To address this
+challenge, one approach is to adopt the Centralized Training
+with Decentralized Execution (CTDE) framework, where a
+centralized Critic is used to approximate joint action value or
+state-action value to guide the policy learning of individual
+agents. The value-based methods include QMIX[14], OW-
+QIX[15], and TransfQMIX[16] and the Actor-Critic-based
+methods such as MADDPG[17] and MAAC[18].
+
+Another approach to address
+
+the challenge of non-
+stationarity in MARL is agent modeling, which mitigates
+the effect of non-stationarity by incorporating information
+about other agentsâ beliefs, behaviors, and intentions. Many
+studies on agent modeling rely on predicting the actions or
+goals of other agents during training. He et al.[5] proposed a
+behavior cloning-based agent modeling approach that uses a
+neural network to predict the actions executed by other agents
+based on their observations. Hernandez-Leal et al.[19] treated
+learning other non-learning agentsâ policy as an auxiliary
+task and simplified it to a standard single-agent reinforcement
+learning problem. Similarly, Georgios et al.[8] used an encoder
+
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+4
+
+to construct representations of other agents based on their
+local information in a recurrent manner, while the decoder
+reconstructed the observations and actions of other agents.
+Another method[9] applied a variational autoencoder for agent
+modeling, where the encoder generates a high-dimensional
+continuous distribution as a representation of the other agentâs
+policy, and the decoder is trained by reconstructing the agentâs
+actions. Both of these methods allow access to other agentsâ
+local information during the training or execution.
+
+In terms of considering simultaneously learning opponents,
+Foerster et al.[20] proposed LOLA, which incorporates the
+influence of an agentâs policy on the parameter updates of
+other agentsâ policies. Al-Shedivat et al.[21] introduced Mate-
+PG, a meta-policy gradient-based method that leverages the
+trajectories of other agents in multiple meta-gradient steps to
+construct a policy that benefits from updating other agents.
+Kim et al.[22] proposed an extension to the existing method
+called Meta-MAPG. They introduced an additional term that
+captures the influence of an agentâs current policy on the
+future policies of other agents, similar to LOLA. These meta-
+learning-based methods require the trajectory distributions to
+match between training and testing, implicitly assuming that
+all other agents use the same learning algorithm.
+
+Unlike existing work, we consider a more complex and
+general setting where the policies of other agents are learned
+simultaneously with the agentâs own policy. Furthermore, there
+is partial observability in multi-agent environment, and the
+agents are not allowed to access the local information of other
+agents to achieve agent modeling during the execution and
+training.
+
+IV. METHODS
+
+In this section, we introduce a Fact-based Agent Modeling
+(FAM) Algorithm as shown in Figure 2, which completely
+eliminates the assumption that
+traditional agent modeling
+information during the
+allow access to other agents local
+training or execution phases. Firstly, we provide the structure
+and details of fact-based belief inference module (FBI). Fur-
+thermore, we present the optimization objective and training
+procedure for FAM.
+
+A. Fact-based Belief Inference
+
+To enable an agent to interact with other agents and learn
+adaptive policy, it needs to infer the current policies of the
+interacting agents. Fact-based Belief Inference (FBI) elim-
+inates the assumption that agents can access other agentsâ
+local information during training or execution. This module
+extracts policy representation denoted as zi of other agent
+from the interaction trajectories of agent i, including triplets
+of observations, actions, and rewards triplets. Policy repre-
+sentations are learned from facts acquired by the agent after
+performing actions. The extracted representation zi denotes
+agent iâs beliefs about other agents, i.e., estimates of their
+policy. This introduces uncertainty of other agentsâ policies
+1:t, zi).
+into agent iâs policy Ïi(ai
+Assuming the joint policy of other agents are unobservable
+variables zi in the latent space Z i for agent i, and the latent
+
+t|Ï i
+
+Fig. 2. The architecture of Fact-based Agent Modeling (FAM). During the
+execution phase, the encoder module of FBI utilizes the local information of
+the agent to extract representations of other agentsâ policies, which are then
+used for the agentâs decision-making process. On the other hand, during the
+training phase, the decoder module reconstructs the facts and simultaneously
+trains both the encoder and decoder. The agent makes decisions based on its
+own action-observation trajectories and the representations of other agentsâ
+policies.
+
+variable zi
+t at time step t contains the policy representation of
+other agents except agent i itself. To learn the latent informa-
+tion, FAM employs FBI which is a variational encoder-decoder
+architecture[23] as shown in Fig.2. Agent i uses an encoder
+q consists of a recurrent neural network and a fully con-
+nected neural network to infer representations of other agentsâ
+policies by local information including the observation-action-
+reward triplet. It outputs Âµi and log(Ïi) which is the param-
+eters of variational distribution. And the policy representation
+of other agents are sampled from the variational distribution.
+Specifically, the goal of the encoder is to approximate the
+true posterior p(zi) using a variational distribution obtained
+solely from local information. FBI constructs a decoder p to
+learn the representation of other agents by reconstructing facts
+conditioned on policy representations zi â¼ N (Âµi, Ïi) and the
+agentâs observation-action. The encoder is parameterized by
+Ïi, and the state prediction and reward prediction function
+in the decoder are parameterized by Ïi and Ïi, respectively.
+FBI jointly optimizes Ïi, Ïi, and Ïi to maximize the evidence
+lower bound(ELBO) of the sampled trajectory Ï i
+1:t, as follows,
+
+(8)
+
+ELBO(Ïi, Ïi, Ïi|Ï i
+
+âÎ²DKL(q(Âµi
+
+(cid:3)
+
+(cid:2)Jrecon
+1:t) = E
+zi
+tâ¼qÏi)
+1:t; Ïi)||p(zi))
+t|Ï i
+t, Ïi
+t, zi
+t, ai
+t+1|oi
+
+t, oi
+
+1, ri
+
+2, oi
+
+1, ai
+
+i. Ï i
+
+t+1, Ëri
+
+2, ..., ri
+
+t; Ïi, Ïi) is recon-
+where Jrecon = log p(Ëoi
+struction loss. The ELBO is related to the state tran-
+1:t =
+sition and reward functions of each agent
+(oi
+t) represents the local trajectory infor-
+mation of agent i up to time step t. p(zi) is the prior
+distribution of the latent variable zi, we assume the latent vari-
+able follows a standard Gaussian distribution zi â¼ N (0, I).
+DKL is the Kullback-Leibler(KL) divergence which measures
+the distance between the approximate posterior distribution q
+and the true posterior distribution p. The hyperparameter Î²
+is used for controling the importance of the regularization
+
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+5
+
+Algorithm 1 Training Procedure for FAM Algorithm
+Initialize: Î¸i, Ïi, Î¦i = {Ïi, Ïi, Ïi}, Î², Î±1, Î±2, B, E;
+Output: Î¸â
+
+i , Ïâ
+
+i , Ïâ
+
+i };
+
+i , Î¦â
+
+i = {Ïâ
+i , Ïâ
+1: for each episode j do
+2:
+3:
+4:
+5:
+
+Initial observation o0 â {oi
+for each timestep t do
+
+0}n
+1
+
+qÏi}n
+
+i=1;
+
+Get observations ot = {oi
+Compute opponent embeddings zt = {zi
+
+i=1;
+
+t}n
+
+t â¼
+
+6:
+7:
+
+8:
+9:
+
+10:
+11:
+12:
+13:
+14:
+
+15:
+16:
+17:
+18:
+19:
+20:
+
+Sample action ui
+t, zi
+Perform joint actions ut = (u1
+
+t â¼ Ïi(Â·|oi
+
+t; Î¸i);
+t , ..., un
+
+t ) and reveive
+
+joint reward rt+1 and next observations
+t+1}n
+
+ot+1 = {oi
+Add transition {ot, zt, ut, rt+1, ot+1} â Bj,t
+
+i=1;
+
+end for
+if |B| = batch size then
+
+for each epoch e < E do
+for each agent i do
+
+Ïi â Ïi â Î±1âÏiLcritic (Eq.10)
+Î¸i â Î¸i â Î±1âÎ¸iLactor (Eq.11)
+Î¦i â Î¦i â Î±2âÎ¦iLf bi (Eq. 9)
+B â â;
+
+end for
+
+end for
+Soft update parameters Î¸
+
+â²
+
+â²
+
+i, Ï
+
+i, Î¦
+
+â²
+
+i with Î¸i, Ïi, Î¦i
+
+end if
+
+21:
+22: end for
+
+term KL divergence[13]. Minimizing the loss is equivalent
+to maximizing the ELBO, and thus the loss function of the
+FBI as follows:
+
+Lf bi(Ïi, Ïi, Ïi) = E
+d
+(cid:88)
+
+âÎ²
+
+1
+2
+
+j=1
+
+(cid:2)Jrecon_obs + Jrecon_rew
+
+(cid:3)
+
+zi
+tâ¼qÏi
+
+(1 + log(Ï2
+
+t,i,j) â Âµ2
+
+t,i,j â Ï2
+
+t,i,j)
+
+(9)
+
+t, ai
+
+t+1|oi
+
+t, zi
+t, ai
+t+1|oi
+t; Ïi) â ri
+
+t; Ïi) â oi
+t+1)2 and
+where Jrecon_obs = (pobs(Ëoi
+t+1)2 are the observa-
+Jrecon_rew = (pr(Ëri
+t, zi
+tion prediction and reward prediction loss functions, respec-
+tively. d represents the dimensionality of the latent variable
+zi. The intuitive interpretation of this loss function is that
+the decoder p is optimized to reconstruct the facts that occur
+after taking an action, specifically received in next time stepâs
+observation and reward.
+
+B. Training Algorithm of FAM
+
+In this section, we describe the training process of FAM.
+The sampled trajectory of the agent, along with the latent
+variable zi, is used to optimize the RL policy. We consider
+an augmented policy space T augi = Oi Ã U i Ã Z i for agent
+i, where Oi and U i are the original observation and action
+spaces of the Dec-POMDP, and Z i represents the belief space
+of agent i on other agents. Specifically, the belief refers to the
+policy representations of other agnets. Compared to the policy
+space without considering other agentsâ policy representations
+
+T augi = Oi Ã U i, the augmented policy space T i allows
+for different responses to different zi â Z i. This enables
+adaptive behavior based on the policy representations of other
+agents. We assume that all agents learn simultaneously in
+the same environment. Due to the delayed nature of other
+agentsâ policy changes, which affect the agentâs belief about
+their policy representations, we train the FAM using on-policy
+algorithm. In our experiments, we use the PPO algorithm to
+optimize the agentâs policy. The inputs to the Actor and Critic
+are the local action-observation trajectories and the inferenced
+policy representation zi. Additionally, the RL loss does not
+backpropagate into FBI. To encourage exploration, we also
+use policy entropy[24]. Given a batch of sampled trajectories
+B, the loss for the Critic network is defined as follows:
+
+Lcritic(Ïi) = EB
+
+(cid:2)(ri
+
+t+1 + Î³V (oi
+
+t+1, zi
+t, zi
+
+t+1; Ïâ
+i )
+t; Ïi))(cid:3)
+
+âV (oi
+
+(10)
+
+where V is the target network, z indicates that the loss of
+the Critic network does not backpropagate through z, and
+Ïâ represents the parameters of the Critic target network,
+which are also not updated through gradient backpropagation.
+Additionally, the loss for the Actor network is defined as
+follows:
+
+Lactor(Î¸i) = E
+
+t+1)â¼B
+min(ratiot(Î¸i), clip(ratiot(Î¸i), 1 â Ïµ, 1 + Ïµ))Ai
+t
+
+t+1,oi
+
+t,ai
+
+t,zi
+
+t,ri
+
+(oi
+
+(cid:2)
+
+(cid:3)
+
+(11)
+
+where ratiot = Ï(at|ot,zt;Î¸i)
+old) is the action probability ratio
+Ï(at|ot,zt;Î¸i
+of the old and new policies, and clip modifies the surrogate
+objective by restricting the probability ratio.
+
+Now we can define a training objective to learn the ap-
+proximate posterior distribution q as well as reward prediction
+function pr and observation prediction function pobs, as fol-
+lows:
+
+Lf am(Î¸, Ï, Ï, Ï, Ï)= Lactor + Lcritic + Lf bi
+
+(12)
+
+V. EXPERIMENTAL RESULTS AND ANALYSIS
+
+In this section, we aim to investigate the following aspects
+of FAM: 1). whether FBI improve learning efficiency, promote
+cooperative among multi agents, and learn adaptive collabo-
+ration strategies? 2). how FAM enables collaboration through
+adaptive strategies, 3). does FBI encode the policies of other
+agents, and beyong that, what other important information is
+encoded. To answer these three questions, we conduct exper-
+ments in two multi-agent particle environments: Cooperative
+Navigation (CN) and Predator-Prey (PP), as introduced by
+Lowe et al.[17]. The implementation is based on the epymarl
+framework proposed by Papoudakis et al.[25].
+
+A. Experimental Setup
+
+1) Environments: We introduce the two environments used
+
+for our proposed FAM and baselines.
+
+Cooperative Navigation: In this task, N agents need to
+cooperatively occupy L landmarks in an environment with
+partial observability. The team reward function rdistance =
+
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+6
+
+â (cid:80)N
+i=1 minj dis(Landmarki, Agentj) is based on the neg-
+ative sum of distances between the landmarks and their closest
+agents. Additionally, we discourage collisions between agents,
+and a collision penalty rcollision = â1 is applied. Each agent
+needs to observe the movements of other agents to infer their
+behavior or goals, select a suitable landmark to occupy while
+avoiding conflicts and collisions with other agents. We conduct
+experiments with N = 5 agents and L = 5 landmarks, where
+each agent can only observe the relative positions of the two
+closest agents and three closest landmarks. The agents have 5
+available actions, and the maximum episode length is set to
+25.
+
+Predator-Prey (PP): In this task, N predators try to capture
+M preys in an environment with partial observability. The
+preys follow predefined policies to move away from the closest
+predators with a speed of 7, while the predators are only 5.
+Since preys have a faster movement speed than predators,
+individual predators cannot capture preys on their own. The
+team reward for predators is the negative sum of distances
+between the preys and their closest predators. A collision
+penalty rcollision = â1 is also applied to the predators. In PP
+task, each predator can observe the relative positions of the two
+closest predators and three closest preys. The predators have 5
+available actions. Unlike in Cooperative Navigation, the preys
+exhibit highly dynamic movement. Therefore, predators need
+to infer the behavior of other predators and target preys to
+cooperate with other predators and capture the desired preys.
+We conduct experiments with N = 7 predators and M = 3
+preys.
+
+In IA2C, each agent treats other agents as a part of the
+environment and utilizes the A2C algorithm to learn and
+optimize its Actor network with 3 for approximating the policy
+ÏÎ¸i and Critic network with 4 for approximating the value
+function VÏi in distributed multi-agent systems[24].
+
+t, ui
+
+tâ1, ri
+
+2) Implementation Detials: Next, we will introduce the im-
+plementation details of the proposed FBI and FAM. The FAM
+consists of actor network, critic network and FBI network
+parameterized by Î¸i, Ïi and Î¦i = {Ïi, Ïi, Ïi}, respectively.
+The FBI includes an RNN-based encoder and two MLP-based
+decoders. During execution, RNN-based encoder takes the
+local observation-action-reward triplet (oi
+t) as input
+through a 1-layer fully connected neural network(FC) followed
+by a ReLU activation function to extract features, which are
+then fed into a GRU recurrent network to capture temporal
+dependencies. Finally, a 1-layer FC outputs the variational
+distribution parameters Âµi
+t and log Ïi
+t that approximate the true
+posterior distribution. The sampled with dimension d = 5 is
+the policy representation of other agents for agent decision-
+making. During training, MLP-based decoder takes the local
+observation-action-policy representation (oi
+t) as input
+through 3-layer FC and followed by ReLU activation functions
+to output the predictions of rewards and observations obtained
+after executing action. It is important to note that the last fully
+connected layer does not require a ReLU activation function.
+The RNN-based encoder and MLP-based decoder are trained
+by computing the prediction loss and regularization term.
+
+t, ui
+
+t, zi
+
+TABLE I
+PERFORMANCE EVALUATION COMPARISON OF FAM AGAINST BASELINES
+IN CN.
+
+Methods
+
+Avg. Ret.
+
+Avg. Rew.
+
+Avg. Occ.
+
+Avg. Dist.
+
+IPPO
+IA2C
+MAA2C
+MAPPO
+FAM
+LIAM
+SMA2C
+
+â26.2 Â± 8.2
+â0.52 Â± 0.3
+â34.6 Â± 10.1 â1.08 Â± 0.5
+â1.09 Â± 0.4
+â34.8 Â± 9.4
+â0.52 Â± 0.3
+â26.1 Â± 7.8
+â0.50 Â± 0.3
+â25.5 Â± 8.8
+â1.06 Â± 0.4
+â35.2 Â± 9.6
+â1.12 Â± 0.5
+â35.3 Â± 9.6
+
+4.56 Â± 0.4
+3.48 Â± 1.0
+3.06 Â± 1.1
+4.57 Â± 0.5
+4.45 Â± 0.5
+3.31 Â± 1.0
+3.26 Â± 1.1
+
+0.45 Â± 0.2
+1.02 Â± 0.4
+1.06 Â± 0.4
+0.48 Â± 0.3
+0.45 Â± 0.3
+1.05 Â± 0.4
+1.05 Â± 0.4
+
+B. Main Results
+
+We compare FAM with several baselines to verify the
+effectiveness and feasibility of the proposed method. Figure
+3a) and Figure 3b) show the average episode return curves
+and average landmarks occupied curve of FAM compared with
+other baseline algorithms in CN during training. Figure 3c)
+shows the average episode return curves of various methods
+trained in PP with training duration of 1e7 steps. And Table
+I presents the performance metrics of various algorithms
+evaluating 100 episodes in CN, including average episode
+return(Avg. Ret.), average reward at the final timestep(Avg.
+Rew.), average occupied landmarks(Avg. Occ.), and the sum
+of the average distances of all landmarks from the nearest
+agent(Avg. Dist.).
+
+From Fig. 3 a). and 3 b)., we can see that the proposed FAM
+achieves higher learning efficiency than all other baselines
+from 1e6 training steps, as well as faster convergence, and
+slightly outperforms IPPO and MAPPO from 4e6 training
+steps. The main reason is that after all agents learn a certain
+strategy, considering the strategies of other agents will help
+the agents learn adaptive cooperation strategies. And they
+struggle with partial observability of the environment after 4e6
+steps. Meanwhile, the shaded areas of IPPO and MAPPO are
+larger compared with FAM, which indicates that the cooper-
+ative strategy without considering other agents is less robust.
+Among the four evaluation performances as shown in Table I,
+FAM has reached the best compared with all other baselines.
+The average episode return curves of IA2C, MAA2C, LIAM,
+and SMA2C overlap and show slow learning. And in Figure
+3b), IA2C occupies more landmarks. Similar results are shown
+in Table I which indicates that IA2C performs slightly better
+than SMA2C, LIAM, and MAA2C. The possible reason is
+that the low sample efficiency of the A2C methods and agents
+only need to consider other agents at certain critical moments
+in CN, which makes the performance of independent similar to
+CTDE methods. Additionally, LIAM and SMA2C do not show
+superiority. This could be due to the low sample efficiency
+of the A2C methods and the high randomness in directly
+modeling the actions of other agents in a non-stationary
+environment.
+
+It can be seen from Figure 3c) that IA2C performs the
+worst and the proposed FAM outperforms all other baseline
+by considering the strategies of other agents. The possible
+reason is that preys are highly dynamic and move faster
+than predators, which requires closer cooperation between
+
+JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+7
+
+Fig. 3. The training results of the proposed FAM and the baseline method in CN and PP environments. a)The episode return curves during training in CN.
+b)The occupied landmarks curves during training in CN. c)The episode return curves in PP. The solid line is the mean of the training results of 5 random
+seeds, and the shaded area is the 25%-75% quartile.
+
+the agent. To investigate the impact of the following factors
+in FBI network: 1) decoder input and 2) reconstruction tar-
+gets, we conducted ablation experiments in the Predator-Prey
+environment.
+
+i). FAM_wo_in_oa, where the decoder
+
+The ablation experiments included the following varia-
+tions:
+input only
+consisted of the representation of other agentsâ policies. ii).
+FAM_wo_rec_obs, where the decoder only reconstructed re-
+wards. iii). FAM_wo_rec_rew, where the decoder only re-
+constructed observations. The average episode return curves
+of the Predator-Prey task are plotted in Figure 4. These
+ablation experiments aim to examine the contributions of
+different components in FBI. By comparing the performance
+of these variations with the FAM, we can gain insights into
+the importance of decoder input and the reconstruction of
+observations and rewards.
+
+The decoder in FBI network takes the agentâs local observa-
+tions, actions and inferred representation as input. We denote
+the agentâs local observations and actions as "oa". To compare
+the impact of the decoder input, we denote the decoder input
+as FAM_wo_in_oa only for other agent policy representations
+z and keep the reconstruction fact unchanged. As shown
+in Figure 4, FAM is generally better than FAM_wo_in_oa.
+Although FAM and FAM_wo_in_oa have similar performance
+in the early stage, both can effectively improve the efficiency
+of policy learning. But when struggling partial observability,
+FAM has an advantage. The possible reason is that the decoder
+to understand the
+design of FBI is better for the agent
+dynamics of the environment.
+
+To compare the impact of the decoder reconstruction targets,
+we compare the training results of FAM_wo_rec_obs and
+FAM_wo_rec_rew on PP task, as shown in Figure 4. It
+can be seen that the performance of FAM_wo_rec_rew is
+better, but it is weaker than FAM_wo_rec_obs in the early
+stage. The possible reason is that
+the team reward helps
+to extract other agentsâ policy representations, but this is a
+spurious reward signal, which may also hinder the learning of
+other agentsâ policies. The observation can directly represent
+the movement information of the surrounding agents, which
+provides rich verification information for each individual.
+Moreover, FAM has the advantages of FAM_wo_rec_rew and
+
+Fig. 4. Comparing the ablation results of FAM and its belief inference network
+in the Predator-Prey environment.
+
+predators and adaptation to other predatorsâ strategy to capture
+preys cooperatively. However, independent IA2C is difficult
+to achieve. Moreover, MAA2C employs a centralized critic
+that utilizes global information to guide the policy learning
+of agents and achieves better performance than IA2C. But the
+performance of LIAM and SMA2C falls behind the centralized
+critic. The possible reason is that the centralized critic provides
+more effective information for guiding policy learning under
+partially observability. IPPO and MAPPO exhibit similar av-
+erage episode return curves which can be attributed to the
+effectiveness of the PPO algorithm. This finding aligns with
+previous studies[26] and [25].
+
+In general,
+
+in the experimental settings of CN andPP,
+we found it interesting that the agent modeling method can
+quickly and effectively improve the learning efficiency and
+learn adaptive collaboration strategies to obtain higher rewards
+after other agents learn a certain strategy. The good news is
+that it didnât hinder the agentâs strategy learning before this.
+
+C. Ablation Results
+
+The fact-based belief inference (FBI) network in FAM
+utilizes a variational autoencoder (VAE) architecture, whose
+input and reconstruction target are the local information of
+
+a)b)c)JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+8
+
+Fig. 5. The navigation trajectories and immediate reward curves of three evaluation scenarios of FAM, IPPO and MAPPO under Cooperative Navigation task.
+
+FAM_wo_rec_obs by reconstructing observations and rewards,
+and has the best performance both in the early stage of training
+and in the stage of struggling partial observability.
+
+Overall, the decoder reconstructs observations and rewards
+by inputting its own observations, actions, and policy repre-
+sentations to better help the agent understand the dynamics of
+the environment.
+
+D. Strategy Analysis
+
+In order to understand the representation of other agents
+learned by FAM, we conducted evaluations and compared and
+analyzed the cooperative strategies of FAM agents with IPPO
+and MAPPO agents in the Cooperative Navigation. Figure
+5 shows the evaluated navigation trajectories and immediate
+reward curves of the three methods of FAM, IPPO and
+MAPPO in CN.
+
+It can be seen that all FAM agents can move near the
+landmark or successfully occupy the landmark, and the im-
+mediate rewards are the best. However, the IPPO agent and
+the MAPPO agent can not due to the goal conflict between the
+agents. We summarize the cooperative skills learned by FAM
+agents,
+including i). Communicate without communication
+(CWC), ii). Avoiding goal conflict and competition (AGCC),
+iii). Giving up the small to keep the big (GSKB).
+
+Communicate without communication: Once the strategy
+of other agents is found to change, it will change its own
+strategy in time to meet the needs of the task. As shown in
+Figure 5a), both agent 1 and agent 2 want to occupy landmark
+1, and there is a goal conflict. However, agent 2 has an
+advantage in distance when occupying landmark 1, so agent 1
+has to change the landmark to 2. At this time, Agent 4 wants
+to occupy landmark 4, but it infers that the strategy of Agent
+1 is occupy landmark 2 which is farther away, which makes
+
+it take longer to complete the task. There, agent 4 changes
+the navigation landmark to 2 and agent 1 changes its own
+navigation landmark to 4 for shorest complete time. However,
+Agent 1 and Agent 4 of IPPO and MAPPO have landmark
+conflict and competition, as shown in Figure 5 b) and c).
+
+the goals of other agents conflict with itself,
+
+Avoiding goal conflict and competition: When it is found
+it will
+that
+change its own goals according to the actual situation to
+avoid competition. As shown in Figure 5d), there is a goal
+conflict between agent 1 and agent 3 bacause they want to
+occupy landmark. However, agent 1 occupys landmark 4 is
+more advantageous, because agent 3 is closer to unoccupied
+landmark 2. Therefore, agent 3 changes the landmark to avoid
+goal conflict can promote overall cooperation and complete
+the task faster. In contrast, IPPO agent and MAPPO agent
+failed to achieve this. As shown in Figure 5e), there is a
+goal conflict and goal competition between Agent 1 and
+Agent 5. Agent 5 cannot observe landmark 2 due to partial
+observability. Therefore, agent 5 cannot effectively occupy
+landmark. A possible effective method is that agent 2 changes
+its own landmark to 2. This collaborative strategy is reflected
+by MAPPO, as shown in Figure 5f). But it takes longer to
+complete the task.
+
+Give up the small to keep the big: When there is a goal
+conflict or the goal can be occupied by a more advantageous
+agent, the agent will change its own goal to shorten the time
+to complete the task. This skill is demonstrated in Figure 5g),
+where Agent 2, although closer to landmark 1 and 4, chooses
+the farther landmark 5 to facilitate faster landmark occupation
+by Agent 1 and Agent 5. In contrast, IPPO and MAPPO agents
+fail to achieve the goal of conflict-free. In Figure 5h) and 5i),
+there is a landmark conflict and competition between agents.
+
+FAMFAMFAMIPPOIPPOIPPOMAPPOMAPPOMAPPOJOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+9
+
+Fig. 6. a) and d) are trajectory plots of the agents in the CN. b) and c) are t-SNE projections of the embedding vectors learned by agent 1 and agent 2 in
+trajectory a). And e) and f) are t-SNE projections of the embedding vectors learned by agent 1 and agent 2 in trajectory b), respectively. We use a maximum
+time step of 25 to visualize the embedding vector of each time step, and use circles with different colors for each cluster.
+
+E. Encoder Evaluation
+
+After evaluating the advantages of the FBI module in FAM
+for adaptive strategy learning, we analyzed the embedding
+vectors learned by the RNN-based encoder in FBI to gain
+deeper insights into the proposed method. We addressed the
+question of whether FAM encode the strategies about other
+agents. We visualized the embedding vectors of the RNN-
+encoder and analyzed the learned embeddings. To facilitate
+the understanding of the encoded embeddings of other agents,
+we conducted experiments in CN with N = 2 agents, L = 2
+landmarks. Figure 6 visualizes the evaluation results.
+
+We observed that points corresponding to adjacent time
+steps tend to form clusters, and each cluster is correlated with
+the agentâs motion state. From Figure 6a), we can see that
+Agent 2 moves towards the bottom right direction, approaching
+the landmark and hovering around it. These two processes
+form two distinct clusters in Figure 6b). And Agent 1âs
+motion consists of four steps, with the first three steps marked
+by arrows and the final step involving hovering around the
+landmark. These four steps correspond to the four distinct
+clusters formed in Figure 6c). Based on these observations, we
+hypothesize that different clusters represent different aspects
+of the modeled agentâs motion, including the magnitude and
+direction of motion.
+
+Additionally, we speculate that
+
+the encoder embedding
+
+vectors also include the positional information of the modeled
+agents. From the trajectory in Fig .6d), it can be seen that the
+agent 2 moves upward first, then moves upward to the right and
+gradually approaches landmark and hovers around it. These
+three processes also form three different clusters in Fig .6e).
+Compared to the red cluster, the blue cluster is closer to the
+green cluster. We can see that there are only three clustering
+results in Fig.6f), and its motion process has four steps. The
+possible reason is that the last movement close to the landmark
+is close to the position hovering near the landmark, and they
+are classified into the same cluster. In addition, in the same
+cluster, the distance between points at adjacent moments is
+small, while the distance between points at multiple moments
+is large.
+
+VI. CONCLUSION
+
+We have proposed a Fact-based Agent Modeling (FAM) for
+multi-agent learning that build FBI to reconstruct facts for
+achieving agent modeling without accessing local information
+of other agents. By considering the policy of other agents
+during decision-making, FAM outperforms baseline methods
+and achieving higher rewards in complex mixed scenarios.
+Extensive experimental is conducted to verify the effectiveness
+and feasibility of the proposed FAM and analyse the encoder
+information of FBI.
+
+a)b)c)d)e)f)JOURNAL OF LATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020
+
+10
+
+REFERENCES
+
+[1] C. Berner, G. Brockman, B. Chan, V. Cheung, P. DËebiak, C. Dennison,
+D. Farhi, Q. Fischer, S. Hashme, C. Hesse et al., âDota 2 with large
+scale deep reinforcement learning,â arXiv preprint arXiv:1912.06680,
+2019.
+
+[2] O. Vinyals, I. Babuschkin, W. M. Czarnecki, M. Mathieu, A. Dudzik,
+J. Chung, D. H. Choi, R. Powell, T. Ewalds, P. Georgiev et al., âGrand-
+master level in starcraft ii using multi-agent reinforcement learning,â
+Nature, vol. 575, no. 7782, pp. 350â354, 2019.
+
+[3] X. Yu, J. Jiang, W. Zhang, H. Jiang, and Z. Lu, âModel-based opponent
+modeling,â Advances in Neural Information Processing Systems, vol. 35,
+pp. 28 208â28 221, 2022.
+
+[4] S. V. Albrecht and P. Stone, âAutonomous agents modelling other agents:
+A comprehensive survey and open problems,â Artificial Intelligence, vol.
+258, pp. 66â95, 2018.
+
+[5] H. He, J. Boyd-Graber, K. Kwok, and H. DaumÃ© III, âOpponent
+modeling in deep reinforcement learning,â in International conference
+on machine learning. PMLR, 2016, pp. 1804â1813.
+
+[6] Z.-W. Hong, S.-Y. Su, T.-Y. Shann, Y.-H. Chang, and C.-Y. Lee, âA
+deep policy inference q-network for multi-agent systems,â in Proceed-
+ings of the 17th International Conference on Autonomous Agents and
+MultiAgent Systems, 2018, pp. 1388â1396.
+
+[7] B. Chen, âLocal information based attentional opponent modelling in
+
+multi-agent reinforcement learning,â 2022.
+
+[8] G. Papoudakis, F. Christianos, and S. Albrecht, âAgent modelling under
+learning,â Advances in
+partial observability for deep reinforcement
+Neural Information Processing Systems, vol. 34, pp. 19 210â19 222,
+2021.
+
+[9] G. Papoudakis
+
+and S. Albrecht,
+
+for
+opponent modeling in multi-agent systems,â Feb. 2020, aAAI 2020
+Workshop on Reinforcement Learning in Games, AAAI20-RLG ;
+Conference date: 08-02-2020 Through 08-02-2020. [Online]. Available:
+http://aaai-rlg.mlanctot.info/index.html
+
+autoencoders
+
+âVariational
+
+[10] F. A. Oliehoek and C. Amato, A concise introduction to decentralized
+
+POMDPs. Springer, 2016.
+
+[11] R. S. Sutton, D. McAllester, S. Singh, and Y. Mansour, âPolicy gradi-
+ent methods for reinforcement learning with function approximation,â
+Advances in neural information processing systems, vol. 12, 1999.
+[12] R. J. Williams, âSimple statistical gradient-following algorithms for
+connectionist reinforcement learning,â Reinforcement learning, pp. 5â
+32, 1992.
+
+[13] I. Higgins, L. Matthey, A. Pal, C. Burgess, X. Glorot, M. Botvinick,
+S. Mohamed, and A. Lerchner, âbeta-vae: Learning basic visual concepts
+with a constrained variational framework,â in International conference
+on learning representations, 2017.
+
+[14] T. Rashid, M. Samvelyan, C. S. De Witt, G. Farquhar, J. Foerster,
+and S. Whiteson, âMonotonic value function factorisation for deep
+multi-agent reinforcement learning,â The Journal of Machine Learning
+Research, vol. 21, no. 1, pp. 7234â7284, 2020.
+
+[15] T. Rashid, G. Farquhar, B. Peng, and S. Whiteson, âWeighted qmix:
+Expanding monotonic value function factorisation for deep multi-agent
+information processing
+reinforcement
+systems, vol. 33, pp. 10 199â10 210, 2020.
+
+learning,â Advances in neural
+
+[16] M. Gallici, M. Martin, and I. Masmitja, âTransfqmix: Transformers for
+leveraging the graph structure of multi-agent reinforcement learning
+problems,â arXiv preprint arXiv:2301.05334, 2023.
+
+[17] R. Lowe, Y. Wu, A. Tamar, J. Harb, P. Abbeel, and I. Mordatch, âMulti-
+agent actor-critic for mixed cooperative-competitive environments,â in
+Proceedings of the 31st International Conference on Neural Information
+Processing Systems, 2017, pp. 6382â6393.
+
+[18] S. Iqbal and F. Sha, âActor-attention-critic for multi-agent reinforcement
+the 36th International Conference
+learning,â in Proceedings of
+on Machine Learning,
+ser. Proceedings of Machine Learning
+Research, K. Chaudhuri and R. Salakhutdinov, Eds., vol. 97.
+PMLR, 09â15 Jun 2019, pp. 2961â2970.
+[Online]. Available:
+https://proceedings.mlr.press/v97/iqbal19a.html
+
+[19] P. Hernandez-Leal, B. Kartal, and M. E. Taylor, âAgent modeling
+as auxiliary task for deep reinforcement learning,â in Proceedings of
+the AAAI conference on artificial intelligence and interactive digital
+entertainment, vol. 15, no. 1, 2019, pp. 31â37.
+
+[20] J. Foerster, R. Y. Chen, M. Al-Shedivat, S. Whiteson, P. Abbeel, and
+I. Mordatch, âLearning with opponent-learning awareness,â in Proceed-
+ings of the 17th International Conference on Autonomous Agents and
+MultiAgent Systems, 2018, pp. 122â130.
+
+[21] M. Al-Shedivat, T. Bansal, Y. Burda, I. Sutskever, I. Mordatch, and
+P. Abbeel, âContinuous adaptation via meta-learning in nonstationary
+and competitive environments,â in International Conference on Learning
+Representations, 2018.
+
+[22] D. K. Kim, M. Liu, M. D. Riemer, C. Sun, M. Abdulhai, G. Habibi,
+S. Lopez-Cot, G. Tesauro, and J. How, âA policy gradient algorithm for
+learning to learn in multiagent reinforcement learning,â in International
+Conference on Machine Learning. PMLR, 2021, pp. 5541â5550.
+[23] D. P. Kingma and M. Welling, âAuto-encoding variational bayes,â arXiv
+
+preprint arXiv:1312.6114, 2013.
+
+[24] V. Mnih, A. P. Badia, M. Mirza, A. Graves, T. Lillicrap, T. Harley,
+D. Silver, and K. Kavukcuoglu, âAsynchronous methods for deep rein-
+forcement learning,â in International conference on machine learning.
+PMLR, 2016, pp. 1928â1937.
+
+[25] G. Papoudakis, F. Christianos, L. SchÃ¤fer, and S. V. Albrecht, âBench-
+marking multi-agent deep reinforcement learning algorithms in cooper-
+ative tasks,â arXiv preprint arXiv:2006.07869, 2020.
+
+[26] C. Yu, A. Velu, E. Vinitsky, J. Gao, Y. Wang, A. Bayen, and
+Y. WU, âThe surprising effectiveness of ppo in cooperative multi-agent
+Information Processing Systems,
+games,â in Advances in Neural
+S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh,
+Eds., vol. 35. Curran Associates, Inc., 2022, pp. 24 611â24 624.
+[Online]. Available:
+https://proceedings.neurips.cc/paper_files/paper/
+2022/file/9c1535a02f0ce079433344e14d910597-Paper-Datasets_and_
+Benchmarks.pdf
+
+Baofu Fang received Ph.D. degree in Computer
+Application Technology from Harbin Institute of
+Technology, China in 2013. He joined Department of
+Computer Science and Technology, School of Com-
+puter Science and Information Engineering, Hefei
+University of Technology in 2000, and An Asso-
+ciate Professor in 2010, and Masterâs Supervisor in
+2011. His current research interests include multi
+robot/agent system, emotion/self-interest robot and
+machine learning. He is the Technology Chair of
+Anhui Robot Competition, Member of Standing
+Committee of China Association of Artificial Intelligence (CAAI) Young
+Committee, Member of Standing Committee of China Association of Artificial
+Intelligence (CAAI) Robot and Culture Committee.
+
+Caiming Zheng received the B.Eng degree in com-
+puter science and technology from Ningbo Univer-
+sity of Technology, China in 2021. He is currently
+pursuing a M.S. degree in computer science and
+technology at the School of Computer Science and
+Information Engineering, Hefei University of Tech-
+nology, China. His research interests include multi-
+agnet systems, reinforcement
+learning and multi-
+agent reinforcement learning.
+
+Hao Wang received the B.Eng degree from Shang-
+hai Jiao Tong University in 1984, and received M.S.
+degree and Ph.D. degree from Hefei University of
+Technology in 1989 and 1997, respectively. He is
+currently a Professor and Doctoral Supervisor with
+the School of Computer Science and Information
+Engineering, Hefei University of Technology. His
+research interests include intelligent computing the-
+ory and software, distributed intelligent systems,
+complex system theory and modeling, etc.
+
+

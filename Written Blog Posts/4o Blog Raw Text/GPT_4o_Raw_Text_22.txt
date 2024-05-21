@@ -1,0 +1,90 @@
+---
+
+### Decentralized Linear Quadratic Systems with Major and Minor Agents: An In-Depth Exploration
+
+**Introduction**
+
+In modern decentralized control systems like self-driving cars, robotics, and unmanned aerial vehicles (UAVs), the environment is often sensed using advanced sensors such as vision and Lidar, with the raw data processed through deep neural networks. These systems frequently encounter non-Gaussian noise in their observations, which complicates the design of optimal controllers. Decentralized control systems must consider this non-Gaussian noise to optimize performance. This blog post delves into the structure and strategies for decentralized linear quadratic (LQ) systems with major and minor agents, and non-Gaussian noise, exploring the optimal control strategies and their practical implications.
+
+**Understanding the Basics**
+
+In the context of decentralized LQ systems:
+- **Major Agent**: Influences the entire system's state but remains unaffected by the minor agents.
+- **Minor Agents**: Each has a local state influenced by the major agent and observes this state with noise.
+- **Non-Gaussian Noise**: Unlike classical systems that assume Gaussian noise, real-world systems often deal with non-Gaussian noise, significantly affecting control strategies.
+
+### Key Results and Their Implications
+
+**1. Structure of the Optimal Strategy**
+
+The research by Mohammad Afshari and Aditya Mahajan elucidates the structure of the optimal control strategy for such systems. 
+
+- **Major Agent’s Control**: The optimal control action for the major agent is a linear function of the Minimum Mean Squared Error (MMSE) estimate of the system state.
+- **Minor Agents' Control**: The optimal control action for the minor agents involves a correction term based on the difference between the minor agent's and the major agent's MMSE estimates of the minor agent's local state.
+
+This structure allows for a two-tier control strategy:
+- **Global Control**: Managed by the major agent’s MMSE estimate.
+- **Local Control**: Adjustments made by minor agents based on local observations and discrepancies with the major agent’s estimates.
+
+**2. Separation of Estimation and Control**
+
+A significant insight from the study is the separation between estimation and control:
+- **Estimation**: Optimal control strategies depend on accurate state estimation.
+- **Control**: The gains for control actions are determined independently of the estimation process.
+
+This separation simplifies the design and implementation of control strategies, especially in real-time applications.
+
+**3. Computation of Control Strategies**
+
+The paper provides a method to compute the optimal control strategies:
+- **MMSE Estimation**: The major agent’s state estimation can be updated using a linear filter.
+- **Linear Least Mean Square (LLMS) Estimation**: For practical scenarios where the MMSE estimate is complex, the LLMS estimate provides a near-optimal linear control strategy.
+
+**4. Practical Examples and Applications**
+
+Consider a fleet of UAVs: 
+- **Major UAV (Leader)**: Guides the overall movement.
+- **Minor UAVs (Followers)**: Each minor UAV adjusts its position based on its observations and the leader’s guidance.
+
+Given non-Gaussian noise in sensor data (e.g., due to weather conditions), the control strategy involves:
+- **Leader’s Role**: Continuously estimating the global state and making adjustments.
+- **Follower’s Role**: Correcting their local state based on discrepancies with the leader’s estimates.
+
+### Implementation of Control Strategies
+
+**1. Gains Calculation Pre-Deployment**
+
+Before the system is deployed, agents compute the control gains using Riccati equations:
+- **Global Gains**: All agents compute these for the entire system, storing specific rows relevant to their role.
+- **Local Gains**: Each minor agent calculates these from local dynamics.
+
+**2. Real-Time Estimation and Control**
+
+During operation:
+- **Major Agent**: Updates the global state estimate and determines control actions.
+- **Minor Agents**: Update their local state estimates using Bayesian or LLMS filters and adjust their actions accordingly.
+
+### Conclusion
+
+The research provides a comprehensive framework for managing decentralized LQ systems under non-Gaussian noise conditions. By understanding the separation of estimation and control, and leveraging the structured control strategies, engineers can design efficient, robust control systems for complex applications like UAV fleets and autonomous vehicles.
+
+**Final Thoughts**
+
+The detailed structure of optimal and linear control strategies for decentralized systems offers significant insights and practical solutions for modern control applications. Whether you're an engineer or a researcher, incorporating these strategies can enhance the performance and reliability of your control systems.
+
+**Questions for You**
+
+- How do you handle non-Gaussian noise in your control systems?
+- Have you implemented decentralized control strategies in your applications? Share your experiences!
+
+Feel free to leave comments below or reach out if you have any questions or insights to share!
+
+**Call to Action**
+
+Stay tuned for more posts on advanced control systems. Subscribe to our newsletter for the latest updates and research insights in the field of control engineering.
+
+**Keywords**: Decentralized control, linear quadratic systems, non-Gaussian noise, MMSE, LLMS, UAVs, autonomous systems, control strategies.
+
+--- 
+
+This blog post aims to provide a clear understanding of the complex concepts presented in the research while engaging the reader with practical examples and questions for reflection.

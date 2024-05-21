@@ -1,0 +1,891 @@
+Exploration with Unreliable Intrinsic Reward
+in Multi-Agent Reinforcement Learning
+
+Wendelin BÂ¨ohmer 1 Tabish Rashid 1 Shimon Whiteson 1
+
+9
+1
+0
+2
+
+n
+u
+J
+
+5
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+8
+3
+1
+2
+0
+.
+6
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+Abstract
+This paper investigates the use of intrinsic reward
+to guide exploration in multi-agent reinforcement
+learning. We discuss the challenges in applying
+intrinsic reward to multiple collaborative agents
+and demonstrate how unreliable reward can pre-
+vent decentralized agents from learning the op-
+timal policy. We address this problem with a
+novel framework, Independent Centrally-assisted
+Q-learning (ICQL), in which decentralized agents
+share control and an experience replay buffer with
+a centralized agent. Only the centralized agent
+is intrinsically rewarded, but the decentralized
+agents still beneï¬t from improved exploration,
+without the distraction of unreliable incentives.
+
+1. Introduction
+
+Recent successes in challenging computer games like Star-
+Craft 2 (Vinyals et al., 2019) have raised interest in Multi-
+agent Reinforcement Learning (MARL). Here single units
+are modeled as individual agents, for example, in the re-
+cent open source StarCraft Multi-agent Challenge (SMAC,
+Samvelyan et al., 2019). In comparison to single-agent deep
+RL, MARL faces some unique challenges, in particular de-
+centralization and coordination. In this paper we investigate
+the equally challenging problem of directed exploration.
+
+Directed exploration in single-agent deep RL still poses
+many open questions, like how to generalize visitation
+counts in large input spaces and how to change the ex-
+ploration policy quickly towards newly discovered states.
+However, so far, there has been little work on exploration
+for deep MARL. Exploration in MARL differs from the
+single-agent setting in some challenging ways: (i) count-
+ing visitations of state-action pairs is infeasible for many
+agents, due to the large joint-action space; (ii) as unexpected
+outcomes can be caused by multiple agents, it is not clear
+
+1Department of Computer Science, University of Oxford,
+United Kingdom. Correspondence to: Wendelin BÂ¨ohmer <wen-
+delin.boehmer@cs.ox.ac.uk>.
+
+Accepted to the 2 nd Exploration in Reinforcement Learning Work-
+shop at the International Conference on Machine Learning 2019.
+
+which agentâs action should be reinforced; and (iii) partial
+observability decreases the reliability of count estimates.
+
+Decentralization is required in MARL when the agents can-
+not communicate directly. Moreover, a centralized control
+policy is often infeasible, as the joint-action space grows
+exponentially in the number of agents. In line with SMAC,
+we consider the case where the state of the system is only
+partially observable by each agent, although during training
+the global state may be available. This is called central-
+ized training with decentralized execution (Foerster et al.,
+2016). This paper focuses on the simplest value-based algo-
+rithm in this class, a variant of Independent Q-learning (IQL,
+Tan, 1993), where each agent acts on partial observations
+and assumes the other agentsâ decisions are an unobserved,
+stationary part of the environment.
+
+However, these simple decentralized agents lack coordina-
+tion. Take the example of two predators, who trapped their
+prey in a corner. To catch it, both must attack simultane-
+ously, as it will escape if only one predator attacks. From
+the perspective of each predator, the reward for attacking
+depends on the actions of the other. When the punishment
+for letting the prey escape is larger than the reward for
+catching it, neither agent will learn the optimal strategy
+independently. There are multiple methods using central-
+ized training to mitigate this effect for decentralized poli-
+cies, e.g., multi-agent credit assignment (COMA, Foerster
+et al., 2018) and bootstrapping with an approximation of the
+joint Q-value function. For example, Value Decomposition
+Networks (VDN, Sunehag et al., 2018) optimize the joint
+Q-value, but restrict the Q-value function to a sum of indi-
+vidual agentsâ utilities. QMIX (Rashid et al., 2018) goes one
+step further and mixes the agentsâ utilities with a non-linear
+hyper-network, that conditions on the global state. Both
+approaches can execute the decentralized learned policy by
+maximizing each agentâs utility. However, all the above
+techniques use relatively simple (cid:15)-greedy exploration.
+
+Value-based algorithms that explore provably efï¬ciently in a
+tabular setting (e.g. Jin et al., 2018) rely on optimism in the
+face of uncertainty. There are two major lines of research
+in the literature: to use intrinsic reward to over-estimate
+uncertain state-action values or to use Thompson sampling
+from a Bayesian posterior of the value function. Various
+
+ 
+ 
+ 
+ 
+ 
+ 
+Exploration with Unreliable Intrinsic Reward in MARL
+
+techniques have been proposed to estimate the uncertainty
+of state-action values (summarized in Appendix B), but
+whether it is used as an intrinsic reward or as the standard
+deviation of a Gaussian posterior, most works converge at
+an estimate that is supposed to scale with 1/(cid:112)Nt(st, ut),
+where Nt(st, ut) counts how often state st and action ut
+have been observed at time t. For large input spaces, how-
+ever, these estimates are rough approximations of visitation
+counts and the resulting uncertainties are highly unreliable.
+
+This paper investigates estimated intrinsic reward for decen-
+tralized IQL agents. We evaluate the variance of linear func-
+tions (OâDonoghue et al., 2018) as an uncertainty estimate
+in a novel predator-prey task that emphasizes exploration.
+We observe empirically that the intrinsic reward accelerates
+learning, but remains inherently unreliable, which prevents
+ï¬nding the optimal solution. To learn reliable decentral-
+ized policies in the face of unreliable reward, we propose
+to share control with a second agent that is discarded after
+training and can thus be centralized. Only the central agent
+receives intrinsic rewards, which prevents the decentralized
+agents from being distracted, while still improving their
+exploratory behavior. We show that this new approach to
+MARL exploration drastically speeds up learning of the
+decentralized agents, while converging to the optimal solu-
+tion. This novel framework is general and can be applied
+to different estimators of intrinsic reward and/or off-policy
+MARL algorithms like VDN and QMIX.
+
+2. Background
+
+We restrict ourselves to cooperative tasks, modeled as a
+Dec-POMDP (Oliehoek & Amato, 2016), that is, a tuple
+(cid:104)S, {U a}, P, r, {Z a}, {Oa}, n, Î³(cid:105). The global state of the
+system is denoted as s â S, and each of the n agents
+chooses actions ua â U a, which together form the joint
+action u â U. After executing joint action ut in state st at
+discrete time step t, the next state st+1 is drawn from tran-
+sition kernel P (st+1|st, ut), and a reward rt := r(st, ut)
+is determined by the reward function r : S Ã U â IR.
+While a centralized joint policy Ïc(u|st) can choose joint
+actions u conditioned on the current state st, a decentral-
+ized agent policy Ïa(ua|Ï a
+t ) draws only agent aâs action
+ua â U a, based on the agentâs current trajectory Ï a
+t of
+i â Z a, which are
+past actions ua
+i and observations za
+drawn from the agentâs observation kernel Oa(za
+i |si), that
+is, Ï a
+t ]. Execution of a joint pol-
+icy Ï yields an episode with return Rt := (cid:80)â
+i=t Î³iâtri
+at time t. Our goal is to ï¬nd a decentralized joint pol-
+a=1 Ïa(ua|Ï a
+icy Ï(u|{Ï a
+t ), which maximizes the
+expected return for each observed trajectory. Partial observ-
+ability of the policy can signiï¬cantly slow down learning
+and we allow access to the global state during training, that
+is, centralized training for decentralized execution.
+
+t }) := (cid:81)n
+
+1, . . . , za
+
+t := [za
+
+1 , ua
+
+0 , ua
+
+0, za
+
+2.1. Independent Q-learning (IQL)
+
+t ) := IEÏ[Rt|Ï a
+
+t , that is, Qa(ua|Ï a
+
+Independent Q-learning (Tan, 1993) approaches this goal by
+deï¬ning the state-action value function of agent a as the ex-
+pectation of the return, following policy Ï from an observed
+t , ua]. As in
+trajectory Ï a
+Q-learning (Watkins & Dayan, 1992), IQL assumes that the
+greedy policy, which chooses the action with the largest
+corresponding value, maximizes the expected return in each
+state. Note that this is not true, as the expected return also
+depends on the other agentsâ behavior, which can introduce
+non-stationarity. That being said, IQL appears to be stable
+in practice and works quite well in most tasks.
+
+We use a neural network with one head for each discrete
+action to approximate the value function (as in DQN, Mnih
+et al., 2015). For IQL, we learn a function1 qa
+Î¸ (ua|Ï a
+t ),
+parameterized by Î¸, with gradient-descend on the expected
+squared Bellman error
+(cid:104) â(cid:80)
+
+Î¸(cid:48)(u(cid:48)|Ï a
+qa
+
+t+1)âqa
+
+Î¸ (ua
+
+t |Ï a
+
+(cid:0)rt +Î³ max
+
+t )(cid:1)2(cid:105)
+
+, (1)
+
+IE
+
+min
+Î¸
+
+t=0
+
+u(cid:48)
+
+where Î¸(cid:48) are the parameters of a target network, which are
+replaced with a copy of the current parameters Î¸ from time to
+time to improve stability. The expectation is approximated
+by drawing mini-batches of trajectories from an experience
+replay buffer (Lin, 1992). We also use double Q-learning
+(Hasselt et al., 2016) to further improve stability and share
+the parameters Î¸ of all agentsâ value functions for better
+generalization (similar to QMIX, Rashid et al., 2018).
+
+2.2. Intrinsic Reward
+
+We employ a local uncertainty measure introduced by
+OâDonoghue et al. (2018). The variance of a linear re-
+gression, i.e., ï¬tting a linear function f (u|s) = w(cid:62)
+u Ï(s)
+to a ï¬xed set of state-action pairs {si, ui}t
+i=1 and random
+labels yi with a Gaussian distribution N (yi|y(si), Ï2), is
+Vt[f ](u|s) = Ï2 Ï(s)(cid:62)(cid:16) t(cid:80)
+
+Î´uiu Ï(si)Ï(si)
+
+Ï(s) . (2)
+
+(cid:17)â1
+
+i=1
+
+As each head of the IQL value function qa(ua|Ï a
+t ) is a lin-
+ear function of the last network layer, that is, the hidden
+state Ïa(Ï a
+t ) of a GRU, OâDonoghue et al. (2018) sug-
+gest to use r+
+t ) as a measure of local
+t
+uncertainty. This choice of intrinsic reward is somewhat
+justiï¬ed, as for one-hot coded Ï(st), the intrinsic reward
+t = Ï/(cid:112)Nt(st, ut), which corresponds to the tabular
+is r+
+case (e.g., in Jin et al., 2018) with scaling factor Ï.
+
+:= (cid:112)Vt[qa](ua
+
+t |Ï a
+
+1To condition on trajectories Ï a
+
+t , we follow Hausknecht &
+Stone (2015) and use a recurrent network of GRU units (Chung
+et al., 2014), which condition on their hidden state, the last action
+tâ1, the current observation za
+ua
+
+t and the agent id a.
+
+Exploration with Unreliable Intrinsic Reward in MARL
+
+3. Method
+
+Intrinsic reward based on estimated uncertainties rarely re-
+ï¬ects the precise visitation counts. We investigate how such
+unreliable intrinsic reward can still reliably improve explo-
+ration of decentralized agents. The main idea is to introduce
+a second controller during training that can be discarded af-
+terwards. This joint agent is intrinsically rewarded and can
+thus explore the environment in a directed fashion. In princi-
+ple, the agentâs policy could be learned by many algorithms.
+As it is only active during training, though, we propose a
+centralized agent, which conditions on the more informa-
+tive global state. Most importantly, we train simultaneously
+the decentralized agents, which will be later deployed for
+execution, on the same replay buffer. These can utilize any
+decentralized off-policy learning algorithm, but we focus in
+the following on IQL for simplicity.
+
+3.1. A Central MARL Agent
+
+The large action spaces in MARL make individual heads
+for each joint action u on value functions infeasible in the
+face of many agents. Maximizing a value function that con-
+ditions on all agentsâ actions, on the other hand, has to be
+evaluated for all u as well, which can be prohibitively ex-
+pensive. Instead, we use the architecture of a COMA critic,
+which Foerster et al. (2018) introduced in the context of a
+policy gradient method. They deï¬ne an agent-speciï¬c joint-
+value function qa
+Ï, parameterized by Ï, which has a head for
+each of aâs actions ua
+t and conditions on the global state, all
+other agentsâ actions uâa
+, . . . , un
+t ]
+t
+and agent aâs the previous action ua
+t |st, uâa
+
+t , . . . , uaâ1
+tâ1:
+
+!
+â IE[Rt|st, ut] .
+
+, ua+1
+t
+
+Ï(ua
+qa
+
+:= [u1
+
+tâ1)
+
+, ua
+
+(3)
+
+t
+
+t
+
+Instead of maximizing this function w.r.t. the joint action
+ut, we propose here to approximate a local maximum by
+iteratively choosing the ua
+t that maximizes each individual
+agentâs qa
+Ï, and using it for uâa in the next iteration of the
+maximization. In practice, we initialize ut with the greedy
+actions of the decentralized IQL agents and then perform
+this iterative local maximization (denoted lmax) for a small
+number of iterations. As in IQL, agents share parameters Ï.
+
+min
+Ï
+
+IE
+
+(cid:104)T â1(cid:80)
+
+n(cid:80)
+
+(cid:0)GÎ»
+
+t â qa
+
+Ï(ua
+
+t |st, uâa
+
+t
+
+tâ1)(cid:1)2(cid:105)
+
+, ua
+
+,
+
+(4)
+
+t=0
+
+a=1
+
+is minimized by gradient descent, where the expectation is
+approximated with the same mini-batches as in IQL and the
+same stabilization techniques are used as well.
+
+3.2. Intrinsic Reward Revisited
+
+Intrinsic rewards, as deï¬ned in Section 2.2, induce three
+challenges for collaborative MARL: dependence on joint
+actions, collaborative rewards, and evolving parameters.
+
+First, estimating (2) is infeasible for MARL, as we would
+have to estimate one correlation matrix for each joint action
+u. Instead of estimating a measure that depends on counting
+Nt(st, ut), we propose here to estimate one based on the
+count Nt(st+1). Although only a heuristic, this approach
+works in arbitrary large action spaces.
+
+Second, in collaborative tasks all agents should receive the
+same reward to avoid diverging incentives. However, in
+MARL each agent a estimates a different uncertainty, based
+on aâs observations and/or other inputs. As the interaction
+of all agents could have contributed to each agentâs uncer-
+tainty, it is unclear how to reconcile diverging estimates. We
+propose to use the largest uncertainty as intrinsic reward for
+all agents, to consider this potential interaction.
+
+Third, the agentsâ value function parameters continually
+change, particularly in the beginning of training when explo-
+ration is most important. The same inputs x yield different
+representations Ïa(x) at different times t, and estimates
+with (2) therefore become outdated after a while. To re-
+ï¬ect this change, we propose to use an exponentially decay-
+ing average of the inverted matrix Ct := (1 â Î±) Ctâ1 +
+(cid:80)n
+(xt), where xt denotes the value functionâs
+inputs at time t and Î± is a small decay constant. As the
+resulting uncertainty never decays to 0, we also introduce
+a bias bt and discard negative intrinsic rewards. The bias
+can be constant or an average over past uncertainties to only
+reward states with above average novelty.
+The resulting collaborative intrinsic reward r+
+t
+
+(xt) Ïa(cid:62)
+
+a=1 Ïa
+
+is:
+
+During exploration it is important that the sampling policy
+changes in response to newly discovered states. This change
+is imposed by intrinsic reward, which must therefore be
+transported quickly to earlier states in the episode. We use
+a Q(Î») implementation (Watkins, 1989) to accelerate this
+transport, but do not cut the traces after exploratory steps.
+This improves transport, but also introduces non-stationary
+targets. Our training procedure performs a parameter update
+after each episode and we compute the targets backwards:
+GÎ»
+
+Ï(cid:48)(Â¯ua|st+1, Â¯uâa, ua
+qa
+
+t := rt+(1âÎ»)Î³ lmax
+
+Â¯u
+where Ï(cid:48) denotes the target network and GÎ»
+
+t )+Î»Î³GÎ»
+t+1 ,
+T := 0. The loss
+
+r+
+t
+
+:= Ï max
+
+(cid:110)
+
+0, max
+a
+
+(cid:16)(cid:113)
+
+(xt+1)Câ1
+Ïa(cid:62)
+
+t Ïa
+
+(xt+1) âbt
+
+(cid:17)(cid:111)
+
+. (5)
+
+3.3. Independent Centrally-assisted Q-learning (ICQL)
+
+The intrinsically rewarded central agent samples in our train-
+ing framework episodes, while the decentralized (here IQL)
+agents are simultaneously trained on the shared replay buffer.
+This improves exploration in two ways: (i) although the de-
+centralized agents still beneï¬t from the exploration that is
+induced by (potentially unreliable) intrinsic reward, their
+ï¬nal policies are exclusively based on environmental re-
+wards, and (ii) the central agent conditions on the true state
+
+Exploration with Unreliable Intrinsic Reward in MARL
+
+Figure 1. 4 agents hunt a mountain and a valley prey. We plot mean and standard error (over 8 seeds) of the training (left) and test
+performance (right) of IQL, with and without intrinsic reward (i.e. magnitude Ï), and of our centrally-assisted exploration framework
+ICQL. Note that for ICQL training performance is 50% centralized, but test performance is 100% decentralized.
+
+of the system, which includes information that may not be
+observable by the agents.
+
+However, sampling only with the central agent yields an
+out-of-distribution problem for the IQL agents: a single
+deviating decision can induce a trajectory that has never
+been seen during training. We therefore share the sampling
+process by deciding randomly at the start of an episode
+whether the IQL agents or the central agent takes control.
+The resulting behavior appears quite stable for different
+probabilities of that choice and we chose 50% for simplicity.
+
+4. Experiments
+
+We extend a common partially observable predator-prey task
+in a grid-world to make it challenging from an exploration
+perspective, as preliminary experiments have shown that the
+original task does not require directed exploration of the
+state space.2 We train 4 agents, with 5 Ã 5 agent-centric
+observations, to hunt a mountain and a valley prey. Prey
+moves randomly in a bounded grid-world of height 41 and
+width 10. To simulate a mountain, both agents and valley
+prey do not execute 50% of all âupâ actions, and mountain
+prey does not execute 50% of all âdownâ actions. Valley
+prey spawn randomly on the lowest row, mountain prey on
+the highest row, and agents on middle row. An episode
+ends either when one of the prey is caught, that is, when
+agents/boundaries surround it on all sides, or after 100 steps.
+Only capturing yields reward, 5 for the valley and 10 for the
+mountain prey. Exploring the state space helps to ï¬nd the
+mountain prey without getting distracted by the valley prey.
+
+2In the original task, the prey moves randomly and the states in
+which the agents meet it are almost uniformly distributed. This pro-
+vides sufï¬cient exploration to ï¬nd an optimal policy and directed
+exploration is unnecessary.
+
+Figure 1 shows training and test performance3 for three
+algorithms: the original IQL (red, Section 2.1), IQL with
+intrinsic reward based on the agentsâ last layers (green, Sec-
+tion 3.2) and our novel centrally-assisted exploration frame-
+work ICQL (blue, Section 3.3), where the intrinsic reward is
+based on the last layer of the central agentsâ value functions.
+
+The destabilizing effect of unreliable intrinsic reward on
+IQL can be seen in the green IQL (Ï=1) curve: it speeds
+up learning, but also prevents the agents from ï¬nding the
+optimal policy (visible both in training and test plots). The
+bonus provides incentives for exploration, but also appears
+to distract the agents when their policy should converge.
+
+Our ICQL framework (blue) learns even faster, but demon-
+strates different behavior during training and testing. On the
+one hand, one can see the same sub-optimal behavior dur-
+ing training (left plot), which executes 50% of the episodes
+with the intrinsically-rewarded central agent and 50% with
+decentralized agents trained simultaneously. On the other
+hand, the test performance (right plot) of the decentralized
+agents shows the same improved learning, but none of the
+instabilities once the mountain prey has been found.
+
+We conclude that intrinsic reward is both a blessing and
+a curse for MARL settings. We have shown that even un-
+reliable reward can improve directed exploration, but also
+introduces detracting incentives. Our novel ICQL frame-
+work for centrally-assisted exploration appears to stabilize
+learning and further speeds up training, most likely by ex-
+ploiting access to the true state.
+
+In future work, we will further evaluate how the framework
+performs with different decentralized learning algorithms,
+like VDN and QMIX, and employ other uncertainty esti-
+
+3We implemented all algorithms in the PyMarl framework
+
+(Samvelyan et al., 2019). Details can be found in Appendix A.
+
+01M2M3M4MEnvironmental Steps02468105Mepisode reward during training (SEM)0Environmental Steps02468101M2M3M4M5MICQL (       )IQL (       )IQL (       )mountain preyreward forvalley preyreward forepisode reward during testing (SEM)Exploration with Unreliable Intrinsic Reward in MARL
+
+mates for intrinsic rewards. We also want to investigate the
+effect of adaptive biases and apply our method to StarCraft
+micromanagement tasks (SMAC, Samvelyan et al., 2019).
+
+Acknowledgements
+
+The authors would like to thank Jakob FÂ¨orster, Gregory
+Farquhar and Christian Schroeder de Witt for fruitful discus-
+sions about decentralization and exploration in MARL. This
+project has received funding from the European Research
+Council (ERC), under the European Unionâs Horizon 2020
+research and innovation programme (grant agreement num-
+ber 637713), and a grant of the EPSRC (EP/M508111/1,
+EP/N509711/1). The experiments were made possible by a
+generous equipment grant from NVIDIA.
+
+References
+
+Bellemare, M. G., Srinivasan, S., Ostrovski, G., Schaul, T.,
+Saxton, D., and Munos, R. Unifying count-based explo-
+ration and intrinsic motivation. In Advances in Neural
+Information Processing Systems (NIPS) 29, pp. 1471â
+1479, 2016.
+
+Burda, Y., Edwards, H., Pathak, D., Storkey, A., Darrell, T.,
+and Efros, A. A. Large-scale study of curiosity-driven
+learning. In International Conference on Learning Rep-
+resentations (ICLR), 2019.
+
+Chung, J., Gulcehre, C., Cho, K., and Bengio, Y. Empirical
+evaluation of gated recurrent neural networks on sequence
+modeling. In NIPS Workshop on Deep Learning, 2014.
+URL http://arxiv.org/abs/1412.3555.
+
+Foerster, J., Assael, I. A., de Freitas, N., and Whiteson,
+S. Learning to communicate with deep multi-agent rein-
+forcement learning. In Advances in Neural Information
+Processing Systems (NIPS) 29, pp. 2137â2145. 2016.
+
+Foerster, J. N., Farquhar, G., Afouras, T., Nardelli, N., and
+Whiteson, S. Counterfactual multi-agent policy gradients.
+In Proceedings of the 15th AAAI Conference on Artiï¬cial
+Intelligence, pp. 2974â2982, 2018.
+
+Fortunato, M., Azar, M. G., Piot, B., Menick, J., Hessel, M.,
+Osband, I., Graves, A., Mnih, V., Munos, R., Hassabis, D.,
+Pietquin, O., Blundell, C., and Legg, S. Noisy networks
+for exploration. In International Conference on Learning
+Representations (ICLR), 2018.
+
+Gal, Y., Hron, J., and Kendall, A. Concrete dropout. In Ad-
+vances in Neural Information Processing Systems (NIPS),
+pp. 3584â3593, 2017.
+
+Hasselt, H. v., Guez, A., and Silver, D. Deep reinforcement
+learning with double q-learning. In Proceedings of the
+
+13th AAAI Conference on Artiï¬cial Intelligence, pp. 2094â
+2100, 2016.
+
+Hausknecht, M. J. and Stone, P. Deep recurrent q-
+In 2015
+URL
+
+learning for partially observable mdps.
+AAAI Fall Symposia, pp. 29â37, 2015.
+http://www.aaai.org/ocs/index.php/
+FSS/FSS15/paper/view/11673.
+
+Jaques, N., Lazaridou, A., Hughes, E., GÂ¨ulcÂ¸ehre, CÂ¸ ., Ortega,
+P. A., Strouse, D., Leibo, J. Z., and de Freitas, N. Intrinsic
+social motivation via causal inï¬uence in multi-agent RL.
+CoRR, abs/1810.08647, 2018. URL https://arxiv.
+org/abs/1810.08647.
+
+Jin, C., Allen-Zhu, Z., Bubeck, S., and Jordan, M. I. Is
+Q-learning provably efï¬cient? In Advances in Neural
+Information Processing Systems (NeurIPS) 31, pp. 4863â
+4873. 2018.
+
+Leibo, J. Z., Hughes, E., Lanctot, M., and Graepel, T.
+Autocurricula and the emergence of innovation from
+social interaction: A manifesto for multi-agent intelli-
+gence research. CoRR, abs/1903.00742, 2019. URL
+http://arxiv.org/abs/1903.00742.
+
+Lin, L.-J. Self-improving reactive agents based on reinforce-
+ment learning, planning and teaching. Machine Learning,
+8(3):293â321, 1992.
+
+Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Ve-
+ness, J., Bellemare, M. G., Graves, A., Riedmiller, M.,
+Fidjeland, A. K., Ostrovski, G., Petersen, S., Beattie, C.,
+Sadik, A., Antonoglou, I., King, H., Kumaran, D., Wier-
+stra, D., Legg, S., and Hassabis, D. Human-level control
+through deep reinforcement learning. Nature, 518(7540):
+529â533, February 2015.
+
+OâDonoghue, B., Osband, I., Munos, R., and Mnih, V. The
+uncertainty Bellman equation and exploration. In Pro-
+ceedings of the 35th International Conference on Ma-
+chine Learning (ICML), pp. 3836â3845, 2018.
+
+Oliehoek, F. A. and Amato, C. A concise introduction
+to decentralized POMDPs. Springer Publishing Com-
+pany, Incorporated, 1st edition, 2016. ISBN 3319289276,
+9783319289274.
+
+Osband, I., Van Roy, B., and Wen, Z. Generalization and
+In Pro-
+exploration via randomized value functions.
+ceedings of the 33rd International Conference on Inter-
+national Conference on Machine Learning (ICML), pp.
+2377â2386, 2016.
+
+Osband, I., Aslanides, J., and Cassirer, A. Randomized prior
+functions for deep reinforcement learning. In Advances
+in Neural Information Processing Systems (NeurIPS) 31,
+pp. 8617â8629. 2018.
+
+Exploration with Unreliable Intrinsic Reward in MARL
+
+in Neural Information Processing Systems (NIPS) 29, pp.
+4790â4798. 2016.
+
+Vinyals, O., Babuschkin, I., Chung, J., Mathieu, M.,
+Jaderberg, M., Czarnecki, W., Dudzik, A., Huang, A.,
+Georgiev, P., ichard Powell, Ewalds, T., Horgan, D.,
+Kroiss, M., Danihelka, I., Agapiou, J., Oh, J., Dalibard,
+V., Choi, D., Sifre, L., Sulsky, Y., Vezhnevets, S., Molloy,
+J., Cai, T., Budden, D., Paine, T., Gulcehre, C., Wang,
+Z., Pfaff, T., Pohlen, T., Wu, Y., Yogatama, D., Cohen,
+J., McKinney, K., Smith, O., Schaul, T., Lillicrap, T.,
+Apps, C., Kavukcuoglu, K., Hassabis, D., and Silver,
+D. AlphaStar: Mastering the real-time strategy game
+StarCraft II. Deepmind blog, accessed 04/16/2019,
+https://deepmind.com/blog/alphastar-ma
+stering-real-time-strategy-game-starcr
+aft-ii, 2019.
+
+Watkins, C. and Dayan, P. Q-learning. Machine Learning,
+
+8:279â292, 1992.
+
+Watkins, C. J. C. H. Learning from delayed rewards. PhD
+
+thesis, Cambridge University, 1989.
+
+Zheng, S. and Yue, Y. Structured exploration via hierar-
+chical variational policy networks, 2018. URL https:
+//openreview.net/forum?id=HyunpgbR-.
+
+Ostrovski, G., Bellemare, M. G., van den Oord, A., and
+Munos, R. Count-based exploration with neural density
+models. In Proceedings of the 34th International Con-
+ference on Machine Learning (ICML), pp. 2721â2730,
+2017.
+
+Pathak, D., Agrawal, P., Efros, A. A., and Darrell, T.
+Curiosity-driven exploration by self-supervised predic-
+tion. In Proceedings of the 34th International Conference
+on Machine Learning (ICML), 2017.
+
+Plappert, M., Houthooft, R., Dhariwal, P., Sidor, S., Chen,
+R. Y., Chen, X., Asfour, T., Abbeel, P., and Andrychow-
+icz, M. Parameter space noise for exploration. In Interna-
+tional Conference on Learning Representations (ICLR),
+2018.
+
+Rashid, T., Samvelyan, M., de Witt, C. S., Farquhar, G.,
+Foerster, J. N., and Whiteson, S. QMIX: monotonic value
+function factorisation for deep multi-agent reinforcement
+learning. In International Conference on Machine Learn-
+ing (ICML), pp. 4292â4301, 2018.
+
+Roderick, M., Grimm, C., and Tellex, S. Deep abstract
+Q-networks. In Proceedings of the 17th International
+Conference on Autonomous Agents and MultiAgent Sys-
+tems (AAMAS), pp. 131â138, 2018.
+
+Samvelyan, M., Rashid, T., de Witt, C. S., Farquhar, G.,
+Nardelli, N., Rudner, T. G. J., Hung, C., Torr, P. H. S.,
+Foerster, J. N., and Whiteson, S. The StarCraft multi-
+agent challenge. CoRR, abs/1902.04043, 2019. URL
+https://arxiv.org/abs/1902.04043.
+
+Sunehag, P., Lever, G., Gruslys, A., Czarnecki, W. M., Zam-
+baldi, V., Jaderberg, M., Lanctot, M., Sonnerat, N., Leibo,
+J. Z., Tuyls, K., and Graepel, T. Value-decomposition net-
+works for cooperative multi-agent learning based on team
+reward. In Proceedings of the 17th International Con-
+ference on Autonomous Agents and MultiAgent Systems
+(AAMAS), pp. 2085â2087, 2018.
+
+Tan, M. Multi-agent reinforcement learning: Independent
+vs. cooperative agents. In In Proceedings of the Tenth
+International Conference on Machine Learning (ICML),
+pp. 330â337, 1993.
+
+Tang, H., Houthooft, R., Foote, D., Stooke, A., Xi Chen,
+O., Duan, Y., Schulman, J., DeTurck, F., and Abbeel,
+P. #Exploration: A study of count-based exploration
+for deep reinforcement learning. In Advances in Neural
+Information Processing Systems (NIPS) 30, pp. 2753â
+2762. 2017.
+
+van den Oord, A., Kalchbrenner, N., Espeholt, L.,
+kavukcuoglu, k., Vinyals, O., and Graves, A. Conditional
+image generation with PixelCNN decoders. In Advances
+
+Exploration with Unreliable Intrinsic Reward in MARL
+
+Appendix
+
+A. Training details
+
+We implemented all algorithms in the PyMARL framework
+(Samvelyan et al., 2019), where we used RMSprop with
+learning rate 0.0005, Î³ = 0.99, batch size 32 and a replay
+buffer holding the last 200 episodes. Decentralized agents
+had a hidden layer of 64 GRU cells, sandwiched between 2
+feed-forward layers, and central agents had 3 feed-forward
+layers with 128 hidden neurons each. The target network
+was updated every 200 episodes and we used (cid:15)-greedy ex-
+ploration, which decayed 1 â¥ (cid:15) â¥ 0.05 within 20,000 steps.
+Intrinsic reward had magnitude Ï = 1, a decay constant
+Î± = 0.0002 and constant bias bt := 0.01. ICQL approxi-
+mated the local maximum with one lmax iteration.
+
+B. Related Work
+
+In this paper we focus on intrinsic reward for exploration
+(in difference to pure curiosity, Burda et al., 2019). Here the
+uncertainty is often derived from to the prediction quality
+after training on past trajectories. For example, pseudo-
+counts are based on the reconstruction probability of visual
+observations (Bellemare et al., 2016; Ostrovski et al., 2017),
+using a PixelCNN (van den Oord et al., 2016). Alternatively,
+Tang et al. (2017) count visitations using a hash function
+on a random linear projection. Furthermore, Pathak et al.
+(2017) use the predictability of the observed transition as
+intrinsic reward signal, and Roderick et al. (2018) reduce
+uncertainty with prior knowledge over state abstractions.
+
+In the context of Bayesian posteriors, the uncertainty has
+been estimated from an ensemble of value functions, with
+optional bootstrapping techniques (Osband et al., 2016;
+2018). Alternatively, Noisy Nets (Fortunato et al., 2018;
+Plappert et al., 2018) sample a value function for each
+episode from a diagonal Gaussian posterior over the pa-
+rameters of the neural network. Similarly, Gal et al. (2017)
+suggested to use Concrete Dropout to estimate the posterior
+for model-based RL. To include the uncertainty of future
+reward, OâDonoghue et al. (2018) proposed the Uncertainty
+Bellman Equation (UBE), which propagates the âlocal un-
+certaintyâ of future decisions with a Bellman operator.
+
+For MARL, Zheng & Yue (2018) proposed to coordinate ex-
+ploration by sharing latent variables, drawn from a learned
+distribution. Jaques et al. (2018) focuses on social motiva-
+tions of competitive agents and Leibo et al. (2019) describes
+exploration as an auto-curriculum generated by competing
+species of agents.
+
+

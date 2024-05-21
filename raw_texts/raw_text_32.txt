@@ -1,0 +1,2016 @@
+Can IKEA effect promote empathy for agents?
+
+Takahiro Tsumura1,2* and Seiji Yamada2,1
+
+1*Department of Informatics, The Graduate University for Advanced Studies,
+SOKENDAI, Shonan Village, Hayama, Kanagawa, 240-0193, Japan.
+2National Institute of Informatics, 2-1-2 Hitotsubashi, Chiyoda-ku, Tokyo, 101-8430,
+Japan.
+
+*Corresponding author(s). E-mail(s): takahiro-gs@nii.ac.jp;
+
+Abstract
+
+Cooperative relationships between humans and agents are becoming more important for the social
+coexistence of anthropomorphic agents, including virtual agents and robots. One way to improve the
+relationship between humans and agents is for humans to empathize with the agents. Empathy can
+help humans become more accepting of agents. In this study, we focus on the IKEA effect in creating
+agents and investigate human empathy toward agents through relationships with others in the same
+space. For this reason, this study used a robot assembly task in which two participants cooperatively
+build the same robot or individually their own robot. We conducted experiments to examine the
+relationship between participants, the IKEA effect in creating an agent, and the influence of the
+empathy object on human empathy. The results showed that the IKEA effect promoted empathy
+toward the agent regardless of the relationship between participants. On the other hand, there was
+no significant difference in empathy from one participant to another before and after the task. These
+results indicate that regardless of the relationship between participants in the same space, the creation
+of an agent can promote empathy toward the agent.
+
+Keywords: human-agent interaction, human-robot interaction, empathy agent, IKEA effect, human
+relationship
+
+1 Introduction
+
+Many intelligent artifacts, such as ChatGPT, gen-
+erative AI, and social robots, are widely used in
+human society. Humans live in societies and use
+a variety of tools, and artifacts are sometimes
+treated as if they were human. Humans are known
+to tend to treat artifacts as if they were humans
+in the media equation [1]. However, these objects
+are so prevalent that humans may not consider
+some of them to be human-like. A possible solu-
+tion to the problem with AI and robots is to focus
+on their relationship to artifacts.
+
+Previous AI issues have focused on the trust-
+worthy and ethical use of AI technology. Ryan [2]
+focused on trust and discussed the issue of AI
+ethics and people anthropomorphizing AI. It was
+determined that even complex machines that use
+AI should not be considered trustworthy. Instead,
+he suggested, we need to ensure that organiza-
+tions that use AI and the individuals within those
+organizations are trustworthy. Belk [3] filled a
+gap in recent research on AI and robotics in ser-
+vices, expanding the view of the service context
+in which robotics and AI are involved and provid-
+ing important implications for public policy and
+
+1
+
+4
+2
+0
+2
+
+n
+a
+J
+
+9
+
+]
+
+C
+H
+.
+s
+c
+[
+
+2
+v
+1
+8
+7
+1
+1
+.
+2
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+ 
+ 
+ 
+ 
+ 
+ 
+service technology applications. AI ethics was also
+discussed in detail in terms of applied ethics in a
+study by Hallamaa and Kalliokoski [4]. Wirtz and
+Pitardi [5] noted that the shift to robotics and
+AI-enabled services will simultaneously improve
+customer experience, service quality, and produc-
+tivity, but they mentioned the ethical, fairness,
+and privacy risks for customers and society. They
+therefore discussed the impact of the service rev-
+olution on service firms, their marketing, and
+their customers and offered possibilities for future
+research. Kumar et al. [6] noted that new techno-
+logical advances made possible with the use of AI
+in medicine have not only raised concerns about
+public trust and ethics but have also generated
+much debate about its integration into medicine.
+They reviewed current research investigating how
+to apply AI technologies to create smart predic-
+tive maintenance.
+
+[7]
+
+Similar to our trust in AI, we often empathize
+with artifacts. There are several previous studies
+that have investigated the relationship between
+trust and empathy. Spitale et al.
+investi-
+gated the amount of empathy elicited by a social
+assistance robot storyteller and the factors that
+influence the userâs perception of that robot.
+As a result, the robot narrator elicited more
+empathy when the object of the storyâs empa-
+thy matched that of the narrator. Johanson et
+investigated whether the use of verbal
+al.
+empathic statements and nods from a robot dur-
+ing video-recorded interactions between a health-
+care robot and patient would improve participant
+trust and satisfaction. Results showed that the
+use of empathic statements by the healthcare
+robot significantly increased participantsâ empa-
+thy, trust, and satisfaction with the robot and
+reduced their distrust of the robot.
+
+[8]
+
+Thus, we empathize with cleaning robots, pet
+robots, anthropomorphic agents, etc. that pro-
+vide services for online shopping and help desks.
+These are already in use in society and coexist
+with humans. The appearance of these agents also
+varies depending on the application and the envi-
+ronment in which they are used. However, some
+humans cannot accept this type of agent [9, 10].
+
+Mori [11] proposed an uncanny valley of human
+emotional responses to robots, in which robots
+become more likeable and empathetic as they
+are made more human-like in their appearance
+and behavior, but at some point suddenly turn
+
+2
+
+into strong dislike. As ever-developing technol-
+ogy acquires human-like capabilities, the situ-
+ation becomes similar to the uncanny valley,
+leading to negative behavior. With respect to
+the uncanny valley hypothesis, Thepsoonthorn et
+al. [12] explored the uncanny valley in terms of the
+robotâs nonverbal behavior. The results showed a
+two-correlation coefficient between the results of
+human-like and affinity ratings. A curve similar
+to the uncanny valley was found. A curve similar
+to the uncanny valley was suggested for nonver-
+bal behavior by them, indicating that nonverbal
+behavior that is more human-like is thought neg-
+atively by people.
+
+Mahmud et al.
+
+[13] also conducted a liter-
+ature review of algorithm aversion, which is a
+negative behavior or attitude toward the work-
+ings of algorithms compared to the workings of
+humans, and has gained attention through the
+use of ChatGPT and generative AI. In partic-
+ular, Filiz et al. [14] examined the relationship
+between the outcome of a decision-making situa-
+tion and the frequency of algorithm aversion and
+showed that the more serious the outcome of a
+decision, the more frequently algorithm aversion
+occurred. Especially in the case of very important
+decisions, algorithmic aversion leads to a reduced
+probability of success, which is the tragedy of
+algorithmic aversion. For causes that lead to the
+negative behavior described above, it is an impor-
+tant issue to establish a coexistence relationship
+with AI technologies and anthropomorphic agents
+that will be used in the future society.
+
+The following research focuses on promoting
+human empathy toward agents. Tsumura and
+Yamada [15] previously focused on â(human)
+empathyâ as an attribute that agents should pos-
+sess in order to be accepted by human society and
+aimed to create empathy agents. Tsumura and
+Yamada [16] focused on self-disclosure from agents
+to humans in order to enhance human empa-
+thy toward anthropomorphic agents, and they
+experimentally investigated the potential for self-
+disclosure by agents to promote human empathy.
+Tsumura and Yamada [17] also focused on tasks
+in which humans and agents engage in a variety of
+interactions, and they investigated the properties
+of agents that have a significant impact on human
+empathy toward them. In this study, we focused
+on how humans can improve their relationships
+with agents. Therefore, similar to these studies, we
+
+focused on human empathy toward agents as one
+way to improve the relationship between humans
+and agents. Empathy makes humans more likely
+to act positively toward an agent and more likely
+to accept the agent. Factors that generate empa-
+thy,
+including linguistic information, nonverbal
+information, situation, and relationship, have been
+studied in various ways. Shaffer et al. [18] showed
+that narrative writing intervention increased par-
+ticipantsâ empathy and perspective-taking, evoked
+more positive attitudes toward women who smoke
+during pregnancy, and increased external attribu-
+tions for the behavior of these women.
+
+Previous studies have shown that assembling
+artifacts, known as the IKEA effect [19], is impor-
+tant for increasing the value of objects. However,
+no study has used the IKEA effect in investi-
+gating empathy for agents. We hypothesize that
+the IKEA effect is necessary for anthropomorphic
+agents to have a better relationship with humans.
+In recent years, as agents have been increas-
+ingly utilized in human society, the establishment
+of relationships between humans and agents has
+become increasingly important. Just as humans
+enhance the value of artifacts through the IKEA
+effect, it makes sense for agents to use the IKEA
+effect to deepen their relationships with humans.
+In terms of the media equation, it has also
+been suggested that people feel the same emo-
+tions toward artifacts as they do toward people,
+but it is not clear how much empathy for arti-
+facts differs from empathy for people. Therefore,
+in this study, we investigate two objects of empa-
+thy toward agents and humans. The empathy
+addressed in this study concerns empathy charac-
+teristics toward people and agents.
+
+2 Related work
+
+2.1 Definition of empathy
+
+We consider empathy to be a significant element
+in being accepted by humans as a member of soci-
+ety. For humans to get along with each other,
+it is important that they empathize with the
+other [20, 21].
+
+Empathy and the effects that it has on oth-
+ers have been a focus of research in the field of
+psychology. Omdahl [22] roughly classifies empa-
+thy into three types: (1) affective empathy, which
+is an emotional response to the emotional state
+
+3
+
+of others, (2) cognitive understanding of the emo-
+tional state of others, which is defined as cognitive
+empathy, and (3) empathy including the above
+two. Preston and de Waal [23] suggested that at
+the heart of the empathic response was a mech-
+anism that allowed the observer to access the
+subjective emotional state of the target. They
+defined the perception-action model (PAM) and
+unified the different perspectives in empathy.
+They defined empathy as three types: (a) shar-
+ing or being influenced by the emotional state of
+others, (b) assessing the reasons for the emotional
+state, and (c) having the ability to identify and
+incorporate other perspectives. Arbel et al. [24]
+addressed the gap by focusing on adaptive empa-
+thy, defined as the ability to learn and adjust
+oneâs empathic response based on feedback. They
+provided a laboratory-based model for studying
+adaptive empathy and demonstrated the potential
+contribution of learning theory to increasing our
+understanding of the dynamic nature of empathy.
+Although we focus on the positive effects of
+empathy to improve societyâs acceptance of AI
+agents in this study, empathy has been discussed
+from various aspects including negative effects in
+psychological literature. Bloom [25] tried to intro-
+duce a neutral aspect of empathy by introducing
+not only positive influences but also negative ones.
+He claimed that it is possible for empathy to act
+as a moral guide that leads humans to irrational
+decision-making and relationships to violence and
+anger. Also, he claimed that we can overcome this
+problem by using conscious, deliberative reason-
+ing and altruistic approaches.
+
+Various questionnaires are used as a measure of
+empathy, but we examined two famous ones. The
+Interpersonal Reactivity Index (IRI), also used
+in the field of psychology, is used to investigate
+the characteristics of empathy [26]. Baron-Cohen
+and Wheelwright [27] reported a new self-report
+questionnaire, the Empathy Quotient (EQ), for
+use with adults of normal intelligence. Lawrence
+et al. [28] investigated the reliability and valid-
+ity of the EQ and determined its factor structure.
+The experimental results showed a moderate asso-
+ciation between the EQ subscale and the IRI
+subscale.
+
+Regarding questionnaires about empathy, IRI
+and EQ are widely used in the field of psychology.
+In particular, examples of research on empathy
+
+using only the IRI are widely seen in psychol-
+ogy and the HRI and HAI fields, such as the
+studies by Shaffer et al. [18] and Tsumura and
+Yamada [16, 17]. Since the results of previous
+studies have shown that the EQ scale is related
+to the IRI scale, we used the IRI questionnaire,
+which has fewer questions and allows for the four
+characteristics of empathy to be investigated. We
+also used the widely used IRI for comparison
+with previous and future research on empathy.
+We also focused on investigating the impact of
+each characteristic of empathy. The use of the IRI
+was appropriate for investigating this as based on
+previous studies.
+
+2.2 Empathy in engineering
+
+Empathy has also been studied in the field of
+engineering, particularly in the context of virtual
+reality. vanLoon et al. [29] investigated whether
+the effects of VR perspective-taking could be
+driven by increased empathy and extended to
+real-stakes behavioral games. They succeeded in
+increasing the tendency of participants to take the
+other personâs point of view, but only if it was
+that of the same person participants assumed in
+the virtual reality simulation. Herrera et al. [30]
+compared the short- and long-term effects of tra-
+ditional and VR viewpoint acquisition tasks. They
+also conducted experiments investigating the role
+of technological immersion with respect to differ-
+ent types of intermediaries.
+
+Tassinari et al.
+
+[31] developed an inter-
+participant design to investigate how VR can
+be used to create positive inter-group contact
+with members of prejudiced out-groups (ethnic
+minorities) and presented results of the impact of
+inter-group contact in VR on empathy. Crone and
+Kallen [32] utilized online platforms and immer-
+sive virtual reality to examine the role of virtual
+perspective-taking on binary gender. They found
+that virtual reality-based perspective-taking may
+have a greater impact on acute behavioral modula-
+tion of gender bias compared with online because
+it immerses participants in the experience of tem-
+porarily becoming another.
+
+Empathy is also attracting attention in the
+realm of product design. Bennett and Rosner [33]
+investigated a human-centered design process
+(promise of empathy) in which designers try to
+
+understand the target user with the aim of inform-
+ing technology development. Rahmanti et al. [34]
+designed a chatbot with artificial empathic moti-
+vational support for dieting called âSlimMeâ and
+investigated how people responded to the diet
+bot. They proposed a text-based emotional analy-
+sis that simulates artificial empathic responses to
+enable the bot to recognize usersâ emotions.
+
+Drouet et al. [35] shared the preparatory stages
+of developing an empathy scale for service design,
+as other stakeholders had overlooked the need to
+foster empathy for users to provide high-quality
+user-centered services and products. Al-Farisi et
+[36] applied two designs of anthropomor-
+al.
+phic design cues (ADCs) (verbal and nonverbal
+designs) to chatbots and compared the empathy
+levels of the two chatbots with and without ADCs.
+The ADC had a significantly positive effect on
+increasing the chatbotâs level of empathy.
+
+2.3 Empathy in human-robot/agent
+
+interaction
+
+Studies on human empathy in the human-robot
+interaction (HRI) field have explored the ways in
+which humans empathize with artificial objects.
+Yamada and Komatsu [37] proposed a design
+policy called âSE2PM: simple expression to prim-
+itive mindâ using a mobile robot that expresses
+its mind with beeps based on Mindstorms and
+a pet robot, AIBO, that expresses its complex
+behavior with mental expressions, and using this
+design policy, they implemented the robotâs men-
+tal expressions at full scale and examined their
+effectiveness. SE2PM suggested that intuitive and
+simple expressions such as beeps of simple robots
+(e.g., mobile robots) are more effective in convey-
+ing their primitive minds to humans than complex
+behaviors of complex robots (e.g., pet robots such
+as dogs).
+
+On the basis of the concept of cognitive devel-
+opmental robotics, Asada [38] proposed âaffective
+developmental roboticsâ as a way to produce more
+authentic artificial empathy. Artificial empathy
+here refers to AI systems (e.g., companion robots
+and virtual agents) that can detect emotions and
+respond empathetically. The design of artificial
+empathy is one of the most essential components
+of social robotics, and empathetic interaction with
+the public is necessary to introduce robots into
+society.
+
+4
+
+Fraune [39] examined how people behave
+morally and perceive players according to their
+group membership (in-group, out-group), agent
+type (human, robot), and robot anthropomor-
+phism (anthropomorphic, mechanized). Their
+results showed that the pattern of reactions to
+humans was more favorable for anthropomorphic
+robots than for mechanistic robots. Park and
+Whang[40] conducted a systematic review of the
+literature on empathy in interpersonal, virtual
+agent, and social robot research, using inclusion
+criteria for analyzing empirical studies in peer-
+reviewed journals, conference proceedings, or arti-
+cles. They suggested key factors such as domain
+dependence, multimodality, and empathic coordi-
+nation to consider when designing, engineering,
+and studying empathic social robots.
+
+As for empathy research in the field of human-
+agent interaction (HAI), Leite et al.
+[41] con-
+ducted a long-term study in an elementary school
+where they presented and evaluated an empa-
+thy model for social robots aimed at interactions
+with children that occur over a long period of
+time. They measured childrenâs perceptions of
+social presence, engagement, and social support
+and found that the empathy model developed
+had a positive impact on the long-term inter-
+action between the child and the robot. Chen
+and Wang [42] hypothesized that empathy and
+anti-empathy were closely related to a creatureâs
+inertial impression of coexistence and competition
+within a group and established a unified model
+of empathy and anti-empathy. They also pre-
+sented the Adaptive Empathetic Learner (AEL),
+an agent training method that enables evaluation
+and learning procedures for emotional utilities in
+a multi-agent system.
+
+Perugia et al. [43] investigated which person-
+ality and empathy traits were related to facial
+mimicry between humans and artificial agents.
+They focused on the humanness and embodiment
+of agents and the influence that these have on
+human facial mimicry. Their findings showed that
+mimicry was affected by the embodiment that
+an agent has, but not by its humanness. It was
+also correlated with both individual traits indi-
+cating sociability and empathy and traits favoring
+emotion recognition. Parmar et al. [44] investi-
+gated the systematic manipulation of animation
+quality, voice quality, rendering style, and simu-
+lated empathy and their impact on virtual agentsâ
+
+perceptions in terms of naturalness, engagement,
+trust, credibility, and persuasion in health states.
+Tsumura and Yamada [45] experimentally exam-
+ined the hypothesis that agent reactions and
+human preferences affect human empathy and
+acceptance of agent mistakes. The results showed
+that agent reactions and human preferences do not
+affect empathy toward the agent, but do allow the
+agent to make mistakes. It was also shown that
+empathy for an agent decreases when the agent
+makes mistakes in a task.
+
+To clarify the empathy between agents/robots
+and humans, Paiva represented the empathy and
+behavior of empathetic agents (called empathy
+agents in HAI and HRI studies) in two different
+ways: targeting empathy and empathizing with
+observers Paiva et al. [46]. In our study, following
+Paivaâs proposed definition of an empathic agent,
+we consider the agent as an object of empathy and
+examine how the empathy and empathic responses
+of human participants are affected.
+
+2.4 IKEA effect and human
+
+relationship
+
+Sun and Sundar [47] investigated whether assem-
+bling a robot enhances the quality of interaction
+with the robot and whether it matters whether the
+robot is a practical tool or a socially interacting
+entity. Results showed that when participants set
+up the robot themselves, they tended to have more
+positive evaluations of both the robot and the
+interaction process, with effects positively medi-
+ated by a sense of ownership and accomplishment
+and negatively mediated by perceived process
+costs. Marsh et al. [48] elucidated the developmen-
+tal stages of the IKEA effect and showed that the
+bias emerges at age 5, an important developmental
+milestone in the formation of self-concept. They
+also assessed the role of effort and found that the
+IKEA effect was not moderated by the amount of
+effort expended on the task in 5- to 6-year-olds.
+They further examined whether feelings of owner-
+ship moderated the IKEA effect and found that
+feelings of ownership alone did not explain why
+children valued their work more highly. Wald et
+al. [49] investigated the potential of active user-
+based chatbot customization for the development
+of trust in chatbots. While customization had no
+direct impact on trust, anthropomorphism was
+identified as an important mediating factor.
+
+5
+
+Aeschlimann et al. [50] investigated communi-
+cation patterns and prosocial outcomes in inter-
+actions with voice assistants. Results showed that
+children did not have the same expectations of
+voice assistants as they did of humans, and
+that human-to-human and human-to-computer
+cooperation differed. Pauw et al. [51] examined
+the socio-emotional benefits of talking to virtual
+humans and whether these benefits are moderated
+by the type of support provided. To examine the
+range of potential effects, they compared the two
+main types of support (emotional and cognitive)
+across two emotions (anger and worry). Results
+revealed that participants felt better after speak-
+ing with a virtual human, the intensity of the
+targeted emotion decreased, and their overall emo-
+tional state improved.
+
+Spaccatini et al. [52] experimentally investi-
+gated whether the type of mind attributed to
+anthropomorphic social robots has a complemen-
+tary effect on empathy for people in need. The
+results showed that anthropomorphism promoted
+the attribution of subjectivity (anthropomorphic
+appearance and interaction via chatbot) and expe-
+rience (anthropomorphic appearance only). Jorge
+et al. [53] investigated how automation failures in
+human-automation collaborative scenarios affect
+human confidence in automation as well as human
+confidence in automation. The results showed that
+automation failures negatively affect human trust
+and their trust and liking for automation.
+
+3 Materials and methods
+
+3.1 Ethics statement
+
+The protocol was approved by the ethics com-
+mittee of the National Institute of Informatics
+(13, April, 2020, No. 1). All studies were car-
+ried out in accordance with the recommendations
+of the Ethical Guidelines for Medical and Health
+Research Involving Human Subjects provided by
+the Ministry of Education, Culture, Sports, Sci-
+ence and Technology and Ministry of Health,
+Labour and Welfare in Japan. Written informed
+consent was provided by choosing one option on
+an online form: âI am indicating that I have read
+the information in the instructions for participat-
+ing in this research. I consent to participate in
+
+this research.â All participants gave informed con-
+sent. After that, they were debriefed about the
+experimental procedures.
+
+3.2 Hypotheses
+
+The purpose of this study was to determine
+whether assembling an agent would generate the
+IKEA effect and promote human empathy toward
+the agent. We will also investigate whether the
+relationship between participants during the task
+affects their empathy toward the agent they
+assemble. For these purposes, we used LEGO
+Mindstorms EV3 to investigate the empathy that
+participants have for the agent and another par-
+ticipant before and after the task. For this study,
+we formulated the following three hypotheses.
+
+H1: When an agent is assembled, empathy for the
+
+agent is promoted by the IKEA effect.
+
+H2: When participants cooperate, empathy for the
+
+other participant is promoted.
+
+H3: When participants create agents individually,
+
+empathy for the agents is promoted.
+
+The reason for Hypothesis 1 is to investigate
+whether the IKEA effect influences empathy as
+one of the factors that make people judge some-
+thing to be more valuable than others. Hypotheses
+2 and 3 were formulated because it is well known
+that empathy for a partner increases after several
+people perform a task together [39, 47, 51], and
+it is possible that the evaluation of the object of
+empathy will change depending on the relation-
+ship of the task at this time.
+
+We designed a mixed design experiment using
+three factors: the IKEA effect, participantsâ rela-
+tionships, and the empathy object. The number
+of levels for each factor was two for the IKEA
+effect (before and after), two for the participantsâ
+relationships (cooperative and individual), and
+two for the empathy object (agent and another
+participant). Participant relationships were inter-
+participant factors, while the IKEA effect and
+empathy object were intra-participant factors.
+The dependent variable was the empathy felt by
+the participant.
+
+3.3 LEGO Mindstorms EV3
+
+The LEGO Mindstorms EV3 (âLEGO Agentâ)
+used in this study is an assemblable robot. The
+
+6
+
+recruited through a recruitment website. The pro-
+cess flow is shown in Figure 3. Since our main goal
+was to promote human empathy for anthropo-
+morphic agents, we administered a questionnaire
+to measure participantsâ empathy for the agent
+and another participant before they performed
+the task. Figure 4 is an image of the experimental
+environment. The following explanation is based
+on this figure.
+
+Before the pre-task questionnaire, we showed
+a video of the finished agent, which was created
+by us during the explanation phase,
+in action
+on screen. Participants sat in seats A and B
+and worked on assembling the robot. The robot
+parts were placed in different locations depending
+on the experimental conditions:
+in the case of
+cooperative relationships, the parts were placed
+in the case of individual
+in the red locations;
+relationships, the parts were placed in the green
+locations. The PC in front of the participant
+was prepared for the survey and for viewing the
+assembly video. Participants were allowed to talk
+to each other during the creation of the agent.
+The reason for this setting was that this experi-
+ment could not assume that participants would
+be prohibited from being in the same space and
+talking when creating the agents.
+
+The task was for participants to assemble a
+dog-shaped LEGO agent; if the participants were
+in a cooperative relationship, they assembled one
+agent;
+if they were in individual relationships,
+each participant assembled an agent. The entire
+experiment took approximately one hour to com-
+plete. The participants were left alone in the
+room during the assembly process. The purpose
+of this experiment was to investigate the IKEA
+effect, which was a factor in this experiment, and
+the influence of the participantsâ relationship on
+the empathy object.
+
+Participants were given a few minutes after
+the completion of the LEGO agent to check its
+simple operation and time to operate it. This
+was a time for the participants to recognize that
+the agent they had assembled was actually mov-
+ing and had been completed successfully. The
+behavior of the agent was similar to the behavior
+video shown during the explanation. The specific
+behavior can be seen in the video attached to the
+supplemental materials. After the task was com-
+pleted, the same questionnaire was administered
+
+Fig. 1 LEGO agent.
+
+Fig. 2 Parts before assembly.
+
+participants assembled a dog-shaped robot dur-
+ing the experiment, one of the possible forms of
+LEGO Mindstorms EV3. Figure 1 shows the fin-
+ished robot assembled in the task.
+
+Although its behavior can be controlled by
+programming, programming was not required for
+this study, so participants only had to confirm that
+the sample program worked successfully after the
+assembly was completed. In this experiment, to
+simplify the assembly process, we assembled the
+small parts of the robot in advance, and the fin-
+ished product shown in Figure 2 was assembled
+from its disassembled state. Information on this
+LEGO agent is summarized below.
+
+Model number: EVR45544S
+Weight: 791 g
+Height: 17.2 cm
+Average assembly time: 45 minutes
+
+3.4 Experimental procedure
+
+This experiment was conducted at the National
+participants
+Informatics with
+Institute
+
+of
+
+7
+
+Fig. 3 Process flow of experiment.
+
+Fig. 4 Image of experimental environment.
+
+as before the task. After completing the question-
+naire, participants spontaneously responded to
+open-ended questions.
+
+3.5 Participants
+
+Through the recruitment website, participants
+were paid 1,500 yen (= 10.27 dollars). The num-
+ber of participants was 40. To ensure that the
+number of participants was sufficient for the statis-
+tical analysis of the three-factor mixed design, we
+used G*power, a software program that can check
+the appropriate number of participants for statis-
+tical analysis [54]. The following conditions were
+used in the study: 24 participants were available
+for the analysis; thus, 40 participants were found
+to be a sufficient number for the analysis (Con-
+ditions: F tests, ANOVA: Repeated measures,
+within-between interaction, Effect size f: 0.25, Î±
+
+error prob: 0.05, Power (1-Î² error prob): 0.8, Num-
+ber of groups: 2, Number of measurements: 4, Corr
+among rep measures: 0.5, Nonspheric correction Ïµ:
+1).
+
+Cronbachâs Î± coefficient was then applied to
+the 40 participants to determine the reliability of
+their survey responses and found to be between
+0.723 and 0.890 in all conditions. Twenty par-
+ticipants in each condition were included in the
+analysis. The mean age was 26.38 years (standard
+deviation 7.693), with a minimum of 18 years and
+a maximum of 52 years. Gender was 25 males and
+15 females.
+
+3.6 Questionnaire
+
+Participants answered questionnaires before and
+after the task. This was a 12-item questionnaire
+modified from the IRI. As the IRI was designed
+
+8
+
+to investigate human empathy characteristics, we
+modified it to investigate empathy toward an
+empathy agent and another participant. The part
+of the description that says âcharacterâ changed
+between LEGO agent or other participant. The
+same questionnaire was applied both before and
+after the task and was administered on a 5-point
+Likert scale (1: not applicable, 5: applicable), as
+shown in Table 1. Q4, Q9, and Q10 are inverted
+items, so the scores were reversed when analyzing
+them.
+
+Q1 to Q6 examine affective empathy, and Q7
+to Q12 examine cognitive empathy. There was one
+additional item for the questionnaire administered
+after the task (BeQ in the table) to examine the
+empathic response of the participants.
+
+3.7 IKEA effect
+
+As mentioned, to generate the IKEA effect in
+this study, a LEGO Mindstorms EV3 dog-shaped
+robot was assembled. Figure 1 shows the finished
+robot assembled in the task. The IKEA effect in
+LEGO-based assembly tasks was already investi-
+gated in a study by Norton et al. [19]. Therefore,
+we considered the IKEA effect to have occurred
+before and after the LEGO agent was assembled in
+this experiment. To investigate changes in empa-
+thy toward the agent before and after the IKEA
+effect, we decided to show a video of the finished
+robot before the assembly task.
+
+In this experiment, to simplify the assembly
+process, we assembled the small parts of the robot
+in advance, and the finished product shown in
+Figure 2 was assembled from its disassembled
+state. For the assembly task, we created a video
+of the assembly process, and participants watched
+the video while assembling the LEGO agent.
+
+The assembly process did not vary greatly
+between cooperative and individual work, taking
+an average of 45 minutes. The specific assembly
+procedure is illustrated in Figure 5 below. First,
+the fuselage is assembled (No. 2). Next, the front
+legs are attached to the body (No. 3). Then, the
+back legs are attached to the body (No. 4). After
+that, the neck is attached to the body (No. 5).
+Finally, the head is attached to the neck (No. 6).
+
+3.8 Participantsâ relationships
+
+Participants in this experiment performed the task
+in different relationships in the two conditions.
+
+The first was a condition in which the participants
+worked together to assemble the LEGO agent.
+In this condition, the two participants performed
+the task while watching the assembly video and
+checking with each other. Although the relation-
+ship between the participants increased as they
+cooperated to perform the task, it is not clear how
+their empathy for the assembled agent changed.
+Figure 6 shows the cooperative condition.
+
+The second condition was for the two partici-
+pants to assemble the LEGO agent by themselves.
+In this condition, the two participants each per-
+formed a task while watching the assembly video.
+Although this was an individual assembly task,
+the reason why two participants performed the
+task at the same time was that there was a pos-
+sibility that their empathy for the agent would
+change depending on the relationship between the
+participants in the same space. Figure 7 shows
+the individual assembly condition. In both condi-
+tions, each participant could watch the assembly
+video as they liked, and the participants were not
+restricted from talking to each other.
+
+3.9 Empathy object
+
+Two empathy objects were investigated in this
+study: empathy for the assembled LEGO agent
+and empathy for the participants who performed
+the task together. The reason for selecting the
+agent and another participant as the empathy tar-
+get is that many previous studies have focused on
+only one of the two and have not compared the dif-
+ferences in empathy for the two through an actual
+task.
+
+We investigated the extent to which the pro-
+motion of empathy toward agents approximates
+the value of empathy toward humans, and whether
+the media equation of people treating artifacts like
+people affects empathy toward agents through the
+IKEA effect.
+
+3.10 Analysis method
+
+The analysis was a three-factor mixed design
+ANOVA. The between-participants factor con-
+sisted of
+relation-
+two levels of participant
+ships (cooperative and individual). The within-
+participant factor consisted of two levels before
+and after the IKEA effect and the empathy target
+(agent, another participant) empathy value.
+
+On the basis of the results of the participantsâ
+
+9
+
+Table 1 Summary of questionnaire
+
+Affective empathy
+Personal distress
+Q1: If an emergency happens to the character, you would be anxious and restless.
+Q2: If the character is emotionally disturbed, you would not know what to do.
+Q3: If you see the character in need of immediate help, you would be confused and would not know what to do.
+Empathic concern
+Q4: If you see the character in trouble, you would not feel sorry for that character.
+Q5: If you see the character being taken advantage of by others, you would feel like you want to protect that character.
+Q6: The characterâs story and the events that have taken place move you strongly.
+Cognitive empathy
+Perspective taking
+Q7: You look at both the characterâs position and the human position.
+Q8: If you were trying to get to know the character better, you would imagine how that character sees things.
+Q9: When you think youâre right, you donât listen to what the character has to say.
+Fantasy scale
+Q10: You are objective without being drawn into the characterâs story or the events taken place.
+Q11: You imagine how you would feel if the events that happened to the character happened to you.
+Q12: You get deep into the feelings of the character.
+
+Fig. 5 Specific procedure for assembling experiment.
+
+questionnaire responses, we investigated the influ-
+ence of the IKEA effect and the participantsâ
+relationships as factors eliciting empathy for the
+agent and empathy for the other participant. The
+empathy values before and after the task were
+used as the dependent variable. R (ver. 4.1.0) was
+used for ANOVA.
+
+4 Results
+
+ANOVA was used to analyze the responses to the
+questionnaire and classify empathy into the cate-
+gories of affective empathy and cognitive empathy.
+Statistics for each empathy category are presented
+in Table 2. The raw data of the participants used
+in this study are available in Supplementary Infor-
+mation. The results of the ANOVA are presented
+in Table 3, which shows that there was an inter-
+action between the two factors, IKEA effect and
+
+10
+
+the IKEA effect and the empathy object factors is
+omitted because one was found.
+
+The simple main effect revealed a signifi-
+cant difference in the IKEA effect factor when
+the empathy object was the agent, as shown in
+Figure 9(a) (before: mean = 34.85, S.D. = 8.728;
+after: mean = 38.40, S.D. = 8.869). Furthermore,
+significant differences were found in the simple
+main effects of the empathy object factors before
+and after the IKEA effect. These results suggest
+that the task generating the IKEA effect promotes
+empathy for the agent, whereas it has no signifi-
+cant effect on the participantsâ relationships.
+
+The results also indicated that initial empa-
+thy for those who participated in the experiment
+together was higher than empathy for the agent.
+This result was supported by the IKEA effect and
+the main effect of the empathy object.
+
+4.2 Affective empathy
+
+The results for affective empathy (Q1-Q6) showed
+that, unlike empathy, there was no interaction
+between the IKEA effect and the empathy object
+factor. Affective empathy was significant only for
+the main effect of the empathy object factor.
+
+In the LEGO agent assembly task, the factors
+in this study did not significantly promote affec-
+tive empathy. On the other hand, as with empa-
+thy, there was a significant difference between
+affective empathy toward the agent and affective
+empathy toward another participant. From these
+results, neither the IKEA effect nor the relation-
+ship between participants had a significant effect
+on affective empathy.
+
+4.3 Cognitive empathy
+
+for cognitive empathy (Q7-Q12)
+The results
+showed an interaction between the IKEA effect
+and the empathy object, as was the case for empa-
+thy. The main effects of both the IKEA effect and
+the empathy object were also significant but were
+omitted because of the interaction between the
+IKEA effect and the empathy object factor.
+
+The simple main effect revealed a signifi-
+cant difference in the IKEA effect factor when
+the empathy object was the agent, as shown in
+Figure 9(b) (before: mean = 16.58, S.D. = 5.124;
+after: mean = 18.93, S.D. = 5.206). Furthermore,
+significant differences were found in the simple
+main effects of the empathy object factors before
+
+Fig. 6 Screenshots of agent and typing game during
+experiment.
+
+Fig. 7 Screenshots of agent and typing game during
+experiment.
+
+empathy target. The results of an analysis of the
+interaction are shown in Figure 8.
+
+There were no significant interactions between
+the participant relationship and the IKEA effect
+in either condition. There were also no significant
+interactions between the participantsâ relationship
+and the empathy target. In the following, we omit
+a description of the main effects for items for which
+an interaction was found, and we present the main
+effect results for items for which no interaction was
+found and a main effect was found. Thus, since
+an interaction was found between the IKEA effect
+and the empathy target, the results of the analysis
+of simple main effects are presented in Table 4.
+
+4.1 Empathy
+
+The empathy results (Q1-Q12) revealed an inter-
+action between the IKEA effect and the factors
+of the empathy object. Although the main effects
+were also significant for both the IKEA effect and
+empathy object factors, the interaction between
+
+11
+
+Fig. 8 Interaction results for (a) empathy and (b) cognitive empathy.
+
+Table 2 Participantsâ empathy statistical information
+
+Category
+
+Empathy
+
+before
+
+(Q1-Q12)
+
+after
+
+Cognitive
+empathy
+
+before
+
+(Q7-Q12)
+
+after
+
+Conditions
+cooperative-agent
+cooperative-human
+individual-agent
+individual-human
+
+cooperative-agent
+cooperative-human
+individual-agent
+individual-human
+cooperative-agent
+cooperative-human
+individual-agent
+individual-human
+
+cooperative-agent
+cooperative-human
+individual-agent
+individual-human
+
+Mean
+35.00
+44.60
+34.70
+42.20
+
+38.95
+43.25
+37.85
+43.40
+16.25
+22.00
+16.90
+21.15
+
+18.85
+21.05
+19.00
+21.80
+
+Category
+
+S.D.
+7.455
+6.707
+10.04 Affective
+empathy
+6.748
+
+before
+
+(Q1-Q6)
+
+after
+
+9.185
+6.851
+8.744
+5.716
+4.993
+3.880
+5.360
+3.937
+
+5.697
+3.576
+4.812
+2.628
+
+Conditions
+cooperative-agent
+cooperative-human
+individual-agent
+individual-human
+
+cooperative-agent
+cooperative-humans
+individual-agent
+individual-human
+
+Mean
+18.75
+22.60
+17.80
+21.05
+
+20.10
+22.20
+18.85
+21.60
+
+S.D.
+3.338
+3.560
+5.064
+4.174
+
+3.986
+4.491
+4.815
+3.952
+
+Fig. 9 Results of post-task (a) empathy value and (b) cognitive empathy represented by box plots. Red lines are medians.
+
+12
+
+Table 3 Analysis results of ANOVA
+
+Factor
+
+Participantsâ relationships
+IKEA effect
+
+Empathy Empathy object
+(Q1-12)
+
+Participantsâ relationships Ã IKEA effect
+Participantsâ relationships Ã Empathy object
+IKEA effect Ã Empathy object
+Participantsâ relationships Ã IKEA effect Ã Empathy object
+Participantsâ relationships
+IKEA effect
+Empathy object
+Participantsâ relationships Ã IKEA effect
+Participantsâ relationships Ã Empathy object
+IKEA effect Ã Empathy object
+Participantsâ relationships Ã IKEA effect Ã Empathy object
+Participantsâ relationships
+IKEA effect
+
+Affective
+empathy
+(Q1-6)
+
+Cognitive Empathy object
+empathy
+(Q7-12)
+
+Participantsâ relationships Ã IKEA effect
+Participantsâ relationships Ã Empathy object
+IKEA effect Ã Empathy object
+Participantsâ relationships Ã IKEA effect Ã Empathy object
+
+p: *p<0.05 **p<0.01 ***p<0.001
+
+Table 4 Analysis results of simple main effect
+
+F
+0.266
+5.451
+24.44
+0.346
+0.024
+5.989
+1.279
+1.194
+2.003
+20.17
+0.130
+0.000
+2.333
+0.720
+0.034
+6.686
+19.85
+0.418
+0.072
+7.354
+1.297
+
+p
+0.609 ns
+0.025 *
+0.000 ***
+0.560 ns
+0.877 ns
+0.019 *
+0.265 ns
+0.281 ns
+0.165 ns
+0.000 ***
+0.720 ns
+0.985 ns
+0.135 ns
+0.402 ns
+0.854 ns
+0.014 *
+0.000 ***
+0.522 ns
+0.791 ns
+0.010 **
+0.262 ns
+
+Î·2
+p
+0.007
+0.125
+0.391
+0.009
+0.001
+0.136
+0.033
+0.031
+0.050
+0.347
+0.003
+0.000
+0.058
+0.019
+0.001
+0.150
+0.343
+0.011
+0.002
+0.162
+0.033
+
+Empathy
+(Q1-12)
+
+Cognitive
+empathy
+(Q7-12)
+
+Factor
+IKEA effect in empathy for agent
+IKEA effect in empathy for human
+Empathy object before IKEA
+Empathy object after IKEA
+IKEA effect in empathy for agent
+IKEA effect in empathy for human
+Empathy object before IKEA
+Empathy object after IKEA
+
+F
+6.947
+0.014
+29.07
+10.55
+9.447
+0.111
+25.31
+7.317
+
+p
+
+0.012 *
+0.905 ns
+0.000 ***
+0.002 **
+0.004 **
+0.741 ns
+0.000 ***
+0.010 *
+
+Î·2
+p
+0.155
+0.000
+0.434
+0.217
+0.199
+0.003
+0.400
+0.162
+
+p: *p<0.05 **p<0.01 ***p<0.001
+
+and after the IKEA effect. These results suggest
+that the task generating the IKEA effect promotes
+cognitive empathy toward the agent, whereas it
+has no significant effect on the participantsâ rela-
+tionships.
+
+The results also indicated that initial cogni-
+tive empathy toward those who participated in
+the experiment together was higher than cognitive
+empathy toward the agent. This result was sup-
+ported by the IKEA effect and the main effect of
+the empathy object.
+
+5 Discussion
+
+5.1 Supporting hypotheses
+
+The way to improve the relationship between
+humans and anthropomorphic agents is to have
+humans empathize with the agents. This idea is
+supported by several previous studies [20, 21].
+Human empathy for agents is a necessary compo-
+nent for agents to be used in society. When agents
+are able to take an appropriate approach to human
+empathy, humans and agents can build a trusting
+
+13
+
+relationship.
+
+In this study, an experiment was conducted to
+determine whether participantsâ empathy toward
+empathy objects (agents, people) changes before
+and after a task. We focused on the IKEA effect
+and participant relationships as factors that influ-
+ence empathy. An experiment was conducted to
+investigate three factors, the IKEA effect, the par-
+ticipantsâ relationships, and the empathy object,
+and to investigate whether a LEGO agent assem-
+bly task could promote empathy. To this end,
+three hypotheses were formulated, and the data
+obtained from the experiment were analyzed.
+
+The results showed that empathy toward the
+LEGO agent was promoted after the IKEA effect
+occurred, which supported H1. There was no
+effect on empathy for the other participant before
+and after the IKEA effect, only empathy for the
+agent was greatly promoted. This result indicates
+that the IKEA effect, in addition to enhancing
+value judgments about artifacts, also significantly
+affects empathy toward artifacts.
+
+Second, H2 and H3, that empathy for the
+agent differs depending on the relationship of the
+participants in the assembly process, were not sup-
+ported. Although studies with groups have shown
+that cooperative work improves the relationship
+between participants [39, 47, 51], in the present
+study, empathy for another participant did not
+change when working individually. Similarly, there
+were no differences in empathy for the agent based
+on the relationship of the participants.
+
+5.2 Influence of IKEA effect and
+
+participant relationships on
+empathy agents
+
+As AI, robotics, and anthropomorphic agent tech-
+nologies are used in society, this study focused on
+empathy toward agents to help people build better
+relationships with them. Although there have been
+studies on the IKEA effect to increase the value
+of artifacts, there have been no studies that inves-
+tigated empathy for artifacts through the IKEA
+effect. This study shows that the IKEA effect is
+a factor that promotes empathy for artifacts. In
+particular, the IKEA effect was found to signifi-
+cantly promote cognitive empathy. It was revealed
+that when people assemble a LEGO agent, they
+acquire the agentâs perspective and are more likely
+to fantasize about the agent.
+
+Although H2 and H3 were not supported,
+the IKEA effect in the assembly process pro-
+moted empathy toward the agent regardless of the
+relationship between the participants. We can con-
+clude that for people, the degree of assembly work
+and the opportunity to interact with the agent
+were not affected by the relationship between the
+participants in the assembly task.
+
+On the other hand, the results of this study
+revealed a significant difference between empathy
+for the agent and empathy for the person. Empa-
+thy for the agent was not promoted to the same
+degree as empathy for the person. Although the
+media equation considers artifacts to be treated
+like people, different empathy judgments were
+made for the agent and person as empathy targets.
+The finding of this research is that agents
+can actually be assembled to promote empa-
+thy toward them and improve relationships. This
+is a solution to the anxiety about agents that
+will permeate society in the future. In addition,
+usersâ understanding of agents can be improved by
+assembling agents. As an example, by introduc-
+ing an educational method using assembled agents
+in educational settings, effective education can be
+provided, and at the same time, empathy toward
+the agents can be promoted, which will lead to a
+better relationship and long-term use.
+
+In previous
+
+studies on empathy agents,
+Tsumura and Yamada investigated the influ-
+ence of empathy on agent appearance and self-
+disclosure [16], task difficulty and task content,
+agent expression, and task success or failure [17].
+These results, when combined with the present
+study, will enable the design of empathic agents
+that are more easily accepted by people.
+
+5.3 Limitations
+
+One limitation of this study is the uniformity
+of the assembly time of the participants. Since
+this experiment had to be conducted in pairs, the
+time for the assembly process was not completely
+standardized. Therefore, participants who com-
+pleted the LEGO agent earlier may have had some
+influence on the interaction time with the agent
+and the relationship between the participants. In
+future studies, we will investigate whether empa-
+thy for the agent affects the interaction with the
+LEGO agent after the assembly process.
+
+In addition, to simplify the assembly task in
+
+14
+
+this study, the task was conducted with the small
+parts assembled in advance. We also prepared a
+video of the assembly procedure so that the par-
+ticipants could visually understand it. However,
+in actual assembly work, it is conceivable that
+instructions would be given in a procedure manual
+instead of a video. If the assembly task becomes
+more difficult, it would be necessary to investi-
+gate whether the IKEA effect promotes empathy
+toward the agent.
+
+Other issues that need to be discussed include
+the level of difficulty of this experiment. Although
+this study showed that the IKEA effect affected
+empathy, it is possible that the difficulty level of
+the assembly task may have prevented partici-
+pants from completing it and thus not affect their
+empathy toward the agent. Therefore, it is neces-
+sary to consider the level of difficulty and type of
+assembly tasks in the future.
+
+In addition, although we focused on the par-
+ticipantsâ relationships as a factor in this study,
+it is also necessary to consider their social rela-
+tionships. In this study, we did not specifically
+consider the participantsâ relationships in the
+recruitment process. However, when multiple peo-
+ple work in the same space during actual assembly,
+social relationships will be involved among people.
+Therefore, we will investigate whether social rela-
+tionships influence empathy toward the agent in
+the future.
+
+6 Conclusion
+
+To solve the problem of agents not being accepted
+by humans, we hope that by encouraging humans
+to empathize with them, agents will be used more
+in human society in the future. This study is
+an example of how to promote empathy between
+humans and agents. The experiment was con-
+ducted with a three-factor mixed design, with the
+between-participants factor measuring the rela-
+tionship between the participants and the within-
+participants factor measuring the change in empa-
+thy toward the target before and after the IKEA
+effect and with the empathy target. The results
+showed that there was no main effect for the par-
+ticipantsâ relationality factor and that after the
+IKEA effect, more empathy was promoted toward
+the agent by a statistically significant margin.
+In addition, the participantsâ relationship factor
+did not show an effect on empathy toward the
+
+15
+
+agent, and the degree of assembly work did not
+affect empathy. These results supported one of our
+hypotheses. This study is an important example of
+how human empathy works with artifacts. Future
+work will investigate whether the IKEA effect also
+promotes empathy for agents in online environ-
+ments and will focus on the impact of interactions
+after the IKEA effect.
+
+Data availability statements
+
+The datasets used in our study are available as
+additional supporting files.
+
+Acknowledgments
+
+This work was partially supported by JST,
+CREST (JPMJCR21D4), Japan. This work was
+also supported by JST, the Establishment of
+University Fellowships towards the Creation of
+Science Technology Innovation, Grant Number
+JPMJFS2136.
+
+References
+
+[1] Reeves, B., Nass, C.: The Media Equation:
+How People Treat Computers, Television,
+and New Media Like Real People and Places.
+Cambridge University Press, USA (1996)
+
+[2] Ryan, M.: In ai we trust: Ethics, artificial
+intelligence, and reliability. Science and Engi-
+neering Ethics 26(5), 2749â2767 (2020) https:
+//doi.org/10.1007/s11948-020-00228-y
+
+[3] Belk, R.: Ethical issues in service robotics and
+artificial intelligence. The Service Industries
+Journal 41(13-14), 860â876 (2021) https:
+//doi.org/10.1080/02642069.2020.1727892
+https://doi.org/10.1080/02642069.2020.1727892
+
+[4] Hallamaa, J., Kalliokoski, T.: Ai ethics
+as applied ethics. Frontiers in Computer
+Science 4 (2022) https://doi.org/10.3389/
+fcomp.2022.776837
+
+[5] Wirtz,
+gent
+ai will
+
+J., Pitardi, V.: How intelli-
+and
+and
+
+robots,
+products
+
+automation,
+reshape
+
+service
+
+service
+
+their delivery.
+keting 2023(3),
+//doi.org/10.1007/s43039-023-00076-1
+
+Italian Journal of Mar-
+(2023) https:
+
+289â300
+
+[6] Kumar, P., Chauhan, S., Awasthi, L.K.:
+Artificial intelligence in healthcare: Review,
+ethics, trust challenges & future research
+directions. Engineering Applications of Arti-
+ficial Intelligence 120, 105894 (2023) https:
+//doi.org/10.1016/j.engappai.2023.105894
+
+[7] Spitale, M., Okamoto, S., Gupta, M., Xi,
+H., MatariÂ´c, M.J.: Socially assistive robots
+as storytellers that elicit empathy. J. Hum.-
+Robot Interact. 11(4) (2022) https://doi.org/
+10.1145/3538409
+
+[8] Johanson, D., Ahn, H.S., Goswami, R., Sae-
+gusa, K., Broadbent, E.: The effects of health-
+care robot empathy statements and head
+nodding on trust and satisfaction: A video
+study. J. Hum.-Robot Interact. 12(1) (2023)
+https://doi.org/10.1145/3549534
+
+[9] Nomura, T., Kanda, T., Suzuki, T., Kato,
+K.: Prediction of human behavior in humanâ
+robot interaction using psychological scales
+for anxiety and negative attitudes toward
+robots.
+IEEE Transactions on Robotics
+24(2), 442â451 (2008) https://doi.org/10.
+1109/TRO.2007.914004
+
+[10] Nomura, T., Kanda, T., Kidokoro, H., Sue-
+hiro, Y., Yamada, S.: Why do children
+abuse robots? Interaction Studies 17(3), 347â
+369 (2016) https://doi.org/10.1075/is.17.3.
+02nom
+
+[11] M., M.: Bukimi no tani
+
+[the uncanny
+https://cir.nii.ac.jp/crid/
+
+valley].
+1370013168736887425
+
+(1970).
+
+[12] Thepsoonthorn, C., Ogawa, K.-i., Miyake,
+Y.: The exploration of the uncanny valley
+from the viewpoint of the robotâs nonver-
+bal behaviour. International Journal of Social
+Robotics 13(6), 1443â1455 (2021) https://
+doi.org/10.1007/s12369-020-00726-w
+
+[13] Mahmud, H., Islam, A.K.M.N., Ahmed, S.I.,
+
+16
+
+Smolander, K.: What influences algorith-
+mic decision-making? a systematic litera-
+ture review on algorithm aversion. Tech-
+nological Forecasting and Social Change
+175, 121390 (2022) https://doi.org/10.1016/
+j.techfore.2021.121390
+
+[14] Filiz, I., Judek, J.R., Lorenz, M., Spiwoks,
+M.: The extent of algorithm aversion in
+decision-making situations with varying grav-
+ity. PLOS ONE 18(2), 1â21 (2023) https:
+//doi.org/10.1371/journal.pone.0278751
+
+[15] Tsumura, T., Yamada, S.: Agents
+
+facil-
+itate one
+category of human empathy
+through task difficulty. In: 2022 31st IEEE
+International Conference on Robot and
+Human Interactive Communication (RO-
+MAN), pp. 22â28 (2022). https://doi.org/10.
+1109/RO-MAN53752.2022.9900686
+
+[16] Tsumura, T., Yamada, S.: Influence of agentâs
+self-disclosure on human empathy. PLOS
+ONE 18(5), 1â24 (2023) https://doi.org/10.
+1371/journal.pone.0283955
+
+[17] Tsumura, T., Yamada, S.:
+
+Influence of
+anthropomorphic agent on human empa-
+thy through games.
+IEEE Access 11,
+40412â40429 (2023) https://doi.org/10.1109/
+ACCESS.2023.3269301
+
+[18] Shaffer, V.A., Bohanek, J., Focella, E.S.,
+Horstman, H., Saffran, L.: Encouraging per-
+spective taking: Using narrative writing to
+induce empathy for others engaging in neg-
+ative health behaviors. PLOS ONE 14(10),
+1â16 (2019) https://doi.org/10.1371/journal.
+pone.0224046
+
+[19] Norton, M.I., Mochon, D., Ariely, D.: The
+ikea effect: When labor leads to love. Jour-
+nal of Consumer Psychology 22(3), 453â
+460 (2012) https://doi.org/10.1016/j.jcps.
+2011.08.002
+
+[20] Gaesser, B.: Constructing memory,
+
+imagi-
+nation, and empathy: A cognitive neuro-
+science perspective. Frontiers in Psychology
+3, 576 (2013) https://doi.org/10.3389/fpsyg.
+2012.00576
+
+[21] Klimecki, O.M., Mayer, S.V., Jusyte, A.,
+Scheeff , J., SchÂ¨onenberg, M.: Empathy pro-
+motes altruistic behavior in economic inter-
+actions. Scientific Reports 6(1), 31961 (2016)
+https://doi.org/10.1038/srep31961
+
+E., Zaki, J.: Building long-term empathy: A
+large-scale comparison of traditional and vir-
+tual reality perspective-taking. PLOS ONE
+13(10), 1â37 (2018) https://doi.org/10.1371/
+journal.pone.0204494
+
+[22] Omdahl, B.L.: Cognitive Appraisal, Emotion,
+and Empathy, 1st edn. Psychology Press,
+New York (1995). https://doi.org/10.4324/
+9781315806556
+
+[23] Preston, S.D., Waal, F.B.M.: Empathy: Its
+ultimate and proximate bases. Behavioral
+and Brain Sciences 25(1), 1â20 (2002) https:
+//doi.org/10.1017/S0140525X02000018
+
+[24] Kozakevich Arbel, E., Shamay-Tsoory, S.G.,
+Hertz, U.: Adaptive empathy: Empathic
+response selection as a dynamic, feedback-
+based learning process. Frontiers in Psychia-
+try 12 (2021) https://doi.org/10.3389/fpsyt.
+2021.706474
+
+[25] Bloom, P.: Against Empathy: The Case
+for Rational Compassion. HarperCollins, ???
+(2016)
+
+[26] Davis, M.H., Davis, M.H.: A multidimen-
+sional approach to individual difference in
+empathy. In: JSAS Catalog of Selected Doc-
+uments in Psychology, p. 85 (1980)
+
+[27] Baron-Cohen, S., Wheelwright, S.: The
+empathy quotient: an investigation of adults
+with asperger syndrome or high functioning
+autism, and normal sex differences. J Autism
+Dev Disord 34(2), 163â175 (2004)
+
+[28] Lawrence, E.J., Shaw, P., Baker, D.,
+Baron-cohen, S., David, A.S.: Measuring
+empathy:
+the
+empathy quotient. Psychological Medicine
+34(5), 911â920 (2004) https://doi.org/10.
+1017/S0033291703001624
+
+reliability and validity of
+
+[29] Loon, A., Bailenson, J., Zaki, J., Bostick, J.,
+Willer, R.: Virtual reality perspective-taking
+increases cognitive empathy for specific oth-
+ers. PLOS ONE 13(8), 1â19 (2018) https:
+//doi.org/10.1371/journal.pone.0202442
+
+[30] Herrera, F., Bailenson, J., Weisz, E., Ogle,
+
+[31] Tassinari, M., Aulbach, M.B., Jasinskaja-
+Lahti, I.: Investigating the influence of inter-
+group contact in virtual reality on empathy:
+An exploratory study using altspacevr. Fron-
+tiers in Psychology 12 (2022) https://doi.
+org/10.3389/fpsyg.2021.815497
+
+[32] Crone, C.L., Kallen, R.W.: Interview with an
+avatar: Comparing online and virtual real-
+ity perspective taking for gender bias in stem
+hiring decisions. PLOS ONE 17(6), 1â35
+(2022) https://doi.org/10.1371/journal.pone.
+0269430
+
+[33] Bennett, C.L., Rosner, D.K.: The promise
+of empathy: Design, disability, and knowing
+the âotherâ. In: Proceedings of the 2019 CHI
+Conference on Human Factors in Computing
+Systems, pp. 1â13. Association for Comput-
+ing Machinery, New York, NY, USA (2019).
+https://doi.org/10.1145/3290605.3300528
+
+[34] Rahmanti, A.R., Yang, H.-C., Bintoro, B.S.,
+Nursetyo, A.A., Muhtar, M.S., Syed-Abdul,
+S., Li, Y.-C.J.: Slimme, a chatbot with arti-
+ficial empathy for personal weight manage-
+ment: System design and finding. Frontiers in
+Nutrition 9 (2022) https://doi.org/10.3389/
+fnut.2022.870775
+
+[35] Drouet, L., Bongard-Blanchy, K., Koenig,
+V., Lallemand, C.: Empathy in design
+scale: Development and initial insights. In:
+Extended Abstracts of the 2022 CHI Con-
+ference on Human Factors in Computing
+Systems. CHI EA â22, pp. 1â7. Associa-
+tion for Computing Machinery, New York,
+NY, USA (2022). https://doi.org/10.1145/
+3491101.3519848
+
+[36] Al Farisi, R., Ferdiana, R., Adji, T.B.: The
+effect of anthropomorphic design cues on
+increasing chatbot empathy. In: 2022 1st
+International Conference on Information Sys-
+tem & Information Technology (ICISIT),
+pp. 370â375 (2022). https://doi.org/10.1109/
+
+17
+
+ICISIT54091.2022.9873008
+
+[37] Yamada, S., Komatsu, T.: Designing simple
+and effective expression of robotâs primitive
+minds to a human. In: 2006 IEEE/RSJ Inter-
+national Conference on Intelligent Robots
+and Systems, pp. 2614â2619 (2006). https:
+//doi.org/10.1109/IROS.2006.281940
+
+[38] Asada, M.: Towards artificial
+
+empathy.
+International Journal of Social Robotics
+7(1), 19â33 (2015) https://doi.org/10.1007/
+s12369-014-0253-z
+
+[39] Fraune, M.R.: Our robots, our team: Robot
+anthropomorphism moderates group effects
+in humanârobot teams. Frontiers in Psychol-
+ogy 11 (2020) https://doi.org/10.3389/fpsyg.
+2020.01275
+
+[40] Park, S., Whang, M.: Empathy in human-
+robot interaction: Designing for social robots.
+of Environmental
+International
+Research and Public Health 19(3) (2022)
+https://doi.org/10.3390/ijerph19031889
+
+Journal
+
+[41] Leite, I., Castellano, G., Pereira, A., Mar-
+tinho, C., Paiva, A.: Empathic robots for
+long-term interaction. International Journal
+of Social Robotics (2014) https://doi.org/10.
+1007/s12369-014-0227-1
+
+[42] Chen, J., Wang, C.: Reaching coopera-
+tion using emerging empathy and counter-
+empathy. In: Proceedings of the 18th Inter-
+national Conference on Autonomous Agents
+and MultiAgent Systems, pp. 746â753. Inter-
+national Foundation for Autonomous Agents
+and Multiagent Systems, Richland, SC
+(2019)
+
+[43] Perugia, G., Paetzel, M., Castellano, G.:
+On the role of personality and empathy
+in human-human, human-agent, and human-
+robot mimicry. In: Wagner, A.R., Feil-Seifer,
+D., Haring, K.S., Rossi, S., Williams, T., He,
+H., Sam Ge, S. (eds.) Social Robotics, pp.
+120â131. Springer, Cham (2020)
+
+[44] Parmar, D., Olafsson, S., Utami, D., Murali,
+P., Bickmore, T.: Designing empathic vir-
+tual agents: manipulating animation, voice,
+
+rendering, and empathy to create persuasive
+agents. Autonomous Agents and Multi-Agent
+Systems 36(1), 17 (2022) https://doi.org/10.
+1007/s10458-021-09539-1
+
+errors
+
+[45] Tsumura, T., Yamada, S.:
+virtual
+
+Improving of
+robotic
+accepted
+agentâs
+by agentâs reaction and humanâs preference.
+In: Ali, A.A., Cabibihan, J.-J., Meskin, N.,
+Rossi, S., Jiang, W., He, H., Ge, S.S. (eds.)
+Social Robotics, pp. 294â307. Springer,
+Singapore (2024)
+
+[46] Paiva, A., Leite,
+
+I., Boukricha, H.,
+I.:
+virtual
+in
+robots: A survey. ACM
+Intell. Syst. 7(3) (2017)
+
+Wachsmuth,
+and
+agents
+Trans.
+Interact.
+https://doi.org/10.1145/2912150
+
+Empathy
+
+[47] Sun, Y., Sundar, S.S.: Psychological impor-
+tance of human agency how self-assembly
+affects user experience of robots. In: 2016
+11th ACM/IEEE International Conference
+on Human-Robot Interaction (HRI), pp. 189â
+196
+(2016). https://doi.org/10.1109/HRI.
+2016.7451751
+
+[48] Marsh, L.E., Kanngiesser, P., Hood, B.:
+When and how does labour lead to love? the
+ontogeny and mechanisms of the ikea effect.
+Cognition 170, 245â253 (2018) https://doi.
+org/10.1016/j.cognition.2017.10.012
+
+[49] Wald, R., Heijselaar, E., Bosse, T.: Make
+your own: The potential of chatbot cus-
+tomization for the development of user trust.
+In: Adjunct Proceedings of the 29th ACM
+Conference on User Modeling, Adaptation
+and Personalization. UMAP â21, pp. 382â387.
+Association for Computing Machinery, New
+York, NY, USA (2021). https://doi.org/10.
+1145/3450614.3463600
+
+[50] Aeschlimann, S., Bleiker, M., Wechner, M.,
+Gampe, A.: Communicative and social con-
+sequences of
+interactions with voice assis-
+tants. Computers in Human Behavior 112,
+106466 (2020) https://doi.org/10.1016/j.chb.
+2020.106466
+
+[51] Pauw, L.S., Sauter, D.A., van Kleef, G.A.,
+Lucas, G.M., Gratch, J., Fischer, A.H.: The
+
+18
+
+avatar will see you now: Support from a
+virtual human provides socio-emotional ben-
+efits. Computers in Human Behavior 136,
+107368 (2022) https://doi.org/10.1016/j.chb.
+2022.107368
+
+[52] Spaccatini, F., Corlito, G., Sacchi, S.: New
+dyads? the effect of social robotsâ anthro-
+pomorphization on empathy towards human
+beings. Computers in Human Behavior 146,
+107821 (2023) https://doi.org/10.1016/j.chb.
+2023.107821
+
+[53] Centeio Jorge, C., Bouman, N.H., Jonker,
+C.M., Tielman, M.L.: Exploring the effect of
+automation failure on the humanâs trustwor-
+thiness in human-agent teamwork. Frontiers
+in Robotics and AI 10 (2023) https://doi.
+org/10.3389/frobt.2023.1143723
+
+[54] Faul, F., Erdfelder, E., Lang, A.-G., Buchner,
+A.: G*power 3: A flexible statistical power
+analysis program for the social, behavioral,
+and biomedical sciences. Behavior Research
+Methods 39(2), 175â191 (2007) https://doi.
+org/10.3758/BF03193146
+
+19
+
+

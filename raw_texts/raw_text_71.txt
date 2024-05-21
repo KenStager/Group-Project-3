@@ -1,0 +1,1302 @@
+2
+2
+0
+2
+
+c
+e
+D
+1
+
+]
+
+Y
+S
+.
+s
+s
+e
+e
+[
+
+1
+v
+5
+5
+4
+0
+0
+.
+2
+1
+2
+2
+:
+v
+i
+X
+r
+a
+
+Consensus of hierarchical multi-agent systems with
+a time-varying set of active agents
+
+Victor Daniel Reyes Dreke â Mircea Lazar â
+
+â Control Systems Group, Department of Electrical Engineering, Eindhoven
+University of Technology, The Netherland (e-mail: v.d.reyes.dreke@tue.nl,
+m.lazar@tue.nl).
+
+Abstract: Time-varying hierarchical multi-agent systems are common in many applications. A well-
+known solution to control these systems is to use state feedback controllers that depend on the adjacency
+matrix to reach consensus. This solution has been applied so far to multi-agent systems with ï¬xed or
+time-varying communication topologies. In this paper, we consider single-integrator multi-agent systems
+where only a subset of the agents are active at any given time and the set of active agents is time-varying.
+This type of multi-agent system is relevant in applications such as modular multilevel converters and
+water pumping systems. We develop a switching algorithm that periodically selects a set of active agents
+through a set of graphs that connect the follower agents with a leader agent. We further prove that
+the developed switching algorithm combined with a classic consensus protocol yields convergence to a
+consensus state deï¬ned by the leader despite a time-varying set of active agents. The effectiveness of
+the switching algorithm is illustrated in two benchmark examples: a modular multilevel converter and a
+water pumping system.
+
+Keywords: Consensus Control, Distributed Control, Hierarchical Multi-Agent Systems, Modular
+Multilvel Converters
+
+1. INTRODUCTION
+
+Hierarchical multi-agent systems (H-MAS) are playing an im-
+portant role in many applications, for example in modular
+multilevel converters (MMCs), microgrids, and water pump-
+ing systems.
+In the above applications, a leader such as the
+grid operator coordinates the control actions of the remaining
+agents of the system (followers) to achieve a common goal (a
+consensus value) such as a certain power demand. However,
+calculating and coordinating the control actions is a challenge
+that increases in complexity depending on the common goal
+and system characteristics. Further, the complexity of this task
+also increases if the H-MAS has a time-varying topology or it is
+subject to constraints such as having a limited number of active
+agents.
+
+Commonly, the classic consensus problem is solved using a
+static state feedback controller where the agent dynamics are
+single integrators and the network topologies are time-invariant
+(Lunze, 2019). In this case, a necessary condition for reaching
+consensus is the existence of a spanning tree in the communica-
+tion network. The importance of the spanning tree is due to the
+fact that the state feedback controller is built based on the adja-
+cency matrix that describes the communication between agents;
+see, for example, (Morita and Ito, 2018; Wei et al., 2022; Cheng
+et al., 2015). Moreover, in (Yang et al., 2011), the ï¬ndings of
+(Lunze, 2019) were extended to identical linear time-invariant
+(LTI) multi-input and multi-output (MIMO) systems.
+
+The previous results were constrained to time-invariant commu-
+nication, yet time-varying communication networks are equally
+
+(cid:63) This research was funded by the NEON (New Energy and mobility Outlook
+for the Netherlands) Crossover NWO (Dutch Research Council) Grant, project
+number 17628.
+
+important. Addressing this topic, Jadbabaie et al. (2003) and
+Ren and Beard (2005) offered a proof for reaching consensus
+for multi-agent systems under dynamically changing interac-
+tion topologies. In (Ren and Beard, 2005), it is proven that
+a necessary condition for reaching consensus in time-varying
+communication networks with a ï¬xed number of agents is that
+the union of the directed graphs representing the intercon-
+nection among agents has a spanning tree. The ï¬nding from
+(Ren and Beard, 2005) was successfully extended (Mondal and
+Tsourdos, 2022) to agents with nonlinear dynamics by using
+nonlinear dynamic inversion. In (Li and Zhang, 2010), the
+authors investigated the consensus problem in uncertain com-
+munication environments and designed a distributed stochastic
+approximation consensus protocol. Similarly, as in (Ren and
+Beard, 2005), the necessary condition for achieving consensus
+is that the union of graphs has a spanning tree.
+
+In all the above-mentioned works, the results are mainly fo-
+cused on reaching an average consensus in a leaderless com-
+munication network where the number of agents is ï¬xed. How-
+ever, in the case of H-MAS, the communication networks
+typically consider a leader-follower architecture. In this case,
+the dynamics of the leader are crucial for reaching consen-
+sus. From (Shao et al., 2018), it is known that if the leader
+contains self-loops, stability problems can arise. Additionally,
+these authors investigated the impact of hierarchical topologies
+and followersâ self-loops on the convergence performance of
+leaderâfollower consensus, including the convergence rate and
+robustness to switching topologies. A similar study was done in
+(Shokri and Kebriaei, 2020), where stochastic agents were con-
+sidered. Different from the above-mentioned examples, Shokri
+and Kebriaei (2020) use a gossiping communication algorithm
+that limits the communication per sampling time to only one
+agent.
+
+ 
+ 
+ 
+ 
+ 
+ 
+The above surveyed works consider H-MAS with a switching,
+time-varying topology, but with a ï¬xed set of active agents.
+However, as it is the case with, e.g., MMCs and water pumping
+systems, the set of active agents can change over time. In
+these applications, controlling the amount of active agents can
+improve the lifespans of agents or help fulï¬ll a common goal.
+Therefore it is of interest to investigate if consensus can be
+reached in a H-MAS with a leader-follower architecture and
+with a time-varying set of active agents.
+
+In this paper, we will refer to the above types of systems as
+time-varying hierarchical multi-agent systems (TH-MAS). For
+reaching consensus in a TH-MAS, we propose a switching al-
+gorithm that will coordinate the control actions by determining
+which followers should be active at any discrete time instant.
+Moreover, based on fundamental results from (Lunze, 2019)
+and (Ren and Beard, 2005), we prove that under the newly
+developed switching algorithm, the states of all follower agents
+reach consensus. For evaluating the results of the proposed
+method, we tested the proposed control algorithm in two simu-
+lation examples describing a modular multilevel converter as in
+(Pereira Marca et al., 2021) and a water pumping system as in
+(Kusumawardana et al., 2019).
+
+The remainder of the paper is organized as follows. In Section 2
+useful notations and description of the studied TH-MAS system
+are presented. Section 3 and 4 present the main results of
+the paper and the application-inspired examples, respectively.
+Section 5 summarizes the conclusions of the paper.
+
+2. PRELIMINARIES AND SYSTEM DESCRIPTION
+
+2.1 Basic preliminaries
+
+Let N, N+, R, R+, and Z denote the set of natural numbers,
+the set of natural numbers without including 0, the ï¬eld of
+real numbers, the ï¬eld of non-negative real numbers and the
+set of integer numbers, respectively. For a set S â Rn deï¬ne
+S[a,b] := {s â S : a â¤ s â¤ b}. Deï¬ne an n-dimensional
+vector ï¬lled with ones as 1n, and one ï¬lled with zeros as 0n.
+The identity matrix is denoted as In. The relations >, â¤, <, â¥
+are applied element-wise for vectors and matrices. For example,
+let
+
+A =
+
+(cid:21)
+
+(cid:20) a11 a12
+a21 a22
+
+and B =
+
+(cid:21)
+
+(cid:20) b11 b12
+b21 b22
+
+(1)
+
+then A > (â¥)B, if a11 > (â¥)b11, a12 > (â¥)b12, a21 > (â¥)b21
+and a22 > (â¥)b22.
+
+For a graph G, the matrix representations, such as the adjacency,
+degree and Laplacian matrices are obtained using the methodol-
+ogy from (Lunze, 2019). The adjacency matrix A is generated
+by a function fA : G â A. The degree matrix D is built as
+a diagonal matrix using a function fD : G â D. Finally, the
+corresponding Laplacian matrix L is calculated as
+L = D â A, L â Z(N +1)Ã(N +1).
+
+(2)
+
+2.2 TH-MAS: System description
+
+Consider a time-varying hierarchical mutli-agent system (see
+Figure 1) where, in the higher layer, a discrete-time controller
+calculates the number of active followers, as Ï(m) â N+, and
+the states of the leader (Î£L) determined by its control input
+(uL(m) â R), i.e.
+
+f (m) : Rnf â (N+, R),
+
+(3)
+
+Fig. 1. TH-MAS illustration.
+where nf â N+ is the controller input dimension.
+The lower layer consists of N follower agents which are labeled
+by 1, 2, . . . , N and a leader labeled by N + 1. The follower
+agent dynamics are deï¬ned as
+
+Î£i : xi(k + 1) = xi(k) + wqi(k)ui(k),
+(4)
+where w â R, xi and ui â R are the ith follower state
+and control input, respectively and qi â {0, 1} is a selection
+variable determining which agents are controlled at each time
+instant k.
+
+The leader states depend on the control input (uL(m)) from the
+higher layer controller, such that
+
+xL(k + 1) = (1 â qL(k))xL(k) + qL(k)uL(k),
+(5)
+where m â N and k â N are the discrete-time indices of the
+higher and lower layer, and
+
+qL(k) =
+
+(cid:26)1
+0
+
+if k = mM,
+if k â [(m â 1)M + 1, mM ) ,
+
+(6)
+
+with M â N+ and for notation simplicity, L = N + 1 labels
+the leader. The leader dynamics is interpreted as a piecewise
+constant function determined by the higher control level, since
+xL(0) = uL(0).
+
+The time-varying set of active followers is expressed as an
+equality constraint, i.e.
+
+N
+(cid:88)
+
+i=1
+
+qi(k) = Ï(m),
+
+âk = mM.
+
+Hence, until the next update, it holds that:
+N
+(cid:88)
+
+N
+(cid:88)
+
+qi(k + 1) =
+
+qi(k)
+
+(7)
+
+(8)
+
+for all k â {(m â 1)M + 1, mM }, while keeping
+
+i=1
+
+i=1
+
+1 â¤
+
+N
+(cid:88)
+
+i=1
+
+qi(k) â¤ N,
+
+âk â N.
+
+The described TH-MAS system can be characterized as a
+multi-rate system with a higher and lower layer working at
+different sampling times as in Figure 2, such that the time
+(t â N+) is quantized as
+
+t = kTs = mT
+
+(cid:48)
+
+s,
+
+(cid:48)
+
+s â R are their respective sampling times.
+
+where Ts â R and T
+The sampling time difference is determined by
+s = M Â· Ts with M â N+.
+T
+
+(cid:48)
+
+(9)
+
+Higher LayerLower LayerControllerthis degree of freedom, we design a switching algorithm to
+determine which followers are controlled while (7) and (8)
+are met. This algorithm is implemented in the leader agent,
+which as described in Figure 3 has three main tasks: receive
+information from the higher layer, generate a set of graphs and
+periodically send the active graph to the followers.
+
+Fig. 3. Flowchart depicting the proposed switching algorithm
+implemented in the leader of the considered TH-MAS
+
+Under requirements from (7) and (8), we design a switching
+graph algorithm that periodically loops within a ï¬nite set of
+sorted communication graphs, i.e.
+
+Î¦(m) = {G
+
+0(k), . . . , G
+
+p(m)â1(k)},
+
+(cid:48)
+
+(cid:48)
+
+(cid:48)
+
+j(k).
+Note that the condition (14) is true since
+
+i(k) (cid:54)= G
+
+G
+
+(cid:48)
+
+(cid:48)
+
+i (k) (cid:54)= V
+for all i, j â {0, . . . , p(m) â 1}, where
+
+j(k) and |V
+
+V
+
+i (k)| = |V
+
+j(k)|
+
+(cid:48)
+
+(cid:48)
+
+(cid:48)
+
+p(m) =
+
+(N )!
+(N â Ï(m))!Ï(m)!
+
+â N+.
+
+(13)
+
+(14)
+
+(15)
+
+(16)
+
+Notice that (16) shows how the number of combinations of
+selecting a speciï¬c number of followers from the entire system
+determines the cardinality of the set Î¦(m). Equations (16) and
+(15) ensure the uniqueness of all the graphs within Î¦(m). As
+i (k)) are linked such
+depicted in Figure 4, the edges of nodes (E
+that the communication network topology is always the same.
+In this case, all E
+
+i (k) have a ring topology.
+
+(cid:48)
+
+(cid:48)
+
+2.3 Communication Network for TH-MAS
+
+with
+
+Fig. 2. Illustration of the time relation between higher and lower
+
+hierarchical control layers.
+
+Finally, an overall system is deï¬ned as
+
+Î£d := x(k + 1) =
+
+(cid:20) IN
+0N
+0(cid:62)
+N (1 â qL(k))
+
+(cid:21)
+
+x(k) + B(k)u(k),
+
+(10)
+
+with
+
+B(k) =
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+wq1(k)
+
+0
+...
+0
+
+0
+
+Â· Â· Â·
+
+0
+...
+wq2(k) 0
+...
+. . .
+Â· Â· Â· qL(k)
+
+0
+Â· Â· Â·
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+and x0 = x(0),
+
+where the state and control input vectors are
+
+x(k) := [x1(k), . . . , xN (k), xL(k)](cid:62) â RN +1
+
+and
+
+u(k) := [u1(k), . . . , uN (k), uL(k)](cid:62) â RN +1.
+
+A directed graph G = (V, E) represents the communication
+network of the TH-MAS. The corresponding set of nodes is
+V = {1, 2, . . . , N + 1} with a set of directed edges E â V Ã
+V. Since the communication network has only one leader, the
+communication network that only contains the follower agents
+is represented by the graph
+(cid:48)
+
+(cid:48)
+
+(cid:48)
+
+(cid:48)
+
+(cid:48)
+
+G
+
+= (V
+
+, E
+
+) with V
+
+â V and E
+
+â E.
+
+Notice that the system constraint (7) results in a time-varying
+(k) where the set of node
+graph for the followers network G
+cardinality changes, such that
+
+(cid:48)
+
+(cid:48)
+
+|V
+
+(k)| = Ï(m), âk = mM
+
+(11)
+
+and, therefore,
+
+(cid:48)
+
+(cid:48)
+
+|V
+
+(12)
+
+(k)|,
+
+(k + 1)| = |V
+for all k â {(m â 1)M + 1, mM }.
+Remark 1. A directed graph has a spanning tree if there exists
+a node (agent), which is called the root node such that there
+exist directed paths from the root to any node (agent) in the
+graph. This is a necessary condition for all the agents reaching
+consensus. Hence, in this paper, both G and G
+(k) have a
+spanning tree with the leader Î£L as the root.
+
+(cid:48)
+
+3. CONSENSUS OF TH-MAS
+
+3.1 Consensus of TH-MAS: Higher Layer
+
+Equation (7) constraints the number of controlled followers,
+yet we still have the freedom to select at each sampling time
+(kTs) which followers are active (controlled). Motivated by
+
+Fig. 4. Illustration of the set Î¦ for a system with a number of
+agents N = 3 and constrained to activate only 2 followers.
+
+The proposed switching algorithm deï¬nes a time-varying
+graph, i.e.
+
+(1) Receiving information:(2) Generating set of graphs: (3) Sending periodically graphs: LeaderHigher Layer ControllerFollowersLower Layer LeaderLeaderLeaderï£±
+ï£´ï£²
+
+ï£´ï£³
+
+(cid:48)
+
+G
+0(k) â Î¦(m),
+
+(cid:48)
+
+G
+i(k)(k) â Î¦(m)
+
+if Ï(m) (cid:54)= Ï(m â 1)
+and k mod m = 0,
+else if k mod m (cid:54)= 0
+
+(17)
+
+G(k) =
+
+where
+
+i(k) =
+
+(cid:26)i(k â 1) + 1
+
+0
+
+if i(k â 1) < p(m),
+if i(k â 1) = p(m)
+
+(18)
+
+with i(k) â {0, 1, . . . , p(m) â 1}.
+
+3.2 Consensus of TH-MAS: Lower Layer
+
+Equation (19) considers a communication network with a con-
+stant topology. Yet, in (Ren and Beard, 2005), it is shown that
+with static feedback gain, as in (19), one can steer all the agents
+with a single integrator dynamics to achieve asymptotically
+consensus, even when the communication network changes its
+topology. The following lemma was crucial to formalize the
+above statement.
+Lemma 4. [Lemma 3.9,(Ren and Beard, 2005)] If the union of
+a set of directed graphs {G1, G2, . . . , Gm} â G, where m â
+N+, has a spanning tree, then the matrix product Pm . . . P2P1
+is primitive row-stochastic, where Pi is a stochastic matrix
+corresponding to each directed graph Gi as in (21).
+
+Consider a state feedback controller, such that, for the TH-MAS
+deï¬ned by (4) and (5), the control inputs (ui) are calculated as
+
+From (17), it is observed that he union of all the graphs within
+Î¦(m) results in a new graph, i.e.
+
+Ci : ui(k) = âkf b
+
+N +1
+(cid:88)
+
+j=1,j(cid:54)=i
+
+aij (xi(k) â xj(k)) ,
+
+(19)
+
+for all i, j = {1, . . . , N + 1}, where kf b â R is the feedback
+gain and aij are the coefï¬cients of the adjacency matrix A.
+Then, by implementing the switching algorithm (17) and state
+feedback controller (19), also called consensus protocol, in the
+above mentioned TH-MAS, the resulting closed-loop system is
+expressed by
+
+Â¯Î£d := x(k + 1) = P(k) Â· x(k),
+(20)
+where x(k) = [x1, . . . , xN +1](cid:62) â RN +1 is a vector containing
+the state of all the agents, and for all k â [(mâ1)M +1, mM ),
+i.e. for qL(k) = 0,
+
+P(k) = IN +1 â w Â· kf b Â· L(k)
+(21)
+is a primitive row-stochastic matrix with L(k) = fL(G(k)), as
+in (17) and kf b as in (19). Note that aij = 0 if the agents are not
+active; hence, the Laplacian matrix also describes the behaviour
+represented by B(k). In this paper, we focus on solving the
+consensus problem for a TH-MAS represented by (20).
+
+The consensus problem stands for the challenge of steering all
+the followers to a common state, i.e.
+
+lim
+kââ
+
+x(k) = 1N +1 Â¯x
+
+(22)
+
+where x(k) = [x1, . . . , xN +1](cid:62) â RN +1 is a vector containing
+the state of all the agents and Â¯x â R is the consensus value. It
+is important to remark that Â¯x is determined by the Laplacian
+matrix and the initial states of the agents in the system as the
+following lemma explains.
+Lemma 2. [Lemma 3.1,(Lunze, 2019)] Consider system Â¯Î£d as
+in (20) with L(k) = L, for all k â N where L has a spanning
+tree. The system is invariant under movement, i.e.
+y = w(cid:62)x(k),
+
+âk â N,
+
+where w(cid:62) â¥ 0(cid:62) is a left eigenvector of the Laplacian matrix
+L for the vanishing eigenvalue Î»1 = 0 and y â R is a scalar
+number that represents the consensus value.
+Remark 3. In Lemma 2, w(cid:62) can also be deï¬ned as the left
+eigenvector associated to Î» = 1 of the corresponding time-
+invariant primitive matrix P calculated as in (21) with L(k) =
+L, for all k â N. This is veriï¬ed by modifying system (20) such
+that
+
+w(cid:62)x(k + 1) = w(cid:62)Px(k) = w(cid:62)x(k),
+(23)
+where the last equality follows due to the property of the
+eigenvector w(cid:62) corresponding to a primitive stochastic matrix
+P, proving that the system (20) is invariant under movement.
+
+Â¯G =
+
+pâ1
+(cid:91)
+
+i=0
+
+(cid:48)
+
+G
+
+i(k), G
+
+(cid:48)
+
+i(k) â Î¦(m),
+
+(24)
+
+where Â¯G = ( Â¯V, Â¯E). Since the sorted set of graphs Î¦ contains all
+the possible combinations of choosing certain number of nodes
+from Â¯V, then Â¯V (cid:48) = Â¯V. Moreover, Â¯E describes a communication
+network where the followers are fully connected because Â¯V (cid:48) =
+Â¯V and G
+i(k) have a spanning three. Hence, Â¯G is a graph with a
+spanning tree that covers all the agents within G.
+
+(cid:48)
+
+The proof of (Ren and Beard, 2005) does not include the case
+when the set of active agents varies with time. Yet, the notions
+explained in (Ren and Beard, 2005) are used to implement a
+solution for the considered TH-MAS. In this case, the control
+law as in (19) subject to the changing graphs from the switching
+algorithm is applied to all the active followers, see Figure 5.
+Note that for proving the asymptotic convergence of the pro-
+posed solution the following assumption is made.
+Assumption 5. Consider that xL(k) does not change, i.e.
+
+qL(k) = 0, âk â N+
+
+and xL(0) = Â¯x.
+
+Fig. 5. Flowchart depicting the proposed control algorithm
+implemented in the followers considered TH-MAS
+Theorem 6. Consider the TH-MAS as in (4)-(5) with the con-
+straints (7), a switching graph G(k) as in (17), and a control
+input (ui(k)) as in (19), such that
+
+0 < kf b <
+
+,
+
+(25)
+
+1
+max(di)w
+
+where di â N are the elements in the diagonal of the degree
+matrix (D). Suppose that Assumption 5 holds. Then, all the
+followers reach a consensus state, i.e.
+
+Receiving:Compute Implement the synchronizedcontrol lawFalseTrueLeaderas in (17)ifLower Layer Higher Layer Controllerlim
+kââ
+
+x(k) = Â¯x1N +1
+
+(26)
+
+where Â¯x = xL(0) is the consensus state.
+
+Proof. Consider a system with the agent dynamics as (4) and
+(5), a controller as (19) and the switching algorithm from (17).
+Then a closed-loop system dynamics is deï¬ned as in (20).
+
+(cid:48)
+
+Due to (25), for all k â N, G
+i(k) has a spanning tree. Conse-
+quently, (21) is primitive row-stochastic, meaning that P(k) is
+nonnegative and has positive diagonal elements. That can easily
+observed if (21) is rewritten as
+
+P(k) = IN +1 â wkf bD(k) + wkf bA(k).
+
+(27)
+
+From (Wolfowitz, 1963), it is known that any primitive row-
+stochastic matrix (P â RnÃn ) has an invariant path to the
+steady-state, i.e.
+
+(P)j = 1nc(cid:62),
+
+lim
+jââ
+
+(28)
+
+where n is the dimension of matrix P and c â Rn is a column
+vector representing the left eigenvector of P associated with the
+eigenvalue Î» = 1. Note that we call an invariant path the term
+in the right-hand side of (28).
+Given (24), it is known that union of all the graphs ( Â¯G) is
+invariant with respect to Ï(m), covers all the agents and has
+a spanning tree. Hence, using Lemma 4 and the property from
+(28), we can infer that (20) will have an invariant path as in (28)
+and will reach consensus. The previous statement is veriï¬ed in
+three steps:
+
+(i) Given x(0), consider the solution of (20) as the inï¬nite
+
+sequence of x(k) â RN +1, i.e.
+
+x(k + 1) = P(k)x(k) with k â N.
+
+(29)
+(ii) Since P(k) has a periodic behaviour, due to (17), decom-
+n, such that
+
+pose x(k) in a ï¬nite number of subsequences bi
+
+x(k) =
+
+pâ2
+(cid:91)
+
+i=0
+
+bi
+n
+
+with
+
+b0
+n = {x(0), x (p â 1) , x (2p â 2) , . . .}
+b1
+n = {x(1), x (p) , x (2p â 1) , . . .}
+b2
+n = {x(2), x (p + 1) , x (2p) , . . .}
+...
+bpâ2
+n = {x(p â 2), x (2p â 3) , x (3p â 5) , . . .}
+
+(30)
+
+(31)
+
+where n â N are the sort indices of the subsequences and
+p is the number of graphs in the set Î¦ as in (16). Notice
+that the nth element of the subsequences bi
+n corresponds to
+the kth element of the sequence x(k), such that k = (p â
+1)n + i.
+
+(iii) Rearrange the subsequences as
+bi
+n+1 = P i bi
+n,
+
+bi
+0 = x(i),
+with
+
+âi = 0, . . . , p â 2,
+
+(32)
+
+P i = Piâ1 Ã Piâ2 Ã . . . Ã Pi,
+where P i is the product of the matrices Pi shifted in
+different orders depending on i. Consequently, P i are
+primitive row-stochastic matrices, since
+P i = IN +1 â w Â· kf b Â· fL
+
+(cid:0) Â¯G(k)(cid:1), âi â {0, . . . , p â 2}.
+
+Given (24) and Lemma 4, all the subsequences bi
+n have the
+same invariant path and converge to a value determined by
+their initial conditions, i.e. bi
+b0
+n = lim
+nââ
+
+0 = x(i), such that
+(cid:1)
+n
+
+lim
+nââ
+
+Â· x(0)
+
+lim
+nââ
+
+b1
+n = lim
+nââ
+
+lim
+nââ
+
+b2
+n = lim
+nââ
+
+(cid:125)
+
+(cid:0)P(pâ1) Ã P(pâ2) Ã . . . Ã P0
+(cid:124)
+(cid:123)(cid:122)
+P 0
+(cid:0)P(0) Ã P(pâ1) Ã . . . Ã P1
+(cid:124)
+(cid:123)(cid:122)
+P 1
+(cid:0)P(1) Ã P(0) Ã . . . Ã P2
+(cid:123)(cid:122)
+(cid:124)
+P 2
+
+(cid:1)
+
+(cid:1)
+
+(cid:125)
+
+(cid:125)
+
+n
+
+n
+
+Â· x(2)
+
+Â· x(1)
+
+...
+b(pâ2)
+n
+
+lim
+nââ
+
+since
+
+= lim
+nââ
+
+(cid:0)P(pâ3) Ã P(pâ4) Ã . . . Ã P0
+(cid:123)(cid:122)
+(cid:124)
+P (pâ2)
+
+n
+
+(cid:1)
+
+(cid:125)
+
+Â· x(p â 2),
+
+(33)
+
+(34)
+
+n
+
+lim
+nââ
+
+P 0
+
+= . . . = lim
+nââ
+
+P
+
+n
+(pâ2) = 1N +1c(cid:62),
+
+as stated in (27). Hence,
+bi
+P i
+n = lim
+nââ
+
+lim
+nââ
+
+n
+
+for all i = 0, . . . , p â 2.
+
+x(i) = 1N +1c(cid:62)x(i)
+
+(35)
+
+Notice that based on (34), all subsequences have the same path,
+i.e. 1N +1c(cid:62). Recalling Lemma 2, Remark 7 and knowing that
+(cid:0) Â¯G(k)(cid:1) has a spanning tree, the following equality holds
+fL
+
+lim
+nââ
+
+n = 1N +1w(cid:62)x(i),
+bi
+
+âi = 0, . . . , p â 2.
+
+(36)
+
+The Laplacian matrix L that represents Â¯G connects all the
+followers to the leader. Then, as shown in (Lunze, 2019), it
+holds that the last row of the Laplacian matrix vanishes and
+the matrix can be rearranged as
+
+(cid:19)
+
+L =
+
+(cid:18) 0 0(cid:62)
+N
+ËL l
+Above, the ï¬rst row and the ï¬rst column have been separated
+from the remaining N rows and columns, l(cid:62) = [0 0 . . . 1] â
+NN and ËL is the Laplacian matrix corresponding to the com-
+munication network that contains all the followers.
+
+.
+
+For all matrices as L, as it is proven in (Lunze, 2019), the
+normalised vector is deï¬ned as
+
+w(cid:62) = [0 0 . . . 1] â RN +1.
+
+Hence, the following equality hold,
+
+w(cid:62)x(i) = xL(k) âi = 0, . . . , p â 2.
+
+Then, for all i = 0, ..., p â 2,
+lim
+nââ
+
+bi
+n = 1N +1w(cid:62)x(i) = 1N +1 Â¯x.
+
+(37)
+
+(38)
+
+Since the ï¬nite number of subsequences bi
+n whose union is
+equal to the original sequence x(k) converge to the same limit,
+then also the sequence x(k) will converge to the same limit
+(see, for example, Theorem 3.5.7 from (Aguilar, 2022)). Con-
+sequently, as in Lemma 2, the states of system (20) converge to
+a value that is considered the consensus value, i.e. Â¯x = xL(k).
+This complete the proof. (cid:50)
+Remark 7. Theorem 6 only proves the asymptotic convergence
+of the followers states to a consensus value deï¬ned by the leader
+state for a constant xL(k), i.e., for qL(k) = 0 for all k â N. In a
+realistic TH-MAS system, however, xL(k) will be a piece-wise
+constant signal rather than a constant one due to the update from
+uL(k) at k = mM . In this case, as it will be illustrated in the
+
+or 1; hence, we deï¬ne the control law as in (19) with kf b = 0.2
+and project the switching as
+ï£±
+1
+ï£²
+â1
+ï£³
+0
+
+if ui(k) > 0,
+if ui(k) < 0,
+if ui(k) = 0.
+
+i (k) =
+
+(41)
+
+nr
+
+Fig. 7. Capacitor voltages using switching algorithm in (18) and
+
+projected control input as in (41).
+
+In Figure 7, we present the results when control input is pro-
+jected as a switching signal as in (41). Notice that a limit cycle
+around the desired value is reached. This result aligns with the
+conclusion presented in (Morita and Ito, 2018) where a practical
+consensus for MAS with quantized inputs was deï¬ned.
+
+simulation examples, practical consensus will be achieved if the
+time difference between the two layers is sufï¬ciently large, i.e.,
+to allow switching through all of the graphs in the set Î¦(m)
+multiple times. Additionally, it is worth noting that kf b and the
+topology of Â¯G, which must have a spanning tree, determine the
+transient dynamics under the consensus control law.
+
+4. ILLUSTRATIVE EXAMPLES
+
+4.1 Modular Multilevel Converter Example
+
+Balancing Capacitor Voltage (BAC) is a common control prob-
+lem in Modular Multilevel Converters (MMCs). In this case,
+all the followers (the modules) need to store a certain amount
+of voltage (vC) in their capacitors such that the total stored
+voltage in the capacitors (vÎ£
+C) is equal to a voltage reference
+(vÎ£â
+C ) coming from a higher layer. The followers dynamics is
+such that,
+
+Î£i : xi(k + 1) = xi(k) â wqi(k)ui(k),
+(39)
+for all i = {1, 2, . . . , N }, where k â N, Ts is the sampling
+period, xi â R is the state variable describing the ith module
+C), ui â Z[â1,1]
+capacitor voltage (vi
+is the control input
+describing the switching signal (nr
+i ) provided to the modules
+C â R, where N is the number of modules in each
+and w = Ä±N Ts
+arm, C = 0.4mF is the module capacitance, Ä± = 80A is the
+common exogenous input representing the arm current.
+
+In an MMC, all modules (follower agents) must have a uniform
+distribution of energy, which means that, at any sampling time,
+the same voltage must be stored in their capacitors. This is why
+a consensus on the capacitor voltages is needed. Hence, the
+leader state is deï¬ned as
+
+xL(k) =
+
+vÎ£â
+C (k)
+N
+
+, âk = mM,
+
+(40)
+
+where N is the number of existing modules. The switching
+algorithm is also needed due to hard constraints regarding of
+the number of modules that can be active at each sampling time.
+In this case, the communication topology in all the graphs is a
+ring network.
+
+Fig. 8. Zoom into a region of Figure 7 showing different limit
+
+cycles for different numbers of active agents
+
+In Figure 8 a zoom into a region of Figure 7 is made. We
+observe that before t = 7.4ms, two modules are activate per
+sampling time k due to Ï(m) = 2. Meanwhile, after t = 7.4ms,
+one module is activate per sampling time k due to Ï(m +
+1) = 1. In this case, changing the number of allowed active
+modules Ï(m) did not affect the capacity of our method to
+converge to the desired value.
+
+Fig. 6. Capacitor voltages using the switching algorithm in (18)
+
+with continuous input.
+
+4.2 Water pumping system
+
+Figure 6 shows how the followers can reach consensus with the
+leader even when, due to Ï(m) the set of active agents only
+can contain 2 and 1 follower, respectively. In this case, the
+leaderâs behaviour is piecewise constant and the dynamics of
+the lower layer is fast enough to facilitate practical asymptotic
+convergence. Yet, in a real MMC circuit, the control input ui is
+a discrete input that can have only 3 possible values, i.e. -1, 0
+
+In water pumping systems, it is needed to supply a certain ï¬ow
+(Qâ). In this case, the main challenge is to coordinate all the
+pumps to supply the desired ï¬ow while keeping the number of
+active pumps limited. The motivation for this constraint is to
+keep a proper balance among the lifespans of the pumps, where
+the working time of the pumps should be similar among all of
+them. This is why the switching algorithm is a suitable solution.
+
+Jadbabaie, A., Lin, J., and Morse, A. (2003). Coordination of
+groups of mobile autonomous agents using nearest neighbor
+rules. IEEE Transactions on Automatic Control, 48(6), 988â
+1001.
+
+Kusumawardana, A., Habibi, M.A., Wibawanto, S., Wicak-
+sono, H., Prasetya, Y., and Nurrahman, R. (2019). Coordina-
+tion power control of dc water pump system using dual-loop
+control and consensus algorithm. In 2019 ICEEIE, volume 6,
+37â42.
+
+Li, T. and Zhang, J.F. (2010). Consensus conditions of multi-
+agent systems with time-varying topologies and stochastic
+IEEE Transactions on Automatic
+communication noises.
+Control, 55(9), 2043â2057.
+
+Lunze, J. (2019). Networked Control of Multi-Agent Systems,
+
+volume 1. Bookmundo, 1 edition.
+
+Mondal, S. and Tsourdos, A. (2022). The consensus of non-
+linear agents under switching topology using dynamic in-
+version in the presence of communication noise and delay.
+Proceedings of the Institution of Mechanical Engineers, Part
+G: Journal of Aerospace Engineering, 236(2), 352â367.
+Morita, R. and Ito, S. (2018). Weak consensus with discrete-
+valued input and the performance dependency on its network
+topology. In 23rd International Symposium on Mathematical
+Theory of Networks and Systems, 726â728.
+
+Pereira Marca, Y., Duarte, J., Roes, M., and Wijnands, C.
+(2021). Extended operating region of modular multilevel
+In 23rd EPE
+converters using full-bridge sub-modules.
+ECCE Europe. IEEE.
+
+Ren, W. and Beard, R.W. (2005). Consensus seeking in multia-
+gent systems under dynamically changing interaction topolo-
+gies. IEEE Transactions on Automatic Control, 50, 655â661.
+Shao, J., Zheng, W.X., Huang, T.Z., and Bishop, A.N. (2018).
+On leaderâfollower consensus with switching topologies: An
+analysis inspired by pigeon hierarchies. IEEE Transactions
+on Automatic Control, 63(10), 3588â3593.
+
+Shokri, M. and Kebriaei, H. (2020). Leaderâfollower network
+aggregative game with stochastic agentsâ communication
+IEEE Transactions on Automatic Control,
+and activeness.
+65(12), 5496â5502.
+
+Wei, J., Kun, L., and Themistoklis, C. (2022). Multi-agent
+consensus with heterogeneous time-varying input and com-
+munication delays in digraphs. Automatica, 135, 109950.
+Wolfowitz, J. (1963). Products of indecomposable, aperiodic,
+stochastic matrices. Proceedings of the American Mathemat-
+ical Society, 14(5), 733â737.
+
+Yang, T., Stoorvogel, A., and Saberi, A. (2011). Consensus for
+multi-agent systems â synchronization and regulation for
+complex networks. In Proceedings of the American Control
+Conference, ACC 2011, 5312â5317. IEEE Control Systems
+Society.
+
+In this case, we consider the system presented in (Kusumawar-
+dana et al., 2019), where the ï¬ow (Q = K â Ï) is proportional
+to the speed rotation of the pump (Ï) and is expressed as
+
+Î£i : xi(k + 1) = xi(k) â wqi(k)ui(k),
+(42)
+for all i = {1, 2, . . . , N }, where k â Z+, Ts is the sampling
+period, xi â R is the state variable describing the ith pump
+ï¬ow (Qi), w = 0.2e3 m2
+sA is a constant deï¬ned by pump
+characteristics and ui â R is the control input describing the
+pump armature current (Iai) .
+
+Fig. 9. Pump ï¬ows using the switching algorithm in (18).
+
+In Figure 9, we show the behavior of the set of pumps following
+a leader while the number of allowed followers changes with
+time. It is observed that regardless of the number of active
+agents (Ï), consensus is reached. However, when Ï changes,
+the dynamics change. It is worth noting that, as intuitively
+expected, the convergence time is faster when Ï = 4 than
+when Ï = 2. The intuition for that comes from the fact that
+when Ï = 4, more followers are active per sample time and
+p(m) = 1. The same result, however, is not observed when
+Ï = 3, where the convergence time is even faster than when
+Ï = 4. This behavior can be justiï¬ed since after two iterations
+of k, all the followers would be active. Also, unlike the case,
+when Ï = 4, the leader needs to change the follower it connects
+to, causing a faster convergence.
+
+5. CONCLUSIONS
+
+In this paper, we proposed a switching algorithm to control
+a hierarchical multi-agent system with a time-varying set of
+active agents. As expressed in Theorem 6, we observed that
+all followers could reach consensus regardless of the number of
+active agents. The implementation of the developed consensus
+algorithm on the application inspired examples, a MMC circuit
+and a water pumping system demonstrated the effectiveness
+and performance of the algorithm. As future work, it is still
+an open question whether we can improve the performance of
+the transient dynamics and achieve ï¬nite-time consensus to deal
+with a piece-wise constant leader state.
+
+REFERENCES
+
+Aguilar, C.O. (2022). An Introduction to Real Analysis, vol-
+ume 1. Department of Mathematics, State University of New
+York.
+
+Cheng, Z., Fan, M.C., and Zhang, H.T. (2015). Distributed mpc
+based consensus for single-integrator multi-agent systems.
+ISA Transactions, 58, 112â120.
+
+ 

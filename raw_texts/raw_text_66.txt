@@ -1,0 +1,917 @@
+Specializing Communication in Heterogeneous Deep Multi-Agent Reinforcement
+Learning using Agent Class Information
+
+Douglas De Rizzo Meneghetti
+
+Reinaldo Augusto da Costa Bianchi
+
+FEI University Center
+Humberto de Alencar Castelo Branco Ave., 3972-B
+SËao Bernardo do Campo, SP, Brazil, 09850-901
+douglasrizzo@fei.edu.br, rbianchi@fei.edu.br
+
+1
+2
+0
+2
+
+r
+a
+
+M
+0
+1
+
+]
+I
+
+A
+.
+s
+c
+[
+
+2
+v
+7
+1
+6
+7
+0
+.
+2
+1
+0
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Inspired by recent advances in agent communication
+with graph neural networks, this work proposes the
+representation of multi-agent communication capabil-
+ities as a directed labeled heterogeneous agent graph,
+in which node labels denote agent classes and edge la-
+bels, the communication type between two classes of
+agents. We also introduce a neural network architec-
+ture that specializes communication in fully coopera-
+tive heterogeneous multi-agent tasks by learning indi-
+vidual transformations to the exchanged messages be-
+tween each pair of agent classes. By also employing
+encoding and action selection modules with parame-
+ter sharing for environments with heterogeneous agents,
+we demonstrate comparable or superior performance in
+environments where a larger number of agent classes
+operates.
+
+Introduction
+In partially observable multi-agent settings, communication
+among agents may help mitigate the uncertainty with rela-
+tion to which state the agent currently is, given its obser-
+vation. Communication has been achieved in deep multi-
+agent reinforcement learning by multiple means: with agents
+directly sharing their observations (Sunehag et al. 2018)
+or learning message passing mechanisms via backpropaga-
+tion. This was initially achieved with multi-layer percep-
+trons (Sukhbaatar, Szlam, and Fergus 2016), bidirectional
+recurrent neural networks (Peng et al. 2017), considering
+communication as part of agent actions (Foerster et al. 2016)
+or allowing an agent to learn which agents to communicate
+with in the environment, without restraints (Hoshen 2017;
+Jiang and Lu 2018; Malysheva, Kudenko, and Shpilman
+2019; Das et al. 2019).
+
+A recent spike in interest in the areas of graph neural net-
+works and geometric deep learning resulted in works which
+explore the use of operations previously targeted towards su-
+pervised and semi-supervised learning on graphs to achieve
+agent communication (Wang et al. 2018; Agarwal, Kumar,
+and Sycara 2019; Malysheva, Kudenko, and Shpilman 2019;
+Jiang et al. 2020). However, most of these works focus in
+tasks with homogeneous agents, that is, agents that have the
+
+Copyright Â© 2021, Association for the Advancement of Artiï¬cial
+Intelligence (www.aaai.org). All rights reserved.
+
+same observation and action spaces and follow the same pol-
+icy.
+
+Many tasks present agents that would either beneï¬t from
+learning speciï¬c policies or that have completely different
+observations and actions. An example of the former is the
+RoboCup robot soccer leagues (Chalup et al. 2019), in which
+teams of homogeneous robots may specialize into offensive,
+defensive and goalkeeping roles. Examples of the later in-
+clude mixed robot teams, such as aerial drones used for map-
+ping and terrestrial robots tasked with navigation, as well as
+real-time strategy (RTS) games. In an RTS game, each unit
+belongs to an unit type, which dictates its skills, strengths
+and weaknesses and, consequently, its policy.
+
+Another property of the aforementioned examples is the
+fact that a collection of heterogeneous agents can be group
+into classes (robot soccer roles, such as offense, defense and
+goalie, or game unit types), where agents from the same
+class may be considered homogeneous among themselves.
+
+Given these scenarios, this work proposes a neural net-
+work model that learns specialized communication proto-
+cols between classes of agents. The method ï¬rst creates a
+directed labeled agent communication graph, in which node
+labels represent agent classes and edge labels represent a
+communication channel between agents of two classes. The
+neural network model then employs relational graph con-
+volutions (Schlichtkrull et al. 2018) as a message passing
+mechanism between agents, before estimating Q values or
+all actions. We also show how heterogeneous classes of
+homogeneous agents can share parameters in parts of the
+model, accelerating learning.
+
+Research Background
+
+When focusing on fully-cooperative, partially observable
+multi-agent tasks, one way to formalize the environments is
+through decentralized partially observable Markov decision
+processes DecâPOMDPs (Amato 2015). A DecâPOMDP is
+deï¬ned as a tuple < U , S, A , â¦, P , R, O >, where
+
+â¢ U : a ï¬nite set of agents,
+
+â¢ S: a ï¬nite set of states,
+
+â¢ A u: ï¬nite set of actions for agent u,
+
+â¢ â¦u: a ï¬nite set of observations for agent u,
+
+ 
+ 
+ 
+ 
+ 
+ 
+â¢ P : a transition probability function P (s(cid:48)|s, a) mapping
+the joint actions chosen by all agents in state s to the prob-
+ability of transitioning to state s(cid:48),
+â¢ R: a shared reward function R(s, a),
+â¢ O: an observation model O(o|s(cid:48), a) which dictates the
+probabilities that agents will observe o in s(cid:48) after taking
+a.
+
+Given a pair of agents u1 and u2, they are considered ho-
+mogeneous when A u1 = A u2, â¦u1 = â¦u2 and they can
+share the same policy without affecting outcomes. If at least
+one of these conditions is not true, then they are considered
+to be heterogeneous.
+
+Deep Multi-Agent Reinforcement Learning
+Recent advances in the area of deep multi-agent reinforce-
+ment learning that contributed to this work are the network
+architectures trained with off-policy algorithms to control
+multiple agents in fully cooperative, partially observable en-
+vironments. Reinforced Inter-Agent Learning and Differ-
+entiable Inter-Agent Learning (Foerster et al. 2016) model
+agents as deep recurrent Q-Networks (DRQN) (Hausknecht
+and Stone 2015) to address partial observability, while
+mixing techniques such as value decomposition networks
+(VDN) (Sunehag et al. 2018) and QMIX (Rashid et al. 2018)
+train a multi-agent neural network by combining agentsâ Q
+values under the assumptions of additivity and monotonic-
+ity, respectively, to achieve superior performance in fully
+cooperative tasks. Agents then choose actions according to
+their individual Q values, achieving what is called central-
+ized training and decentralized execution.
+
+Especially in the case of VDN, the joint value function of
+
+a team of cooperative agents is given by
+
+QU (o, a) =
+
+(cid:88)
+
+uâU
+
+Qu(ou, au).
+
+Graph Neural Networks
+(Gori, Monfardini, and
+Graph neural networks (GNN)
+Scarselli 2005; Scarselli et al. 2009) are models special-
+ized in processing input data structured as graphs or man-
+ifolds. GNNs are composed of multiple types of opera-
+tions (Zhou et al. 2018). However, one class of operations
+over graphs that is particularly interesting in the MARL set-
+ting are graph convolutions (Defferrard, Bresson, and Van-
+dergheynst 2017; Kipf and Welling 2017). These operations
+can be interpreted as message passing mechanisms between
+nodes of a graph (Gilmer et al. 2017) and, while their main
+applications have been in supervised and semi-supervised
+learning in graph data sets, they have also found use in re-
+inforcement learning tasks, as message passing mechanisms
+between agents (Sukhbaatar, Szlam, and Fergus 2016; Maly-
+sheva, Kudenko, and Shpilman 2019; Jiang et al. 2020).
+
+In the family of graph convolution operations, one that is
+particularly interesting in this work are relational graph con-
+volutions (RGCN) (Schlichtkrull et al. 2018). RGCNs oper-
+ate over graphs deï¬ned as G = (V, E, R), where V represents
+a set of nodes containing individual feature vectors, E is a set
+of edges and R a set of possible relations between nodes.
+
+The feature vector of node i in layer l + 1 is given by
+
+(cid:126)v (l+1)
+i
+
+= Ï
+
+ï£«
+
+ï£­
+
+(cid:88)
+
+(cid:88)
+
+râR
+
+jâNr
+i
+
+1
+ci, r
+
+W (l)
+
+r (cid:126)v (l)
+
+j + W (l)
+
+0 (cid:126)v (l)
+
+i
+
+ï£¶
+
+ï£¸ ,
+
+(1)
+
+where Ï is a nonlinear activation function, r is the index of
+the relation between nodes i and j, Nr
+i are the neighbors of
+i under connected by edges with relation index r and W (l)
+is a parameter matrix speciï¬c to relation r in layer l.
+
+r
+
+Related Work
+Other works have already modeled agent communication ca-
+pability as graphs. Agarwal, Kumar, and Sycara (2019) use
+a Transformer attention mechanism (Vaswani et al. 2017) to
+let agents learn the relevance of neighborsâ messages, while
+DGN (Jiang et al. 2020) concatenate the outputs of multiple
+graph convolution layers to form agentsâ observations, under
+the rationale that each subsequent layer captures information
+from further away in the graph.
+
+MAGNet (Malysheva, Kudenko, and Shpilman 2019)
+uses a neural network to generate weighted edges in the
+agent graph. This graph generation network is pre-trained
+in environments which possess default agents and its output
+is then used by the multi-agent reinforcement learning net-
+work to learn policies for all agents.
+
+While the previous mentioned works have only dealt with
+homogeneous agents, i.e. agents that work with the same A
+and â¦ sets as well as learn the same policy, NerveNet (Wang
+et al. 2018) models a creatureâs skeleton as a group of hetero-
+geneous agents by categorizing joints with equal functional-
+ity as agents of the same type. A static graph of the crea-
+tureâs skeleton is then generated and messages are passed
+among nodes by using specialized MLPs for each pair of
+node types.
+
+In previous work (Meneghetti and Bianchi 2020), a neural
+network architecture was presented to deal with graphs com-
+posed of heterogeneous agents and entities, in which node
+vectors represented an entityâs features instead of its obser-
+vations. Due to partial observability of the environment, the
+graph structure proposed in that work was not capable of
+representing all information necessary for agents to learn
+well-performing policies, an issue which has been addressed
+in this work.
+
+The current work is different from Agarwal, Kumar, and
+Sycara (2019) and DGN by taking into account partial obser-
+vations, using LSTM layers in the agent networks and train-
+ing agents using an episodic replay buffer (Hausknecht and
+Stone 2015) instead of a buffer containing transitions (Mnih
+et al. 2015). This work also differs from MAGNet and other
+works in which an agent may freely choose to communi-
+cate with any other agent in the environment (Foerster et al.
+2016; Hoshen 2017; Jiang and Lu 2018; Das et al. 2019), as
+well as NerveNet, in which the agent communication graph
+is ï¬xed, given the environment. In our work, communication
+capabilities are dictated by the environment and may change
+between states, being out of the control of the agents.
+
+Lastly, it is worth noting that the use of agent classes
+to model MDPs has previously been proposed in object-
+
+Figure 1: A heterogeneous agent graph, represented as a di-
+rected labeled graph
+
+u(3)
+7
+
+(1, 3)
+
+(2, 3)
+
+(2, 3)
+
+u(2)
+5
+
+u(2)
+6
+
+(1, 2)
+
+(1, 2)
+
+u(1)
+2
+
+(2, 1) (1, 2)
+
+(2, 1)
+
+(1, 2)
+
+(2, 2)
+
+(2, 2)
+
+(1, 2)
+
+(2, 2)
+
+(2, 2)
+
+u(2)
+4
+
+u(1)
+1
+
+u(2)
+3
+
+oriented MDPs (Wasser, Cohen, and Littman 2008) and its
+multi-agent variant (da Silva, Glatt, and Costa 2019).
+
+Representing states as heterogeneous agent
+graphs
+In this section, we introduce the concept of a heterogeneous
+agent communication graph G = (V, E, C.R). Each node in
+the set of nodes V represents an agent in the set of agents U ,
+so, for the rest of this work, individual agents and nodes will
+both be represented by u.
+
+A directed arc (u1, u2) â E denotes the capability of u1 to
+communicate with u2. By making G a directed graph, we are
+able to represent one-way communication between agents
+when necessary.
+
+In some tasks, the team of agents may have full commu-
+nication among themselves, making G a complete graph. In
+other tasks, an agent may be limited to communicate only
+with agents that are geographically close or with which some
+kind of communication channel is available. In this work, we
+make no assumptions regarding agent communication capa-
+bilities and assume they may change from state to state.
+
+The set C represents a collection of agent classes. All
+agents u â U belong to a single class in C, in such a
+way that, while U may be considered a set of heterogeneous
+agents, the subset of all agents belonging to a class c â C,
+denoted by U c, is homogeneous.
+
+Let C(u) be a function that returns the class of u. An arc
+(u1, u2) is labeled (C(u1), C(u2)), indicating a communi-
+cation channel from an agent of class C(u1) to an agent of
+class C(u2). This, coupled with the fact that agent class in-
+formation is encoded in G through the use of node labels,
+makes G a labeled graph.
+
+The set of all possible inter-agent communication channel
+types is denoted by R and is deï¬ned as all possible ordered
+pairs of agent classes (c1, c2), c1 â C, c2 â C, totaling |C|2
+possible types.
+
+Figure 1 presents an example of such a graph. In it, node
+colors and superscripts represent an agentâs class and bidi-
+rectional communication is represented by a pair of arcs.
+
+Heterogeneous Communication in Deep
+Multi-Agent Reinforcement Learning
+Figure 2 presents the proposed neural network architecture.
+It is composed of three modules. The input data is composed
+of o, the observations of all agents. The encoding module
+applies a function Ï to o, normalizing its dimensions and
+enhancing the expressiveness of the model.
+
+In the communication module, the agent graph structure
+is used for message passing among agents through the use
+of RGCN layers. Equation (1) shows how communication
+between different pairs of classes of agents is learned and
+performed differently. By representing each agent-class pair
+(c1, c2), c1 â C, c2 â C as a relation r â R, an RGCN
+layer is able to model message passing between each pair
+of agent class using individual parameter matrices, allow-
+ing the overall network to shape the way agents of speciï¬c
+classes communicate with each other independently.
+
+The resulting vectors after applying K graph convolution
+layers are taken as the combination of each agentâs obser-
+vation and the information received by its neighbors. They
+are then used as input to the action selection module, which
+also employs a single function that approximates Q values
+for all agents, sharing parameters in an analogous way to the
+encoding function Ï.
+
+Parameter sharing for teams of heterogeneous
+agents
+In Meneghetti and Bianchi (2020), both the encoding and ac-
+tion selection modules were composed of multiple functions
+Ïc and Qc,c â C, specialized in agent classes with observa-
+tion vectors of different dimensions, as well as action sets of
+different sizes. However, we found that using the same input
+and output dimensions for all agent classes and employing
+zero padding in the unused variables allowed for the use of
+a single function in each case, achieving parameter sharing
+and faster training of the model.
+
+Furthermore, when using the same action selection net-
+work for multiple heterogeneous agents, we have to account
+for the fact that the network will estimate Q values for the
+joint set of actions of all agent classes. When choosing an
+action according to their policies, each agent must ignore
+values for actions outside of its action set. These Q values
+must also be ignored when calculating the temporal differ-
+ence error that trains the network.
+
+Let A c denote the action set of agent class c and A =
+(cid:83)
+câC A c the joint set of agent actions. Whenever the net-
+work estimates Q for an action a â A â A C(u) for an agent
+u, we ignore it during action selection and consider its con-
+tribution to the TD error as 0.
+
+This parameter sharing approach for heterogeneous
+agents was formalized in Terry et al. (2020) for the general
+case in which all agents in a team are heterogeneous. Here
+we apply the same rationale when a heterogeneous group of
+agents can be grouped into classes of homogeneous agents.
+
+Experiments
+The proposed network architecture was tested in the
+StarCraft Multi-Agent Challenge
+environ-
+
+(SMAC)
+
+Figure 2: Neural network architecture for the heterogeneous agent setting.
+
+ment (Samvelyan et al. 2019). A collection of scenarios
+was chosen to evaluate the performance of the model under
+different circumstances, such as a scenario with a single
+agent class (3m), scenarios with increasing number of agent
+classes (3s5z and 1c3s5z) and scenarios in which both teams
+had the same number of units (MMM) vs an equivalent
+scenario in which the agent team had a disadvantage in
+number of units (MMM2).
+
+Actions in the SMAC scenarios include: moving in one of
+four directions cardinal directions, attacking an enemy unit
+(select by an ID), stopping and the no-op action. The Medi-
+vac unit, present in the MMM and MMM2 scenarios, has ac-
+tions to heal allied units instead of attacking enemies. Due to
+the parameterized nature of the attack and heal actions, units
+in different scenarios may have a varying number of actions.
+The encoding function Ï is a single layer perceptron with
+96 neurons and tanh activation; the action selection mod-
+ule is implemented as a Dueling Deep Recurrent Q-Network
+(Mnih et al. 2015; Hausknecht and Stone 2015; Wang et al.
+2016) with the Double Q-Learning loss function (van Has-
+selt, Guez, and Silver 2016).
+
+We tested three different variants of the communication
+module. The ï¬rst one uses the proposed heterogeneous agent
+communication graph and two RGCN layers (Schlichtkrull
+et al. 2018) with two bases. The second module employs two
+graph attention (GAT) layers (VeliËckoviÂ´c et al. 2018) with
+three attention heads. GAT layers do not explicitly special-
+ize message passing according to agent classes, but may do
+so implicitly if agent class information is added to the agent
+observation. In both cases, each layer is composed of 96 hid-
+den units and employs the LeakyReLU activation. The last
+variant of the communication module is no communication
+at all.
+
+To determine the orthogonality of mixing strategies
+(which have been applied by other works in the SMAC envi-
+
+Table 1: Hyperparameters used in the training setting
+
+ËÎ¸ update interval
+Network learning rate
+L2 regularization coef.
+RL discount factor Î³
+(cid:15)min
+(cid:15)max
+N. steps to ï¬nish linear (cid:15) decay
+
+250
+2.5 â 10â4
+10â5
+0.99
+0.1
+0.95
+50000
+
+ronment) with the proposed agent communication method,
+we include in our analysis one method that approximates
+individual value functions for each agent, known as inde-
+pendent Q-Learning (IQL) (Tan 1993) and another one that
+learns the additive joint value function for the team of agents
+(VDN) (Sunehag et al. 2018).
+
+Agents use a joint (cid:15)-greedy policy, in which all agents ei-
+ther explore with probability (cid:15) or exploit with probability
+1 â (cid:15). A linear (cid:15) decay schedule is employed, whose rel-
+evant values, as well as other hyperparameters used in the
+experiments, are displayed in table 1.
+
+Every 10 thousand steps, we execute an evaluation step in
+which the network follows a greedy policy for 32 episodes.
+We log the win rate in these episodes, as well as the average
+number of defeated enemies (as an intermediate metric, in
+case agents do not win a match).
+
+Following recommendations from the literature (Rashid
+et al. 2020), we train each version of the model in each of the
+chosen maps ï¬ve times for 1 million steps, reporting the 25,
+50 and 75 percentiles of the aforementioned metrics in each
+combination. We also trained select versions of the model
+for 6 million steps on a single map (3s5z) to investigate the
+results of longer training periods. Each 1 million-step train-
+ing procedure took from 5 to 11 eleven wall-clock hours in
+
+...encodingmodulecommunicationmoduleaction selectionmoduleK(    layers)AgentobservationsEncodedobservationsFinal agentobservationsAdvantagesState valuesÏData paddingan Nvidia GTX 1070 GPU.
+
+Results
+
+Figure 3 displays the win rate and average number of de-
+feated enemies in the tested SMAC maps. While in other
+works (Rashid et al. 2018, 2020), authors present different
+results for equivalent algorithms (IQL, VDN without com-
+munication) in the same maps, this may be due to the use of
+a different version of StarCraft.
+
+While the number of defeated enemies in the homoge-
+neous 3m map (3b) grows as training progresses, all meth-
+ods seem to display equivalent performance with relation to
+win rate (3a). The same can be said for the heterogeneous
+3s5z map (which we investigate further in forthcoming re-
+sults) and the MMM2 map, which is considered a hard map
+due to the asymmetry between the agent and enemy teams.
+In the 1c3s5z which is a symmetric scenario with the most
+classes of agents (3), the methods display different perfor-
+mance. IQL with specialized communication achieved su-
+perior win rates and defeated more enemies than IQL with
+communication performed using an attention mechanism as
+well as no communication (ï¬gs. 3e, 3f). In this scenario,
+communication using an attention mechanism seemed to
+harm agent performance, performing the worst of all. Lastly,
+we can see that the model that used a combination of spe-
+cialized communication and value decomposition achieved
+the highest values in our metrics, implying a beneï¬t in
+using specialized communication in heterogeneous multi-
+agent settings over no communication or attention mecha-
+nisms.
+
+Lastly, in the MMM scenario, which also has three agent
+classes, although the model with specialized communication
+and value decomposition tended to defeat the most number
+of agents in average (ï¬g. 3h), all models displayed a ten-
+dency to reach equivalent ï¬nal performance, implying that,
+while not negatively affecting performance, communication
+may not be necessary in all scenarios.
+
+To discover whether there are relevant differences in the
+performance of the methods, we employed analysis of vari-
+ance on all six tested methods in each of the scenarios sepa-
+rately, followed by a Tukey HSD test. Figure 4 presents re-
+sults of Tukeyâs test applied to the data collected in the ï¬nal
+ï¬ve evaluation steps of all methods. We omit tests which are
+highly similar (scenarios with both a high win rate and num-
+ber of defeated enemies) and tests performed in the 3m sce-
+nario, in which no statistically signiï¬cant difference among
+the methods was observed (possibly due to agent homogene-
+ity).
+
+In some scenarios, there are indications that the use of
+specialized communication and additive mixing may be
+comparable (ï¬g. 4a). Other measures indicate that the use of
+an attention mechanism for communication may have been
+detrimental in some scenarios, when compared to special-
+ized or no communication (ï¬g. 4b). Lastly, while in some
+scenarios it may be unclear which is the best performing
+method, methods that employ specialized communication
+are constantly in the groups of highest performance (ï¬g. 4a,
+4b, 4c, 4d).
+
+Given the poor win rate achieved by all models in the
+symmetric and heterogeneous 3s5z scenario (ï¬g. 3c), an ad-
+ditional experiment was conducted, in which a selection of
+the models was trained for a total of 6 million steps. Models
+were selected in an ablative fashion, to contrast: the con-
+tribution of specialized communication over no communi-
+cation; the orthogonality of the use of a mixing strategy
+over IQL and the performance of specialized communica-
+tion over an attention mechanism.
+
+The win rate and number of defeated enemies for the 6
+million training steps in the 3s5z map are displayed in ï¬g-
+ure 5. We can see that, in this scenario, agents only start
+to win episodes after approximately 3 million training steps
+(ï¬g. 5a). Also, only the models that implemented specialized
+communication demonstrated winning behavior, with the at-
+tention model with value decomposition winning an episode
+only after Ë530 million steps.
+
+In ï¬gure 5b, we see that the models with specialized com-
+munication achieve the highest performance, with the one
+employing value decomposition being the best of all. This
+suggests that the application of mixing strategies achieve an
+orthogonal increase in performance when applied with the
+proposed specialized agent communication method.
+
+Conclusion
+This work presented a method to model communication be-
+tween heterogeneous agents in fully cooperative multi-agent
+deep reinforcement learning tasks through the use of rela-
+tional graph convolutions. Agents are assigned to classes, in
+such a way that agents in the same class are homogeneous
+among themselves. The communication capabilities of the
+whole team in a given state is represented as a directed la-
+beled agent graph, which encodes inter-agent class relations
+in the graph edges. Relational graph convolutions are used to
+specialize communication channels between pairs of agent
+classes using separate parameter matrices, which are reused
+every time two agents represented by the same ordered pair
+of classes communicates.
+
+Experiments performed in a selection of scenarios from
+the StarCraft Multi-Agent Challenge show that the proposed
+method achieves equal or superior performance in all maps,
+when compared to models which use attention mechanisms
+for communication, or no communication at all. We also
+showed indications of how the proposed communication
+method can be combined with additive mixing, achieving
+even better results in the tested scenarios.
+
+Acknowledgments
+The authors acknowledge the SËao Paulo Research Foun-
+dation (FAPESP Grant 2019/07665-4) for supporting this
+project. This study was ï¬nanced in part by the CoordenacÂ¸ Ëao
+de AperfeicÂ¸oamento de Pessoal de NÂ´Ä±vel Superior - Brasil
+(CAPES) - Finance Code 001.
+
+References
+Agarwal, A.; Kumar, S.; and Sycara, K. 2019. Learning
+Transferable Cooperative Behavior in Multi-Agent Teams.
+
+Figure 3: Win rate (left column) and number of defeated enemies (right column) for 1 million training steps (100 evaluation
+steps) in the tested SMAC maps
+
+(a) Win rate â 3m
+
+(b) Defeated enemies â 3m (max 3)
+
+(c) Win rate â 3s5z
+
+(d) Defeated enemies â 3s5z (max 8)
+
+(e) Win rate â 1c3s5z
+
+(f) Defeated enemies â 1c3s5z (max 8)
+
+(g) Win rate â MMM
+
+(h) Defeated enemies â MMM (max 10)
+
+(i) Win rate â MMM2
+
+(j) Defeated enemies â MMM2 (max 12)
+
+0204060801000.00.10.20.30.40.50.60.7IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.00.51.01.52.02.5IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.040.020.000.020.04IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.51.01.52.02.53.0IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.00.10.20.30.40.50.60.70.8IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT02040608010012345678IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.00.10.20.30.40.50.60.7IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT02040608010002468IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT0204060801000.040.020.000.020.04IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GAT02040608010001234IQLVDNIQL + RGCNVDN + RGCNIQL + GATVDN + GATFigure 4: Tukeyâs HSD test in different performance mea-
+sures of the different methods.
+
+Figure 5: Win rate and defeated enemies for 6 million train-
+ing steps (600 evaluation steps) in the 3s5z map
+
+(a) Win rate â 1c3s5z
+
+(a) Win rate
+
+(b) Defeated enemies â 3s5z
+
+(b) Defeated enemies (max 8)
+
+(c) Defeated enemies â MMM
+
+(d) Episode reward â MMM2
+
+In ICML 2019 Workshop on Learning and Reasoning with
+Graph-Structured Representations.
+Amato, C. 2015. Cooperative Decision Making. The MIT
+Press.
+doi:10.7551/mitpress/
+10187.003.0011.
+Chalup, S.; Niemueller, T.; Suthakorn, J.; and Williams, M.-
+A. 2019. RoboCup 2019: Robot World Cup XXIII, volume
+11531. Springer Nature.
+
+ISBN 978-0-262-33170-8.
+
+da Silva, F. L.; Glatt, R.; and Costa, A. H. R. 2019. MOO-
+MDP: An Object-Oriented Representation for Cooperative
+Multiagent Reinforcement Learning. IEEE Transactions on
+Cybernetics 49. doi:10.1109/tcyb.2017.2781130.
+
+Das, A.; Gervet, T.; Romoff, J.; Batra, D.; Parikh, D.; Rab-
+bat, M.; and Pineau, J. 2019. TarMAC: Targeted Multi-
+Agent Communication. Proceedings of the 36th Interna-
+tional Conference on Machine Learning 97: 1538â1546.
+
+Defferrard, M.; Bresson, X.; and Vandergheynst, P. 2017.
+Convolutional Neural Networks on Graphs with Fast Local-
+ized Spectral Filtering. arXiv:1606.09375 [cs, stat] .
+
+Foerster, J.; Assael, Y. M.; de Freitas, N.; and Whiteson, S.
+2016. Learning to Communicate with Deep Multi-Agent
+Reinforcement Learning. In Advances in Neural Informa-
+tion Processing Systems, 2137â2145.
+
+Gilmer, J.; Schoenholz, S. S.; Riley, P. F.; Vinyals, O.; and
+Dahl, G. E. 2017. Neural Message Passing for Quantum
+Chemistry. arXiv:1704.01212 [cs] .
+
+Gori, M.; Monfardini, G.; and Scarselli, F. 2005. A New
+Model for Learning in Graph Domains. In Proceedings of
+the International Joint Conference on Neural Networks, vol-
+ume 2, 729â734. IEEE. doi:10.1109/ijcnn.2005.1555942.
+
+Hausknecht, M.; and Stone, P. 2015. Deep Recurrent Q-
+Learning for Partially Observable MDPs. In AAAI Fall Sym-
+
+0.20.00.20.40.60.8IQLIQL + GATIQL + RGCNVDNVDN + GATVDN + RGCN8910111213IQLIQL + GATIQL + RGCNVDNVDN + GATVDN + RGCN6.57.07.58.08.59.0IQLIQL + GATIQL + RGCNVDNVDN + GATVDN + RGCN5678IQLIQL + GATIQL + RGCNVDNVDN + GATVDN + RGCN01002003004005006000.00.10.20.30.40.50.6IQLIQL + RGCNVDN + RGCNVDN + GAT010020030040050060001234567IQLIQL + RGCNVDN + RGCNVDN + GATposium - Technical Report, volume FS-15-06, 29â37. AI Ac-
+cess Foundation. ISBN 978-1-57735-752-0.
+Hoshen, Y. 2017. VAIN: Attentional Multi-Agent Predic-
+tive Modeling.
+In Guyon, I.; Luxburg, U. V.; Bengio, S.;
+Wallach, H.; Fergus, R.; Vishwanathan, S.; and Garnett, R.,
+eds., Advances in Neural Information Processing Systems
+30, 2701â2711. Curran Associates, Inc.
+Jiang, J.; Dun, C.; Huang, T.; and Lu, Z. 2020. Graph Con-
+volutional Reinforcement Learning. In International Con-
+ference on Learning Representations.
+Jiang, J.; and Lu, Z. 2018. Learning Attentional Communi-
+cation for Multi-Agent Cooperation. In Bengio, S.; Wallach,
+H.; Larochelle, H.; Grauman, K.; Cesa-Bianchi, N.; and Gar-
+nett, R., eds., Advances in Neural Information Processing
+Systems 31, 7254â7264. Curran Associates, Inc.
+Kipf, T. N.; and Welling, M. 2017. Semi-Supervised Classi-
+ï¬cation with Graph Convolutional Networks. In 5th Interna-
+tional Conference on Learning Representations, ICLR 2017
+- Conference Track Proceedings. International Conference
+on Learning Representations, ICLR.
+Malysheva, A.; Kudenko, D.; and Shpilman, A. 2019. MAG-
+Net: Multi-Agent Graph Network for Deep Multi-Agent Re-
+In Adaptive and Learning Agents
+inforcement Learning.
+Workshop at AAMAS (ALA 2019). Montreal, Canada.
+Meneghetti, D. D. R.; and Bianchi, R. A. D. C. 2020. To-
+wards Heterogeneous Multi-Agent Reinforcement Learning
+In Anais Do Encontro Na-
+with Graph Neural Networks.
+cional de InteligËencia Artiï¬cial e Computacional (ENIAC),
+579â590. Porto Alegre, RS, Brasil: SBC. ISSN 0000-0000.
+Mnih, V.; Kavukcuoglu, K.; Silver, D.; Rusu, A. A.; Veness,
+J.; Bellemare, M. G.; Graves, A.; Riedmiller, M.; Fidjeland,
+A. K.; Ostrovski, G.; Petersen, S.; Beattie, C.; Sadik, A.;
+Antonoglou, I.; King, H.; Kumaran, D.; Wierstra, D.; Legg,
+S.; and Hassabis, D. 2015. Human-Level Control through
+Deep Reinforcement Learning. Nature 518(7540): 529â533.
+ISSN 0028-0836. doi:10.1038/nature14236.
+Peng, P.; Wen, Y.; Yang, Y.; Yuan, Q.; Tang, Z.; Long, H.;
+and Wang, J. 2017. Multiagent Bidirectionally-Coordinated
+Nets: Emergence of Human-Level Coordination in Learning
+to Play StarCraft Combat Games .
+Rashid, T.; Samvelyan, M.; de Witt, C. A. S.; Farquhar, G.;
+Foerster, J. N.; and Whiteson, S. 2018. QMIX: Monotonic
+Value Function Factorisation for Deep Multi-Agent Rein-
+forcement Learning. In Krause A., D. J., ed., Proceedings
+of the 35th International Conference on Machine Learning,
+volume 10 of 35th International Conference on Machine
+Learning, ICML 2018, 6846â6859. International Machine
+Learning Society (IMLS). ISBN 978-1-5108-6796-3.
+Rashid, T.; Samvelyan, M.; de Witt, C. S.; Farquhar, G.; Fo-
+erster, J.; and Whiteson, S. 2020. Monotonic Value Function
+Factorisation for Deep Multi-Agent Reinforcement Learn-
+ing. arXiv:2003.08839 [cs, stat] .
+Samvelyan, M.; Rashid, T.; de Witt, C. S.; Farquhar, G.;
+Nardelli, N.; Rudner, T. G. J.; Hung, C.-M.; Torr, P. H. S.;
+Foerster, J.; and Whiteson, S. 2019. The StarCraft Multi-
+Agent Challenge. arXiv:1902.04043 [cs, stat] .
+
+Scarselli, F.; Gori, M.; Tsoi, A. C.; Hagenbuchner, M.; and
+Monfardini, G. 2009. The Graph Neural Network Model.
+IEEE Transactions on Neural Networks 20(1): 61â80. ISSN
+1045-9227. doi:10.1109/tnn.2008.2005605.
+Schlichtkrull, M.; Kipf, T. N.; Bloem, P.; van den Berg, R.;
+Titov, I.; and Welling, M. 2018. Modeling Relational Data
+with Graph Convolutional Networks. In European Semantic
+Web Conference, 593â607. Springer.
+Sukhbaatar, S.; Szlam, A.; and Fergus, R. 2016. Learning
+Multiagent Communication with Backpropagation. In Lee,
+D. D.; Sugiyama, M.; Luxburg, U. V.; Guyon, I.; and Gar-
+nett, R., eds., Advances in Neural Information Processing
+Systems 29, 2244â2252. Curran Associates, Inc.
+Sunehag, P.; Lever, G.; Gruslys, A.; Czarnecki, W. M.; Zam-
+baldi, V.; Jaderberg, M.; Lanctot, M.; Sonnerat, N.; Leibo,
+J. Z.; Tuyls, K.; and Graepel, T. 2018. Value-Decomposition
+Networks for Cooperative Multi-Agent Learning Based on
+In Proceedings of the 17th International
+Team Reward.
+Conference on Autonomous Agents and MultiAgent Systems,
+AAMAS â18, 2085â2087. Richland, SC: International Foun-
+dation for Autonomous Agents and Multiagent Systems.
+Tan, M. 1993. Multi-Agent Reinforcement Learning: In-
+In Machine Learning
+dependent vs. Cooperative Agents.
+Proceedings 1993, 330â337. Elsevier. doi:10.1016/b978-1-
+55860-307-3.50049-6.
+Terry, J. K.; Grammel, N.; Hari, A.; and Santos, L. 2020.
+Revisiting Parameter Sharing in Multi-Agent Deep Rein-
+In Accepted for Presentation at In-
+forcement Learning.
+ternational Conference on Learning Representations (ICLR
+2021).
+van Hasselt, H.; Guez, A.; and Silver, D. 2016. Deep Re-
+In AAAI,
+inforcement Learning with Double Q-Learning.
+2094â2100.
+Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones,
+L.; Gomez, A. N.; ukasz Kaiser, \.; and Polosukhin, I. 2017.
+Attention Is All You Need. In Guyon, I.; Luxburg, U. V.;
+Bengio, S.; Wallach, H.; Fergus, R.; Vishwanathan, S.; and
+Garnett, R., eds., Advances in Neural Information Process-
+ing Systems 30, 5998â6008. Curran Associates, Inc.
+VeliËckoviÂ´c, P.; Casanova, A.; Li`o, P.; Cucurull, G.; Romero,
+A.; and Bengio, Y. 2018. Graph Attention Networks.
+In
+6th International Conference on Learning Representations,
+ICLR 2018 - Conference Track Proceedings. International
+Conference on Learning Representations, ICLR.
+Wang, T.; Liao, R.; Ba, J.; and Fidler, S. 2018. Nervenet:
+Learning Structured Policy with Graph Neural Networks. In
+6th International Conference on Learning Representations,
+ICLR 2018 - Conference Track Proceedings. International
+Conference on Learning Representations, ICLR.
+Wang, Z.; Schaul, T.; Hessel, M.; Hasselt, H.; Lanctot, M.;
+and Freitas, N. 2016. Dueling Network Architectures for
+Deep Reinforcement Learning. In International Conference
+on Machine Learning, 1995â2003.
+Wasser, C. G. D.; Cohen, A.; and Littman, M. L. 2008.
+An Object-Oriented Representation for Efï¬cient Reinforce-
+In Proceedings of the 25th International
+ment Learning.
+
+Conference on Machine Learning, 240â247. ACM. doi:
+10.1145/1390156.1390187.
+
+Zhou, J.; Cui, G.; Zhang, Z.; Yang, C.; Liu, Z.; Wang, L.; Li,
+C.; and Sun, M. 2018. Graph Neural Networks: A Review
+of Methods and Applications .
+
+

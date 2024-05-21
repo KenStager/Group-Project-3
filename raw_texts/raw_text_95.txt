@@ -1,0 +1,556 @@
+3
+0
+0
+2
+
+l
+u
+J
+
+9
+2
+
+]
+E
+C
+.
+s
+c
+[
+
+1
+v
+4
+6
+0
+7
+0
+3
+0
+/
+s
+c
+:
+v
+i
+X
+r
+a
+
+Implementing an Agent Trade Server
+
+Magnus Boman
+
+Swedish Institute of Computer Science (SICS) AB and The Royal Institute of
+Technology, Kista, Sweden
+
+Anna Sandin
+
+Swedish Institute of Computer Science (SICS) AB, Kista, Sweden
+
+Abstract
+
+An experimental server for stock trading autonomous agents is presented and made
+available, together with an agent shell for swift development. The server, written
+in Java, was implemented as proof-of-concept for an agent trade server for a real
+ï¬nancial exchange.
+
+Key words: Trading agent, Agent server, Financial exchange, Complex order,
+Agent programming
+
+1
+
+Introduction
+
+There are always investors seeking to place orders more complicated than
+can be accepted by the software of a ï¬nancial exchange (F/X) system, re-
+gardless of its current level of sophistication. To some of these investors, the
+agent metaphor is a means to implementing combinatorial, temporal, con-
+tingent, or otherwise complex orders. In general, a trading agent is a piece
+of encapsulated software that codes the preferences of its owner. In theoret-
+ical research, trading agents have been used in idealized games [1], artiï¬cial
+markets [2], and competitions such as the Trading Agent Competition [3]
+(see http://www.sics.se/tac/). To economists, trading agents are specu-
+lating noise traders (traders with non-rational expectations and potentially
+zero intelligence) [4], often subjected to the Eï¬cient Market Hypothesis and
+the Rational Expectations Hypothesis [5], since the empirical evidence against
+the accompanying assumptions are directed almost exclusively towards human
+traders [6]. In the system of trading agents we consider, the agents interact
+with the same order book as the human traders (cf. [7]), resulting in a sys-
+tem only slightly more complex than an F/X is today, but a system that is
+
+Preprint submitted to Elsevier Science
+
+19 August 2018
+
+ 
+ 
+ 
+ 
+ 
+ 
+extremely diï¬cult to analyze (cf., e.g., [8]). From an academic perspective,
+the introduction of agents in the actual exchange of real stocks is a formidable
+challenge in that it prompts research in real-time control, agent programming,
+decision analysis, user interaction, privacy, and security. Its theoretical mod-
+els must go beyond agent-based computational ï¬nance [9] and agent-based
+computational economics [10], and already simulation studies are highly com-
+plex [11] [12] [13] [14]. From a commercial perspective, the concept is promising
+in that it enables implementation of new services in the service portfolio of
+the F/X. A vast range of commercial eï¬orts have helped renew and reï¬ne
+the concept of an electronic F/X, including ambitious liquidity-moving ap-
+proaches, such as OptiMark [15] [16] [17]. This fact notwithstanding, there
+has been no technical platform for real stock trading agent development and
+no special-purpose server generally available. We rectify this matter by mak-
+ing available our documented Java code [18] for such a platform. We have also
+implemented an experimental server for supporting agent trading of stocks,
+an Agent Trade Server (ATS). The conceptual development [19] was initiated
+in 2001 (cf. Fig. 1) in cooperation with OM, the worldâs largest supplier of
+software to stock exchanges [20], and OM has ï¬led a U.S. patent on the ATS
+concept [21]. The ATS was built not with commercial operation in mind, but
+as proof-of-concept. That said, OMâs trading package SAXESS and its third
+party APIs provided for much inspiration. We have not designed the ATS
+for any particular market design. Instead, all agents must abide by the rules
+of the F/X. The submarket emerging from ATS operations will depend on
+the agentsâ business logic, including their decision-analytic [22] and normative
+modeling [23] of the market, which we have previously investigated. We have
+no illusion of ATS traï¬c accounting for more than one per cent of any stock
+exchange before 2010, and whether or not investors will ï¬nd the ATS attrac-
+tive will to a large extent depend on pricing and other commercial or political
+concerns.
+
+The following section brieï¬y describes the role that software, and agent soft-
+ware in particular, plays at an electronic F/X. In Section 3, the architecture
+of our ATS is explained. In Section 4, the issue of logging and other forms of
+keeping history is highlighted. The various business roles, i.e. those interested
+in the logs, are also discussed. We end with our conclusions and directions for
+future research.
+
+2 Development of Financial Exchange Software
+
+Trading of stocks is normally done through a broker, as shown in Fig. 2. The
+trader can be a professional investor, a daytrader, or any other person using
+stocks as a means to invest. The broker could be a bank, an Internet broker,
+or some other ï¬nancial institution. The ï¬gure is simpliï¬ed: orders can also be
+
+2
+
+Fig. 1. The four phases of the ATS implementation project, with the most fundamen-
+tal at the bottom, and with all four still running. The Gantt schema also indicates
+key breakthroughs in each of the four phases. The second conceptual design will
+hopefully be made at OM, or at some other ITC provider for F/X software, while in
+itself an interesting academic exercise. The ï¬rst ATS was made publicly available in
+January 2003, but the permission to run agents on the ATS was restricted to select
+agent developers at SICS and at two Swedish universities. These developers came
+up with a ï¬rst shell in January, which was reï¬ned over the following months, and
+sophisticated agents are now under development. As a result of a small empirical
+study, not reported on here, the ï¬rst user serviceâa trade notiï¬cation service for
+smart phonesâwas recently implemented.
+
+placed by walking into a bank and ï¬lling out a form, IP phones are no require-
+ment, the computer used is often a PDA, etc. Each broker communicates with
+the core of the F/X via a gateway, over leased lines (at StockholmsbÂ¨orsen, the
+Swedish stock exchange, backed up by an ISDN connection, as well as OMnet,
+a ï¬bre-optic MetroLAN option). In Fig. 2, the dissemination of information
+from the F/X to the outside world is not shown. Suï¬ce to say here that stock
+exchange dissemination is an elaborate system of latencies and routing, in or-
+der to secure fairness, and that such information is an important part of the
+feedback from core to broker, and from broker to trader.
+
+Suppliers of software to an electronic exchange system are basically of two
+kinds: those that provide software serving the core (the order book), and those
+that provide software for those interacting with the core (the traders). In most
+countries, the software supplier in the ï¬rst category is also competing in the
+second category. In Sweden, for example, OM provides all of the software for
+the core, and they also provide the SAXESS and CLICK (for the derivatives
+
+3
+
+Fig. 2. A schematic view of the current trade information ï¬ow. For simplicity, dis-
+semination procedures are not shown.
+
+market, which we will neglect entirely at this stage) software trading packages,
+as well as the SECUR software clearing and back oï¬ce package. The bulk of
+the software aimed at traders and brokers is however developed by third party
+software houses. We would like to complicate Fig. 2 slightly (see Fig. 3) by
+considering individuals as service provisioners [24], thus introducing a third
+kind of code developer. We anticipate that end-user code development in the
+form of trading agents will be an increasingly important part of the future
+F/X service portfolio.
+
+The third party code pertains to the trading applications used. In order to
+use the SAXESS system today, the broker needs a member SAXESS trade
+application. Each such application must be certiï¬ed, to guarantee smooth op-
+eration alongside all other running applications. The OM application oï¬ered
+is SAXESS Trade, an NT-based client-server solution with the trading data
+being maintained on an SQL server. There are currently about two dozen cer-
+tiï¬ed alternatives. Each application connects to a SAXESS trade server, which
+is in turn connected to the core. The transaction protocol used is XTP (open
+eXchange Transaction Protocol) 2.40, an OSI Layer 7 protocol. The Session
+Layer protocol used is XMP (eXchange Message Protocol). The transactions
+involving the core are governed by a C program, essentially matching the stack
+of sell orders with the stack of buy orders. It is important to note that the
+matching is deterministic. The ATS concept is not a suggested alternative
+
+4
+
+Fig. 3. Three kinds of code development.
+
+to the SAXESS (or any other) trade server currently in use, but a comple-
+ment. In Fig. 4, the ordinary electronic trading is represented by SAXESS.
+Upward arrows denote the placing of orders while downward arrows denote
+feedback. Each trade application uses zero or more distributed instances of
+the SAXESS Trade Server, a freeware available to all registered traders. In
+practice, the ATS will also contain an instance of the SAXESS Trade Server,
+since the latter contains the latest API for communicating with the core. All
+communication with the core goes via the Front End (FE). The wall indicates
+the physical and logical boundary between the market owner and the outside
+world, while the barbed wire surrounding the core illustrates a further level of
+protection. The shadow backup system is not shown.
+
+Note that brokers may still be used, for example for legal reasons, when dele-
+gating trading to an agent. While delegating the right to place orders in itself
+does not introduce non-determinism in the marketplace, there is nothing that
+per se stops an agent developer to introduce non-determinism in the business
+logic of the agent. Security control of agent code is done at the time of agent
+certiï¬cation and testing, and also online in the ATS.
+
+In SAXESS, each trade application must also connect to a dedicated Dis-
+tributed Dissemination Server (DDS). With an ATS running together with a
+SAXESS trade server, the owner of the F/X has the option to either route all
+traï¬c feedback through the existing DDS channels, or to complement the
+
+5
+
+Fig. 4. The ATS as a complement to ordinary electronic trading.
+
+6
+
+DDS with ATS traï¬c feedback. In particular, the agents running on the
+ATS could subscribe to ATS traï¬c feedback of various sorts, and at vari-
+able cost. Even non-professional traders are no strangers to varying levels of
+sophistication of the individually speciï¬ed trading constraints built on feed-
+back. The stop loss service oï¬ered by Internet brokers (such as Avanza; see
+http://www.avanza.com) is a case in point.
+
+The ATS concept provides the third party software houses with a business op-
+portunity, viz. to provide code for the agents trading on the ATS. This involves
+coding investor preferences and encapsulating these into agents, whereafter the
+agents are placed on the ATS, without disclosure. Preference elicitation is as
+always diï¬cult, but suï¬ce to say here that investors will come in many vari-
+eties, from those that have developed advanced agents on their own, to those
+that have no clue on agent programming. A template agent can be coded
+based on the investor ï¬lling out a fairly simple questionnaire. The size and
+structure of such template agents is simple, and the ï¬rst agent shell for our
+ATS has already been written [25]. After the agent is placed on the ATS,
+there remains the challenge of providing software services for notiï¬cation and
+(depending on security issues) possibly for termination of agents. Investors
+no doubt require interfaces for a variety of modalities, and will in the future
+include roaming [26].
+
+3 An Agent Trade Server Architecture
+
+We developed the ATS in-house at SICS, in order to allow for free experimen-
+tation with agent code and simultaneously adjusting and adding code to the
+server. A jar-ï¬le containing an agent can be run locally or remotely. Each trad-
+ing agent executes in its own thread. The three server packages implemented
+(cf. Fig. 5) are described in turn below. The choice of Java was motivated,
+among several factors, by smooth compatibility with small devices, such as
+Java-enabled cell phones. While there is no theoretical reason to limit any
+sandbox environment for agent development to only one language, Java cur-
+rently seems the most practical ï¬rst choice. For instance, Javaâs policy ï¬les are
+useful for deï¬ning the boundary between ATS and agent, and java.security
+allows for basic signing of agent code.
+
+3.1 se.sics.ats.core
+
+This package represents the interface towards the agents, and is distributed to
+agent developers. Initially, the list of agent developers will most likely overlap
+considerably with the list of certiï¬ed SAXESS members, and the principles
+
+7
+
+Fig. 5. The three ATS packages implemented.
+
+for testing similar. The next step is then to automate the certiï¬cation process
+so that individual agent developers can submit agents to the ATS. Since there
+are legal and practical reasons for the market owner not to certify every single
+developer, there is room here for traditional as well as agent brokerage. The
+class AgentComponent speciï¬es all ATS interfacing demands on the agent. For
+instance, the agent must have functionality for starting and stopping. The class
+AgentContext is the agentâs handle on the server. AgentContext is inspired
+by and adheres to the SAXESS Trade API for third party code development,
+based on Microsoftâs Component Object Model (COM).
+
+3.2 se.sics.ats.reference
+
+This package contains the implementation of the ATS itself. It contains log
+handlers and socket tranceivers.
+
+8
+
+3.3 se.sics.ats.data
+
+This package represents the interface towards the stock exchange. This is
+where the ATS will connect to the core of the F/X. For now, it contains
+a parser which, like the connection, can easily be replaced by another. It
+now parses data disseminated through the WWW (more speciï¬cally, it parses
+http://www.stockholmsborsen.se). The ATS thus uses real stock exchange
+data, albeit with a delay of up to 15 minutes. We have limited its capability
+at the outset to the most traded stocks on the StockholmsbÂ¨orsen A-list. The
+package also simulates an order book.
+
+4 Agent Shell Execution
+
+We can now specify the âAgentâ rectangle from Fig. 5 above by explaining the
+agent shell. We ï¬rst turn to some more abstract aspects of ATS management,
+however.
+
+4.1 Roles
+
+In our proof-of-concept implementation work, we have felt a need for a division
+of labor between agent developers and ourselves: the ATS developers. In order
+to leave the core software unchangedâa requirement from OM, and most likely
+from any market ownerâwe also need to deï¬ne the role of ATS administrator.
+The regulation of trade in SAXESS is today done through surveillance of the
+Trading Engine (SaxView), as well as through the oï¬cial trading control and
+supervisory functions units. These units operate on the core and will be used
+also for agent trading. In addition, the ATS administrator must store and sign
+certiï¬cates for authenticated agent code developers.
+
+In addition, there are new business roles in the future scenario of commer-
+cially available ATS services, perhaps including dedicated agent brokers. We
+have enabled this new business role by implementing an object relating agent
+brokers and their agents. This object maintains references, deducts brokerage
+fees, and supplies data for notiï¬cation services. For security reasons, the agent
+broker object is placed in the same execution environment as the ATS. The
+only agent manipulation granted the object is the killing of an agent thread,
+should this become necessary.
+
+9
+
+Fig. 6. Excerpt from a log of Daytrader, a simple agent running on the ATS.
+
+10
+
+4.2 Logs
+
+The ATS administrator must monitor the actions of all agents on the ATS,
+and activity logs are therefore needed. These logs are likely to be processed
+only automatically, but in case of system failure or suspected illicit agent ac-
+tion, manual inspection may be required. For this reason, the responsibility
+for logging should not be distributed, but be the responsibility of the ATS
+administrator. Each agent should be allowed read and write access to its own
+action logs, since logs provide interesting information on top of the gener-
+ally available trade statistics. Logged information could be used for machine
+learning, which could occur oï¬ine or online, depending on the agent business
+logic. An excerpt from a log of a simple agent, to be discussed further in the
+next subsection, is shown in Fig. 6. The full source code of the agent, as well
+as the full log, has been published [25]. Since all stakeholders are potentially
+interested in parsing the log, it is in XML format. For instance, the ATS ad-
+ministrator might like to ï¬nd the agent responsible for some illegal action on
+the ATS. Analogously, an agent broker might seek to attribute errors to the
+ATS implementation, using logs as evidence. The error log of Java exceptions
+and String objects is kept separate from all other logged data.
+
+4.3 se.sics.ats.agent
+
+The structurally designed agent shell packages are intended as support for ATS
+agent development, and their JavaDoc is publicly available [27]. We give an
+abstract overview here of the low coupling design, so that the role of the shell
+in our implementation of the ATS is made clear. Agents extend the abstract
+TradeAgent class (see Fig. 7), which handles all ATS interaction, including the
+final methods initialize and start, invoked by the ATS [18]. The agent
+(SubAgent) gets information about stocks through various get methods, or by
+subscribing to stock changes (cf. Fig. 6). The latter alternative is the one used
+by most non-artiï¬cial stock traders today, and so subscription procedures and
+costs have already been carefully designed at most exchanges.
+
+Agents place orders using the Order object, and its interface OrderListener [18].
+An order is created by calling the method createOrder. The OrderListener
+then implements the methods orderCancelled and orderClosed, which re-
+sult in account updates and logging, as demonstrated in Fig. 6. The account
+and portfolio maintenance should in any commercial implementation of the
+ATS be handled by standard F/X middleware. Similarly, the AgentBroker
+has only minimal functionality in this version of the ATS.
+
+11
+
+Fig. 7. The agent shell package structure.
+
+5 Conclusions and Further Research
+
+We have described a proof-of-concept implementation of a running agent trade
+server, which we believe serves as a blueprint for future implementations in-
+tended for live use on a real ï¬nancial exchange. We have also constructed and
+described an agent shell, currently in use for server implementation of agents
+of increasing complexity. These agent developers are also providing the ï¬rst
+anecdotal evidence of the quality of our implementation. We intend to en-
+gage more developers before a formal evaluation is made. Our future work (cf.
+Fig. 1) includes demonstrating that the size of an agent with a sophisticated
+business logic is manageable. We have also implemented various demonstra-
+tors for notifying services, to be used for presenting agent logs to the agent
+brokers and agent owners [28]. While professional trading is a highly collabo-
+rative activity [29], the agents in our set-up model each other only in a weak
+sense, based solely on their bidding. There are several multi-agent system as-
+pects that deserve attention, such as multiple agent submission for teamwork,
+or even for manipulative purposes. Finally, the eï¬ects on the entire ï¬nancial
+system as a result of wide adoption of agent trade is under investigation. This
+work is being done together with the Stockholm School of Economics and OM.
+
+Acknowledgments
+
+The authors would like to thank Jesper Johansson and Michael Poijes, who
+wrote the ï¬rst agent shell and some of the server code, and kindly provided
+
+12
+
+log data. David LybÂ¨ack and Ulf Essler contributed with important comments
+and fruitful discussions. The Vinnova project TAP on accessible autonomous
+software provided the authors with the time required for this study.
+
+References
+
+[1] J. Rust, J. H. Miller, R. Palmer, Characterizing eï¬ective trading strategiesâ
+insights from a computerized double auction tournament, Economic Dynamics
+and Control 18 (1994) 61â96.
+
+[2] R. G. Palmer, W. B. Arthur, J. H. Holland, B. LeBaron, P. Tayler, Artiï¬cial
+economic lifeâa simple model of a stockmarket, Physica D 75 (1â3) (1994)
+264â274.
+
+[3] A. Greenwald, The 2002 trading agent competitionâan overview of agent
+
+strategies, AI Magazine 24 (1) (2003) 83â91.
+
+[4] J. B. D. Long, A. Shleifer, L. H. Summers, R. Waldmann, The survival of noise
+
+traders in ï¬nancial markets, Journal of Business 64 (1991) 1â19.
+
+[5] T. Lux, M. Ausloos, Market ï¬uctuations I: Scaling, multi-scaling and their
+possible origins, in: A. Bunde, J. Kropp, H.-J. Schellnhuber (Eds.), Science
+of DisasterâScaling Laws Governing Weather, Body, Stock-Market Dynamics,
+Springer-Verlag, 2002, pp. 373â409.
+
+[6] T. Lux, Herd behaviour, bubbles and crashes, The Economic Journal 105 (1995)
+
+881â896.
+
+[7] M. Boman, S. Johansson, D. LybÂ¨ack, Parrondo strategies for artiï¬cial traders,
+in: N. Zhong, J. Liu, S. Ohsuga, J. Bradshaw (Eds.), Intelligent Agent
+Technology, World Scientiï¬c, Singapore, 2001, pp. 150â159.
+
+[8] P. Jeï¬eries, M. Hart, P. Hui, N. Johnson, From market games to real-world
+
+markets, European Physical Journal B 20 (1) (2001) 493â501.
+
+[9] B. LeBaron, Agent-based computational ï¬nanceâsuggested readings and early
+
+research, Economic Dynamics and Control 24 (2000) 679â702.
+
+[10] L. Tesfatsion, Agent-based computational economicsâgrowing economies from
+
+the bottom up, Artiï¬cial Life 8 (1) (2002) 55â82.
+
+[11] M. Lettau, Explaining the facts with adaptive agentsâthe case of mutual fund
+
+ï¬ows, Journal of Economic Dynamics and Control 21 (1997) 1117â1147.
+
+[12] T. Lux, M. Marchesi, Scaling and criticality in a stochastic multi-agent model
+
+of a ï¬nancial market, Nature 397 (1999) 498â500.
+
+[13] K. Bertels, M. Boman, Agent-based social simulation in markets, Electronic
+
+Commerce Research 1 (1â2) (2001) 149â158.
+
+13
+
+[14] J. D. Farmer, S. Joshi, The price dynamics of common trading strategies,
+
+Journal of Economic Behavior and Organization 49 (2002) 149â171.
+
+[15] W. A. Lupien, J. T. Rickard, Crossing Network Utilizing Optimal Mutual
+
+Satisfaction Density Proï¬le, uS Patent No. 5689652 (1997).
+
+[16] E. K. Clemons, B. W. Weber, Restructuring institutional block tradingâan
+overview of the OptiMark system, in: Proc HICSS 6âOrganizational Systems
+and Technology, IEEE Computer Society, 1998, pp. 301â310.
+
+[17] C. Gerber, J. Teich, H. Wallenius, J. Wallenius, A simulation of OptiMarkâs
+electronic matching algorithm and its simple variations of instutional block
+trading, Decision Support Systems In press.
+
+[18] A.
+
+Sandin,
+
+AgentTradeServer
+
+javaDoc,
+
+Available
+
+at
+
+http://www.sics.se/~sandin/ats/doc/ (2002).
+
+[19] D. LybÂ¨ack, M. Boman, Agent trade servers in ï¬nancial exchange systems, ACM
+
+Transactions on Internet Technology 3 (4), in press.
+
+[20] R. Sales, First Europe, now the world, Wall Street and Technology online,
+
+available
+at http://www.wallstreetandtech.com/story/inDepth/WST20010816S0009
+(August 2001).
+
+[21] An Automated Semi-Deterministic Trading System, ï¬led to US Patent and
+
+Trademark Oï¬ce (March 2002).
+
+[22] L. Ekenberg, M. Danielson, M. Boman, Imposing security constraints on agent-
+
+based decision support, Decision Support Systems 20 (1) (1997) 3â15.
+
+[23] M. Boman, Norms in artiï¬cial decision making, Artiï¬cial Intelligence and Law
+
+7 (1999) 17â35.
+
+[24] F. Espinoza, Individual service provisioning, Ph.D. thesis, Dept of Computer
+
+and Systems Sciences, Stockholm Univ (2003).
+
+[25] J. Johansson, M. Poijes, Agent shell for stock market systems, Masterâs thesis,
+
+Dept of Computer and Systems Sciences, Stockholm Univ (2003).
+
+[26] M. Boman, M. Bylund, F. Espinoza, M. Danielson, D. LybÂ¨ack, Trading agents
+for roaming users, presented at the Tokyo Mobile Roundtable, May 2002.
+Available at http://www.arxiv.org/abs/cs.CE/0204056 (May 2002).
+
+[27] J.
+
+Johansson, M. Poijes, DayTrader
+
+agent
+
+javaDoc, Available
+
+at
+
+http://www.dsv.su.se/~mich-poi/trade_agent/javadoc/ (2003).
+
+[28] S. Nylander, M. Bylund, M. Boman, Mobile access to real-time informationâ
+
+the case of autonomous stock brokering, submitted. (2003).
+
+[29] C. Heath, M. Jirotka, P. Luï¬, J. Hindmarsh, Unpacking collaborationâthe
+interactional organisation of trading in a city dealing room, in: G. D. Michelis,
+C. Simone, K. Schmidt (Eds.), Proc ECSCWâ93, Kluwer Academic, 1993, pp.
+155â170.
+
+14
+
+

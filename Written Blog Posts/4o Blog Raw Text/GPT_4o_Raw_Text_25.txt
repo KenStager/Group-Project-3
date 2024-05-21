@@ -1,0 +1,81 @@
+# Engineering Cooperative JADE Agents with the AMCIS Methodology: A Deep Dive into the Transportation Management Case Study
+
+## Introduction
+
+In our fast-evolving digital world, solving complex business problems efficiently is a top priority. One powerful approach that's been making significant strides is the use of Multi-Agent Systems (MAS). These systems harness the capabilities of autonomous agents working in concert to tackle intricate challenges in areas like business process management, supply chain logistics, and manufacturing scheduling. This blog post delves into an intriguing case study focusing on an agent-based transportation e-market system designed using the AMCIS methodology and implemented with the JADE framework. By exploring this, we'll uncover key insights into how such systems can be meticulously crafted to meet robust, dynamic needs in e-commerce and transportation management.
+
+## The AMCIS Methodology
+
+AMCIS, short for Agent-Oriented Method for Designing Cooperative Information Systems, is a methodological framework designed to facilitate the development of applications that support inter-agent cooperation. The framework is built around the concept of autonomous agents working within an organized society, each playing specific roles and following defined interaction protocols.
+
+### Key Phases of AMCIS
+
+AMCIS identifies three critical design phases operating at two levels of abstraction: the Organizational Level and the Technical Level.
+
+1. **Analysis Phase**: This phase focuses on understanding the organizational relationships and the rationales behind them. Here, the system's global architecture is defined in terms of interconnected subsystems through data and control flows. The i* framework is utilized to model cooperation among actors, distinguishing goals, tasks, resources, and their interdependencies.
+   
+2. **System Design Phase**: This phase involves designing the system specification in line with the requirements identified in the analysis phase. It includes identifying the capacities of each agent and establishing the links among them, forming the acquaintance model.
+
+3. **Agent Design Phase**: This is where the initial design is further detailed and refined. It involves constructing interaction models using Agent Unified Modelling Language (AUML) sequence diagrams and plans models with activity diagrams to represent agent behaviors.
+
+## Using AMCIS for Analysis and Design: The Ag-Market System
+
+The Ag-Market system is a prime example of a distributed agent-oriented transportation management e-market, where agents operate in an open environment like the Internet. This system is designed to offer efficient mechanisms for matching transport service requests with offers and constructing feasible solutions dynamically.
+
+### Analysis Phase
+
+In this phase, the focus is on understanding the organizational relationships within the Ag-Market system. The SD (Strategic Dependency) model captures the dependencies among actors (such as customers, brokers, and providers) and their goals, while the SR (Strategic Rationale) model details the internal intentional relationships of each actor.
+
+#### Construction of the SD Model
+
+The SD model graphically represents actors like customers and brokers, showing how they depend on each other to achieve specific goals. For instance, customers depend on brokers to obtain transport solutions, and brokers rely on providers to confirm selected itineraries.
+
+#### Construction of the SR Model
+
+The SR model goes deeper, detailing the internal goals, tasks, resources, and soft goals of each actor. For example, a customer's goal to get an itinerary involves tasks like deciding service requirements and selecting propositions. Similarly, brokers and providers have their own sets of tasks and dependencies.
+
+### System Design Phase
+
+During this phase, the capacities required by each agent to fulfill their goals and dependencies are identified, and the acquaintance model, which represents the communication pathways among agents, is constructed.
+
+#### Identification of Capacities
+
+Each dependency relationship identified in the SR model is mapped to a specific capacity. For instance, a broker's capacity might include "Get Customer Requirements" based on its dependency on customer input.
+
+#### Construction of the Acquaintance Model
+
+The acquaintance model visually maps out which agents will communicate with each other, forming a directed graph where an arc from one agent to another indicates a communication pathway.
+
+### Agent Design Phase
+
+This phase refines the system design by specifying interactions among agents through AUML sequence diagrams and detailing agent behaviors using plans models.
+
+#### Construction of the Interaction Model
+
+The interaction model shows how agents like customers, brokers, and providers interact over time. For instance, it could illustrate how a customer's request initiates a sequence of communications leading to a broker presenting possible transport solutions.
+
+#### Construction of the Plans Model
+
+The plans model uses activity diagrams to represent how agents behave in response to specific events. For example, it might detail the broker's steps in evaluating customer requirements and finding suitable transport solutions.
+
+## Implementation Aspects with JADE
+
+JADE (Java Agent Development Framework) is the chosen platform for implementing the Ag-Market system. JADE simplifies the development of multi-agent systems and ensures compliance with FIPA standards.
+
+### Mapping AMCIS Concepts into JADE Code
+
+Creating JADE agents involves extending the `jade.core.Agent` class and implementing behaviors using predefined classes like `SimpleBehaviour` and `FSMBehaviour`. For instance, the broker's capacity to "Get Customer Requirements" can be implemented as a `SimpleBehaviour`.
+
+### Inter-Agent Communication
+
+JADE facilitates inter-agent communication using ACL (Agent Communication Language) messages. Agents can register with the JADE platform and communicate efficiently, with the "sniffer" agent providing a GUI to monitor interactions.
+
+## Conclusion and Future Work
+
+The combination of AMCIS methodology and JADE framework offers a powerful approach to designing and implementing cooperative agent-based systems. Our case study on the Ag-Market system demonstrates the detailed process of developing such a system, from analysis and design to implementation.
+
+Moving forward, our primary focus will be the full implementation of the described electronic marketplace. Additionally, we aim to explore alternative coordination strategies for customers and providers within our framework and refine the data and knowledge exchange among agents.
+
+We invite you to share your thoughts and experiences with agent-based systems in the comments below. How have you addressed the challenges of designing and implementing such systems? What tools and methodologies have you found effective? Let's continue the conversation and advance our collective understanding of this exciting field.
+
+## Keywords: Agent-Oriented Software Engineering, E-commerce, AMCIS, JADE, Multi-Agent Systems, Transportation Management, Cooperative Information Systems

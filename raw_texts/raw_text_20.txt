@@ -1,0 +1,1757 @@
+AgentFormer: Agent-Aware Transformers for
+Socio-Temporal Multi-Agent Forecasting
+
+Ye Yuan1
+
+Xinshuo Weng1
+
+Yanglan Ou2
+
+Kris Kitani1
+
+1Carnegie Mellon University
+
+2Penn State University
+
+https://www.ye-yuan.com/agentformer
+
+1
+2
+0
+2
+
+t
+c
+O
+7
+
+]
+I
+
+A
+.
+s
+c
+[
+
+3
+v
+3
+2
+0
+4
+1
+.
+3
+0
+1
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Predicting accurate future trajectories of multiple agents
+is essential for autonomous systems but is challenging due
+to the complex interaction between agents and the uncer-
+tainty in each agentâs future behavior. Forecasting multi-
+agent trajectories requires modeling two key dimensions:
+(1) time dimension, where we model the inï¬uence of past
+agent states over future states; (2) social dimension, where
+we model how the state of each agent affects others. Most
+prior methods model these two dimensions separately, e.g.,
+ï¬rst using a temporal model to summarize features over
+time for each agent independently and then modeling the
+interaction of the summarized features with a social model.
+This approach is suboptimal since independent feature en-
+coding over either the time or social dimension can result
+in a loss of information. Instead, we would prefer a method
+that allows an agentâs state at one time to directly affect
+another agentâs state at a future time. To this end, we
+propose a new Transformer, termed AgentFormer, that si-
+multaneously models the time and social dimensions. The
+model leverages a sequence representation of multi-agent
+trajectories by ï¬attening trajectory features across time and
+agents. Since standard attention operations disregard the
+agent identity of each element in the sequence, AgentFormer
+uses a novel agent-aware attention mechanism that pre-
+serves agent identities by attending to elements of the same
+agent differently than elements of other agents. Based on
+AgentFormer, we propose a stochastic multi-agent trajec-
+tory prediction model that can attend to features of any
+agent at any previous timestep when inferring an agentâs
+future position. The latent intent of all agents is also jointly
+modeled, allowing the stochasticity in one agentâs behavior
+to affect other agents. Extensive experiments show that our
+method substantially improves the state of the art on well-
+established pedestrian and autonomous driving datasets.
+
+1. Introduction
+
+The safe planning of autonomous systems such as self-
+driving vehicles requires forecasting accurate future trajec-
+
+Figure 1. Different from standard approaches that model multi-
+agent trajectories in the time and social dimensions separately, our
+AgentFormer allows for joint modeling of the time and social di-
+mensions while preserving time and agent information.
+
+tories of surrounding agents (e.g., pedestrians, vehicles).
+However, multi-agent trajectory forecasting is challenging
+since the social interaction between agents, i.e., behavioral
+inï¬uence of an agent on others, is a complex process. The
+problem is further complicated by the uncertainty of each
+agentâs future behavior, i.e., each agent has its latent intent
+unobserved by the system (e.g., turning left or right) that
+governs its future trajectory and in turn affects other agents.
+Therefore, a good multi-agent trajectory forecasting method
+should effectively model (1) the complex social interaction
+between agents and (2) the latent intent of each agentâs fu-
+ture behavior and its social inï¬uence on other agents.
+
+Multi-agent social interaction modeling involves two key
+dimensions as illustrated in Fig. 1 (Top): (1) time dimen-
+sion, where we model how past agent states (positions and
+velocities) inï¬uence future agent states; (2) social dimen-
+sion, where we model how each agentâs state affects the
+
+TimeSocialTemporal ModelsTemporal ModelsTemporal ModelsSocialModels(Joint Social & Temporal Modeling +Preserve Time & Agent Information)Agent-Aware Transformer+Standard Multi-Agent Trajectory ModelsOur Multi-Agent Trajectory ModelMulti-Agent TrajectoriesTrajectory FeaturesTrajectory Features in 2Dt = 1t = 2t = 3t = 4t = 5t = 1t = 2t = 3t = 4t = 5Agent 3Agent 2Agent 1SocialModels 
+ 
+ 
+ 
+ 
+ 
+state of other agents. Most prior multi-agent trajectory
+forecasting methods model these two dimensions separately
+(see Fig. 1 (Middle)). Approaches like [25, 1, 15] ï¬rst use
+temporal models (e.g., LSTMs [17] or Transformers [47]) to
+summarize trajectory features over time for each agent inde-
+pendently and then input the summarized temporal features
+to social models (e.g., graph neural networks [23]) to cap-
+ture social interaction between agents. Alternatively, meth-
+ods like [45, 18] ï¬rst use social models to produce social
+features for each agent at each independent timestep and
+then apply temporal models over the social features. In this
+work, we argue that modeling the time and social dimen-
+sions separately can be suboptimal since the independent
+feature encoding over either the time or social dimension
+is not informed by features across the other dimension, and
+the encoded features may not contain the necessary infor-
+mation for modeling the other dimension.
+
+termed AgentFormer,
+
+To tackle this problem, we propose a new Transformer
+model,
+that simultaneously learns
+representations from both the time and social dimensions.
+AgentFormer allows an agentâs state at one time to af-
+fect another agentâs state at a future time directly instead
+of through intermediate features encoded over one dimen-
+sion. As Transformers require sequences as input, we
+leverage a sequence representation of multi-agent trajecto-
+ries by ï¬attening trajectory features across time and agents
+(see Fig. 1 (Bottom)). However, directly applying standard
+Transformers to these multi-agent sequences will result in
+a loss of time and agent information since standard atten-
+tion operations discard the timestep and agent identity as-
+sociated with each element in the sequence. We solve the
+loss of time information using a time encoder that appends
+a timestamp feature to each element. However, the loss of
+agent identity is a more complicated problem: unlike time,
+there is no innate ordering between agents, and assigning an
+agent index-based encoding will break the required permu-
+tation invariance of agents and create artiï¬cial dependencies
+on agent indices in the model. Instead, we propose a novel
+agent-aware attention mechanism to preserve agent infor-
+mation. Speciï¬cally, agent-aware attention generates two
+sets of keys and queries via different linear transformations;
+one set of keys and queries is used to compute inter-agent
+attention (agent to agent) while the other set is designated
+for intra-agent attention (agent to itself). This design al-
+lows agent-aware attention to attend to elements of the same
+agent differently than elements of other agents, thus keep-
+ing the notion of agent identity. Agent-aware attention can
+be implemented efï¬ciently via masked operations. Further-
+more, AgentFormer can also encode rule-based connectiv-
+ity between agents (e.g., based on distance) by masking out
+the attention weights between unconnected agents.
+
+Based on AgentFormer, which allows us to model social
+interaction effectively, we propose a multi-agent trajectory
+
+prediction framework that also models the social inï¬uence
+of each agentâs future trajectory on other agents. The prob-
+abilistic formulation of the model follows the conditional
+variational autoencoder (CVAE [21]) where we model the
+generative future trajectory distribution conditioned on con-
+text (e.g., past trajectories, semantic maps). We introduce a
+latent code for each agent to represent its latent intent. To
+model the social inï¬uence of each agentâs future behavior
+(governed by latent intent) on other agents, the latent codes
+of all agents are jointly inferred from the future trajectories
+of all agents during training, and they are also jointly used
+by a trajectory decoder to output socially-aware multi-agent
+future trajectories. Thanks to AgentFormer, the trajectory
+decoder can attend to features of any agent at any previ-
+ous timestep when inferring an agentâs future position. To
+improve the diversity of sampled trajectories and avoid sim-
+ilar samples caused by random sampling, we further adopt
+a multi-agent trajectory sampler that can generate diverse
+and plausible multi-agent trajectories by mapping context
+to various conï¬gurations of all agentsâ latent codes.
+
+We evaluate our method on well-established pedestrian
+datasets, ETH [38] and UCY [28], and an autonomous driv-
+ing dataset, nuScenes [3]. On ETH/UCY and nuScenes,
+we outperform state-of-the-art multi-agent prediction meth-
+ods with substantial performance improvement. We further
+conduct extensive ablation studies to show the superiority of
+AgentFormer over various combinations of social and tem-
+poral models. We also demonstrate the efï¬cacy of agent-
+aware attention against agent encoding.
+
+To summarize, the main contributions of this paper are:
+(1) We propose a new Transformer that simultaneously
+models the time and social dimensions of multi-agent tra-
+jectories with a sequence representation. (2) We propose a
+novel agent-aware attention mechanism that preserves the
+agent identity of each element in the multi-agent trajectory
+sequence. (3) We present a multi-agent forecasting frame-
+work that models the latent intent of all agents jointly to
+produce socially-plausible future trajectories. (4) Our ap-
+proach substantially improves the state of the art on well-
+established pedestrian and autonomous driving datasets.
+
+2. Related Work
+
+Sequence Modeling. Sequences are an important represen-
+tation of data such as video, audio, price, etc. Historically,
+RNNs (e.g., LSTMs [17], GRUs [7]) have achieved re-
+markable success in sequence modeling, with applications
+to speech recognition [52, 35], image captioning [53], ma-
+chine translation [32], human pose estimation [56, 24], etc.
+In particular, RNNs have been the preferred temporal mod-
+els for trajectory and motion forecasting. Many RNN-based
+methods model the trajectory pattern of pedestrians to pre-
+dict their 2D future locations [1, 19, 61]. Prior work has also
+used RNNs to model the temporal dynamics of 3D human
+
+pose [11, 58, 60]. With the invention of Transformers and
+positional encoding [47], many works start to adopt Trans-
+formers for sequence modeling due to their strong ability to
+capture long-range dependencies. Transformers have ï¬rst
+dominated the natural language processing (NLP) domain
+across various tasks [9, 26, 54]. Beyond NLP, numerous
+visual Transformers have been proposed to tackle vision
+tasks, such as image classiï¬cation [10], object detection [4],
+and instance segmentation [50]. Recently, Transformers
+have also been used for trajectory forecasting. Transformer-
+TF [12] applies the standard Transformer to predict the fu-
+ture trajectories of each agent independently. STAR [55]
+uses separate temporal and spatial Transformers to forecast
+multi-agent trajectories. Interaction Transformer [30] com-
+bines RNNs and Transformers for multi-agent trajectory
+modeling. Different from prior work, Our AgentFormer
+leverages a sequence representation of multi-agent trajec-
+tories and a novel agent-aware attention mechanism to pre-
+serve time and agent information in the sequence.
+
+Trajectory Prediction. Early work on trajectory prediction
+adopts a deterministic approach using models such as social
+forces [16], Gaussian process (GP) [49], and RNNs [1, 36,
+48]. A thorough review of these deterministic methods is
+provided in [43]. As the future trajectory of an agent is un-
+certain and often multi-modal, recent trajectory prediction
+methods start to model the trajectory distribution with deep
+generative models [21, 13, 40] such as conditional varia-
+tional autoencoders (CVAEs) [27, 57, 19, 46, 51, 45], gener-
+ative adversarial networks (GANs) [15, 44, 25, 62], and nor-
+malizing ï¬ows (NFs) [41, 42, 14]. Most of these methods
+follow a seq2seq structure [2, 6] and predict future trajecto-
+ries using intermediate features of past trajectories. In con-
+trast, our AgentFormer-based trajectory prediction frame-
+work can directly attend to features of any agent at any
+previous timestep when inferring an agentâs future position.
+Moreover, our approach models the future trajectories of all
+agents jointly to predict socially-aware trajectories.
+
+Social Interaction Modeling. Methods for social inter-
+action modeling can be categorized based on how they
+model the time and social dimensions. While RNNs [17, 7]
+and Transformers [47] are the prefered temporal mod-
+els [18, 1, 55], graph neural networks (GNNs) [23, 31] are
+often employed as the social models for interaction model-
+ing [22, 29, 25]. One popular type of methods [25, 1, 15]
+ï¬rst uses temporal models to summarize trajectory features
+over time for each agent independently and then feeds the
+temporal features to social models to obtain socially-aware
+agent features. Alternatively, approaches like [45, 18] ï¬rst
+use social models to produce social features of each agent at
+each independent timestep and then apply temporal models
+to summarize the social features over time for each agent.
+One common characteristic of these prior works is that they
+model the time and social dimensions on separate levels.
+
+This can be suboptimal since it prevents an agentâs feature
+at one time from directly interacting with another agentâs
+feature at a different time, thus limiting the modelâs ability
+to capture long-range dependencies.
+Instead, our method
+models both the time and social dimensions simultaneously,
+allowing direct feature interaction across time and agents.
+
+3. Approach
+
+1, xt
+
+2, . . . , xt
+
+We formulate multi-agent trajectory prediction as mod-
+eling the generative future trajectory distribution of N (vari-
+able) agents conditioned on their past trajectories. For ob-
+served timesteps t â¤ 0, we represent the joint state of
+all N agents at time t as Xt = (xt
+N ), where
+n â Rds is the state of agent n at time t, which in-
+xt
+cludes the position, velocity and (optional) heading an-
+gle of the agent. We denote the history of all agents as
+X = (cid:0)XâH , XâH+1, . . . , X0(cid:1) which includes the joint
+agent state at all H + 1 observed timesteps. Similarly, the
+joint state of all N agents at future time t (t > 0) is de-
+n â Rdp is the
+noted as Yt = (yt
+future position of agent n at time t. We denote the fu-
+ture trajectories of all N agents over T future timesteps as
+Y = (cid:0)Y1, Y2, . . . , YT (cid:1). Depending on the data, optional
+contextual information I may also be given, such as a se-
+mantic map around the agents (annotations of sidewalks,
+road boundaries, etc.). Our goal is to learn a generative
+model pÎ¸(Y|X, I) where Î¸ are the model parameters.
+
+N ), where yt
+
+2, . . . , yt
+
+1, yt
+
+In the following, we ï¬rst introduce the proposed agent-
+aware Transformer, AgentFormer, for joint modeling of
+socio-temporal relations. We then present a stochastic
+multi-agent trajectory prediction framework that jointly
+models the latent intent of all agents.
+
+3.1. AgentFormer: Agent-Aware Transformers
+
+Our agent-aware Transformer, AgentFormer, is a model
+that learns representations from multi-agent trajectories
+over both time and social dimensions simultaneously, in
+contrast to standard approaches that model the two dimen-
+sions in separate stages. AgentFormer has two types of
+modules â encoders and decoders, which follow the en-
+coder and decoder design of the original Transformer [47]
+but with two major differences: (1) it replaces positional en-
+coding with a time encoder; (2) it uses a novel agent-aware
+attention mechanism instead of the scaled dot-product at-
+tention. As we will discuss below, these two modiï¬cations
+are motivated by a sequence representation of multi-agent
+trajectories that is suitable for Transformers.
+
+Multi-Agent Trajectories as a Sequence. The past multi-
+agent trajectories X can be denoted as a sequence X =
+(cid:1) of
+(cid:0)xâH
+length Lp = N Ã (H + 1). Similarly, the future multi-
+agent trajectories can also be represented as a sequence
+
+, . . . , xâH+1
+N
+
+N , xâH+1
+
+1, . . . , x0
+N
+
+, . . . , xâH
+
+, . . . , x0
+
+1
+
+1
+
+N , y2
+
+1, . . . , y1
+
+1, . . . , y2
+
+N , . . . , yT
+
+1 , . . . , yT
+N
+
+Y = (cid:0)y1
+(cid:1) of length
+Lf = N Ã T . We adopt this sequence representation to be
+compatible with Transformers. At ï¬rst glance, it may seem
+that we can directly apply standard Transformers to these
+sequences to model temporal and social relations. How-
+ever, there are two problems with this approach: (1) loss of
+time information, as Transformers have no notion of time
+when computing attention for each element (e.g., xt
+n) w.r.t.
+other elements in the sequence; for instance, xt
+n does not
+know xt
+is
+n
+a feature of the next timestep; (2) loss of agent informa-
+tion, since Transformers do not consider agent identities
+when applying attention to each element, and elements of
+the same agent are not distinguished from elements of other
+agents; for example, when computing attention for xt
+n, both
+xt+1
+m are treated the same, disregarding the fact
+n
+that xt+1
+m is from a dif-
+ferent agent. Below, we present the solutions to these two
+problems â (1) time encoder and (2) agent-aware attention.
+
+m is a feature of the same timestep while xt+1
+
+is from the same agent while xt+1
+
+and xt+1
+
+n
+
+Time Encoder. To inform AgentFormer about the timestep
+associated with each element in the trajectory sequence, we
+employ a time encoder similar to the positional encoding
+in the original Transformer. Instead of encoding the posi-
+tion of each element based on its index in the sequence, we
+compute a timestamp feature based on the timestep t of the
+element. The timestamp uses the same sinusoidal design as
+the positional encoding. Let us take the past trajectory se-
+quence X as an example. For each element xt
+n, the times-
+tamp feature Ï t
+(cid:40)
+
+n â RdÏ is deï¬ned as
+
+sin((t + H)/10000k/dÏ ),
+k is even
+cos((t + H)/10000(kâ1)/dÏ ), k is odd
+
+Ï t
+
+n(k) =
+
+n(k) denotes the k-th feature of Ï t
+
+where Ï t
+n and dÏ is the
+feature dimension of the timestamp. The time encoder out-
+puts a timestamped sequence Â¯X and each element Â¯xt
+n â
+RdÏ in Â¯X is computed as Â¯xt
+n) where
+W1 â RdÏ Ãds and W2 â RdÏ Ã2dÏ are weight matrices
+and â denotes concatenation.
+
+n = W2(W1xt
+
+n â Ï t
+
+Agent-Aware Attention. To preserve agent information in
+the trajectory sequence, it may be tempting to employ a sim-
+ilar strategy to the time encoder, such as an agent encoder
+that assigns an agent index-based encoding to each element
+in the sequence. However, using such agent encoding is not
+effective as we will show in the experiments. The reason is
+that, different from time which is naturally ordered, there is
+no innate ordering between agents, and assigning encodings
+based on agent indices will break the required permutation
+invariance of agents and create artiï¬cial dependencies on
+agent indices in the model.
+
+We tackle the loss of agent information from a differ-
+ent angle by proposing a novel agent-aware attention mech-
+anism. The agent-aware attention takes as input keys K,
+
+Figure 2. Illustration of agent-aware attention. The mask M
+allows the attention weights in A to be computed differently based
+on whether the i-th query and j-th key belong to the same agent.
+
+queries Q and values V, each of which uses the sequence
+representation of multi-agent trajectories. As an example,
+let the keys K and values V be the past trajectory sequence
+X â RLpÃds , and let the queries Q be the future trajec-
+tory sequence Y â RLf Ãdp . Recall that X is of length
+Lp = N Ã(H+1) as X contains the trajectory features of N
+agents of H + 1 past timesteps; Y is of length Lf = N Ã T
+containing trajectory features of T future timesteps. The
+output of agent-aware attention is computed as
+(cid:18) A
+â
+dk
+
+AgentAwareAttention(Q, K, V) = softmax
+
+(1)
+
+(cid:19)
+
+V
+
+self ) + (1 â M) (cid:12) (QotherKT
+
+other)
+
+A = M (cid:12) (Qself KT
+Qself = QWQ
+Qother = QWQ
+
+self , Kself = KWK
+other, Kother = KWK
+
+self
+
+other
+
+(2)
+
+(3)
+
+(4)
+
+self , WK
+
+other, WK
+
+self } and {WQ
+
+where (cid:12) denotes element-wise product and we use two sets
+of projections {WQ
+other} to
+generate projected keys Kself , Kother â RLpÃdk and
+queries Qself , Qother â RLf Ãdk with key (query) dimen-
+sion dk. Each element Aij in the attention weight matrix
+A represents the attention weight between the i-th query qi
+and j-th key kj. As illustrated in Fig. 2, when computing
+the attention weight matrix A â RLf ÃLp , we also use a
+mask M â RLf ÃLp which is deï¬ned as
+
+Mij = 1(i mod N = j mod N )
+
+(5)
+
+where Mij denotes each element inside the mask M and
+1(Â·) denotes the indicator function. As Â· mod N computes
+the agent index of a query/key, Mij equals to one if the i-th
+query qi and j-th key kj belongs to the same agent, and
+Mij equals to zero otherwise, as shown in Fig. 2. Using the
+mask M, Eq. (2) computes each element Aij of the atten-
+tion weight matrix A differently based on the agreement of
+agent identity: If qi and kj have the same agent identity,
+Aij is computed using the projected queries Qself and keys
+Kself designated for intra-agent attention (agent to itself);
+If qi and kj have different agent identities, Aij is computed
+using the projected queries Qother and keys Kother desig-
+nated for inter-agent attention (agent to other agents). In this
+
+Number of Agents N = 3 (for illustration)Agent 1Agent 2Agent 3Attention Weight MatrixMaskFigure 3. Overview of our AgentFormer-based multi-agent trajectory prediction framework.
+
+way, the agent-aware attention learns to attend to elements
+of the same agent in the sequence differently than elements
+of other agents, thus preserving the notion of agent iden-
+tity. Note that AgentFormer only uses agent-aware attention
+to replace the scaled dot-product attention in the original
+Transformer and still allows multi-head attention to learn
+distributed representations.
+
+Encoding Agent Connectivity. AgentFormer can also en-
+code rule-based agent connectivity information by mask-
+ing out the attention weights between unconnected agents.
+Speciï¬cally, we deï¬ne that two agents n and m are con-
+nected if their distance Dnm at the current time (t = 0) is
+smaller than a threshold Î·. If agents n and m are not con-
+nected, we set the attention weight Aij = ââ between any
+query qi of agent n and any key kj of agent m.
+
+3.2. Multi-Agent Prediction with AgentFormer
+
+Having introduced AgentFormer for modeling tempo-
+ral and social relations, we are now ready to apply it in
+our multi-agent trajectory prediction framework based on
+CVAEs. As discussed at the start of Sec. 3, the goal of
+multi-agent trajectory prediction is to model the future tra-
+jectory distribution pÎ¸(Y|X, I) conditioned on past trajec-
+tories X and contextual information I. To account for
+stochasticity and multi-modality in each agentâs future be-
+havior, we introduce latent variables Z = {z1, . . . , zN }
+where zn â Rdz represents the latent intent of agent n. We
+can then rewrite the future trajectory distribution as
+
+(cid:90)
+
+pÎ¸(Y|X, I) =
+
+pÎ¸(Y|Z, X, I)pÎ¸(Z|X, I)dZ ,
+
+(6)
+
+where pÎ¸(Z|X, I) = (cid:81)N
+n=1 pÎ¸(zn|X, I) is a conditional
+Gaussian prior factorized over agents and pÎ¸(Y|Z, X, I) is
+a conditional likelihood model. To tackle the intractable in-
+
+tegral in Eq. (6), we use the negative evidence lower bound
+(ELBO) Lelbo in the CVAE as our loss function:
+
+Lelbo = â EqÏ(Z|Y,X,I)[log pÎ¸(Y|Z, X, I)]
++ KL(qÏ(Z|Y, X, I)(cid:107)pÎ¸(Z|X, I)) ,
+
+(7)
+
+where qÏ(Z|Y, X, I) = (cid:81)N
+n=1 qÏ(zn|Y, X, I) is an ap-
+proximate posterior distribution factorized over agents and
+parametrized by Ï. In our probabilistic formulation, the la-
+tent codes Z of all agents in the posterior qÏ(Z|Y, X, I) are
+jointly inferred from the future trajectories Y of all agents;
+similarly, the future trajectories Y in the conditional likeli-
+hood pÎ¸(Y|Z, X, I) are modeled using the latent codes Z of
+all agents. This design allows each agentâs latent intent rep-
+resented by zn to affect not just its own future trajectory but
+also the future trajectories of other agents, which enables us
+to generate socially-aware multi-agent trajectories. Having
+described the probabilistic formulation, we now introduce
+the detailed model architecture as outlined in Fig. 3.
+
+Encoding Context (Semantic Map). As aforementioned,
+our model can optionally take as input contextual infor-
+mation I if provided by the data. Here, we assume I â
+RH0ÃW0ÃC is a semantic map around the agents at the cur-
+rent timestep (t = 0) with annotated semantic information
+(e.g., sidewalks, crosswalks, and road boundaries). For each
+agent n, we rotate I to align with the agentâs heading an-
+gle and crop an image patch In â RHÃW ÃC around the
+agent. We use a hand-designed convolutional neural net-
+work (CNN) to extract visual features vn from In, which
+will later be used by other modules in the model.
+
+CVAE Past Encoder. The past encoder starts with the
+multi-agent past trajectory sequence X.
+If the semantic
+map I is provided, the past encoder concatenates each el-
+ement xt
+n â X with the corresponding visual feature vn
+
+AgentFormer EncoderCVAE Past EncoderAgentFormer DecoderCVAE Future EncoderValueCVAE Future Decoder (Autoregressive)AgentFormerDecoderMLP(Element-wise)AgentFormerDecoderMLP(Element-wise)AgentFormerDecoderMLP(Element-wise)Agent-wise PoolingMLPMLPMLPKeyValueKeyQueryKeyQueryValueQueryQueryQueryAgent-wise PoolingMLPMLPMLPAgent-wise PoolingMLPMLPMLPCVAE PriorTrajectory SamplerTime EncoderAdd Context     (Optional)Time EncoderAdd Context     (Optional)TimeEncoderTimeEncoderTimeEncoder(Optional)Add Context    (Optional)Add Context    (Optional)Add Context    Number of Agents N = 3 (for illustration)Agent 1Agent 2Agent 3: Past Trajectories: Latent Code (Agent n) : GT Future Trajectories : Pred Future Trajectoriesof agent n. The new sequence is then fed into the time
+encoder to obtain a timestamped sequence, which is then
+input to the AgentFormer encoder as keys, queries, and val-
+ues. The output of the encoder is a past feature sequence
+(cid:1)
+C = (cid:0)câH
+that summarizes the past agent trajectories X and context I.
+
+N , câH+1
+
+, . . . câH+1
+N
+
+1, . . . , c0
+N
+
+, . . . câH
+
+, . . . , c0
+
+1
+
+1
+
+CVAE Prior. The prior module ï¬rst performs an agent-wise
+pooling that computes a mean agent feature Cn from the
+past features across timesteps: Cn = mean(câH
+n).
+We then use a multilayer perceptron (MLP) to map Cn to
+the Gaussian parameters (Âµp
+n, Ïp
+n) of the prior distribution
+pÎ¸(zn|X, I) = N (Âµp
+
+n , . . . , c0
+
+n, Diag(Ïp
+
+n)2).
+
+CVAE Future Encoder. Given the multi-agent future tra-
+jectory sequence Y, similar to the past encoder, the future
+encoder appends visual features from the semantic map I
+to Y and feeds the resulting sequence to the time encoder
+to produce a timestamped sequence. The timestamped se-
+quence is then input as queries to the AgentFormer decoder
+along with the past feature sequence C which serves as both
+keys and values. We use the AgentFormer decoder here be-
+cause it allows the feature extraction of Y to condition on
+X through C, thus effectively modeling the X-conditioning
+in the posterior qÏ(Z|Y, X, I). We then perform an agent-
+wise mean pooling across timesteps on the output sequence
+of the AgentFormer decoder to extract a feature for each
+agent. Each agent feature is then input to an MLP to obtain
+n, Ïq
+the Gaussian parameters (Âµq
+n) of the approximate pos-
+terior distribution qÏ(zn|Y, X, I) = N (Âµq
+
+n, Diag(Ïq
+
+n)2).
+
+n = Ëx0
+
+1, . . . , Ëy0
+
+to an output
+
+N ) where Ëy0
+
+N , . . . , Ëyt(cid:48)
+N , . . . , Ëyt(cid:48)+1
+1
+1, . . . , Ëy0
+
+CVAE Future Decoder. Unlike the original Transformer
+decoder, our future trajectory decoder is autoregressive,
+which means it outputs trajectories one step at a time
+and feeds the currently generated trajectories back into the
+model to produce the trajectories of the next timestep. This
+design mitigates compounding errors during test time at the
+expense of training speed. Starting from an initial sequence
+n (Ëx0
+(Ëy0
+n is the position feature in-
+side x0
+n), the future decoder module maps an input sequence
+1 , . . . , Ëyt(cid:48)
+1, . . . , Ëy0
+(Ëy0
+N )
+sequence
+, . . . , Ëyt(cid:48)+1
+1, . . . , Ëy1
+(Ëy1
+N ) and grows the input se-
+N , . . . , Ëyt(cid:48)+1
+quence into (Ëy0
+N ). By au-
+toregressively applying the decoder T times, we obtain the
+output sequence ËY = (Ëy1
+1, . . . , Ëy1
+N ). In-
+side the future decoder module (Fig. 3 (Right)), we ï¬rst
+1 , . . . , f t(cid:48)
+1 , . . . , f 0
+form a feature sequence F = (f 0
+N )
+where f t
+n â zn, thus concatenating the currently gen-
+erated trajectories with the corresponding latent codes. The
+latent codes are sampled from the approximate posterior
+during training but from the trajectory sampler (as discussed
+below) at test time. The feature sequence F is then con-
+catenated with the semantic map features and timestamped
+before being input as queries to the AgentFormer decoder
+
+, . . . , Ëyt(cid:48)+1
+
+N , . . . , f t(cid:48)
+
+N , . . . , ËyT
+
+1 , . . . , ËyT
+
+n = Ëyt
+
+1
+
+3
+
+or Ëy1
+
+alongside the past feature sequence C which serves as keys
+and values. The AgentFormer decoder enables the future
+trajectories to directly attend to features of any agent at any
+previous timestep (e.g., câH
+2), allowing the model to
+effectively infer future trajectories based on the whole agent
+history. We use proper masking inside the AgentFormer de-
+coder to enforce causality of the decoder output sequence.
+Each element of the output sequence is then passed through
+an MLP to generate the decoded future agent position Ëyt
+n.
+As we use a Gaussian to model the conditional likelihood
+pÎ¸(Y|Z, X, I) = N ( ËY, I/Î²), where I is the identity ma-
+trix and Î² is a weighting factor, the ï¬rst term in Eq. (7)
+2Î² (cid:107)Yâ ËY(cid:107)2.
+equals the mean squred error (MSE): Lmse = 1
+Trajectory Sampler. We adapt a diversity sampling tech-
+nique, DLow [59], to our multi-agent trajectory prediction
+setting and employ a trajectory sampler to produce diverse
+and plausible trajectories once our CVAE model is trained.
+The trajectory sampler generates K sets of latent codes
+{Z(1), . . . , Z(K)} where each set Z(k) = {z(k)
+1 , . . . , z(k)
+N }
+contains the latent codes of all agents and can be decoded
+by the CVAE decoder into a multi-agent future trajectory
+sample ËY(k). Each latent code z(k)
+n â Z(k) is generated by
+a linear transformation of a Gaussian noise (cid:15)n â Rdz :
+
+n = A(k)
+z(k)
+
+n (cid:15)n + b(k)
+n ,
+
+(cid:15)n â¼ N (0, I),
+
+(8)
+
+n |X, I) over z(k)
+
+n â RdzÃdz is a non-singular matrix and b(k)
+
+where A(k)
+n â
+Rdz is a vector. Eq. (8) induces a Gaussian sampling dis-
+tribution rÎ¸(z(k)
+n . The distribution is condi-
+n , b(k)
+tioned on X and I because its inner parameters {A(k)
+n }
+are generated by the trajectory sampler module (Fig. 3)
+through agent-wise pooling of the past feature sequence C
+and an MLP. The trajectory sampler loss is deï¬ned as
+
+Lsamp = min
+
+k
+
+(cid:107) ËY(k) â Y(cid:107)2
+
++
+
+N
+(cid:88)
+
+n=1
+
+KL(rÎ¸(z(k)
+
+n |X, I)(cid:107)pÎ¸(zn|X, I))
+
+(9)
+
++
+
+1
+K(K â 1)
+
+K
+(cid:88)
+
+K
+(cid:88)
+
+k1=1
+
+k1(cid:54)=k2
+
+(cid:32)
+
+exp
+
+â
+
+(cid:107) ËY(k1) â ËY(k2)(cid:107)2
+Ïd
+
+(cid:33)
+
+,
+
+where Ïd is a scaling factor. The ï¬rst term encourages the
+future trajectory samples ËY(k) to cover the ground truth Y.
+The second KL term encourages each latent code z(k)
+to
+n
+follow the prior and be plausible; the KL can be computed
+analytically as both distributions inside are Gaussians. The
+third term encourages diversity among the future trajectory
+samples ËY(k) by penalizing small pairwise distance. When
+training the trajectory sampler with Eq. (9), we freeze the
+weights of the CVAE modules. At test time, we sample
+latent codes {Z(1), . . . , Z(K)} using the trajectory sampler
+instead of sampling from the CVAE prior and decode the
+latent codes into trajectory samples { ËY(1), . . . , ËY(K)}.
+
+4. Experiments
+
+Datasets. We evaluate our method on well-established pub-
+lic datasets:
+the ETH [38], UCY [28], and nuScenes [3]
+datasets. The ETH/UCY datasets are the major benchmark
+for pedestrian trajectory prediction. There are ï¬ve datasets
+in ETH/UCY, each of which contains pedestrian trajectories
+captured at 2.5Hz in multi-agent social scenarios with rich
+interaction. nuScenes is a recent large-scale autonomous
+driving dataset, which consists of 1000 driving scenes with
+each scene annotated at 2Hz. nuScenes also provides HD
+semantic maps with 11 semantic classes.
+
+Metrics. We report the minimum average displacement er-
+ror ADEK and ï¬nal displacement error FDEK of K trajec-
+tory samples of each agent compared to the ground truth:
+t=1 (cid:107)Ëyt,(k)
+ADEK = 1
+FDEK =
+n (cid:107)2, where Ëyt,(k)
+minK
+denotes the future po-
+sition of agent n at time t in the k-th sample and yT
+n is the
+corresponding ground truth. ADEK and FDEK are the stan-
+dard metrics for trajectory prediction [15, 44, 45, 39, 5].
+
+T minK
+n âyT
+
+k=1 (cid:107)ËyT,(k)
+
+n â yt
+
+n(cid:107)2,
+
+(cid:80)T
+
+k=1
+
+n
+
+Evaluation Protocol. For the ETH/UCY datasets, we
+adopt a leave-one-out strategy for evaluation, following
+prior work [15, 44, 45, 34, 55]. We forecast 2D fu-
+ture trajectories of 12 timesteps (4.8s) based on observed
+trajectories of 8 timesteps (3.2s). Similar to most prior
+works, we do not use any semantic/visual information for
+ETH/UCY for fair comparisons. All metrics are computed
+with K = 20 samples. For the nuScenes dataset, following
+prior work [39, 5, 8, 33], we use the vehicle-only train-val-
+test split provided by the nuScenes prediction challenge and
+predict 2D future trajectories of 12 timesteps (6s) based on
+observed trajectories of 4 timesteps (2s). We report results
+with metrics computed using K = 1, 5 and 10 samples.
+
+n is added to obtain Ëyt
+
+Implementation Details. For all datasets, we represent tra-
+jectories in a scene-centered coordinate where the origin is
+the mean position of all agents at t = 0. The future decoder
+in Fig. 3 outputs the offset to the agentâs current position Ëx0
+n,
+so Ëx0
+n for each element in the output
+sequence. Following prior work [45, 55], random rotation
+of the scene is adopted for data augment. Our multi-agent
+prediction model (Fig. 3) uses two stacks (deï¬ned in [47])
+of identical layers in each AgentFormer encoder/decoder
+with 0.1 dropout rate. The dimensions dk, dv, dÏ of keys,
+queries, and timestamps in AgentFormer are all set to 256,
+and the hidden dimension of feedforward layers is 512. The
+number of heads for multi-head agent-aware attention is 8.
+All MLPs in the model have hidden dimensions (512, 256).
+For the CVAE, the latent code dimension dz is 32, the co-
+efï¬cient Î² of the MSE loss equals 1, and we clip the max-
+imum value of the KL term in Lelbo (Eq. (7)) down to 2.
+We also use the variety loss in SGAN [15] in addition to
+Lelbo. The agent connectivity threshold Î· is set to 100. We
+
+Method
+
+ADE20/FDE20 â (m), K = 20 Samples
+
+ETH
+
+Hotel
+
+Univ
+
+Zara1
+
+Zara2
+
+Average
+
+0.81/1.52 0.72/1.61 0.60/1.26 0.34/0.69 0.42/0.84 0.58/1.18
+SGAN [15]
+SoPhie [44]
+0.70/1.43 0.76/1.67 0.54/1.24 0.30/0.63 0.38/0.78 0.54/1.15
+Transformer-TF [12] 0.61/1.12 0.18/0.30 0.35/0.65 0.22/0.38 0.17/0.32 0.31/0.55
+0.36/0.65 0.17/0.36 0.31/0.62 0.26/0.55 0.22/0.46 0.26/0.53
+STAR [55]
+0.54/0.87 0.18/0.24 0.35/0.60 0.22/0.39 0.17/0.30 0.29/0.48
+PECNet [34]
+0.39/0.83 0.12/0.21 0.20/0.44 0.15/0.33 0.11/0.25 0.19/0.41
+Trajectron++ [45]
+Ours (AgentFormer) 0.45/0.75 0.14/0.22 0.25/0.45 0.18/0.30 0.14/0.24 0.23/0.39
+
+Table 1. Baseline comparisons on the ETH/UCY datasets.
+
+Method
+
+K = 5 Samples
+
+K = 10 Samples
+
+ADE5 â FDE5 â ADE10 â FDE10 â
+
+MTP [8]
+MultiPath [5]
+CoverNet [39]
+DSF-AF [33]
+DLow-AF [59]
+Trajectron++ [45]
+Ours (AgentFormer)
+
+2.93
+2.32
+1.96
+2.06
+2.11
+1.88
+1.86
+
+-
+-
+-
+4.67
+4.70
+-
+3.89
+
+2.93
+1.96
+1.48
+1.66
+1.78
+1.51
+1.45
+
+-
+-
+-
+3.71
+3.58
+-
+2.86
+
+Table 2. Baseline comparisons on the nuScenes dataset.
+
+train the CVAE model using the Adam optimizer [20] for
+100 epochs on ETH/UCY and nuScenes. We use an ini-
+tial learning rate of 10â4 and halve the learning rate every
+10 epochs. More details including the CNN for encoding
+semantic maps and the training procedure of the trajectory
+sampler can be found in Appendix B.
+
+4.1. Results
+
+Baseline Comparisons. On the ETH/UCY datasets, we
+compare our approach with current state-of-the-art meth-
+ods â Trajectron++ [45], PECNet [34], STAR [55], and
+Transformer-TF [12] â as well as common baselines â
+SGAN [15] and Sophie [44]. The performance of all meth-
+ods is summarized in Table 1, where we use ofï¬cially-
+reported results for the baselines. We can observe that
+our AgentFormer achieves very competitive performance
+and attains the best FDE. Particularly, our approach sig-
+niï¬cantly outperforms prior Transformer-based methods,
+Transformer-TF [12] and STAR [55]. As FDE measures the
+ï¬nal displacement error of predicted trajectories, it places
+more emphasis on a methodâs ability to predict distant fu-
+tures than ADE. We believe the strong performance of our
+method in FDE can be attributed to the design of Agent-
+Former, which can model long-range trajectory dependen-
+cies effectively by directly attending to features of any agent
+at any previous timestep when inferring an agentâs future
+position.
+
+Compared to ETH/UCY, the trajectories in nuScenes are
+much longer as we evaluate with a longer time horizon
+(6s) and vehicles are much faster than pedestrians. Thus,
+nuScenes presents a different challenge for multi-agent pre-
+diction methods. On the nuScenes dataset, we evaluate our
+approach against state-of-the-art vehicle prediction meth-
+ods â Trajectron++ [45], MTP [8], MultiPath [5], Cover-
+
+Model
+
+ADE20/FDE20 â (m), K = 20 Samples
+
+Social
+
+Temporal
+
+ETH
+
+Hotel
+
+Univ
+
+Zara1
+
+Zara2
+
+Average
+
+GCN
+GCN
+TF
+TF
+
+LSTM
+TF
+LSTM
+TF
+
+0.57/0.90 0.20/0.34 0.29/0.52 0.24/0.44 0.23/0.42 0.31/0.52
+0.56/0.93 0.15/0.28 0.28/0.51 0.24/0.45 0.19/0.35 0.28/0.50
+0.55/0.91 0.18/0.31 0.28/0.50 0.24/0.44 0.21/0.39 0.29/0.51
+0.50/0.82 0.15/0.27 0.28/0.52 0.22/0.42 0.16/0.31 0.26/0.47
+
+Joint Socio-Temporal
+
+ETH
+
+Hotel
+
+Univ
+
+Zara1
+
+Zara2
+
+Average
+
+0.49/0.77 0.15/0.25 0.29/0.52 0.22/0.41 0.18/0.33 0.27/0.46
+Ours w/o joint latent
+Ours w/o AA attention
+0.49/0.80 0.15/0.25 0.31/0.54 0.23/0.41 0.19/0.34 0.27/0.47
+Ours w/ agent encoding 0.48/0.78 0.14/0.23 0.32/0.55 0.22/0.40 0.19/0.34 0.27/0.46
+0.45/0.75 0.14/0.22 0.25/0.45 0.18/0.30 0.14/0.24 0.23/0.39
+Ours (AgentFormer)
+
+Table 3. Ablation studies on the ETH/UCY datasets. âTFâ means
+Transformer and âAA Attentionâ denotes agent-aware attention.
+
+Model
+
+K = 5 Samples
+
+K = 10 Samples
+
+Social
+
+Temporal ADE5 â FDE5 â ADE10 â FDE10 â
+
+GCN
+GCN
+TF
+TF
+
+LSTM
+TF
+LSTM
+TF
+
+2.17
+2.03
+2.12
+1.99
+
+4.42
+4.36
+4.48
+4.12
+
+1.57
+1.52
+1.69
+1.54
+
+3.09
+2.95
+3.31
+3.07
+
+Joint Socio-Temporal
+
+ADE5 â FDE5 â ADE10 â FDE10 â
+
+Ours w/o semantic map
+Ours w/o joint latent
+Ours w/o AA attention
+Ours w/ agent encoding
+Ours (AgentFormer)
+
+1.97
+1.95
+2.02
+2.01
+1.86
+
+4.21
+3.98
+4.29
+4.28
+3.89
+
+1.58
+1.50
+1.55
+1.63
+1.45
+
+3.14
+2.92
+2.91
+3.11
+2.86
+
+Table 4. Ablation studies on the nuScenes dataset. âTFâ means
+Transformer and âAA Attentionâ denotes agent-aware attention.
+
+Net [39], DSF-AF [33], and DLow-AF [59]. We report the
+performance of all methods in Table 2, where the results of
+Trajectron++ are taken from the nuScenes prediction chal-
+lenge leaderboard, the performance of DLow-AF is from
+[33], and we also use the ofï¬cially-reported results for the
+other baselines. The FDE of some baselines is not available
+since the number has not been reported. We can see that
+our approach, AgentFormer, outperforms the baselines, es-
+pecially the strong model Trajectron++ [45], consistently in
+ADE and FDE for both 5 and 10 sample settings.
+
+Ablation Studies. We further perform extensive ablation
+studies on ETH/UCY and nuScenes to investigate the con-
+tribution of key technical components in our method. The
+ï¬rst ablation study explores variants of our method that
+use separate social and temporal models to replace our
+joint socio-temporal model, AgentFormer, in our multi-
+agent prediction framework. We choose GCN [23] or Trans-
+former (TF) as the social model, and LSTM or Transformer
+as the temporal model. In total, there are 4 (2 Ã 2) combina-
+tions of social and temporal models. The ablation results are
+summarized in the ï¬rst group of Table 3 and 4. It is evident
+that all combinations of separate social and temporal mod-
+els lead to inferior performance compared to our method
+which models the social and temporal dimensions jointly.
+
+The second ablation study investigates the role of (1)
+joint latent intent modeling, (2) agent-aware attention, and
+(3) semantic maps, and we denote the corresponding vari-
+
+Figure 4. (a,c,d) Three samples of forecasted multi-agent futures
+(green) via our method, which exhibit social behaviors like follow-
+ing (A3 & A4) and collision avoidance (A1 & A2 in (a), A2 & A3
+in (c)). (b) Attention visualization for sample 1. When predicting
+the target (red), the model pays more attention (darker color) to
+key timesteps (turning point) of adjacent agents and spreads out
+attention to the targetâs past timesteps to reason about dynamics.
+
+ants as âw/o joint latentâ, âw/o AA attentionâ, and âw/o se-
+mantic mapâ. We further test a variant âw/ agent encodingâ
+where we replace agent-aware attention with agent encod-
+ing. The results are reported in the second group of Table 3
+and 4. We can see that all variants lead to considerably
+worse performance compared to our full method. In par-
+ticular, the variants âw/o AA attentionâ and âw/ agent en-
+codingâ result in pronounced performance drop, which in-
+dicates that agent-aware attention is essential in our method
+and alternatives like agent encoding are not effective.
+
+Trajectory Visualization. Fig. 4 (a,c,d) shows three sam-
+ples of forecasted multi-agent futures of the same scene
+via our method. We can see that the samples correspond
+to different modes of socially-aware and non-colliding tra-
+jectories, and exhibit behaviors like following (A3 & A4)
+and collision avoidance (A1 & A2 in (a), A2 & A3 in (c)).
+Fig. 4 (b) visualizes the attention of sample 1 and shows
+that, when predicting the target (red), the model pays more
+attention to key timesteps (turning point) of adjacent agents
+and also spreads out attention to the targetâs past timesteps
+to reason about the dynamics and curvature of its trajectory.
+More attention visualization can be found in Appendix C.
+
+5. Conclusion
+
+In this paper, we proposed a new Transformer, Agent-
+Former, that can simultaneously model the time and social
+dimensions of multi-agent trajectories using a sequence rep-
+resentation. To preserve agent identities in the sequence,
+we proposed a novel agent-aware attention mechanism that
+can attend to features of the same agent differently than
+features of other agents. Based on AgentFormer, we pre-
+sented a stochastic multi-agent trajectory prediction frame-
+work that jointly models the latent intent of all agents to pro-
+duce diverse and socially-aware multi-agent future trajecto-
+ries. Experiments demonstrated that our method substan-
+
+0.00.20.00.2Target (Being Predicted)Attention to PastAttention to FuturePast TrajectoryPredicted Future TrajectoryGT Future Trajectory(a) Sample 1(b) Sample 1 (Attention)(c) Sample 2(d) Sample 3A1A2A3A4A5A1A2A3A4A5A1A2A3A4A5A1A2A3A4A5tially improved state-of-the-art performance on challenging
+pedestrian and autonomous driving datasets.
+
+Acknowledgments. This work is supported by the Qual-
+comm Innovation Fellowship.
+
+References
+
+[1] Alexandre Alahi, Kratarth Goel, Vignesh Ramanathan,
+Alexandre Robicquet, Li Fei-Fei, and Silvio Savarese. So-
+cial lstm: Human trajectory prediction in crowded spaces. In
+Proceedings of the IEEE conference on computer vision and
+pattern recognition, pages 961â971, 2016. 2, 3
+
+[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+Neural machine translation by jointly learning to align and
+translate. arXiv preprint arXiv:1409.0473, 2014. 3
+
+[3] Holger Caesar, Varun Bankiti, Alex H Lang, Sourabh Vora,
+Venice Erin Liong, Qiang Xu, Anush Krishnan, Yu Pan, Gi-
+ancarlo Baldan, and Oscar Beijbom. nuscenes: A multi-
+In Proceedings of
+modal dataset for autonomous driving.
+the IEEE/CVF conference on computer vision and pattern
+recognition, pages 11621â11631, 2020. 2, 7
+
+[4] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas
+Usunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-
+end object detection with transformers. In European Confer-
+ence on Computer Vision, pages 213â229. Springer, 2020.
+3
+
+[5] Yuning Chai, Benjamin Sapp, Mayank Bansal, and Dragomir
+Anguelov. Multipath: Multiple probabilistic anchor trajec-
+tory hypotheses for behavior prediction. In Conference on
+Robot Learning, pages 86â99. PMLR, 2020. 7
+
+[6] Kyunghyun Cho, Bart Van MerriÂ¨enboer, Caglar Gulcehre,
+Dzmitry Bahdanau, Fethi Bougares, Holger Schwenk, and
+Yoshua Bengio. Learning phrase representations using rnn
+encoder-decoder for statistical machine translation. arXiv
+preprint arXiv:1406.1078, 2014. 3
+
+[7] Junyoung Chung, Caglar Gulcehre, KyungHyun Cho, and
+Yoshua Bengio. Empirical evaluation of gated recurrent
+arXiv preprint
+neural networks on sequence modeling.
+arXiv:1412.3555, 2014. 2, 3
+
+[8] Henggang Cui, Vladan Radosavljevic, Fang-Chieh Chou,
+Tsung-Han Lin, Thi Nguyen, Tzu-Kuo Huang, Jeff Schnei-
+der, and Nemanja Djuric. Multimodal trajectory predictions
+for autonomous driving using deep convolutional networks.
+In 2019 International Conference on Robotics and Automa-
+tion (ICRA), pages 2090â2096. IEEE, 2019. 7
+
+[9] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina
+Pre-training of deep bidirectional
+arXiv preprint
+
+Toutanova.
+transformers for language understanding.
+arXiv:1810.04805, 2018. 3
+
+Bert:
+
+[10] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,
+Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,
+Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-
+vain Gelly, et al. An image is worth 16x16 words: Trans-
+arXiv preprint
+formers for image recognition at scale.
+arXiv:2010.11929, 2020. 3
+
+[11] Katerina Fragkiadaki, Sergey Levine, Panna Felsen, and Ji-
+tendra Malik. Recurrent network models for human dynam-
+
+ics. In Proceedings of the IEEE International Conference on
+Computer Vision, pages 4346â4354, 2015. 3
+
+[12] Francesco Giuliari, Irtiza Hasan, Marco Cristani, and Fabio
+Galasso. Transformer networks for trajectory forecasting.
+ICPR, 2020. 3, 7
+
+[13] Ian J Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing
+Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and
+Yoshua Bengio. Generative adversarial networks. arXiv
+preprint arXiv:1406.2661, 2014. 3
+
+[14] Jiaqi Guan, Ye Yuan, Kris M Kitani, and Nicholas Rhine-
+hart. Generative hybrid representations for activity forecast-
+ing with no-regret learning. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition,
+pages 173â182, 2020. 3
+
+[15] Agrim Gupta, Justin Johnson, Li Fei-Fei, Silvio Savarese,
+and Alexandre Alahi. Social gan: Socially acceptable tra-
+jectories with generative adversarial networks. In Proceed-
+ings of the IEEE Conference on Computer Vision and Pattern
+Recognition, pages 2255â2264, 2018. 2, 3, 7
+
+[16] Dirk Helbing and Peter Molnar. Social force model for
+pedestrian dynamics. Physical review E, 51(5):4282, 1995.
+3
+
+[17] Sepp Hochreiter and JÂ¨urgen Schmidhuber. Long short-term
+
+memory. Neural computation, 9(8):1735â1780, 1997. 2, 3
+
+[18] Yingfan Huang, Huikun Bi, Zhaoxin Li, Tianlu Mao, and
+Zhaoqi Wang. Stgat: Modeling spatial-temporal interac-
+tions for human trajectory prediction. In Proceedings of the
+IEEE/CVF International Conference on Computer Vision,
+pages 6272â6281, 2019. 2, 3
+
+[19] Boris Ivanovic and Marco Pavone. The trajectron: Proba-
+bilistic multi-agent trajectory modeling with dynamic spa-
+tiotemporal graphs. In Proceedings of the IEEE/CVF Inter-
+national Conference on Computer Vision, pages 2375â2384,
+2019. 2, 3
+
+[20] Diederik P Kingma and Jimmy Ba. Adam: A method for
+arXiv preprint arXiv:1412.6980,
+
+stochastic optimization.
+2014. 7, 12
+
+[21] Diederik P Kingma and Max Welling. Auto-encoding varia-
+tional bayes. arXiv preprint arXiv:1312.6114, 2013. 2, 3
+[22] Thomas Kipf, Ethan Fetaya, Kuan-Chieh Wang, Max
+Welling, and Richard Zemel. Neural relational inference for
+interacting systems. In International Conference on Machine
+Learning, pages 2688â2697. PMLR, 2018. 3
+
+[23] Thomas N Kipf and Max Welling. Semi-supervised classi-
+ï¬cation with graph convolutional networks. arXiv preprint
+arXiv:1609.02907, 2016. 2, 3, 8, 12
+
+[24] Muhammed Kocabas, Nikos Athanasiou, and Michael J
+Black. Vibe: Video inference for human body pose and
+In Proceedings of the IEEE/CVF Con-
+shape estimation.
+ference on Computer Vision and Pattern Recognition, pages
+5253â5263, 2020. 2
+
+[25] Vineet Kosaraju, Amir Sadeghian, Roberto MartÂ´Ä±n-MartÂ´Ä±n,
+Ian D Reid, Hamid Rezatoï¬ghi, and Silvio Savarese. Social-
+bigat: multimodal trajectory forecasting using bicycle-gan
+and graph attention networks. In Advances in Neural Infor-
+mation Processing Systems 2019. Neural Information Pro-
+cessing Systems (NIPS), 2019. 2, 3
+
+[26] Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin
+Gimpel, Piyush Sharma, and Radu Soricut. Albert: A lite
+bert for self-supervised learning of language representations.
+arXiv preprint arXiv:1909.11942, 2019. 3
+
+[27] Namhoon Lee, Wongun Choi, Paul Vernaza, Christopher B
+Choy, Philip HS Torr, and Manmohan Chandraker. Desire:
+Distant future prediction in dynamic scenes with interacting
+agents. In Proceedings of the IEEE Conference on Computer
+Vision and Pattern Recognition, pages 336â345, 2017. 3
+[28] Alon Lerner, Yiorgos Chrysanthou, and Dani Lischinski.
+In Computer graphics forum, vol-
+
+Crowds by example.
+ume 26, pages 655â664. Wiley Online Library, 2007. 2, 7
+
+[29] Jiachen Li, Fan Yang, Masayoshi Tomizuka, and Chiho
+Choi. Evolvegraph: Multi-agent trajectory prediction with
+dynamic relational reasoning. Advances in Neural Informa-
+tion Processing Systems, 33, 2020. 3
+
+[30] Lingyun Luke Li, Bin Yang, Ming Liang, Wenyuan Zeng,
+Mengye Ren, Sean Segal, and Raquel Urtasun. End-to-end
+contextual perception and prediction with interaction trans-
+former. arXiv preprint arXiv:2008.05927, 2020. 3
+
+[31] Yujia Li, Daniel Tarlow, Marc Brockschmidt, and Richard
+arXiv
+
+Zemel. Gated graph sequence neural networks.
+preprint arXiv:1511.05493, 2015. 3
+
+[32] Minh-Thang Luong, Hieu Pham, and Christopher D Man-
+ning. Effective approaches to attention-based neural machine
+translation. arXiv preprint arXiv:1508.04025, 2015. 2
+[33] Yecheng Jason Ma, Jeevana Priya Inala, Dinesh Jayara-
+man, and Osbert Bastani. Diverse sampling for normal-
+arXiv preprint
+izing ï¬ow based trajectory forecasting.
+arXiv:2011.15084, 2020. 7, 8
+
+[34] Karttikeya Mangalam, Harshayu Girase, Shreyas Agarwal,
+Kuan-Hui Lee, Ehsan Adeli, Jitendra Malik, and Adrien
+Gaidon. It is not the journey but the destination: Endpoint
+conditioned trajectory prediction. In European Conference
+on Computer Vision, pages 759â776. Springer, 2020. 7
+[35] Yajie Miao, Mohammad Gowayyed, and Florian Metze.
+Eesen: End-to-end speech recognition using deep rnn mod-
+In 2015 IEEE Workshop on
+els and wfst-based decoding.
+Automatic Speech Recognition and Understanding (ASRU),
+pages 167â174. IEEE, 2015. 2
+
+[36] Jeremy Morton, Tim A Wheeler, and Mykel J Kochenderfer.
+Analysis of recurrent neural networks for probabilistic mod-
+IEEE Transactions on Intelligent
+eling of driver behavior.
+Transportation Systems, 18(5):1289â1298, 2016. 3
+
+[37] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer,
+James Bradbury, Gregory Chanan, Trevor Killeen, Zeming
+Lin, Natalia Gimelshein, Luca Antiga, et al. Pytorch: An im-
+perative style, high-performance deep learning library. arXiv
+preprint arXiv:1912.01703, 2019. 13
+
+[38] Stefano Pellegrini, Andreas Ess, Konrad Schindler, and Luc
+Van Gool. Youâll never walk alone: Modeling social be-
+In 2009 IEEE 12th Inter-
+havior for multi-target tracking.
+national Conference on Computer Vision, pages 261â268.
+IEEE, 2009. 2, 7
+
+[39] Tung Phan-Minh, Elena Corina Grigore, Freddy A Boulton,
+Oscar Beijbom, and Eric M Wolff. Covernet: Multimodal
+behavior prediction using trajectory sets. In Proceedings of
+
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 14074â14083, 2020. 7, 8
+
+[40] Danilo Rezende and Shakir Mohamed. Variational inference
+with normalizing ï¬ows. In International Conference on Ma-
+chine Learning, pages 1530â1538. PMLR, 2015. 3
+
+[41] Nicholas Rhinehart, Kris M Kitani, and Paul Vernaza. R2p2:
+A reparameterized pushforward policy for diverse, precise
+generative path forecasting. In Proceedings of the European
+Conference on Computer Vision (ECCV), pages 772â788,
+2018. 3
+
+[42] Nicholas Rhinehart, Rowan McAllister, Kris Kitani, and
+Sergey Levine. Precog: Prediction conditioned on goals in
+visual multi-agent settings. In Proceedings of the IEEE/CVF
+International Conference on Computer Vision, pages 2821â
+2830, 2019. 3
+
+[43] Andrey Rudenko, Luigi Palmieri, Michael Herman, Kris M
+Kitani, Dariu M Gavrila, and Kai O Arras. Human motion
+trajectory prediction: A survey. The International Journal of
+Robotics Research, 39(8):895â935, 2020. 3
+
+[44] Amir Sadeghian, Vineet Kosaraju, Ali Sadeghian, Noriaki
+Hirose, Hamid Rezatoï¬ghi, and Silvio Savarese. Sophie:
+An attentive gan for predicting paths compliant to social and
+physical constraints. In Proceedings of the IEEE/CVF Con-
+ference on Computer Vision and Pattern Recognition, pages
+1349â1358, 2019. 3, 7
+
+[45] Tim Salzmann, Boris Ivanovic, Punarjay Chakravarty, and
+Marco Pavone. Trajectron++: Dynamically-feasible trajec-
+tory forecasting with heterogeneous data. arXiv preprint
+arXiv:2001.03093, 2020. 2, 3, 7, 8
+
+[46] Yichuan Charlie Tang and Ruslan Salakhutdinov. Multiple
+futures prediction. arXiv preprint arXiv:1911.00997, 2019.
+3
+
+[47] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-
+reit, Llion Jones, Aidan N Gomez, Åukasz Kaiser, and Illia
+Polosukhin. Attention is all you need. In Proceedings of the
+31st International Conference on Neural Information Pro-
+cessing Systems, pages 6000â6010, 2017. 2, 3, 7, 12, 13
+[48] Anirudh Vemula, Katharina Muelling, and Jean Oh. Social
+In 2018
+attention: Modeling attention in human crowds.
+IEEE international Conference on Robotics and Automation
+(ICRA), pages 4601â4607. IEEE, 2018. 3
+
+[49] Jack M Wang, David J Fleet, and Aaron Hertzmann. Gaus-
+IEEE
+sian process dynamical models for human motion.
+transactions on pattern analysis and machine intelligence,
+30(2):283â298, 2007. 3
+
+[50] Yuqing Wang, Zhaoliang Xu, Xinlong Wang, Chunhua Shen,
+Baoshan Cheng, Hao Shen, and Huaxia Xia.
+End-to-
+end video instance segmentation with transformers. arXiv
+preprint arXiv:2011.14503, 2020. 3
+
+[51] Xinshuo Weng, Ye Yuan, and Kris Kitani. Joint 3d track-
+ing and forecasting with graph neural network and diversity
+sampling. arXiv preprint arXiv:2003.07847, 2020. 3
+[52] Wayne Xiong, Lingfeng Wu, Fil Alleva, Jasha Droppo, Xue-
+dong Huang, and Andreas Stolcke. The microsoft 2017 con-
+versational speech recognition system. In 2018 IEEE inter-
+national conference on acoustics, speech and signal process-
+ing (ICASSP), pages 5934â5938. IEEE, 2018. 2
+
+[53] Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron
+Courville, Ruslan Salakhudinov, Rich Zemel, and Yoshua
+Bengio. Show, attend and tell: Neural image caption gen-
+eration with visual attention. In International conference on
+machine learning, pages 2048â2057. PMLR, 2015. 2
+[54] Zhilin Yang, Zihang Dai, Yiming Yang, Jaime Carbonell,
+Ruslan Salakhutdinov, and Quoc V Le. Xlnet: Generalized
+autoregressive pretraining for language understanding. arXiv
+preprint arXiv:1906.08237, 2019. 3
+
+[55] Cunjun Yu, Xiao Ma, Jiawei Ren, Haiyu Zhao, and Shuai Yi.
+Spatio-temporal graph transformer networks for pedestrian
+trajectory prediction. In European Conference on Computer
+Vision, pages 507â523. Springer, 2020. 3, 7
+
+[56] Ye Yuan and Kris Kitani. 3d ego-pose estimation via imita-
+tion learning. In Proceedings of the European Conference on
+Computer Vision (ECCV), pages 735â750, 2018. 2
+
+[57] Ye Yuan and Kris Kitani. Diverse trajectory forecast-
+arXiv preprint
+
+ing with determinantal point processes.
+arXiv:1907.04967, 2019. 3
+
+[58] Ye Yuan and Kris Kitani. Ego-pose estimation and forecast-
+ing as real-time pd control. In Proceedings of the IEEE/CVF
+International Conference on Computer Vision, pages 10082â
+10092, 2019. 3
+
+[59] Ye Yuan and Kris Kitani. Dlow: Diversifying latent ï¬ows for
+diverse human motion prediction. In European Conference
+on Computer Vision, pages 346â364. Springer, 2020. 6, 7, 8
+[60] Ye Yuan and Kris Kitani. Residual force control for agile
+human behavior imitation and extended motion synthesis. In
+Advances in Neural Information Processing Systems, 2020.
+3
+
+[61] Pu Zhang, Wanli Ouyang, Pengfei Zhang, Jianru Xue, and
+Sr-lstm: State reï¬nement for lstm to-
+Nanning Zheng.
+In Proceedings of
+wards pedestrian trajectory prediction.
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 12085â12094, 2019. 2
+
+[62] Tianyang Zhao, Yifei Xu, Mathew Monfort, Wongun Choi,
+Chris Baker, Yibiao Zhao, Yizhou Wang, and Ying Nian Wu.
+Multi-agent tensor fusion for contextual trajectory predic-
+tion. In Proceedings of the IEEE/CVF Conference on Com-
+puter Vision and Pattern Recognition, pages 12126â12134,
+2019. 3
+
+A. Handling a Time-Varying Number of Agents
+
+For clarity and ease of exposition, we assume the number of agents remains the same across timesteps in the main paper.
+However, this assumption is not necessary, and our method can easily generalize to use cases where the number of agents
+changes over time due to agents going out of the scene or being missed by detection. We illustrate how to apply our method
+to such cases in Fig. 5. Owning to the ï¬exible sequence representation we employ for multi-agent trajectories, we can simply
+remove the features of missing agents at each timestep from the sequence. The reason why we do not need to ï¬ll the missing
+features is that our method uses time encoding to preserve time information, unlike RNNs which have to use recurrence to
+encode timesteps and thus necessitate the features of all timesteps. As the number of agents is no longer N for all timesteps,
+the computation of the mask M in agent-aware attention needs to be changed accordingly:
+
+where Agent(Â·) extracts the agent index of a query/key and 1(Â·) denotes the indicator function. An example of mask M is
+shown in Fig. 5 (Right).
+
+Mij = 1(Agent(i) = Agent(j))
+
+(10)
+
+Figure 5. Our method can naturally handle a time-varying number of agents because of the ï¬exible sequence representation of multi-agent
+trajectories. We can simply remove the trajectory features of missing agents at each timestep from the sequence. The mask M of the
+example sequence (when applying self-attention) is computed based on the agreement of agent identity between each query and key.
+
+B. Additional Implementation Details
+
+Encoding Semantic Maps. The semantic map In â RHÃW ÃC for each agent n has spatial dimensions (100, 100) with 3
+meters between adjacent pixels. It has C = 3 channels annotating drivable areas, road dividers, and lane dividers obtained
+using the ofï¬cial nuScenes software development kit. Since the semantic map is relatively easy to parse, we use a simple
+hand-designed CNN to extract visual features vn from it. In particular, the CNN has four convolutional layers with channels
+(32, 32, 32, 1), kernel size (5, 5, 5, 3), and strides (2, 2, 1, 1). A ï¬nal linear layer is used to obtain a 32-dimensional feature.
+
+Training Trajectory Sampler. The scaling factor Ïd in the trajectory sampler loss Lsamp (Eq. (9) in the main paper) is set
+to 5 for ETH/UCY and 20 for nuScenes. We clip the maximum value of the KL term in Lsamp down to 2. We train the
+trajectory sampler using the Adam optimizer [20] for 50 epochs on ETH/UCY and nuScenes. We use an initial learning rate
+of 10â4 and halve the learning rate every 5 epochs.
+
+Ablation Study Details. We ï¬rst provide details for the ablation study of separate social and temporal models (ï¬rst group
+of Table 3 and 4 in the main paper). We ï¬rst use a temporal model (LSTM or Transformer) to extract the temporal feature of
+each agent and then apply a social model (GCN [23] or Transformer) over the temporal features to obtain social features for
+each agent; ï¬nal trajectories are decoded from the social features using either an LSTM or Transformer. For the GCN, we use
+two graph convolutional layers with channels (256, 256) and residual connections within each layer. The hidden dimensions
+of the LSTMs are set to 256. The Transformers have two layers with key/query dimensions 256 and 8 heads; the feedforward
+layer has 512 hidden units, and the dropout ratio is 0.1. We use the positional encoding [47] for the temporal Transformer
+but not for the social Transformer as agents are permutation-invariant.
+
+Next, we provide details for the ablation study of each key technical component (second group of Table 3 and 4 in the
+main paper). For the variant without joint latent modeling (âw/o joint latentâ), we append the latent codes to the trajectory
+
+TimeSocialAgent-Aware TransformerMulti-Agent TrajectoriesTrajectory FeaturesTrajectory Features in 2Dt = 1t = 2t = 3t = 4t = 5t = 1t = 2t = 3t = 4t = 5Agent 3Agent 2Agent 1MaskMissing FeatureMissing Trajectorysequence after the AgentFormer decoder instead of before the decoder. In this way, the latent code of one agent will not affect
+the future trajectory of another agent. For the variant without the agent-aware attention (âw/o AA attentionâ), we replace our
+agent-aware attention with standard scaled dot-product attention used in the original transformer [47]. For the variant with
+agent encoding (âw/ agent encodingâ), in addition to removing the agent aware attention, we also append an agent encoding
+to each element in the trajectory sequence. The agent encoding is computed similarly as the positional encoding [47] but
+uses the agent index instead of the position index. For the variant without semantic maps (âw/o semantic mapâ), we simply
+do not append any visual features extracted from the semantic maps to the trajectory sequence.
+
+Other Details. Our models are implemented using PyTorch [37] and are trained with a single NVIDIA RTX 2080 Ti and
+standard CPUs. The training time is approximately one day for each dataset in ETH/UCY and three days for nuScenes.
+
+C. Additional Attention Visualization
+
+As discussed in the main paper, our method can attend to any agent at any previous timestep when predicting the future
+position of an agent. Here, we provide more visualization of the attention in Fig. 6 to understand the behavior of our model.
+Across all the examples, it is evident that when predicting the target future position of an agent, the model pays more attention
+to the agentâs own trajectories and recent timesteps, and it also attends more to nearby agents than distant agents.
+
+Figure 6. Attention Visualization on ETH/UCY. We plot the attention to past (blue) and future (green) trajectory features of all agents
+when inferring a target position (red). Darker color means higher attention. When predicting the target future position of an agent, the
+model pays more attention to the agentâs own trajectories and recent timesteps, and it also attends more to nearby agents than distant agents.
+
+0.00.2Past Attention Range:0.00.2Future Attention Range:Target Position (Being Predicted)Attention to Past FeatureAttention to Future FeaturePast TrajectoryFuture TrajectoryD. Trajectory Sample Visualization
+
+To demonstrate the importance of agent-aware attention, we also provide qualitative comparisons of our method against
+the variant without agent-aware attention (w/o AA attention) on the nuScenes dataset in Fig. 7. We can observe that the
+future trajectory samples produced by our method using agent-aware attention cover the ground truth (GT) future trajectories
+signiï¬cantly better. Our method also produces much fewer implausible trajectories such as those going out of the road.
+
+Figure 7. Trajectory Sample Visualization on nuScenes. We compare our method against the variant without agent-aware attention (w/o
+AA attention). The future trajectory samples produced by our method using agent-aware attention cover the ground truth (GT) future
+trajectories signiï¬cantly better. Our method also produces much fewer implausible trajectories such as those going out of the road.
+
+OursOursw/o AA attentionw/o AA attentionPast TrajectoryFuture Trajectory SamplesGT Future TrajectoryRoadWalkwayUndrivable Area

@@ -1,0 +1,517 @@
+0
+2
+0
+2
+
+n
+a
+J
+
+2
+2
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+1
+v
+6
+1
+0
+8
+0
+.
+1
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+SUBJECTIVE KNOWLEDGE AND REASONING ABOUT AGENTS IN
+MULTI-AGENT SYSTEMS
+
+A PREPRINT
+
+Shikha Singh
+Department of Computer Science and Engineering
+IIT Madras
+
+Deepak Khemani
+Department of Computer Science and Engineering
+IIT Madras
+
+ABSTRACT
+
+Though a lot of work in multi agent systems is focused on reasoning about knowledge and beliefs of
+artiï¬cial agents, an explicit representation and reasoning about presence/absence of agents, especially
+in the scenarios where agents may be unaware of other agents joining in or going ofï¬ine in a
+multi-agent system, leading to partial knowledge/asymmetric knowledge of the agents is mostly
+overlooked by the MAS community. Such scenarios lay the foundations of cases where an agent can
+inï¬uence other agentsâ mental states by (mis)informing them about presence/absence of collaborators
+or adversaries. In this paper we investigate how Kripke structure based epistemic models can be
+extended to express the above notion based on an agentâs subjective knowledge and we discuss the
+challenges that come along.
+
+Keywords Subjective Knowledge Â· Epistemic Reasoning Â· Agency Â· Beliefs Â· Ontological Reasoning Â· Fictional
+Characters
+
+1
+
+Introduction
+
+The research community has successfully used Kripke models to model epistemic situations in multiagent systems. But
+it seems necessary to have a broader notion of epistemic models that may not always be deï¬ned within the interpretation
+of the structural properties of S5 or KD45 Kripke models which are used to represent uncertainty (knowledge) of
+agents in a multi-agent system. We envisage an underlying global epistemic structure in a multi agent system, wherein
+the agents may have access to (non)overlapping local regions. Hence the agents can be said to possess subjective
+knowledge about the system. Such a global epistemic structure allows us to talk about the possibility of agents being
+ignorant of the presence of other agents. While we talk of ignorance, we point out that there are two levels of it as we
+perceive it: one, where an agent is uncertain whether something is true or false but it is certain that it exists to be known,
+while the other is at the level of existence itself. We restrict ourself to modeling the ï¬rst level of ignorance only. The
+community uses KD45 Kripke structures to model beliefs instead of knowledge but these beliefs are typically about the
+world and not about the agents. The agents are assumed to be aware of all other agents.
+
+In this paper we explore ways to relax this assumption in the epistemic models based on KD45 Kripke structures.
+First we motivate the work with an example: Consider a scenario involving multi-vehicle search and rescue. Three
+(unmanned) vehicles V1, V2, V3 have been assigned to survey a sequence of points looking for survivors. Each vehicle
+knows whether there are survivors at their respective surveyed points and send updates to each other. This is how they
+are pre-scripted to collaborate. Meanwhile V1 fails (assuming a failure signal be sent out to others1), V2 and V3 have
+to complete the task on their own. The belief bases of V2 and V3 should get updated so that the strategy to accomplish
+the remaining task can be recomputed. If on the other hand, more vehicles (which were off-line or disconnected earlier)
+join the team midway or say V1 is up and running after certain interval of time, the existing ones should be able to
+âunderstand and updateâ its presence in their belief bases to recompute their strategies.
+Consider another setting where the system modeler may want the agents to work independently, as if they are in a single
+
+1we proceed with this assumption for the rest of the paper
+
+ 
+ 
+ 
+ 
+ 
+ 
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+agent setting, in the initial phases of the task and collaborate with each other at a later stage. Such scenarios can arise in
+privacy- preserving use cases. We feel that a formalism that facilitates an artiï¬cial agent to explicitly model and reason
+with its (un)certainty about other agents will be useful in the settings discussed above. We explore other avenues as well
+where the capability of reasoning about agency can be used by an agent to inï¬uence other agentsâ beliefs about agency.
+We discuss this in detail in a separate section dedicated to ontological lies2.
+
+2 Background
+
+Before discussing the scope of extending epistemic logic to support our formalism we brieï¬y look at the basics.
+Epistemic logic, the logic of knowledge and beliefs [5], is used to reason with an agentâs knowledge about the world as
+well as its own (and the othersâ) beliefs about the world, beliefs about beliefs and so on.
+Language: Let P and AG be a ï¬nite set of propositions and agents respectively. The language can be constructed using
+the formulae given below:
+
+Ï = p | Â¬Ï | (Ï â§ Ï) | KiÏ
+where p â P and i â AG. The intended interpretation of KiÏ is âagent i knows Ïâ. It is the basic system of knowledge
+known as S5 system whose axiomatization will be discussed after we have looked at its possible worlds semantics
+using Kripke models.
+
+Semantics: Kripke structures enable the agents to think in terms of possible worlds accessible to them and an agent is
+said to know or believe some state of affairs to be true, if and only if, it is the true with respect to all the possible worlds
+accessible to it.
+Deï¬nition 1 (Kripke Model). Given the set of propositions P and the set of agents AG, a Kripke model is a triple
+M = (cid:104)S, R, V (cid:105), where: S is a set of states, R is a function, such that for all i â AG, there is an accessibility relation
+deï¬ned R(i) â S Ã S, V : P â 2S is a valuation function for all p â P, the set V (p) â S is the set of states in which
+p is true.
+
+M = (cid:104)S, R, V (cid:105) is called an epistemic model and all the relations R in M are equivalence relations (which explains the
+truth and introspective properties, i.e. S5 properties, of knowledge). Epistemic formulas are interpreted on pairs (M, s),
+also called as a pointed model, and a formula Ï is true in (M, s) is written as (M, s) |= Ï. Thus, the satisfaction of
+a formula can be expressed as: (i) (M, s) |= p iff s â V (p), (ii) (M, s) |= (Ï â§ Ï) iff (M, s) |= Ï and (M, s) |= Ï,
+(iii) (M, s) |= Â¬Ï iff not (M, s) |= Ï and (iv) (M, s) |= KiÏ iff for all t such that (s, t) â R(i), (M, t) |= Ï. Here,
+(s, t) â R(i) stands for existence of accessibility relation of agent i between the two epistemic states s and t.
+
+Axiomatisation: The axioms of S5 system of knowledge include all instantiations of propositional tautologies, along
+with the following axioms:
+
+â¢ Distribution of Ki over â: Ki(Ï) â§ Ki(Ï â Ï) â Ki(Ï)
+â¢ Modus Ponens: From Ï and Ï â Ï, infer Ï
+â¢ Necessitation of Ki: From Ï, infer KiÏ
+â¢ Truth: KiÏ â Ï
+â¢ Positive Introspection: Ki(Ï) â Ki(Ki(Ï))
+â¢ Negative Introspection: Â¬Ki(Ï) â Ki(Â¬Ki(Ï))
+
+The ï¬rst three axioms present a minimal modal logic which captures valid formulas of all Kripke models. This
+axiomatisation is called modal system K. The Truth axiom, also referred as T axiom, states that whatever is known must
+be true. The last two axioms, also denoted by axiom 4 and axiom 5 respectively, express the introspective properties of
+an agent towards what it knows and what it doesnât know. The class of Kripke models with equivalence (accessibility)
+relations is denoted by S5. We would be working with beliefs, and not knowledge, where believed statements need not
+be true but must be internally consistent. Constraining the Kripke structures with only serial, transitive, and Euclidean
+relations in R, allows us to talk about the beliefs of agents [4]. In such a system, the axiom T is replaced by axiom
+D : BiÏ â Â¬BiÂ¬Ï (note the replacement of K modality with B modality) and the rest of the axioms remain the same
+with a belief modality B replacing the knowledge modality K, and therefore, it is called as KD45 system. In the rest
+of the paper, we might use the terms knowledge and belief interchangeably but we conï¬ne ourselves only to belief as
+expressed in the KD45 system.
+
+2the term âontological liesâ refers to lies about presence/absence of an agent
+
+2
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+3 Proposed Approach
+
+Informal Discussion: When we model knowledge and beliefs in a multi-agent system using a Kripke model, the
+accessibility relations are deï¬ned for each agent for each state in the model to implicitly represent that all agents know
+the other agents and it is common knowledge. The accessibility relations corresponding to an agent enables us to
+represent the respective agentâs uncertainty about the real world but not about the agency. For example: Figure 1
+illustrates a S5 Kripke structure which captures the agentsâ beliefs (or uncertainty) about the truth of proposition p.
+
+Figure 1: An S5 Kripke model
+
+It can be considered as a closed world representation (with respect to agents as well as propositions) given a ï¬nite set of
+propositions P = {p} and a ï¬nite set of agents AG = {m, f }. Let us assume that the shaded circle is the true world.
+From an external perspective we see that the model expresses that in the true state m knows that p is false, f is uncertain
+whether p is true or false but f is certain that m knows whether p. Both the agents are implicitly aware of each other.
+We donât advocate an open world setting by making either P or Ag a non-ï¬nite set but we propose that agents should be
+allowed to expand their epistemic model, as and when updates about new agents joining in or existing ones leaving
+out, by applying the relations transformation functions we discuss in the following section. In this paper, we restrict
+ourselves to introducing new agents (and not new facts) in the system. The facts that agent can know (or believe) remain
+same.
+
+3.1 Formalization
+
+Along the lines of the above deï¬nition of epistemic model, to represent an external as well as perspectival view of
+agents in a multi-agent system, we deï¬ne some additional terms and notations as discussed below:
+Local states corresponding to each agent - I : AG â 2S is a function such that for all i â AG, the set I(i) â S is the
+set of states that agent i cannot distinguish from the real state in the initial model. It closely resembles the concept of
+designated states discussed in [2]. We assume that the system is initiated with a set of local states for each agent and we
+investigate how the set I(i) corresponding to each agent i evolves as new updates present themselves.
+i-reachable states: These are the states which can be reached by an i-edge from any state. We observe that I(i) and its
+1-hop neighborhood in the Kripke structure deï¬nes what i believes in from a subjective perspective.
+
+Then there are j edges emanating from states in this region that deï¬nes iâs perception of jâs beliefs.
+
+To express an agentâs uncertainty about the presence of another agent we consider the local states corresponding to the
+respective agent and their neighborhood and deï¬ne two modal operators, Pi read as Possibly_an_agent_for_i and Ci
+read as Certainly_an_agent_for_i.
+
+The full set of formulas can be given by the following BNF:
+
+Ï = p | Â¬Ï | (Ï â§ Ï) | KiÏ| Cij| Pij
+
+where p â P and i, j â AG
+
+The interpretation of these modalities is deï¬ned as follows:
+
+â¢ (M, s) |= Cij iff for all t such that (s, t) â R(i), there exists atleast one u such that (t, u) â R(j).
+â¢ M |= Cij iff for all s â I(i), (M, s) |= Cij.
+
+We treat Pij as dual of Cij such that they mimic the âdiamondâ and the âboxâ operator respectively.
+
+We proceed with the possible worlds semantics of epistemic logic for the language deï¬ned above. As in epistemic logic
+the possible worlds represent an agentâs uncertainty in terms of possible epistemic alternatives, we extend it further to
+reason with an agentâs uncertainty about the presence of other agents in terms the agentsâ accessibility to the shared
+epistemic alternatives.
+
+3
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+Figure 2: A KD45 Kripke model
+
+We expand on this concept with the help of the following example:
+
+Consider a KD45 Kripke model,
+in the ï¬gure below, deï¬ned over some ï¬nite set of propositions, a
+ï¬nite set of agents AG = {m, f, g} and a Kripke model M = (cid:104)S, R, V (cid:105) where S = {1, 2, 3},
+R(m) = {(1, 1), (2, 2), (2, 1), (1, 2), (3, 3)}, R(f ) = {(1, 3), (2, 3), (3, 3)}, R(g) = {(3, 3)}. Let the local
+states for each agents be given as: I(m) = {1, 2}, I(f ) = {3} and I(g) = {3}.
+
+Let (M, 1) |= p, (M, 2) |= Â¬p and (M, 3) |= p. The epistemic formulas expressed on this model are: Â¬Bmp,
+BmBf p, Bf Bmp, Bf Bgp etc. The ontological formulas (as we have called them so) expressed on this model are:
+Â¬Pmg, BmÂ¬Pmg, BmBf Cf g, Bf Cmg etc.
+
+The interpretation of the above model is that agent m, which can not distinguish between the two epistemic states: 1 and
+2 (represented by its local states), is certain of presence of only one agent f and is itself oblivious of presence of another
+agent g. In both of those epistemic states it believes that the agent f considers a third and only epistemic state possible
+where it is not only certain of presence of m but also certain of presence of another agent g. Similarly, agent f is certain
+of presence of agents m as well as g and believes that all three (including itself) are aware of each other. Clearly, if the
+true state had been {3}, we as an external agent can very well look at the model and tell that m is mistaken in its beliefs
+about presence of only two agent in the system. Contrary to that, had one of {1, 2} been the true state, we see that there
+are only two agents in the system which m is aware of and it is also aware of the fact that f is not only imagining an
+epistemic situation where another agent g is present but also believes that everybody else shares the same belief.
+
+One may argue that the seriality of the relations, say R(g) in the above example, vanishes. We emphasize again that the
+KD45 properties be maintained in a localised manner. Consider R(m) = {(1, 1), (2, 2), (1, 2), (2, 1), (3, 3)} which
+stands for the accessibility relation for m. We donât use R(m) to deï¬ne mâs subjective knowledge. Instead we use its
+subset R(cid:48)(m) = {(1, 1), (2, 2), (1, 2), (2, 1)} whose domain is restricted to I(m). Similarly the subjective knowledge
+of f and g is deï¬ned using R(cid:48)(f ) = {(3, 3)} and R(cid:48)(g) = {(3, 3)} respectively. Now that we can explicitly express the
+awareness of agents about other agents, in the following section we introduce operators that can inï¬uence the same.
+
+3.2 Ontological updates
+
+In literature, update models from Dynamic Epistemic Logic [8] have been preferably used to formalize reasoning about
+information change in Kripke models. Another popular approach is using agent language mA+ [1]. While we agree
+that the former can be used for modeling epistemic and ontic actions in our proposed setting too, it cannot be used
+to model the dynamics in agency that we discussed. The latter approach, agent language mA+ is known to be used
+with Finitary-S5 theories [7] and therefore can not be used with arbitrary Kripke structures. To suit our purpose we
+describe two model transformation operators. We give their semantics using relation changing transition functions
+which transform one epistemic model to another.
+
+â¢ Update_ofï¬ine(j): The updated model reï¬ects that agent j has (permanently) gone ofï¬ine and other agents
+have updated their awareness about its absence and their beliefs about its beliefs. The resultant model, M (cid:48),
+can be constructed from the initial model M , in the following manner:
+
+â Initialize the resultant model by creating a replica of the initial model: M (cid:48) = M
+â The set of agents with respect to the resultant model: AG(cid:48) is set to (AG â j)
+â The local states I(i) of all agents i â AG(cid:48) remains the same.
+â Remove R(j) such that for all i â AG, Â¬Pij holds: M (cid:48) = M (cid:48) (cid:9)r R(j)
+
+4
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+Note that we use (cid:9)r operator to delete the speciï¬ed relation from the model. Removal of edges may leave M (cid:48)
+disconnected. The regions that are not reachable from the local states of the agents are discarded.
+
+Figure 3: An example scenario to demonstrate update_ofï¬ine(v1)
+
+Example: Consider a scenario in Figure 3a. There are three unmanned vehicles {v1, v2, v3}. The Kripke model
+illustrated in the ï¬gure3 shows the eight possible worlds (each labeled node having some assignment over a ï¬nite set of
+propositions by the valuation function). The shaded node corresponds to the true world and the edges labeled with
+the agents represent the uncertainty of the respective agents. The dashed rectangles represent their local states. In
+this scenario, v1 leaves and the updated model is shown is Figure 3b. We observe that as v1 leaves, the epistemic
+possibilities that were present due to uncertainty of v1, gets disconnected and are of no relevance now. This component
+can be discarded.
+
+â¢ Update_online(j, I(j)): The updated model reï¬ects that agent j has joined the system. Other agents become
+aware of its presence. Besides that the earlier beliefs of the rest of the agents should remain intact. The model
+is updated with the local states of j(as speciï¬ed by the external modeler). The resultant model, M (cid:48), can be
+constructed from the initial model M , in the following manner:
+
+â Initialize the resultant model by creating a replica of the initial model: M (cid:48) = M
+â The local states I(i) of all agents i â AG remains the same.
+â The set of agents with respect to the resultant model: AG(cid:48) is set to (AG + j)
+â Mark the local states (as speciï¬ed in the update) for j: I(j) in M (cid:48).
+â Add an equivalence relation R(j) for j on S, the set of all possible states: M (cid:48) = M âr R(j) . Now, for
+
+all i â AG, Cij holds true with respect to their respective I(i)s.
+Note that we use âr operator to add the speciï¬ed relation to the model.
+
+As long as the agent updates are truthful and commonly known among all the agents, the model size (in terms of
+number of possible worlds) remain same and number of edges increases (or decreases) because we assume that the new
+agent cannot distinguish one epistemic state from others. The other agents too are aware of its ignorance. In planning
+based scenario, the beliefs of new agent (and hence that of the others too) can be further reï¬ned using information
+updates/requests in a goal driven manner. If we try to lift this assumption, say j joins the group with some beliefs then
+the updated model grows to accommodate the different beliefs of different agents about jâs beliefs. For instance, each
+existing agent may falsely believe that the new agent shares the same view of the world that it itself has. If all the agents
+are biased to believe so, then the model expands atleast |AG| times.
+
+The updates that we discussed above bring common information for all the existing agents and the resultant model
+aligns with the true state of the world that the agents may still be uncertain about or yet to discover. But as it is the case
+with untruthful epistemic updates, that can be exploited to synthesize lies and deceptive plans, ontological updates too
+can be exploited to synthesize ontological lies. We give a brief account of ontological lies in the following section.
+
+3Note: This structure resembles the 3-muddy children puzzle but we do not model the same problem here. Consider it as an
+
+epistemic situation that shares similar neighborhood.
+
+5
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+4 Epistemic lies versus Ontological lies
+
+If we take the view of subjective epistemic reasoning, we can deï¬ne lying as follows. Lying is the communication
+of something that one does not believe in, usually done with the intention of misleading someone. We observe that
+there are two very different kinds of lies, requiring different kinds of cognitive machinery. The simpler kind of lie is
+epistemological. Here the agent merely makes a statement that could have been true, but is not in fact. For example,
+a bridge player advertising a card she does not hold, or a person telling a habitual borrower that he has no money at
+hand. The second kind of lie is ontological in which a new category is created; imagined and invented. For example,
+children are often told that a tooth fairy will come and take away a broken tooth. Though epistemological lies have been
+investigated by epistemic planning community, we, to the best of our beliefs, are not aware of such pursuits vis-a-vis
+ontological lies by artiï¬cial agents.
+
+Our pursuit of studying ontological lies derives motivation from The Gruffalo [3], written by Julia Donaldson it is a
+childrenâs book featuring the deceit carried out by a clever mouse, the leading character of the story, to safeguard itself
+from the dangerous predators (a fox, an owl, a snake and ï¬nally, a gruffalo, a creature that the mouse thought it was
+imagining) in a forest. The interesting course of events that happens in the story is given below:4
+The mouse, while taking a walk in a forest, runs into, one by one in sequence, a fox, an owl, and a snake. Each of these
+animals, clearly intending to eat the mouse, invite him back to their home for a meal. The cunning mouse declines
+each offer. To dissuade further advances, he tells each animal that he has plans to dine with his friend, a gruffalo, a
+monster-like hybrid that is half grizzly bear and half buffalo, whose favorite food happens to be the animal in question,
+and describes to each the relevant dangerous features of the gruffaloâs monstrous anatomy. Frightened that the gruffalo
+might eat it, each animal ï¬ees. Knowing the gruffalo to be ï¬ctional, the mouse gloats thus: Silly old fox/owl/snake,
+doesnât he know? thereâs no such thing as a gruffalo! After getting rid of the last animal, the mouse is shocked to
+encounter a real gruffalo - with all the frightening features the mouse thought that he was inventing. The gruffalo
+threatens to eat the mouse, but again the mouse resorts to imaginative deception. He tells the gruffalo that he, the
+mouse, is the scariest animal in the forest. Laughing, the gruffalo agrees to follow the mouse as he demonstrates how
+feared he is. The two walk through the forest, encountering in turn the animals that had earlier menaced the mouse.
+Each is terriï¬ed by the sight of the pair and runs off - and each time the gruffalo becomes more convinced about the
+fear that the mouse apparently evokes in everyone. Observing the success of his deception, the mouse then threat-
+ens to make a meal out of the gruffalo, which ï¬ees in haste, leaving the mouse to enjoy its vegetarian diet of a nut in peace.
+
+As studied before [6] the ï¬rst lie the mouse tells is of the latter type, while the second one is of the former type.
+Ontological lies perhaps require more sophisticated cognitive machinery. Certainly a more imaginative mind. We
+analyse ontological lies using the setting discussed above.
+
+4.1 Ontological lies: untruthful agent updates
+
+Let (M, I(ag)) and (M (cid:48), I (cid:48)(ag)) denote the initial and the resultant system respectively. Note that the agent update
+operators either add or remove accessibility relations and as a result, new epistemic states are also added to or removed
+from the initial model M = (cid:104)S, R, V (cid:105) get the resultant model M (cid:48) = (cid:104)S(cid:48), R(cid:48), V (cid:48)(cid:105). For ease of further discussion, we
+use M (S) to denote the set of possible worlds in model M , M (R) to denote all the relations in model, M (V ) to refer
+to the valuation function used and I(M, ag) to refer to the set of local states of agent ag in M .
+
+4.1.1 Untruthful Update_ofï¬ine(j) by agent i:
+
+The updated model reï¬ects that agent j has (permanently) gone ofï¬ine for the misinformed agents but not for i and j,
+that is, for all k â (AG \ {i, j}), Â¬Pkj holds where as for k â {i, j}, Ckj holds. The resultant model is constructed in
+the following manner:
+
+â¢ Given the initial model M , the resultant model M (cid:48) is initialized by creating two replicas of M, say M act
+and M shif t. M act corresponds to the true scenario whereas M shif t corresponds to epistemic state of the
+misinformed agents. We use sact, sshif t to denote the states in M act and M shif t corresponding to the state s
+in the initial model M . Update the domain of the resultant model S(cid:48) = M act(S) âª M shif t(S).
+
+â¢ Remove the accessibility relations of the agent j, which is falsely announced to be ofï¬ine, from the region
+that reï¬ects the epistemic region of misinformed agents: M shif t = M shif t (cid:9)r Rshif t(j) where Rshif t(j) =
+{(sshif t, tshif t) |(s, t) â R(j)}.
+
+4https : //en.wikipedia.org/wiki/T he_Gruf f alo
+
+6
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+â¢ Remove accessibility of misinformed agents from the epistemic region that reï¬ects the true state of affairs.
+
+M act = M act (cid:9)r Ract(k) where Ract(k) = {(sact, tact)| (s, t) â R(k)} for all k â (AG \ {i, j}).
+
+â¢ Update the accessibility relations of all the agents in the resultant model: ï¬rstly, for all k â AG, R(cid:48)(k) =
+Ract(k) âr Rshif t(k). Then add edges to the accessibility relations of misinformed agents such that their
+reachability goes from the epistemic region that reï¬ects the true state of affairs to the region that reï¬ects
+the epistemic region of misinformed agents. It is done in the following manner: for all k â AG \ {i, j},
+R(cid:48)(k) = R(cid:48)(k) âr Raddlinks where Raddlinks = {(sact, tshif t)| (s, t) â R(k)}
+
+â¢ Set the local states of the informed agents (i and j), as they were in the previous model M , in the epistemic
+region represented by M act. But the local states of misinformed agents (i.e. other than i and j) can not lie
+in this region, they are shifted to the epistemic region represented by M shif t which reï¬ects the absence of j.
+Formally, in the resultant model, M (cid:48), for all k â (AG \ {i, j}), update I (cid:48)(k) = {sshif t| s â I(M, k)} and for
+all k â {i, j}, I (cid:48)(k) = {sact| s â I(M, k)}.
+
+â¢ The above steps may leave the updated structure disconnected. Discard the components that are not reachable
+from the local states of the informed agents. The remaining structure is denoted as M (cid:48) and the set S(cid:48) and R(cid:48)
+are updated with M (cid:48)(S) and M (cid:48)(R) respectively.
+
+4.1.2 Untruthful Update_online(j) from by i:
+
+We deï¬ne similar relations transformation functions to update the model such that all the agents except i believe that
+agent j joins the group, that is, for all k â (AG \ {i}), Ckj holds while for i, Â¬Pij holds. The resultant model can be
+constructed in the following manner:
+
+â¢ Given the initial model M , the resultant model M (cid:48) is initialized by creating two replicas of M, say M act
+and M shif t. M act corresponds to the true scenario whereas M shif t corresponds to epistemic state of the
+misinformed agents. We use sact, sshif t to denote the states in M act and M shif t corresponding to the state s
+in the initial model M . Update the domain of the resultant model S(cid:48) = M act(S) âª M shif t(S).
+
+â¢ Add accessibility of the agent j, which is falsely announced to have come online, to the region that reï¬ects the
+
+epistemic region of misinformed agents by using Update_online(j, I(j)) on M shif t.
+
+â¢ Remove accessibility of misinformed agents from the epistemic region that reï¬ects the true state of affairs.
+
+M act = M act (cid:9)r Ract(k) where Ract(k) = {(sact, tact)| (s, t) â R(k)} for all k â (AG \ {i}).
+
+â¢ Update the accessibility relations of all the agents in the resultant model: ï¬rstly, for all k â AG, R(cid:48)(k) =
+Ract(k) âr Rshif t(k). Then, add edges to the accessibility relations of misinformed agents such that their
+reachability goes from the epistemic region that reï¬ects the true state of affairs to the region that reï¬ects
+the epistemic region of misinformed agents: for all k â (AG \ {i}), R(cid:48)(k) = R(cid:48)(k) âr Raddlinks where
+Raddlinks = {(sact, tshif t)| (s, t) â R(k)}.
+
+â¢ Set the local states of the informed agent (i), as they were in the previous model M , in the epistemic region
+represented by M act. But the local states of misinformed agents (i.e. other than i) can not lie in this region,
+they are shifted to the epistemic region represented by M shif t which reï¬ects the presence of j. Formally,
+in the resultant model, M (cid:48), for all k â (AG \ {i}), update I (cid:48)(k) = {sshif t| s â I(M, k)} and for all i,
+I (cid:48)(i) = {sact| s â I(M, i)}.
+
+â¢ The above steps may leave the updated structure disconnected. Discard the components that are not reachable
+from the local states of the informed agents. The remaining structure is denoted as M (cid:48) and the set S(cid:48) and R(cid:48)
+are updated with M (cid:48)(S) and M (cid:48)(R) respectively.
+
+Example: In Figure 4 we demonstrate the model transformation from 4a to 4b owing to the false ontological update
+by the mouse (m) about an imaginary gruffalo (g) to the fox (f) as discussed in the story earlier. The dashed rectangular
+boxes show their initial and shifted local states in 4a and 4b respectively.
+
+5 Conclusion
+
+In this paper we explore an epistemic modeling technique based on Kripke structures wherein agents may be able to
+inï¬uence other agentsâ mental states by (mis)informing them about the presence/absence of other agents. We deï¬ne two
+modal operators to express an agentâs certainty about the agency. Then we deï¬ne model transformation operators which
+we call ontological updates. We observe that the model grows faster in case of untruthful updates. We also discuss
+some examples to demonstrate the working of our approach. We feel that these ontological updates can be used in
+planning based settings in artiï¬cial intelligence. The idea of imagining ï¬ctional characters seems to be an in interesting
+
+7
+
+Subjective Knowledge and Reasoning about Agents in Multi-Agent Systems
+
+A PREPRINT
+
+Figure 4: An example scenario to demonstrate untruthful update_online(g)
+
+pursuit if studied in an epistemic planning based setting augmented with ontological updates. We hope to explore this
+avenue in the future. In this formalism, we restrict ourselves to the propositions that stand for world knowledge thereby
+excluding the agent-speciï¬c knowledge. For instance, in the muddy children puzzle each proposition stands for some
+child being muddy. It is not clear how to maintain and handle these propositions and hence beliefs about them in the
+setting where the agents may join or leave the system. These are the few issues that the discussed approach does not
+address but need to be addressed in order for the approach to be useful for solving a wide class of problems.
+
+References
+
+[1] Chitta Baral, Gregory Gelfond, Enrico Pontelli, and Tran Cao Son. An action language for multi-agent domains:
+
+Foundations. arXiv preprint arXiv:1511.01960, 2015.
+
+[2] Thomas Bolander and Mikkel Birkegaard Andersen. Epistemic planning for single-and multi-agent systems.
+
+Journal of Applied Non-Classical Logics, 21(1):9â34, 2011.
+
+[3] Julia Donaldson. The Gruffalo. Pan Macmillan, 1999.
+[4] Ronald Fagin, Joseph Y Halpern, Yoram Moses, and Moshe Vardi. Reasoning about knowledge. MIT press, 2004.
+[5] Jaakko Hintikka. Knowledge and belief: An introduction to the logic of the two notions. 1962.
+[6] Shikha Singh and Deepak Khemani. Planning to deceive in a multi-agent scenario. In Poster Collection of the
+
+Seventh Annual Conference on Advances in Cognitive Systems. ACS, 2019.
+
+[7] Tran Cao Son, Enrico Pontelli, Chitta Baral, and Gregory Gelfond. Finitary s5-theories. In European Workshop on
+
+Logics in Artiï¬cial Intelligence, pages 239â252. Springer, 2014.
+
+[8] Hans Van Ditmarsch, Wiebe van Der Hoek, and Barteld Kooi. Dynamic epistemic logic, volume 337. Springer
+
+Science & Business Media, 2007.
+
+8
+
+

@@ -1,0 +1,1082 @@
+Reciprocal Collision Avoidance for General
+Nonlinear Agents using Reinforcement Learning
+
+Hao Li1, Bowen Weng1, Abhishek Gupta1, Jia Pan2, and Wei Zhang3
+
+0
+2
+0
+2
+
+r
+a
+
+M
+3
+
+]
+
+O
+R
+.
+s
+c
+[
+
+2
+v
+7
+8
+8
+0
+1
+.
+0
+1
+9
+1
+:
+v
+i
+X
+r
+a
+
+Abstractâ Finding feasible and collision-free paths for mul-
+tiple nonlinear agents is challenging in the decentralized sce-
+narios due to limited information of other agents and complex
+dynamics constraints. In this paper, we propose a fast multi-
+agent collision avoidance algorithm for general nonlinear agents
+with continuous action space, where each agent observes only
+positions and velocities of nearby agents. To reduce online
+computation, we ï¬rst decompose the multi-agent scenario and
+solve a two agents collision avoidance problem using reinforce-
+ment learning (RL). When extending the trained policy to a
+multi-agent problem, safety is ensured by introducing linear
+constraints from the optimal reciprocal collision avoidance
+(ORCA) and the overall collision avoidance action could be
+found through a simple convex optimization. Most existing
+RL-based multi-agent collision avoidance algorithms rely on
+the direct control of agent velocities. In sharp contrasts, our
+approach is applicable to general nonlinear agents. Realis-
+tic simulations based on nonlinear bicycle agent models are
+performed with various challenging scenarios,
+indicating a
+competitive performance of the proposed method in avoiding
+collisions, congestion and deadlock with smooth trajectories.
+
+I. INTRODUCTION
+
+Multi-agent navigation is an important topic in robotics
+with many potential real-world applications such as service
+robots, logistic robotics, search and rescue, and self-driving
+car, among many others. One of the main challenges in
+designing navigation algorithms is on the design of a real-
+time control policy that satisï¬es safety requirements while
+respecting the dynamics of each agent.
+
+General multi-agent navigation algorithms can be cate-
+gorized into centralized algorithms and decentralized ones.
+The centralized algorithm considers all agents and the envi-
+ronment as a whole system [1], [2]. A centralized decision
+maker is in charge of the monitoring and control of all
+the agents in the system. In practice, such a centralized
+approach may encounter many issues. First, this method
+heavily relies on fast communication and computation, hence
+is very sensitive to signal delay, which is common in real-
+world implementations. Second, whenever the central agent
+fails, all the agents would lose control and may lead to
+collisions. Finally,
+the centralized algorithm often scales
+poorly to large-scale systems.
+
+Contrary to centralized approaches, decentralized algo-
+rithms allow each agent to make decision independently by
+
+1Hao Li, Bowen Weng, Abhishek Gupta are with the Department of
+Electrical and Computer Engineering, The Ohio State University, Columbus,
+OH, USA. (e-mail: {li.7857, weng.172, gupta.706}@osu.edu)
+
+2Jia Pan is with the Department of Computer Science, The University of
+
+Hong Kong, Hong Kong. (email: panjia1983@gmail.com)
+
+3Wei Zhang is with SUSTech Institute of Robotics, Southern University
+
+of Science and Technology, China. (email: zhangw3@sustech.edu.cn)
+
+taking into account the limited information from sensors and
+communications. Similar to many studies in the literature, in
+this paper, we consider the realistic case where there is no
+real-time communication among agents. This directly leads
+to one obvious challenge, namely, prediction of the intents
+and actions of other agents. One of the most popular methods
+to handle this problem is the so-called optimal reciprocal
+collision avoidance (ORCA) [3]. Instead of explicitly making
+predictions regarding other agents, ORCA provides a safety
+guarantee by computing linear velocity constraints for each
+agent. It is based on the idea of velocity obstacles (VO) [4],
+[5]. By introducing a pair of linear constraints in the velocity
+space for each pair of nearby agents, the ORCA method
+transforms the collision avoidance problem into a linear
+programming problem that can be solved efï¬ciently. Notice
+that the original ORCA method assumes the agent model is
+a simple single integrator, where the velocity of agents can
+be directly controlled and changed instantaneously, which
+may not be realistic for real robots. The ORCA method
+has been extended to more general cases, including second-
+order system with acceleration control [6], dynamics with
+continuity constraints [7], differential drive robots [8], car-
+like robots [9] and heterogeneous system of various types
+of agent dynamics [10]. Most of such works are designed
+to certain speciï¬c dynamics and controllers. They transfer
+the control of agents to the velocity space by using ï¬xed
+tracking controllers, which take velocity reference as input.
+Although the method in [10] can be applied to general
+nonlinear systems, it assumes that each agent could observe
+actions of the other agents, which conï¬nes the application to
+agents with very simple dynamics. In addition, all ORCA-
+based methods require preferred velocities or control from
+a high-level planning module. If the planning is not well
+designed, the generated trajectories could be very unnatural,
+and sometimes leads to deadlock behaviors [11].
+
+Another approach to handle the multi-agent navigation is
+using reinforcement learning (RL) [12]â[16]. While it has
+been demonstrated that RL can solve the optimal control
+problem of complex nonlinear dynamics [17], the problem
+nature of multi-agent navigation has presented several key
+challenges. First, the number of agents involved in the plan-
+ning period is dynamically varying, and could be different
+from the number of agents used for training. To address
+this problem, the authors in [12] proposed to train a value
+function with two agents, and then extend the obtained policy
+to the multi-agent case by selecting the action that maxi-
+mizes the minimum of pairwise value functions. Symmetric
+network is introduced in [13] and long short-term memory
+
+ 
+ 
+ 
+ 
+ 
+ 
+(LSTM) neural network is used to handle this problem [14].
+The laser scanner data is also adopted as observation state
+in [15] and [16]. However, most of the aforementioned
+studies are restricted to discrete action space, and require
+rather complex neural networks with demanding training
+process. Besides, they all assume that velocities of robots
+could be directly controlled, which limits their applications
+to robots with more complex nonlinear dynamics. Another
+key issue of in RL-based approaches is the difï¬culty in pro-
+viding safety guarantees. The performance is often limited to
+scenarios encountered during training. In fact, to the best of
+our knowledge, most existing RL-based multi-agent collision
+avoidance methods do not systematically incorporate safety.
+In this paper, we propose an efï¬cient RL-based algorithm
+to solve multi-agent collision avoidance problem with a
+systematic consideration of safety of the overall system.
+Our approach is designed for robots with general nonlinear
+dynamics, where each agent can only observe positions
+and velocities of nearby robots. We ï¬rst decompose our
+problem into a two agents collision avoidance problem with
+continuous action space. Then we handle the multi-agent
+collision avoidance problem by solving a simple convex
+optimization with safety constraints from ORCA. The main
+contributions of this work are summarized below:
+
+â¢ General Nonlinear Agents: Unlike other RL-based ap-
+proaches that assume velocities of robots could be directly
+controlled, or other ORCA-based approaches that need
+speciï¬c models and controllers, our approach works for
+general nonlinear systems with continuous action space.
+â¢ Improved Safety: Different from other RL-based ap-
+proaches which only consider safety in reward function
+design, our approach incorporates safety bounds system-
+atically by introducing linear constraints obtained from
+ORCA. In Section IV-C, we demonstrate the safety of
+our algorithm with complex and challenging tasks.
+â¢ Lightweight Structure: Through decomposing the prob-
+lem into a two agents collision avoidance problem, we
+signiï¬cantly simplify the RL training task. The learning
+process of our approach is much faster and the neural
+network is much smaller when compared with other RL-
+based approaches.
+
+II. PROBLEM FORMULATION
+
+We consider a collision avoidance problem for M nonlin-
+
+ear agents with the following dynamics:
+(cid:40)
+
+k, ai
+
+k),
+
+k+1 = f (si
+si
+yi
+k = h(si
+k),
+
+(1)
+
+where f (Â·, Â·) is the nonlinear state-transition function, and
+h(Â·) is the output function. We denote the state of the i-th
+k â A â
+agent at discrete time k with si
+Rm denote its own action at time k, where i = 1, 2, . . . , M.
+Here S and A represent convex constraints in state space
+and action space, respectively. The output of the system is
+k â Rd and
+k], which consists of the position pi
+yi
+k, vi
+k = [pi
+k â Rd of agent i. For example, if the state si
+velocity vi
+k
+
+k â S â Rn, and let ai
+
+k, y2
+
+(cid:44) [y1
+
+k and the velocity vi
+
+comprises the position pi
+k and some
+j (cid:54)= i observes only
+other information, then another agent
+the output of the agent i, i.e., the position and the velocity.
+Given M total agents, for agent i, it could observe output of
+all other agents: yâi
+k
+
+k, . . . , yiâ1
+
+Each agent has a goal state Ësi, which is the state they would
+like to reach. It is assumed that each agent knows its own
+state and goal state, and observe output of other agents. All
+the information agent i has at time k could be represented
+as observation, Ã¸i
+k ]. Given the observation, we
+k
+would like to compute a control policy Ï that maps the
+observation Ã¸i
+k to its action ai
+k for all robots. We parameterize
+the policy using variable Î¸ â Rn, that is
+
+, . . . , yM
+k ].
+
+k, Ësi, yâi
+
+, yi+1
+k
+
+(cid:44) [si
+
+k
+
+k = Ï(Ã¸i
+ai
+
+k, Î¸ ) â A
+
+(2)
+
+Given the policy Ï(Â·, Î¸ ), each agent should reach their
+goal state in the shortest time while avoiding collision with
+each other. Then the collision avoidance problem could
+be formulated as a multi-agent sequential decision making
+problem, given by
+
+Î³ kR(Ã¸i
+k)
+
+M
+â
+1
+â
+â
+min
+M
+Î¸
+i=1
+k=0
+k+1 = f (si
+s.t. si
+k = Ï(Ã¸i
+ai
+k â p j
+(cid:107)pi
+si
+0 = si
+
+k) âi = 1, . . . , M, âk â N
+
+k, ai
+k, Î¸ ) â A
+(3c)
+k(cid:107) > 2r, âi, j = 1, . . . , M, i (cid:54)= j, âk â N (3d)
+initial, âi = 1, . . . , M,
+(3e)
+
+(3b)
+
+(3a)
+
+where R(Â·) is a scalar reward function, and Î³ â (0, 1] is the
+discount factor. The reward function R(Â·) awards the robot
+for approaching the goal state and penalizes for collisions
+with other agents, it will be further explained in Section III-
+A. Equation (3b) are due to nonlinear dynamics, equa-
+tion (3c) means that all agents should follow the same policy,
+and inequalities (3d) encode collision avoidance conditions.
+It is assumed that each agent could be approximated as a disc
+with the same radius r. Each agent i has a given initial state
+si
+initial, which is expressed as the equality constraint (3e).
+It is rather challenging to directly solve (3) in a centralized
+way. The optimization is highly non-convex due to nonlinear
+equality constraints (3b) and non-convex inequality con-
+straints (3d). Besides, each agent only has partial information
+of surrounding agents. Instead of solving (3) directly, we
+handle the problem by ï¬rst solving a two agents collision
+avoidance problem via RL, and then transfer the multi-
+agent collision avoidance problem into a simple convex
+optimization problem with safety constraints from ORCA.
+
+III. APPROACH
+
+This section presents an algorithm to solve the multi-
+agent collision avoidance problem (3) which combines RL
+and ORCA. To reduce online computation and make the
+training fast, we ï¬rst solve a two agents collision avoidance
+problem using deep RL. Many exising RL-based collision
+avoidance algorithms assume that agents can directly control
+their velocities and require discretization of the action space.
+
+is a positive reward. The second term (rp)i
+award the agent approaching the goal state.
+
+k is designed to
+
+(rp)i
+
+k = â
+
+k+1 â Ësi||
+||si
+||si
+0 â Ësi||
+
+.
+
+(6)
+
+As the agent gets closer to the goal state, the reward becomes
+larger. The last term (rc)i
+k is designed to penalize collisions
+with other agents,
+
+(rc)i
+
+k =
+
+(cid:40)
+
+rcollision
+0
+
+k+1 â p j
+
+if ||pi
+otherwise
+
+k+1|| < 2r, â j (cid:54)= i
+
+,
+
+(7)
+
+where rcollision is a negative penalty for collisions.
+
+Training Process: Since all agents are homogeneous, it is
+natural to assume that both agents follow the same policy.
+Therefore, when updating the neural network, the difference
+of parameters dÎ¸ comes from the observation, action and
+reward trajectories of both agents. This is different from
+standard RL, which assumes there exists only one decision
+maker. This modiï¬cation could be applied to nearly any deep
+RL framework. In our experiment, we use Evolution Strategy
+(ES) as our training method.
+
+B. Multi-agent Collision Avoidance with Improved Safety
+
+For multi-agent collision avoidance problem, each agent
+has more than one neighbor agent. Given the trained policy
+from two agents collision avoidance problem, each nearby
+agent would introduce an action for collision avoidance. To
+avoid collisions in multi-agent problems, multiple actions
+are combined into one action. Then we introduce linear
+safety constraints from the ORCA and handle the multi-agent
+collision avoidance problem by solving a simple convex
+optimization.
+
+Action Combination: For one agent i, each neighbor agent
+j results in an action from the trained policy, ai, j
+k , Î¸ ),
+k
+j (cid:54)= i and i, j = 1, . . . , M. Intuitively, the actions introduced
+by closer neighbors and approaching neighbors are more
+important. Therefore, we combine all actions with distance
+and velocity-based weights:
+
+(cid:44) Ï(Ã¸i, j
+
+.
+
+=
+
+(8)
+
+âM
+
+wi, j =
+
+ai,comb
+k
+
+j=1, j(cid:54)=i wi, jai, j
+k
+âM
+j=1, j(cid:54)=i wi, j
+eâÎ±Di, j
+Di, j
+Here wi, j represents the weight determined by the pseudo-
+distance Di, j, and Î± is a scaling parameter. Our design of
+weight wi, j
+is inspired by the artiï¬cial potential function
+proposed by [18]. The weight wi, j becomes inï¬nite when
+Di, j = 0. The pseudo-distance Di, j
+is determined by the
+relative position of agent j to agent i and velocity of agent j.
+If agent i is behind the neighbor agent j, Di, j is the Euclidean
+distance, otherwise it is deï¬ned as adjusted distance that
+scaled along the velocity of agent j:
+
+(9)
+
+ï£±
+ï£²
+
+||p j,i||
+(cid:114)
+
+Di, j =
+
+ï£³
+Î³ j = eâÎ² ||v j||.
+
+||p j,iÃv j||2+||Î³ jÂ·(p j,i)T v j||2
+||v j||2
+
+if (p j,i)T v j < 0
+
+if (p j,i)T v j â¥ 0
+
+(10)
+
+(11)
+
+Fig. 1: The Algorithm Framework
+
+Thus, they are only applicable to simple dynamics and can
+lead to unnatural trajectories. Different from those studies,
+we formulate RL with continuous action space for general
+nonlinear agents. Our RL-based approach is faster than
+other RL-based algorithms with a lightweight policy neural
+network. Given the trained policy, we apply it to multi-
+agent problems by combing pairwise actions introduced
+by different nearby agents. To avoid collisions, ORCA is
+introduced and we selects action by solving a simple convex
+optimization problem with linear safety constraints. The
+framework of our algorithm is shown in Fig. 1.
+
+A. Two Agents Collision Avoidance via Reinforcement
+Learning
+
+Network Structure: For general policy-based RL algo-
+rithm, the policy is usually represented as a neural network,
+with the state as input and the action or parameters of the
+action as output. For the two agents collision avoidance
+problem with agents i and j, both of them have their
+observations. With slight abuse of notation, we denote the
+observations of agent i and j by Ã¸i, j
+k , respectively.
+State space in standard RL is now the observation space.
+We use a deterministic policy, where the input of the neural
+network is the observation and output is the action, that is
+k = Ï(Ã¸i, j
+ai, j
+k , Î¸ ). Here we use Ï(Â·, Â·) to denote the policy
+neural network and Î¸ to denote parameters of the network.
+Since there are only two agents, the input dimension of the
+neural network is relatively small and the training can be
+done efï¬ciently.
+
+k and Ã¸ j,i
+
+Reward Design: The objective for each agent is to achieve
+the goal state in the shortest time while avoiding collision
+with each other. The reward function is designed as follows:
+
+R(Ã¸i
+
+k) = (rg)i
+
+k + (rp)i
+
+k + (rc)i
+k
+
+(4)
+
+For agent i at time k, the reward function is designed as
+the sum of three terms. The ï¬rst term (rg)i
+k is designed to
+encourage the agent for reaching the goal state,
+
+(rg)i
+
+k =
+
+(cid:40)
+
+rarrival
+0
+
+k+1 â Ësi|| < darrival
+
+if ||si
+otherwise
+
+,
+
+(5)
+
+where darrival represents a small, positive threshold to deter-
+mine whether agent i has reached the goal state Ësi, and rarrival
+
+Here p j,i represents the relative position of agent j to i, and
+Î³ j represents the scaling factor that deï¬ned by parameter Î²
+and v j, i.e. the velocity of agent j. Such a design of weights
+makes agent i to give priority to agent j that is approaching,
+and the weight increases as agent j speeds up. This weighted
+combination approach is consistent with human intuition.
+As human drivers, we would pay more attention to cars in
+the vicinity and approaching. Given the combined action,
+it is possible that the agent i would collide with nearby
+agents in complex multi-agent cases. To guarantee safety, we
+introduce the well-known ORCA constraints and address the
+multi-agent collision avoidance problem by solving a simple
+convex optimization.
+
+A Brief Review of ORCA: Before introducing the convex
+optimization, we brieï¬y review some key concepts in the
+optimal reciprocal collision avoidance (ORCA) algorithm.
+The ORCA algorithm is a distributed collision avoidance
+algorithm for continuous time system with single integrators
+dynamics. Similarly to our assumption, ORCA assumes that
+each robot could be approximated by a disc with different
+radius ri. Each agent takes action independently by observing
+the velocities vi(t), positions pi(t) and radius ri of other
+agents. Since ORCA is designed for agents with continuous
+time domain, with a little abuse of notation, here we use
+vi(t) and pi(t) to represent velocity and position of agent i
+at continuous time t. We ï¬rst consider a two agents collision
+avoidance problem with a continuous time horizon T . For
+two agents i and j at time t, ORCA returns a pair of linear
+constraints for velocities of the two agents independently:
+
+(cid:40)
+
+(ai, j)T vi(t + Ï) + bi, j â¥ 0 Ï â [0, T ]
+(a j,i)T v j(t + Ï) + b j,i â¥ 0 Ï â [0, T ]
+
+.
+
+(12)
+
+Here ai, j, a j,i â Rd and bi, j, b j,i â R are determined by the
+current positions pi(t), p j(t), velocities vi(t), v j(t) and radius
+ri, r j, which are known to both agents. If both constraints are
+satisï¬ed, there would be no collision between agents i and j
+within time horizon T . When ORCA is extended to the multi-
+agent problem, there would be multiple linear constraints for
+each agent i,
+
+Aivi(t + Ï) + bi â¥ 0, Ï â [0, T ],
+
+(13)
+
+where Ai â RKÃd and bi â RK, K is the number of nearby
+agents to be considered. Note that K may be smaller than
+M â 1, which means we do not need to consider all moving
+agents for collision avoidance of agent i. Given the maximal
+velocity v j,max of agent
+j, if distance of agent i and j is
+greater than (vi,max + v j,max)T , they would not collide within
+time horizon T . With properly selected K, inequality (13)
+provides a safety guarantee of each agent i in velocity space.
+Convex Optimization with Safety Constraints: To avoid
+collisions for general nonlinear agents, we introduce the
+ORCA constraints (13) and transform them from velocity
+space to action space. Different from ORCA, our approach
+is designed for discrete time systems. We ï¬rst adapt (13) for
+discrete time systems by letting T (cid:44) N(cid:52)t and t (cid:44) k(cid:52)t. Here
+N is a positive integer representing discrete time horizon, and
+
+k is a non-negative integer corresponding to current time t,
+and (cid:52)t is the discretization time step. The ORCA constraints
+could be written as
+Aivi
+
+(14)
+In practice, we update Ai â RKÃd and bi â RK that deï¬nes
+the ORCA constraints (14) at each time step, thus it sufï¬ces
+to choose d = 1, leading to
+Aivi
+
+k+d + bi â¥ 0, d = 1, . . . , N.
+
+k+1 + bi â¥ 0.
+
+(15)
+
+Here Ai and bi is determined by positions, velocities (and
+shared radius r) of agent i and the closet K neighbor agents
+at time k. Safety is guaranteed if (15) holds at each time
+step. To control the agent i for collision avoidance, we need
+to change the linear constraints from velocity space to action
+space. We assume the relationship between current action ai
+k
+and velocity at next time step vi
+k+1 is linear or could be
+approximated by a linear mapping. For a general nonlinear
+system, we could linearize the system around the current
+state and last action. This relationship is approximated by
+k+1 â Avai
+vi
+
+k + bv.
+
+(16)
+
+By combing (15) and (16), we could obtain a safety con-
+straints for the action ai
+k,
+Ai(Avai
+
+k + bv) + bi â¥ 0.
+
+(17)
+
+k and the velocity vi
+
+If inequality (17) holds at each time step and the relationship
+between action ai
+k+1 is exactly linear, it is
+strictly guaranteed that the agent i would never collide with
+any other agents [3]. Rigorously speaking, the linearization
+for nonlinear system can introduce small errors. However, in
+practice this can be worked around by slightly enlarging the
+radius r in our approach.
+
+The combined action from RL (8) provides preferred
+action that would drive the robot to reach the goal state, and
+the linear constraints from (17) provides safety constraints
+for the agent. To reach the goal while avoiding collisions,
+agent i selects the action that is the closest to ai,comb
+while
+satisfying safety constraints (17) and physical constraints:
+k = argmina ||a â ai,comb
+ai
+||2
+s.t. Ai(Ava + bv) + bi â¥ 0
+
+(18b)
+
+(18a)
+
+k
+
+k
+
+a â A .
+
+(18c)
+
+Here (18a) is a quadratic cost function, (18b) are linear
+safety constraints from ORCA, and (18c) is the convex
+physical constraints. The optimization problem (18) is a
+simple convex optimization and can be solved efï¬ciently.
+
+To sum up, given the trained policy Ï(Â·, Î¸ ) from the two
+agents collision avoidance problem, we propose a decentral-
+ized multi-agent collision avoidance algorithm by solving
+a simple convex optimization with safety constraints from
+ORCA. If the relationship between action and velocity is
+linear, the safety constraints provide strict safety guarantee.
+The overall approach is summarized in Algorithm 1. In the
+next section, we demonstrate our algorithm via different
+challenging experiments.
+
+Algorithm 1 Reciprocal Collision Avoidance for General
+Nonlinear Agents using Reinforcement Learning
+
+1: Input: The trained policy Ï(Â·, Î¸ ) from the two agents
+initial, and
+
+collision avoidance problem, the initial state si
+the goal state of each agent Ësi, i = 1, . . . , M
+
+initial, k â 0
+
+for i = 1, . . . , M do
+
+for j = 1, . . . , M and j (cid:54)= i do
+
+2: Initialization: si
+0 â si
+3: while not all agents reach goal states do
+4:
+5:
+6:
+7:
+8:
+
+k â Ï(Ã¸i, j
+ai, j
+end for
+Combine actions, ai,comb
+Select action ai
+Apply ai
+
+k , Î¸ )
+
+k to agent i
+
+k
+
+via (8)
+k by solving optimization (18)
+
+9:
+10:
+11:
+12:
+13: end while
+
+end for
+k â k + 1
+
+IV. EXPERIMENTS AND RESULTS
+
+We illustrate the performance of our proposed method
+
+through several multi-agent interactive scenarios.
+
+A. Simulation Setup
+
+Throughout this section, we adopt the nonlinear kinematic
+bicycle model [19] operating in a two-dimensional Euclidean
+space. As illustrated in Fig. 2, the dynamics is deï¬ned as
+
+Ëx = v cos(Ï + Î² )
+Ëy = v sin(Ï + Î² )
+
+sin(Î² )
+
+ËÏ =
+
+v
+lr
+Ëv = a
+
+Î² = tanâ1
+
+(cid:18) lr
+
+l f + lr
+
+(cid:19)
+
+tan Î´ f
+
+(19a)
+
+(19b)
+
+(19c)
+
+(19d)
+
+(19e)
+
+where x, y are the coordinates of the centroid, Ï is the inertial
+heading, v is the speed of vehicle, Î² is angle of velocity with
+respect to longitudinal axis of the car, l f and lr represents
+the distance from the centroid to the front and rear axles.
+Actions consist of front steering angle Î´ f and acceleration
+a.
+
+Fig. 2: Kinematic Bicycle Model
+
+Fig. 3: Trajectories of three, four and eight agents
+
+Unlike other RL-based approaches [12]â[16] that assume
+that velocity of each agent could be directly controlled, our
+approach is directly applicable to the above nonlinear model
+with acceleration a and steering angle Î´ f as control. As far
+as we know, this is the ï¬rst RL-based multi-agent collision
+avoidance algorithm that directly works for kinematic bicycle
+model. As for ORCA-based approach, [9] is designed for
+bicycle model by ï¬xing a tracking controller and transferring
+the control to velocity space. But like many other ORCA-
+based approaches, it requires a high-level planning module
+to provide preferred velocity, which would greatly inï¬uence
+the performance.
+
+To reduce redundancy and simplify training, we use a local
+coordinate for each agent with x axis pointing towards the
+inertial heading of the vehicle in simulation. The observation
+of agent i at time k is represented by concatenating the
+goal position, velocity of agent i, positions and velocities
+of nearby agents in the local coordinate. The dynamics (19)
+is discretized in time and all simulations operate with dis-
+cretization time step of 0.05 s (20 Hz).
+
+B. Policy Training with RL
+
+The policy for two-agent collision avoidance is trained
+following the described procedure in Section III-A. We use
+a two-layer neural network with 16 neurons at each layer.
+The network takes the observation of size 8 and predicts
+the control action of size 2. Compared with other RL-based
+approach, this is a signiï¬cantly lightweight design of network
+architecture with a total of only 450 training parameters.
+the
+On an eight-core i7-7700K CPU 4.20GHz machine,
+empirically optimal policy is obtained within 20 minutes of
+wall-clock time training. The policy is then combined with
+the ORCA constraints to handle multi-agent interactions. It is
+worth noting that all simulation results in IV-C comes from
+the same trained policy.
+
+C. Simulation Results
+
+As shown in Fig. 3, we ï¬rst test the proposed method
+in simple scenarios with up to eight agents. The trajectory
+of each agent is represented by circles with the same color,
+and the color gradually fades as the agent moves. The goal
+position of each agent is symmetric with the initial position
+about the origin. It is worth emphasizing that the three-
+agent interactive scene is inspired by a well-know deadlock
+scenario of the classic ORCA method [11]. The symmetric
+setup of scenarios with four and eight agents are also easy
+to result in conï¬icts of actions. Surprisingly, our proposed
+
+Fig. 4: Trajectories of 42 agents. The left ï¬gure: the initial
+position of each agent, different agents are marked by dots
+with different color. The middle ï¬gure: the trajectory in the
+middle of the process. The right ï¬gure: complete trajectories.
+
+(a) Positions, trajectory, actions when t = 6.95 s
+
+Fig. 5: Trajectories of 20 agents. The left ï¬gure: the initial
+position of each agent is denoted by solid circle with different
+colors. The middle ï¬gure: the trajectory in the middle of the
+process. The right ï¬gure: complete trajectories.
+
+approach successfully generates a set of smooth trajectories
+reaching the target position for all the three scenarios without
+encountering any collision, congestion or deadlock.
+
+We now demonstrate our approach with a more complex
+task. As shown in Fig. 4, we have 42 agents evenly dis-
+tributed on a circle, with initial velocities pointing to the
+adjacent neighbor of each agent clockwise. The goal position
+of each agent is symmetric with the initial position about
+the origin. Trajectories of different agents are marked by
+different colors. It is clear from the ï¬gure that a set of
+safe and smooth trajectories are generated with each agent
+ï¬rst turning right to have the heading more aligned with the
+target position, then passing the origin from the left side with
+ORCA-constrained actions for collision avoidance.
+
+The next example is to demonstrate the capability of the
+proposed method in a customized task that requires more
+sophisticated interactions with surrounding agents. As shown
+in Fig. 5, initial positions are marked in the left ï¬gure as
+dots with different colors. We have 20 agents that are evenly
+distributed on two co-centric circles. For agents located on
+the large circle, the goal positions are located on the small
+circle that aligns with the start position through the center,
+and vice versa. Such a task is more difï¬cult than previous
+ones. In order to reach the goal position, each agent is
+expected to have conï¬icts with agents initialized from both
+circles. However, as shown in Fig. 5, trajectories generated
+by our approach is smooth and safe.
+
+Furthermore, recall the discussion in Section III-B where
+the combination of actions from trained policy could also
+drive the controlled agent to the unsafe state. From Fig. 6,
+we select one agent and further illustrates how the ORCA
+
+(b) Positions, trajectory, actions when t = 7.45 s
+
+Fig. 6: Illustration of the importance of ORCA constraints
+through a 24 agents example. The left column shows po-
+sitions of all agents and trajectories of agent 1. The right
+column shows combined actions and selected actions of
+agent 1.
+
+constraints alter the selected actions to enhance safety. As
+shown in Fig. (6a), when t = 6.95 s, the combined action of
+agent 1 would drive the robot forward to its left. However,
+this would cause a collision with the robot (marked by
+dark blue) to its front left. To avoid collision, the ORCA
+constraints revise the robot to a right turn with deceleration.
+We can observe an obvious twist
+to the right from the
+position trajectory in the left ï¬gure of Fig.(6b), which is
+marked by a black arrow. The example clearly indicates
+the importance of having ORCA constraints in the proposed
+approach to avoid collisions.
+
+V. CONCLUSION
+
+In this paper, we propose a decentralized collision avoid-
+ance algorithm for general nonlinear systems by combing
+the RL and ORCA. The proposed method consists of two
+stages: ï¬rst train a two-agent collision avoidance policy using
+RL; then compute the overall multi-agent collision avoidance
+action by properly combining multiple avoidance actions
+while respecting safety constraints induced by ORCA. The
+overall training process is much faster than other RL-based
+collision avoidance algorithms. The introduction of ORCA
+signiï¬cantly improves system safety. We demonstrate the
+proposed method through several collision avoidance prob-
+lems with kinematic bicycle agent models. In the future, we
+would like to apply the proposed approach to systems with
+more complex dynamics which has larger state space.
+
+REFERENCES
+
+[1] G. Sanchez and J.-C. Latombe, âUsing a prm planner to compare
+centralized and decoupled planning for multi-robot systems,â in
+Proceedings 2002 IEEE International Conference on Robotics and
+Automation (Cat. No. 02CH37292), vol. 2.
+IEEE, 2002, pp. 2112â
+2119.
+
+ËSvestka and M. H. Overmars, âCoordinated path planning for
+multiple robots,â Robotics and autonomous systems, vol. 23, no. 3,
+pp. 125â152, 1998.
+
+[2] P.
+
+[3] J. Van Den Berg, S. J. Guy, M. Lin, and D. Manocha, âReciprocal
+Springer, 2011,
+
+n-body collision avoidance,â in Robotics research.
+pp. 3â19.
+
+[4] J. Van den Berg, M. Lin, and D. Manocha, âReciprocal velocity obsta-
+cles for real-time multi-agent navigation,â in 2008 IEEE International
+Conference on Robotics and Automation. IEEE, 2008, pp. 1928â1935.
+[5] P. Fiorini and Z. Shiller, âMotion planning in dynamic environments
+using velocity obstacles,â The International Journal of Robotics Re-
+search, vol. 17, no. 7, pp. 760â772, 1998.
+
+[6] J. Van Den Berg, J. Snape, S. J. Guy, and D. Manocha, âReciprocal
+collision avoidance with acceleration-velocity obstacles,â in 2011
+IEEE International Conference on Robotics and Automation.
+IEEE,
+2011, pp. 3475â3482.
+
+[7] M. Ruï¬i, J. Alonso-Mora, and R. Siegwart, âReciprocal collision
+avoidance with motion continuity constraints,â IEEE Transactions on
+Robotics, vol. 29, no. 4, pp. 899â912, 2013.
+
+[8] J. Alonso-Mora, A. Breitenmoser, M. Ruï¬i, P. Beardsley, and
+R. Siegwart, âOptimal reciprocal collision avoidance for multiple
+non-holonomic robots,â in Distributed Autonomous Robotic Systems.
+Springer, 2013, pp. 203â216.
+
+[9] J. Alonso-Mora, A. Breitenmoser, P. Beardsley, and R. Siegwart,
+âReciprocal collision avoidance for multiple car-like robots,â in 2012
+IEEE International Conference on Robotics and Automation.
+IEEE,
+2012, pp. 360â366.
+
+[10] D. Bareiss and J. van den Berg, âGeneralized reciprocal collision
+avoidance,â The International Journal of Robotics Research, vol. 34,
+no. 12, pp. 1501â1514, 2015.
+
+[11] J. Godoy, T. Chen, S. J. Guy, I. Karamouzas, and M. Gini, âALAN:
+Adaptive learning for multi-agent navigation,â Autonomous Robots,
+vol. 42, no. 8, pp. 1543â1562, 2018.
+
+[12] Y. F. Chen, M. Liu, M. Everett, and J. P. How, âDecentralized non-
+communicating multiagent collision avoidance with deep reinforce-
+ment learning,â in 2017 IEEE international conference on robotics
+and automation (ICRA).
+
+IEEE, 2017, pp. 285â292.
+
+[13] Y. F. Chen, M. Everett, M. Liu, and J. P. How, âSocially aware
+motion planning with deep reinforcement learning,â in 2017 IEEE/RSJ
+International Conference on Intelligent Robots and Systems (IROS).
+IEEE, 2017, pp. 1343â1350.
+
+[14] M. Everett, Y. F. Chen, and J. P. How, âMotion planning among
+dynamic, decision-making agents with deep reinforcement learning,â
+in 2018 IEEE/RSJ International Conference on Intelligent Robots and
+Systems (IROS).
+
+IEEE, 2018, pp. 3052â3059.
+[15] T. Fan, P. Long, W. Liu, and J. Pan, âFully distributed multi-robot col-
+lision avoidance via deep reinforcement learning for safe and efï¬cient
+navigation in complex scenarios,â arXiv preprint arXiv:1808.03841,
+2018.
+
+[16] P. Long, T. Fanl, X. Liao, W. Liu, H. Zhang, and J. Pan, âTowards
+optimally decentralized multi-robot collision avoidance via deep re-
+learning,â in 2018 IEEE International Conference on
+inforcement
+Robotics and Automation (ICRA).
+
+IEEE, 2018, pp. 6252â6259.
+
+[17] T. P. Lillicrap, J. J. Hunt, A. Pritzel, N. Heess, T. Erez, Y. Tassa,
+D. Silver, and D. Wierstra, âContinuous control with deep reinforce-
+ment learning,â arXiv preprint arXiv:1509.02971, 2015.
+
+[18] M. T. Wolf and J. W. Burdick, âArtiï¬cial potential functions for
+highway driving with collision avoidance,â in 2008 IEEE International
+Conference on Robotics and Automation. IEEE, 2008, pp. 3731â3736.
+Springer Science &
+
+[19] R. Rajamani, Vehicle dynamics and control.
+
+Business Media, 2011.
+
+

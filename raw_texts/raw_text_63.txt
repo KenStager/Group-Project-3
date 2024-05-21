@@ -1,0 +1,1294 @@
+Parallel Knowledge Transfer in Multi-Agent
+Reinforcement Learning
+
+1st Yongyuan Liang
+Robotics Institute
+Carnegie Mellon University
+Pittsburgh, United States
+liangyy58@mail2.sysu.edu.cn
+
+2nd Bangwei Li
+School of Mathematics
+Sun Yat-sen University
+Guangzhou, China
+libw5@mail2.sysu.edu.cn
+
+0
+2
+0
+2
+
+r
+a
+
+M
+9
+2
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+5
+8
+0
+3
+1
+.
+3
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+AbstractâMulti-agent reinforcement learning is a standard
+framework for modeling multi-agent interactions applied in real-
+world scenarios. Inspired by experience sharing in human groups,
+learning knowledge parallel reusing between agents can poten-
+tially promote team learning performance, especially in multi-
+task environments. When all agents interact with the environment
+and learn simultaneously, how each independent agent selectively
+learns from other agentsâ behavior knowledge is a problem that
+we need to solve. This paper proposes a novel knowledge transfer
+framework in MARL, PAT (Parallel Attentional Transfer). We
+design two acting modes in PAT, student mode and self-learning
+mode. Each agent in our approach trains a decentralized student
+actor-critic to determine its acting mode at each time step. When
+agents are unfamiliar with the environment, the shared attention
+mechanism in student mode effectively selects learning knowledge
+from other agents to decide agentsâ actions. PAT outperforms
+state-of-the-art empirical evaluation results against the prior ad-
+vising approaches. Our approach not only signiï¬cantly improves
+team learning rate and global performance, but also is ï¬exible
+and transferable to be applied in various multi-agent systems.
+
+Index TermsâReinforcement Learning, Multi-Agent System,
+
+Attention, Transfer Learning
+
+I. INTRODUCTION
+
+Knowledge transfer is a common method in the general
+learning process of a new task or in a new environment.
+The educational behavior in human society is an advanced
+form of knowledge transfer. In a multi-agent system, when
+an agent
+in an unfamiliar environment and learn to get
+more reward, the knowledge from other experienced agents
+is beneï¬cial to the agent. Reinforcement Learning (RL) [1],
+as a popular framework, has been employed in sequential
+decision-making problems. And Transfer Learning (TL) [2]
+aims to improve learning through the learning experience
+from a related task, which also means knowledge reusing. In
+Reinforcement Learning domains, the source of informative
+knowledge varies from experienced agents(experts) to human
+guidance. In this paper, we work on applying knowledge
+transfer method in agentsâ behavior transfer for multi-agent
+team.
+
+Cooperative Multi-agent Reinforcement Learning (MARL)
+has been applied in a series of meaningful problems such as
+multi-robot control [3] and team-game playing [4]. In Cooper-
+ative MARL, if an individual agentâs learning is simply seen
+as independent RL with partial observations, the interactions
+
+between agents and the non-stationary environment will cause
+signiï¬cant difï¬culties. To accelerate the team-wide learning
+efï¬ciency and maximize the advantage of knowledge-transfer
+in the multi-agent domain, this paper targets the problem of
+optimizing knowledge-transfer between agents in Cooperative
+MARL under local constraints with a joint task or multiple
+tasks.
+
+Our work is different from prior works that study inter-
+agent communication mechanisms in cooperative MARL [5]â
+[7]. These works require a centralized critic and decentralized
+execution framework. Considering the scale of an agent team
+in the real scenarios, centralized training is challenging con-
+sidering training stability and high computation complexity
+with large computational costs. Jiang & Lu [8] and Das et al.
+[9] both proposed attention based communication protocol to
+exchange messages in MARL domains [8], [9], but these ap-
+proaches did not consider agentsâ behavior knowledge. Com-
+munication methods in MARL domains are always designed
+for solve the problem of efï¬cient sharing partial observation
+information. In a fully decentralized system, we try to ï¬nd
+a method to reuse agentsâ experience information to guide
+the unfamiliar agents with less communication costs for the
+goal of improving team-wide learning. Our work concerns
+behavior knowledge reusing problem between cooperative
+agents with a teacher-student framework in order to improve
+team-wide performance in learning process, relevant to multi-
+agent teaching.
+
+Regarding privacy constraints and communication cost in a
+multi-agent team, the main issues to be concerned are knowl-
+edge transfer decision, knowledge selection, and knowledge
+utilization. Invalid or confusing messages from other agents
+may cause a negative impact on agentsâ individual learning.
+Also, in an environment where information interaction is fre-
+quent, there is a danger of risk contagion, resulting in poor per-
+formance of the entire team. For instance, the phenomenon of
+âover-advisingâ mentioned in previous studies, has increased
+team-wide learning instability, especially in a team with more
+than two agents. In order to improve knowledge commu-
+nication efï¬ciency, we introduce an attention mechanism to
+dynamically distill knowledge from other agentsâ experience.
+Crucially, attention mechanism as a teacher selector is used
+to determine teacher agentsâ familiarity with the environment
+
+ 
+ 
+ 
+ 
+ 
+ 
+and current policy effectiveness for the student agent. Hence,
+The student agent have the ï¬exibility to accept the optimal
+advice from appropriate teachers for each time point.
+
+In this paper, we propose a more robust and reliable parallel
+knowledge-transfer model with high efï¬ciency in MARL
+framework. We here state the following based settings in our
+work:
+
+â¢ All agents simultaneously learn in an environment and
+make decisions with interactions with the environment
+and other agents.
+
+â¢ There is no optimal expert (good-enough agent) in the
+
+multi-agent team in the initial state.
+
+â¢ (In Parallel) For all agents, their local role of student or
+teacher is not ï¬xed. An agent can use knowledge from
+other agents as a student and provide its own behavior
+knowledge as a teacher for students.
+
+â¢ All agents are learning for their local reward. But agents
+in the team are friendly to share knowledge. Our goal is
+to maximize the team-wide reward.
+
+Our empirical results across a range of tasks and envi-
+ronments demonstrate the efï¬cacy of our knowledge transfer
+architecture in multi-agent systems. We show that our attention
+selector is capable of teaching the student agent with the most
+conï¬dent advice from teacher agents. Compared with other
+multi-agent knowledge transfer frameworks, our approach
+successfully give rise to an obvious improvement in global
+performance and stability.
+
+II. RELATED WORK
+
+As a long-standing topic in the ï¬eld of Reinforcement
+Learning, Multi-agent Reinforcement Learning (MARL) [10]
+track has a series of works in various ways to improve
+the performance and efï¬ciency of team coordination. Deep
+Reinforcement Learning [11] uses deep neural networks to
+approximate the policy and value functions of agents in the
+environment
+to address the problem of large-scale action-
+value space in RL. And Knowledge transfer method has been
+studied in several related ï¬elds including imitation learning,
+learning from demonstration [4], and inverse reinforcement
+learning [12]. Several works [13] extended the source-target
+framework in transfer learning on reinforcement learning task.
+In the extensive teacher-student framework for transfer from
+expert policy to student policy, the student agent takes actions
+from the expert agentâs advice. Student-initiated approaches
+mainly concern with the students decision value, such as Ask
+Uncertain [14] and Ask Important [15]. In teacher-initiated
+approaches, teachers decide when to teach based on the com-
+parison between students and teachers learning experience,
+such as Importance Advising [16], Early Correcting [15],
+and Correct Important [16]. Q-teaching [17] designs teaching
+rewards to help teachers determine when to advise. Moreover,
+episode-sharing mechanism [18] helps agents share individual
+successful episodes to accelerate learning.
+
+However, all of the above works require an expert (all-
+knowing teacher) as the best agent to guide the learning of
+other agents. Zhan et al. [19] analyzed the case of negative
+
+transfer with the existence of a sub-optimal expert and present
+some theoretical results.
+
+Recent works provide some solutions for multi-agent paral-
+
+lel advising problem:
+AdHocVisit and AdHocTD [20] is an advisor-advisee frame-
+work without an expert in the multi-agent environment for
+agents learning simultaneously. The learning agents ask for
+advice and provide advising policy for other agents. Advisees
+use state visit counts to decide when to request advice and
+advisors evaluate their advice reliability through conï¬dence
+metrics to decide when and what to provide for advisees. For
+advice selection, AdHocVisit and AdHocTD follow majority
+vote [19].
+LeCTR [21] is a new teacher-student framework, which
+targets peer-to-peer teaching in order to solve advising-level
+problem. Each agent in system learns when and what to advise.
+In LeCTR, teacher-student (advising-level) policies are trained
+using the multi-agent actor-critic approach (MADDPG) [5].
+LeCTR sets the advising-level policies as decentralized actor
+and uses a centralized action-value function as critic with
+advising-level reward. It
+is worth mentioning that LeCTR
+considers the communication cost in information exchange.
+LeCTR only works in two-player games.
+
+Motivated by attention [22] introduced for information
+extraction in deep learning, attention mechanism has recently
+emerged in reinforcement learning framework [23], [24]. In
+distributed MARL, Jiang & Lu [8] proposed an attentional
+communication method with independent actor-critic. Atten-
+tion in this work encodes agentsâ individual observation before
+passing centralized communication channel. With centralized
+value estimate, TarMAC [9] is a targeted communication
+architecture to generate agentsâ internal state representations
+as input of centralized critic. Iqbal & Sha [25] introduced an
+attention-based critic to select agents in centralized training.
+Although attention plays a core role in our idea, our moti-
+vation is different from aforementioned approaches. Our algo-
+rithm aims to reuse agentsâ accumulated knowledge in learning
+process but not limited to process individual observation with
+agentsâ interaction in multi-agent domains. Our approach is
+more effective and efï¬cient to maximum team cooperation
+utility and ï¬exible to extend in complex environments.
+
+III. PRELIMINARIES
+
+In this work, we consider a decentralized multi-agent re-
+inforcement learning scenario, multiple agents in cooperative
+team G simultaneously learn a joint task or multiple tasks.
+Our settings are formalized as a Decentralized POMDP (Dec-
+POMDP) in cooperative multi-agent system. All the agents in
+the environment receive local observation oi
+t at each time step,
+and interact with the environment by executing local action.
+Agents then update their policy parameters according to the
+feedbacks (reward) given by the environment.
+
+The system is described as (I, S, A, T, R, â¦, O, Î³),
+â¢ S is a set of states,
+â¢ A is a set of joint actions, A = ÃiAi,
+
+â¢ T is a set of conditional transition probabilities T (s(cid:48)|s, a)
+
+between states,
+
+â¢ R: S Ã A â R is the global reward function.
+â¢ â¦ is a set of joint observations, o = (cid:10)o1, . . . , on(cid:11)
+â¢ O is a set of conditional joint observation probability,
+
+P (o|s(cid:48), a) = O (o, s(cid:48), a),
+
+â¢ Î³ â [0, 1] is the discount factor.
+At each time period, the environment is in some state s â S.
+Agents take a joint action A â A. Then each agent receives a
+local reward ri
+
+(cid:1). The process repeats.
+
+t = Ri (cid:0)st, ai
+
+t
+
+The goal is for all agents to take actions at each time step
+that maximize the global expected future discounted reward:
+E [(cid:80)â
+
+t=0 Î³trt].
+
+1) Reinforcement Learning:
+
+[1] is a standard frame-
+work to achieve the above goal of MDP (or POMDP).
+The process of value based reinforcement
+learning is to
+learn a policy which can maximize agents ï¬nal reward.
+Through collecting experience from environment, agent up-
+dates its value functionvÏ(s) = EÏ [Rt|st = s]and action
+value functionQÏ(s, a) = EÏ [Rt|st = s, at = a].
+
+2) Deep Q Learning (DQN):
+
+[11] is a value-based Re-
+inforcement Learning approach combined with deep neural
+networks, which learns the action value function (Q-value) in
+continuous environment using value function approximation.
+Q-Network updates by minimizing the loss:L(Î¸) = E[(r +
+Î³ maxa(cid:48) Q(s(cid:48), a(cid:48); Î¸) â Q(s, a; Î¸)], and outputs the expected
+action value Q(s, a; Î¸).
+
+3) Deterministic Policy Gradient (DPG):
+
+[26] is a policy-
+based Reinforcement Learning approach as an extension of
+policy gradient (PG) [27], which optimize policy by update
+policy parameters Î¸ along the gradient direction,
+
+âÎ¸J(Î¸), âÎ¸J(Î¸) = Esâ¼pÏ,aâ¼ÏÎ¸ [âÎ¸ log ÏÎ¸(a|s)QÏ(s, a; Î¸)]
+
+extended
+
+to Deep Deterministic
+. Then, DPG is
+=
+Policy Gradient
+Esâ¼D[.âÎ¸ÂµÎ¸(a|s)âaQ(s, a; Âµ)|a=ÂµÎ¸(s)] using deterministic
+policy when the variance of action probability distribution
+approaches 0.
+
+[28], with âÎ¸J(Î¸)
+
+(DDPG)
+
+4) Attention Mechanism:
+
+inï¬uential
+models which can be broadly interpreted as a vector of impor-
+tance weights. It has recently been applied in reinforcement
+learning domains.
+
+is one of the most
+
+IV. OVERVIEW
+
+Our work targets knowledge reusing between agents in
+cooperative MARL, where all the agents in the environment
+are not good enough. In this section, we provide a story-level
+overview of our main idea. The overview of our motivating
+scenario is presented in Fig. 1.
+
+Considering our settings, all the agents act in the environ-
+ment and update their self policy parameters with local rewards
+from the environment. The actions executed by the agents is
+dictated by their self policy parameters. Now, we explore a
+novel knowledge transfer framework, PAT. In our framework,
+
+Fig. 1. Overview
+
+each agent has two acting modes, student mode and self-
+learning mode. Before each agent takes action, agentsâ student
+actor-critic modules decide agentsâ acting modes with agentsâ
+hidden states. It is not an ad-hoc design for speciï¬c domain.
+Agents should learn to ideally learn from other agents.
+
+In self-learning mode, agents take action based on their in-
+dependent learned behavioral knowledge, which is represented
+as agentsâ behavior policy parameters. In this mode, agentsâ
+actions are independent of other agentsâ behavioral knowledge.
+All agents in self-learning mode are trained in an individual
+end-to-end manner using Deep Deterministic Policy Gradient
+[28] algorithm with an actor network and a critic network.
+
+In student mode, if there are more than two agents in the
+system, a student agent receives multiple advice from other
+agents. We now refer to a new problem, teacher selecting,
+because not all teachersâ knowledge is useful for the student
+agent. However, existing frameworks try to dodge this problem
+and have key limitation in the scenario where the number of
+agents is large, which also causes difï¬cult in model transfer.
+We apply a soft attention mechanism in our work to select
+teachersâ knowledge. The Attention Teacher Selector solves
+the problem by selecting contextual
+information in teach-
+ersâ learning information and computing weights of teachersâ
+knowledge. Considering from a different angle, our attentional
+module selectively transform the learning information from
+teachers with the target of solving studentâs problem. The
+attentional selecting approach is effective both in multi-task
+scenarios and joint task scenarios.
+
+We make a few assumptions on agentsâ identities to support
+our framework. When an agent chooses student mode in t time
+step, other agents in the environment automatically become
+its teachers and provide their behavior policy and learning
+knowledge to the student agent.
+
+Our parallel setting means that An agent in student mode
+can be a teacher of the other agents. When agent i is unfamiliar
+with its observation mi
+t, but at the same time, agent i may be
+familiar with agent jâs observation mi
+t because of iâs past
+trajectory, which means that agent i can be agent jâs teacher.
+At this time step, agent i is in student mode but it also is
+
+a teacher to transfer its knowledge to other agent. The core
+idea is agentsâ different learning experience. An student agent
+may have conï¬dence in the other states and its behavior
+knowledge can help the other student agents. Our teacher
+selector module is designed to determine the appropriate
+teachers and transform teachersâ local behavior knowledge into
+studentâs advising action. Moreover, our attention mechanism
+quantiï¬es the reliability of teachers, so our scenarios do not
+need good-enough agents (experts).
+
+In a high-level summary, because of agentsâ different learn-
+ing experience, agents in a cooperative team are good at
+different tasks or different parts of a joint task. Knowledge
+Transfer is a framework to help agents solve unfamiliar task
+with experienced agentsâ learning knowledge.
+
+PATâs training and architecture details are presented in the
+
+next section.
+
+V. ATTENTION BASED KNOWLEDGE-TRANSFER
+ARCHITECTURE
+
+This section introduces our knowledge transfer approach
+with more design details of the whole structure and all training
+protocols in our framework. In our framework, each agent has
+two actor-critic model and an attention mechanism to support
+two acting modes.
+
+A. Acting Mode
+
+Different from original
+
+learning, after
+receiving observation from the environment, agents in our
+framework need to choose their action mode before taking
+action.
+
+individual agent
+
+At t time step, agent i reprocesses the observation from
+environment with a hidden LSTM (or RNN) unit, which inte-
+grates information (observation) from iâs observation history.
+The LSTM unit li outputs agentâs observation encoding mi
+t,
+which represents agentâs hidden state. Here, k is a scaling
+variable, which represents the time period covered in the
+hidden state. We will adjust k depending on different types
+of games.
+
+li : (oi
+
+tâk, ai
+
+tâk, ..., oi
+
+t) â mi
+t
+
+(1)
+
+Next, based on this stepâs memorized observation, mi
+t, agent
+iâs student actor network takes this stepâs memorized observa-
+tion, mi
+t, as input and output agent iâs acting mode. Consider-
+ing the efï¬ciency of information exchange and communication
+cost, student actor is used to deciding agent iâ conï¬dence in t
+time step. If i has enough conï¬dence with mi
+t, student actor
+chooses self-learning mode. Conversely, student actor chooses
+student mode and sends advice request to other agents.
+
+Student actor and student critic is a deep deterministic
+policy gradient model. The student actor network outputs the
+probability of choosing student mode. When the probability
+exceeds a threshold value, agent will choose student mode
+as a deterministic action. The threshold value is a variable
+depending on different types of games.
+
+Student actor and student critic represent the acting mode
+choosing model which determines whether agent i become a
+
+Fig. 2. PAT Architecture
+
+student and ask teacher agents for advice. We train student
+actor-critic using a student reward (cid:101)ri
+t.
+(cid:1) â V (cid:0)mi
+t = V (cid:0)mi
+(cid:101)ri
+
+t; Î¸(cid:48)i
+t
+
+t; Î¸i
+t
+
+(2)
+
+(cid:1)
+
+Î¸(cid:48)i
+t and Î¸i
+t, are agent i policy parameters in student mode
+and self-learning mode. The student reward measures gain in
+agent learning performance from student mode. The sharing
+of student actor-critic network parameters allows this module
+learning effectively in environment and easily extending to
+other settings.
+
+In our experiments, student actor-critic is trained with the
+trained Attention Teacher Selector. Agent iâs student critic is
+updated to minimize the student loss function:
+(cid:101)R is agent iâs student policy transition set.
+
+(cid:16)
+
+Î¸ ËQ(cid:17)
+
+L
+
+= E
+
+(cid:20)(cid:16)
+
+(cid:16)
+
+mt, wt|Î¸ ËQ(cid:17)(cid:17)2(cid:21)
+
+,
+
+Ëyt â (cid:101)Q
+
+mt,wt,(cid:101)rt,mt+1â¼ (cid:101)R
+Ëyt = Ërt + .Î³ (cid:101)Q(mt+1, w(cid:48)|Î¸(cid:102)Q(cid:48))|w(cid:48)=(cid:101)Âµ(cid:48)(mt+1|Î¸w(cid:48))
+(3)
+
+Student policy network is updated by ascent with the following
+gradient:
+
+(cid:104)
+
+âÎ¸ (cid:101)ÂµJ = E
+
+mt,wtâ¼ (cid:101)R
+
+mt|Î¸(cid:101)Âµ(cid:17)(cid:105)
+(4)
+Here, (cid:101)Âµ is agent iâs student policy, which is parameterized
+
+|wt=(cid:101)Âµ(mt)âÎ¸ (cid:101)Âµ (cid:101)Âµ
+
+mt, wt|Î¸ (cid:101)Q(cid:17)
+
+âw (cid:101)Q
+
+(cid:16)
+
+(cid:16)
+
+by (cid:101)Î¸
+
+B. Student Mode
+
+1) Attention Teacher Selector: Inspired by the similarity
+between source task and target task in transfer learning, we use
+attention mechanism to evaluate the task similarity between
+student and teachers and teachersâ conï¬dence of studentâs
+state. Therefore, each agentâs Attention Teacher Selector in
+student mode is used to select advice from teachers based
+on their similarity and conï¬dence. The main idea behind our
+knowledge transfer approach is to learn the student mode by
+selectively paying attention to policy advice from other agents
+in the cooperative team. Fig. 3 illustrates the main components
+of our attention mechanism.
+
+We now describe the Attention Teacher Selector mechanism
+in agent student mode. The Attention Teacher Selector (ATS)
+is a soft attention mechanism as a differentiable query-key-
+value model [23], [29]. After the student actor of student agent
+i â G compute the memorized observation at t time step and
+choose student mode, ATS receives the encoding hidden state
+mi
+t. Then, from other agents in the team as teacher agents,
+ATS receives the teachersâ encoding learning history hj
+t =
+lj(oj
+
+t ) and encoding policy parameter Î¸j.
+
+1, aj
+Now, ATS computes a query Qi
+
+t = WKhj
+
+t as student query
+vector, a key K j
+t as teacher key vector, and a
+value V j
+t = WV Î¸j as teacher policy value vector, where
+WK, WQ and WV are attentional learning parameters. After
+ATS receives all key-value (K j, V j) from all of teachers
+j â G, the attention weight Î±ij is assigned by passing key
+vector from teacher and query vector from student into a
+softmax:
+
+t = WQmi
+
+1, ..., oj
+
+Î±ij = sof tmax
+
+(cid:19)
+
+(cid:18) QiK j
+â
+DK
+
+(5)
+
+Here, DK is the dimension of teacher jâs key vector, which
+is used to resolve vanishing gradients (Vaswani et al. 2017).
+The ï¬nal policy advice is a weight sum with a linear transfor-
+mation:
+
+vi = WT
+
+(cid:88)
+
+Î±ijV j
+
+(6)
+
+j(cid:54)=i
+
+Here, WT is a learning parameter for policy parameter decod-
+ing.
+
+Behind the single attention head, we use a simple
+multi-attention head with a set of
+learning parameters
+(WK, WQ, WV ) to aggregate all advice from different repre-
+sentation subplaces. Besides, attention head dropout is applied
+to improve the effectivity of our attention mechanism.
+
+Finally, student agent i obtains its action at this time with
+
+policy parameters from Attention Teacher Selector:
+t = vi(mi
+(cid:101)ai
+t)
+
+(7)
+
+In our experiments, the attention parameters (WK, WQ, WV )
+are shared across all agents, because knowledge transfer
+process is similar in all pairs of student-teacher, but different
+observations introduce different teacher weight vector. This
+setting encourages our approach to learn more efï¬cient and
+make our model easy to be extended in different settings, such
+as larger number of agents or a different environment.
+
+In this work, we consider scenarios where other agentsâ
+learning experience is useful
+to a student agent. Feeding
+studentâs observation information and teacherâs learning ex-
+perience into our attention mechanism helps to select action
+with other agentsâ behavioral policy for the student agent. This
+module is an end-to-end knowledge transfer method without
+any decentralized learning parameter sharing.
+
+C. Self-learning Mode
+
+If agent iâs student actor chooses self-learning mode, the
+t to the actor
+
+student actor sends iâs encoding hidden state mi
+
+Fig. 3. Attention based Knowledge Selection
+
+network. In self-learning mode, agents learn as a common
+individual agent. Each agentâs policy in self-learning mode is
+independently trained by DDPG [28] algorithm.
+
+Agent is critic network is updated by TD error, R is agent
+
+iâs transition set:
+
+L (cid:0)Î¸Q(cid:1) = Emt,at,rt,mt+1â¼R
+
+yt = rt + Î³Q
+
+(cid:16)
+
+(cid:104)(cid:0)yt â Q (cid:0)mt, at|Î¸Q(cid:1)(cid:1)2(cid:105)
+mt+1, a(cid:48)|Î¸Q(cid:48)(cid:17)(cid:12)
+(cid:12)
+(cid:12)a(cid:48)=Âµ(cid:48)(mt+1|Î¸Âµ(cid:48))
+
+,
+
+(8)
+
+The policy gradient of agent is actor network can be derived
+
+as:
+
+âÎ¸ÂµJ = Emt,atâ¼R
+
+(cid:2)âaQ (cid:0)mt, at|Î¸Q(cid:1) |at=Âµ(mt)âÎ¸ÂµÂµ (mt|Î¸Âµ)(cid:3) .
+
+(9)
+In games with discrete action space, in self-learning mode,
+we refer to the modiï¬ed discrete version of DDPG suggested
+by [5] in agentsâ actor-critic networks. Agents in self-learning
+update its actor network use,
+
+âÎ¸Âµ J = Emt,atâ¼R [âaQ(mt, at)âÎ¸Âµat]
+
+(10)
+
+.
+
+Our framework is adapted for both continuous action space
+
+and discrete action space.
+
+VI. EMPIRICAL EVALUATIONS
+
+We construct
+
+the team-wide
+three environments to test
+performance of PAT and existing advising methods in multi-
+tasks and joint task scenarios. Also, we compare the scalability
+of all the approaches with the increase of number of agents.
+Additionally, the transferability of PAT is evaluated in different
+environments.
+
+A. Setup
+
+Empirical evaluations are performed on three cooperative
+multi-agent environments: Grid Treasure Collection, Moving
+Treasure Collection, Predator-Prey, and. We implement Grid
+Treasure Collection, a standard grid world environment. Mov-
+ing Treasure Collection and Predator-Prey are implemented
+
+Fig. 4. Grid Treasure Collection, 4 agents, 2 treasure and 2 treasure banks
+
+based on Multi-Agent Particle Environment [5], [30] where
+agents move around in a 2D space and involve interaction
+between agents. We brieï¬y describe the three environments
+below:
+
+1) Grid Treasure Collection: : There are M agents and M/2
+treasure grids and M/2 treasure banks in the grid maze (shown
+in Fig. 4). Each treasure is corresponding to a treasure bank.
+When agents collect treasures in treasure grids, agents get
+small rewards, and then return treasures to its corresponding
+bank, agents receives big rewards. Each treasure grid has M
+treasures and agents can only obtain one treasure from each
+treasure grid. The ability of agents to carry treasures is not
+limited. But when agents return wrong treasures to treasure
+banks, agents receive big penalties.
+
+2) Moving Treasure Collection: : The game rule in Moving
+Treasure Collection is similar to the above game, but in this
+environment, agents are green and treasures and treasure banks
+are moving randomly. And all objects are moving in a 2D open
+ground. Obstacles (large black circles) block the way in the
+environment.
+
+3) Cooperative Navigation: : There are M agents (green)
+and M landmarks (purple) in this environment. Agents are
+rewarded based on how far any agent is from each landmark.
+Agents are required to position themselves covering all the
+landmarks. When an agent covers a landmark, it gets a local
+reward. Obstacles (large black circles) block the way.
+
+To simplify our approach training, we set discrete action
+spaces in all the environments, allowing agents to move up,
+down, left, right, or stay. All agents receive partial observation
+at each step, and get local feedback from environments. We
+plan to evaluate our approach in both multi-task environment
+(Treasure Collection) and joint task environment
+
+B. Baselines
+
+We compare our approach, PAT with implementation of
+fully decentralized training approaches including Individual
+Deep Q-Learning (IQN) [11], AdHocTD [20] and LeCTR
+[21]. IQN, as a distributed baseline, is a reinforcement learning
+algorithm for single agent, which is trained independently
+for each agent with partial observation in our environments.
+
+Fig. 5. Average reward per episode in Grid Treasure Collection
+
+AdHocTD, LeCTR and our method rely on action advising
+without any other information communication , which means
+each agent is unaware of the observations and rewards of
+other agents in the environment. We implement AdHocTD
+and LeCTR with original experimental parameters and public
+implementations. In LeCTR implementation, we use Majority
+Vote for multiple advice selecting. Hyperparameters are tuned
+based on our environments and performance. All implemen-
+tation details will be released with code.
+
+We evaluate all the models on two different agent teams ,
+with M=4, M=8 and M=12 agents. When the number of agents
+increasing, the amount of calculation and difï¬culty increase
+rapidly.. Average step length per episode (Treasure Collection
+gamesâ max episode length = 1000), success rate of covering
+all landmarks in Cooperative Navigation, and average sum
+of rewards per episode are three indicators used to evaluate
+performance of all models. All results are reported using 30
+independent training setting different seeds. Table I shows the
+results in 4-agent and 12-agent environments for comparison.
+(The results in 8-agent environment will be presented in later
+released data)
+
+C. Results and Analysis
+
+Fig. 5 displays average team rewards per episode in Grid
+Treasure Collection. A thorough evaluation result is summa-
+rized in Table I.
+
+In 4-agent Grid Treasure Collection (GTC) and Mov-
+ing Treasure Collection (MTC) game, PAT outperforms all
+models with a higher average reward after convergence.
+In Comparison of all approachs in average episode length
+(Ave step), PAT has no obvious advantage compared with
+LeCTR, but PAT greatly improves average team reward per
+episode (Avg reward). Attention mechanism performs well
+and signiï¬cantly ï¬ghts out agents with useful experience (have
+successfully collected treasures), which can correctly guide
+unfamiliar agents to take more beneï¬cial actions. AdHocTD
+selects teachers using the number of times the agent visited
+the current state. As a result, the phenomenon of over-advising
+appears in AdHocTD after trained over 2000 episodes, which
+means that students may take advice from teachers with
+more bad experience. It contributes to AdHocTD worse ï¬nal
+
+TABLE I
+EVALUATION RESULTS
+
+TASK
+
+APPROACH
+
+Grid Treasure Collection
+Grid Treasure Collection
+Grid Treasure Collection
+Grid Treasure Collection
+
+Moving Treasure Collection
+Moving Treasure Collection
+Moving Treasure Collection
+Moving Treasure Collection
+
+Cooperative Navigation
+Cooperative Navigation
+Cooperative Navigation
+Cooperative Navigation
+
+Baseline
+AdHocTD
+LeCTR
+PAT
+
+Baseline
+AdHocTD
+LeCTR
+PAT
+
+Baseline
+AdHocTD
+LeCTR
+PAT
+
+M=4
+Avg step
+1000 Â± 0
+876 Â± 15
+812 Â± 39
+762 Â± 20
+
+1000 Â± 0
+1000 Â± 0
+877 Â± 46
+854 Â± 23
+
+397 Â± 25
+320 Â± 28
+278 Â± 25
+289 Â± 18
+
+Success %
+
+Avg reward
+
+-
+-
+-
+-
+
+-
+-
+-
+-
+
+0.78 Â± 1.43
+18.76 Â± 1.14
+29.87 Â± 1.23
+45.65 Â± 2.32
+
+â1.84 Â± 0.66
+8.22 Â± 1.79
+20.76 Â± 0.24
+33.98 Â± 2.13
+
+52.2 Â± 2.0 â1.78 Â± 0.03
+69.0 Â± 3.7 â1.23 Â± 0.27
+81.4 Â± 3.2 â1.29 Â± 0.39
+80.2 Â± 3.2 â0.45 Â± 0.07
+
+M=12
+Avg step
+2000 Â± 0
+1821 Â± 29
+1836 Â± 23
+1157 Â± 37
+
+2000 Â± 0
+1987 Â± 67
+1889 Â± 48
+1239 Â± 32
+
+782 Â± 4
+547 Â± 29
+672 Â± 14
+498 Â± 10
+
+Success %
+
+Avg reward
+
+-
+-
+-
+-
+
+-
+-
+-
+-
+
+â1.20 Â± 0.04
+12.56 Â± 0.34
+11.68 Â± 2.24
+20.34 Â± 1.49
+
+â3.59 Â± 0.26
+â3.34 Â± 0.21
+â2.79 Â± 2.12
+â0.32 Â± 0.43
+
+32.7 Â± 4.7 â4.68 Â± 0.05
+42.6 Â± 2.0 â3.50 Â± 0.08
+40.7 Â± 1.9 â3.36 Â± 0.70
+59.2 Â± 1.3 â2.67 Â± 0.02
+
+reward performance than LeCTR and PAT. LeCTR learns how
+to teach by centralized training and decentralized executing,
+causing the learning instability in early episodes. Observing
+the results, PAT successfully avoids this problem by training
+a decentralized student actor-critic network for the decision of
+acting mode.
+
+In 4-agent Cooperative Navigation, PAT surprisingly per-
+forms longer episode length and lower success rate than
+LeCTR. Attention mechanism in PAT tends to imitate suc-
+cessful action from other agents, which helps student agent
+gain more local rewards. But it might cause a bad impact on
+team coordination in a joint task. For example, agents tend to
+cover the same landmarks with successful experience, but the
+team needs to cover all the landmarks. PAT is hard to learn the
+team cooperative policy and gain more cooperative rewards.
+However, LeCTR uses a centralized critic network to calculate
+advising value concatenating all agentsâ observation, which
+exactly improves cooperation performance between agents.
+This result gives us a future direction that we should try to
+modify attention tendency in global reward for cooperative
+tasks.
+
+1) Scalability: When the number of agents is 12 in all the
+environments, because of the increasing computation difï¬culty
+in selecting advice from a larger agent team, AdHocTDâs
+advising probabilistic mechanism can not handle the prob-
+lem in more information selecting, resulting in sub-optimal
+rewards. LeCTR, as an algorithm originally supporting two-
+player games, has low performance in a larger size of agent
+team. We suspect it due to LeCTRâs centralized control of
+advising. With more agents in the environments, LeCTRâs
+centralized advising-level critic performs poorly with limited
+training time. As expected, PATâs attention selector effectively
+ï¬ltering knowledge from more teachers and maintain student
+modeâs accuracy, so our approach has a larger advantage with
+the increase in number of agents. Our experimental results
+conï¬rm our inference.
+
+In summary, PAT performs much better than all approaches
+and has a distinct advantage in average team-wide rewards in
+
+complex multi-task environments as expected. We also report
+PATâs disadvantage in the joint-task scenario. PAT scales better
+when agents are added in all the experiments, which shows that
+sharing attention mechanism is useful for information selecting
+in a large multi-agent team.
+
+2) Transferablility: Analysing the above results, the behav-
+ior knowledge transfer becomes more difï¬cult when number of
+agents increases. We design a new experiment to explore our
+model parameters transfer performance. We test our approach
+in two experiments with different numbers of agents. First,
+agents are trained in an environment with a small number
+of agents. Then,
+the trained parameters of agentsâ shared
+attention mechanisms are transferred/reused in an environment
+with more agents. We compared our transfer experimental
+performance with original training performance data of larger
+agent teams.
+
+Table II shows the transfer performance of 4-agent attention
+mechanism in 8-agent environment, and Table III presents
+the comparison between original learning performance and 6-
+agent model transfer data in 12-agent environment. In transfer
+experiments, the team of 8 or 12 agents trains their new indi-
+vidual student actor-critic network and self-learning network
+based on the transferred attention mechanism trained by a
+smaller team.
+
+According to the compared results summarized in Table
+II and III, our approach can be efï¬ciently transferred. The
+transferred model successfully achieve nearly 90% of the
+original training performance, which also better than all other
+approaches with fully training. It can save large computational
+costs for large-size team of agents.
+. Our shared attention
+selector can effectively solve new tasks based on related
+experience.
+
+VII. CONCLUSIONS AND FUTURE WORK
+
+We introduce a parallel knowledge-transfer framework, PAT
+for decentralized multi-agent reinforcement learning. Our key
+idea is designing two acting mode for agents and using a
+shared attention mechanism to select behavior knowledge
+
+TABLE II
+TRANSFER EVALUATIONS IN M=8
+
+Task
+M=8
+
+Original
+Avg step
+
+Avg reward
+
+Grid
+Moving
+
+914 Â± 65
+1174 Â± 42
+
+27.80 Â± 3.49
+10.79 Â± 3.58
+
+M=4
+Transfer
+Avg step
+1021 Â± 18
+997 Â± 10
+
+24.86 Â± 2.45
+9.37 Â± 3.02
+
+[13] F. L. Da Silva and A. H. R. Costa, âA survey on transfer learning
+for multiagent reinforcement learning systems,â Journal of Artiï¬cial
+Intelligence Research, vol. 64, pp. 645â703, 2019.
+
+[14] J. A. Clouse, âOn integrating apprentice learning and reinforcement
+
+Avg reward
+
+learning.â 1997.
+
+[15] O. Amir, E. Kamar, A. Kolobov, and B. Grosz, âInteractive teaching
+
+strategies for agent training,â 2016.
+
+[16] L. Torrey and M. Taylor, âTeaching on a budget: Agents advising agents
+in reinforcement learning,â in Proceedings of the 2013 international con-
+ference on Autonomous agents and multi-agent systems.
+International
+Foundation for Autonomous Agents and Multiagent Systems, 2013, pp.
+1053â1060.
+
+[17] A. Fachantidis, M. Taylor, and I. Vlahavas, âLearning to teach reinforce-
+ment learning agents,â Machine Learning and Knowledge Extraction,
+vol. 1, no. 1, pp. 21â42, 2018.
+
+[18] M. Tan, âMulti-agent reinforcement learning: Independent vs. cooper-
+ative agents,â in Proceedings of the tenth international conference on
+machine learning, 1993, pp. 330â337.
+
+[19] Y. Zhan, H. B. Ammar et al., âTheoretically-grounded policy advice
+from multiple teachers in reinforcement learning settings with applica-
+tions to negative transfer,â arXiv preprint arXiv:1604.03986, 2016.
+[20] F. L. Da Silva, R. Glatt, and A. H. R. Costa, âSimultaneously learning
+and advising in multiagent reinforcement learning,â in Proceedings of
+the 16th Conference on Autonomous Agents and MultiAgent Systems.
+International Foundation for Autonomous Agents and Multiagent Sys-
+tems, 2017, pp. 1100â1108.
+
+[21] S. Omidshaï¬ei, D.-K. Kim, M. Liu, G. Tesauro, M. Riemer, C. Amato,
+M. Campbell, and J. P. How, âLearning to teach in cooperative multi-
+agent reinforcement learning,â in Proceedings of the AAAI Conference
+on Artiï¬cial Intelligence, vol. 33, 2019, pp. 6128â6136.
+
+[22] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+Å. Kaiser, and I. Polosukhin, âAttention is all you need,â in Advances
+in neural information processing systems, 2017, pp. 5998â6008.
+[23] J. Oh, V. Chockalingam, S. Singh, and H. Lee, âControl of mem-
+ory, active perception, and action in minecraft,â arXiv preprint
+arXiv:1605.09128, 2016.
+
+[24] J. Choi, B.-J. Lee, and B.-T. Zhang, âMulti-focus attention network for
+efï¬cient deep reinforcement learning,â in Workshops at the Thirty-First
+AAAI Conference on Artiï¬cial Intelligence, 2017.
+
+[25] S. Iqbal and F. Sha, âActor-attention-critic for multi-agent reinforcement
+
+learning,â arXiv preprint arXiv:1810.02912, 2018.
+
+[26] D. Silver, G. Lever, N. Heess, T. Degris, D. Wierstra, and M. Riedmiller,
+
+âDeterministic policy gradient algorithms,â 2014.
+
+[27] R. S. Sutton, D. A. McAllester, S. P. Singh, and Y. Mansour, âPolicy
+gradient methods for reinforcement learning with function approxima-
+tion,â in Advances in neural information processing systems, 2000, pp.
+1057â1063.
+
+[28] T. P. Lillicrap, J. J. Hunt, A. Pritzel, N. Heess, T. Erez, Y. Tassa,
+D. Silver, and D. Wierstra, âContinuous control with deep reinforcement
+learning,â arXiv preprint arXiv:1509.02971, 2015.
+
+[29] A. Graves, G. Wayne, and I. Danihelka, âNeural turing machines,â arXiv
+
+preprint arXiv:1410.5401, 2014.
+
+[30] I. Mordatch and P. Abbeel, âEmergence of grounded compositional
+language in multi-agent populations,â in Thirty-Second AAAI Conference
+on Artiï¬cial Intelligence, 2018.
+
+TABLE III
+TRANSFER EVALUATIONS IN M=12
+
+Task
+M=12
+
+Original
+Avg step
+
+Avg reward
+
+Grid
+Moving
+
+1157 Â± 37
+20.34 Â± 1.49
+1239 Â± 32 â0.32 Â± 0.43
+
+M=8
+Transfer
+Avg step
+1230 Â± 9
+1389 Â± 24
+
+Avg reward
+
+18.85 Â± 0.98
+3.06 Â± 0.09
+
+from other agents to accelerate student agent learning. We
+empirically evaluate our proposed approach against all state-
+of-the-art advising or teaching methods in multi-agent environ-
+ments. Results in experiments of scaling the number of agents
+and model
+transfer are also shown. Extending knowledge
+transfer in joint task learning and more complicated multi-
+agent systems is our future research direction.
+
+REFERENCES
+
+[1] L. P. Kaelbling, M. L. Littman, and A. W. Moore, âReinforcement
+learning: A survey,â Journal of artiï¬cial intelligence research, vol. 4,
+pp. 237â285, 1996.
+
+[2] M. E. Taylor and P. Stone, âTransfer learning for reinforcement learning
+domains: A survey,â Journal of Machine Learning Research, vol. 10, no.
+Jul, pp. 1633â1685, 2009.
+
+[3] L. Matignon, L. Jeanpierre, and A.-I. Mouaddib, âCoordinated multi-
+robot exploration under communication constraints using decentralized
+markov decision processes,â in Twenty-sixth AAAI conference on artiï¬-
+cial intelligence, 2012.
+
+[4] H. M. Le, Y. Yue, P. Carr, and P. Lucey, âCoordinated multi-agent
+imitation learning,â in Proceedings of the 34th International Conference
+on Machine Learning-Volume 70.
+JMLR. org, 2017, pp. 1995â2003.
+[5] R. Lowe, Y. Wu, A. Tamar, J. Harb, O. P. Abbeel, and I. Mordatch,
+âMulti-agent actor-critic for mixed cooperative-competitive environ-
+ments,â in Advances in Neural Information Processing Systems, 2017,
+pp. 6379â6390.
+
+[6] S. Sukhbaatar, R. Fergus et al., âLearning multiagent communication
+with backpropagation,â in Advances in Neural Information Processing
+Systems, 2016, pp. 2244â2252.
+
+[7] J. Foerster, I. A. Assael, N. de Freitas, and S. Whiteson, âLearning
+to communicate with deep multi-agent reinforcement
+learning,â in
+Advances in Neural Information Processing Systems, 2016, pp. 2137â
+2145.
+
+[8] J. Jiang and Z. Lu, âLearning attentional communication for multi-agent
+cooperation,â in Advances in Neural Information Processing Systems,
+2018, pp. 7254â7264.
+
+[9] A. Das, T. Gervet, J. Romoff, D. Batra, D. Parikh, M. Rabbat,
+and J. Pineau, âTarmac: Targeted multi-agent communication,â arXiv
+preprint arXiv:1810.11187, 2018.
+
+[10] L. BusÂ¸oniu, R. BabuËska, and B. De Schutter, âMulti-agent reinforcement
+learning: An overview,â in Innovations in multi-agent systems and
+applications-1. Springer, 2010, pp. 183â221.
+
+[11] V. Mnih, K. Kavukcuoglu, D. Silver, A. A. Rusu, J. Veness, M. G.
+Bellemare, A. Graves, M. Riedmiller, A. K. Fidjeland, G. Ostrovski
+et al., âHuman-level control
+learning,â
+Nature, vol. 518, no. 7540, p. 529, 2015.
+
+through deep reinforcement
+
+[12] D. Hadï¬eld-Menell, S. J. Russell, P. Abbeel, and A. Dragan, âCoopera-
+tive inverse reinforcement learning,â in Advances in neural information
+processing systems, 2016, pp. 3909â3917.
+
+

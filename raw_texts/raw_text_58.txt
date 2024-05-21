@@ -1,0 +1,1014 @@
+1
+2
+0
+2
+
+r
+p
+A
+9
+2
+
+]
+
+G
+L
+.
+s
+c
+[
+
+2
+v
+5
+5
+4
+6
+0
+.
+6
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+Learning Individually Inferred Communication for
+Multi-Agent Cooperation
+
+Ziluo Ding Tiejun Huang Zongqing Lu(cid:66)
+Peking University
+{ziluo,tjhuang,zongqing.lu}@pku.edu.cn
+
+Abstract
+
+Communication lays the foundation for human cooperation. It is also crucial for
+multi-agent cooperation. However, existing work focuses on broadcast communi-
+cation, which is not only impractical but also leads to information redundancy that
+could even impair the learning process. To tackle these difï¬culties, we propose
+Individually Inferred Communication (I2C), a simple yet effective model to enable
+agents to learn a prior for agent-agent communication. The prior knowledge is
+learned via causal inference and realized by a feed-forward neural network that
+maps the agentâs local observation to a belief about who to communicate with.
+The inï¬uence of one agent on another is inferred via the joint action-value func-
+tion in multi-agent reinforcement learning and quantiï¬ed to label the necessity
+of agent-agent communication. Furthermore, the agent policy is regularized to
+better exploit communicated messages. Empirically, we show that I2C can not only
+reduce communication overhead but also improve the performance in a variety of
+multi-agent cooperative scenarios, comparing to existing methods. The code is
+available at https://github.com/PKU-AI-Edge/I2C.
+
+1
+
+Introduction
+
+Deep reinforcement learning has achieved remarkable success in a series of challenging tasks, e.g.,
+game playing [12, 16, 23]. However, many real-world applications require multiple agents to learn to
+solve tasks collaboratively, such as autonomous driving [15], smart grid control [26], and intelligent
+trafï¬c control [25]. Unfortunately, there exist several challenges impeding the breakthroughs in
+multi-agent reinforcement learning (MARL). On one hand, during training, the agent policy keeps
+updating, leading to non-stationary environment and unstable model convergence. On the other
+hand, even for the centralized training and decentralized execution (CTDE) paradigm which is
+designed to mitigate non-stationarity, such as MADDPG [10], COMA [4], VDN [20], QMIX [14],
+QTRAN [18], and MAAC [5], it is still hard for agents to act cooperatively during execution, since
+partial observability and stochasticity can easily break the learned cooperative strategy and result in
+catastrophic miscoordination [24].
+
+Communication lays the foundation for human cooperation [2]. It also holds for multi-agent coopera-
+tion. Communication could help agents form a good knowledge of cooperative strategies. Recently,
+many researches focus on trainable communication channel which agents can use to obtain extra
+information during both training and execution to tackle the challenges aforementioned. For most
+existing work, such as [19, 17, 1, 27], once the decision of communication is made, messages will
+be broadcast to all other/predeï¬ned agents. However, this requires lots of bandwidth and incurs
+additional delay in practice. More importantly, not every agent can provide useful information and
+redundant information could even impair the learning process [21, 8]. These limitations make it
+a less than ideal communication paradigm. Furthermore, it has never been the way how humans
+
+(cid:66): zongqing.lu@pku.edu.cn
+
+34th Conference on Neural Information Processing Systems (NeurIPS 2020), Vancouver, Canada.
+
+ 
+ 
+ 
+ 
+ 
+ 
+communicate, since humans would use their prior knowledge to choose whom to communicate with
+if necessary. For example, one of the most important features in Quora, a question-and-answer
+website, is ask to answer. One can invite the person who is believed to be highly relevant to answer
+the question. Otherwise, one could be overwhelmed by massive answers, not to mention most are
+useless or misleading. Therefore, we argue that an excellent communication paradigm should take
+into consideration ï¬nding the right ones to communicate by enabling the agent to ï¬gure out who are
+highly relevant with its situation and ignore those are not.
+
+In this paper, we propose Individually Inferred Communication (I2C), a simple yet effective model to
+enable agents to learn a prior for agent-agent communication. More speciï¬cally, each agent is capable
+of exploiting its learned prior knowledge to ï¬gure out which agent is relevant and inï¬uential by just
+local observation. The prior knowledge is learned via causal inference and realized by a feed-forward
+neural network that maps its local observation to a belief about who to communicate with. The
+inï¬uence of one agent on the other is captured by the causal effect of the agentâs action on the otherâs
+policy. For any agent that can cause drastic change to the otherâs policy, that agent is considered as
+relevant and inï¬uential. Unlike existing work [6] that utilizes social inï¬uence for reward shaping and
+hence encourages the agent to inï¬uence the behaviors of others, we quantify the causal effect inferred
+via the joint action-value function to label the necessity of agent-agent communication and thus a
+prior can be learned by supervised learning. Furthermore, correlation regularization is proposed to
+help the agent learn a better policy under the inï¬uence of the agents it communicates with.
+
+I2C learns one-to-one communication instead of one/all-to-all communication adopted by existing
+work [19, 17, 1, 27], and hence makes agents focus only on relevant information. In addition, I2C
+restricts the communication range of agent to the ï¬eld of view. These together make I2C much
+more practical, since in real-world applications communication is always limited by bandwidth and
+range. As I2C infers the causal effect between agents by only the joint action-value function, it is
+compatible with many CTDE frameworks. Moreover, by alternatively capturing the casual effect of
+communicated messages, I2C can also serve as communication control to reduce overhead for full
+communication methods, e.g., TarMAC [1]. We implement I2C based on two CTDE frameworks to
+learn communication in MARL and evaluate it in three classic multi-agent cooperative scenarios, i.e.,
+cooperative navigation, predator prey, and trafï¬c junction. In cooperative navigation and predator prey,
+we empirically demonstrate that I2C outperforms the existing methods with/without communication.
+By ablation studies, we conï¬rm that the inferred causal effect indeed captures the necessity of agent-
+agent communication, cooperative strategy can be better learned by agent-agent communication, and
+correlation regularization indeed helps the agent develop better policy. In trafï¬c junction, I2C is
+implemented as communication control for full communication methods, and it is shown that I2C
+can not only reduce communication overhead but also improve the performance. To the best of our
+knowledge, I2C is the ï¬rst work that learns one-to-one communication in MARL.
+
+2 Related work
+
+Learning communication in MARL has been greatly advanced recently. DIAL [3] is proposed as
+a simple differential communication module which allows the gradient to ï¬ow between agents for
+training, but it is limited to discrete message. CommNet [19] is a large connected structure that
+controls all the agents. It averages the hidden layers from all the agents to produce the message, which
+however inevitably leads to information loss. BiCNet [13] trains a bi-directional communication
+channel using recurrent neural networks to integrate messages from all the agents. Both CommNet
+and BiCNet use a communication channel to connect all the agents, i.e., each agent sends message to
+and receives from all other agents. In such a case, there is no doubt that agents can be ï¬ooded by
+information as the number of agents grows.
+
+IC3Net [17], an upgraded version of CommNet, tries to instruct agents to learn when to communicate
+by bringing in a single gating mechanism. IC3Net makes progress on considering that communication
+is not always necessary, where each agent determines whether to send messages to the others at each
+timestep, but what if an agentâs message is instructive to some agents but harmful to others. SchedNet
+[9], on the other hand, is a weight-based scheduler to decide which agents should be entitled to
+broadcast their messages. SchedNet needs the observations from all the agents as input, making it
+highly unrealistic. ATOC [8] is a communication model which can be seen as a more complex gate
+mechanism to decide when to speak to predeï¬ned neighboring agents. VBC [27] extracts informative
+messages based on variance in action values, where each agent determines whether to broadcast to all
+
+2
+
+Figure 1: I2Câs architecture.
+
+Figure 2: I2Câs request-reply communication mech-
+anism. The agent can only communicate with other
+agents in its ï¬eld of view.
+
+other agents, then other agents decide whether to reply. However, VBC works only on the methods
+that factorize the joint action-value function, such as QMIX [14].
+
+Inspired by the wide application of attention mechanism in computer vision and natural language pro-
+cessing [11, 22], many researchers raise a lot of interests in its ability of discerning what part of input
+should be paid more attention. DGN [7] harvests information from messages in the neighborhood
+by convolution with multi-head attention kernels. However, the communication of DGN is limited
+by the number of convolutional layers. TarMAC [1] pilots agents to form targeted communication
+behavior also through multi-head attention. Basically, TarMAC is still a traditional broadcast ap-
+proach (all-to-all communication) with attention that allows agents to turn a blind eye to received
+inconsequential messages.
+
+None of existing work completely abandons broadcast mechanism. However, I2C enables the agent
+to make a judgment only based on its own observation, then it communicates only with the relevant
+and inï¬uential agents within its ï¬eld of view. We will show that such a communication mechanism is
+actually able to obtain useful information and discard redundant and useless information meanwhile.
+
+3 Methods
+
+I2C can be instantiated by any framework of CTDE with a joint action-value function. I2C consists
+of a prior network, a message encoder, a policy network, and a centralized critic, as illustrated
+in Figure 1. We consider fully cooperative multi-agent tasks that are modeled as Dec-POMDPs
+augmented with communication. Agents together aim to maximize the cumulative team reward.
+Additionally, agents are able to communicate with observed agents and adopt the request-reply
+communication mechanism, which is illustrated in Figure 2. At a timestep, each agent i obtains a
+partial observation oi and identiï¬es which agents are in the ï¬eld of view based on oi. Suppose agent
+j can be seen by agent i, the prior network bi(Â·) takes as input local observation oi and ID dj (or any
+feature that identiï¬es agent j) and outputs a belief indicating whether to communicate with agent j.
+Based on the belief, if agent i sends a request (scalar) to agent j via a communication channel, agent
+j will respond with a message mj, i.e., its own (encoding of) observation. All the messages received
+by agent i, mi, are fed into the message encoder network ei(Â·) to produce the encoded message
+ci, and the policy network outputs the distribution over actions Ïi(ai|ci, oi). The centralized critic
+approximates the joint action-value function.
+
+3.1 Learning Prior Network via Causal Inference
+
+The key component of I2C is the prior network, which enables agents to have a belief about who to
+communicate with. Intuitively, an agent is more likely to communicate with those who are potentially
+imposing more inï¬uence on its strategy, hoping to get clues about how they tend to act and how to
+react cooperatively. Therefore, the causal effect of other agent can be regarded as the necessity of
+conditioning on other agentâs action for decision making. Fortunately, we can measure and quantify
+the causal effect between agents via the centralized critic and train the prior network to determine
+agent-agent communication.
+
+3
+
+observable	agentsbeliefbeliefdldkdjbeliefPrior	NetPrior	NetPrior	NetmlmkmjMessage	EncoderPolicy	aiciCentralized	Cri4c	â¦agent	iagent	jajCorrela4on	Regulariza4onÏiâ¦Env.orequestreplyoiagent	iagent âs obsiagent	jagent	kagent	lrequestreplyagent  chooses to send request to agent  and ignore ijkijkltagent	iagent âs obsiagent	jagent	kagent	lrequestrequestreplyreplyijklagent  chooses to send requests to agent  and ignore ij,klt+1Assume there are two conditional probability distributions over the action space of agent i, i.e.,
+P (ai|aâi, o) and P (ai|aâij, o), where o denotes the joint observations of all agents, aâi denotes
+the given joint actions of all agents except for agent i, and similarly aâij denotes the given joint
+actions except for agent i and j. The latter probability distribution does not condition on agent jâs
+action compared with the former one, implying agent i ignores agent j when making decision. Then,
+the causal effect I j
+
+i of agent j on agent i can be deï¬ned as:
+
+I j
+i = DKL (P (ai|aâi, o)(cid:107)P (ai|aâij, o)) .
+Kullback-Leibler (KL) divergence is employed to measure the discrepancy between these two
+conditional probability distributions. Note that the conditioned actions of other agents aâi are the
+actions sampled from their current policies. The magnitude of I j
+i indicates how much agent i will
+make adjustments to its policy if it takes into account the action of agent j, and also shows how much
+the strategy of agent j is correlated with the policy of agent i.
+
+The joint action-value function is exploited to calculate the two probability distributions. P (ai|aâi, o)
+is calculated as the softmax distribution over the actions of agent i,
+exp(Î»Q(ai, aâi, o))
+
+P (ai|aâi, o) =
+
+(cid:80)
+
+a(cid:48)
+i
+
+exp(Î»Q(a(cid:48)
+
+i, aâi, o))
+
+,
+
+where Q(a, o) is the joint action-value function and Î» â R+ is the temperature parameter.
+P (ai|aâij, o) can be regarded as the marginal distribution of P (ai, aj|aâij, o) and computed
+as,
+
+P (ai|aâij, o) =
+
+(cid:88)
+
+aj
+
+P (ai, aj|aâij, o) =
+
+(cid:88)
+
+aj
+
+(cid:80)
+
+i,a(cid:48)
+a(cid:48)
+j
+
+exp(Î»Q(ai, aj, aâij, o))
+
+exp(Î»Q(a(cid:48)
+
+i, a(cid:48)
+
+j, aâij, o))
+
+.
+
+Then, we can obtain the causal effect I j
+determine agent-agent communication, we store {(oi, dj), I j
+the prior network. The training will be discussed later.
+
+i of agent j on i under current state. As agent i only has oi to
+i } as a sample of training data set S for
+
+Communication Reduction. The prior network is primarily designed to initiate agent-agent com-
+munication. However, it can alternatively serve as a component to reduce communication for full
+communication methods, e.g., TarMAC [1], where there is a joint action-value function that addition-
+ally takes received messages of all agents as input, Q(a, o, m). With this joint action-value function,
+we can also measure the casual effect of communicated messages. More speciï¬cally, two conditional
+probability distributions can be calculated: P (ai|aâi, o) and P (ai|aâi, mi, o). The KL divergence
+between them measures the causal effect of received messages mi on agent i, which similarly can
+be employed to determine the necessity of existing communication. The effect of I2C in reducing
+communication is also investigated in the experiments.
+
+3.2 Correlation Regularization
+
+The causal effect is inferred via the joint action-value function to determine the necessity of com-
+munication between agents. Then, each agent takes action based on its observation with/without
+communicated messages in a decentralized way. This can be seen as employing decentralized policies
+augmented by communication to approximate the centralized policy derived from the joint action-
+value function. With such an approximation, ideally the policy of an agent requesting communication
+should condition on the observation and action of the communicated agent. However, it is impossible
+to send action directly in practice, otherwise circular dependencies can occur. Therefore, the agent
+policy has to condition only on the observation. Nevertheless, we design correlation regularization to
+help the agent correlate other agentâs observation and action and thus correct the discrepancy between
+the policies with/without considering the action.
+
+As illustrated in Figure 2 (right), agent i perceives agent j, k, l and chooses to send requests to
+agent j, k based on the prior knowledge. Then, agent i takes action based on the observations
+of agent i, j and k. To encourage the agent to learn inferring othersâ actions from their obser-
+vations, we force the policy conditioned on the observations Ïi(ai|ei(oj, ok), oi) be close to the
+policy also conditioned on the action ËÏi(ai|aj, ak, ei(oj, ok), oi). From the perspective of agent
+i, ËÏi(ai|aj, ak, ei(oj, ok), oi) is exploited to approximate P (ai|aâi, o), and thus we directly use
+P (ai|aâi, o) as the target of Ïi(ai|ei(oj, ok), oi). The KL divergence between these two distribu-
+tions, DKL(P (ai|aâi, o)(cid:107)Ïi(ai|ei(oj, ok), oi)) is employed as the regularization to the policy.
+
+4
+
+3.3 Training
+
+The centralized joint action-value function QÏ(a, o), which is parameterized by Î¸Q and takes as
+input the actions and observations of all the agents, guides the policy optimization. The centralized
+critic is updated as
+
+L(Î¸Q) = Eo,a,r,o(cid:48)[(QÏ(a, o) â y)2],
+y = r + Î³QÏ(a(cid:48), o(cid:48))|a(cid:48)â¼Ï(o(cid:48)),
+
+where a(cid:48) are sampled from Ï(o(cid:48)). The regularized gradient of each policy network parameterized by
+Î¸Ïi can be written as,
+log Ïi(ai|ci, oi)QÏ(ai, aâi, o)]âÎ·âÎ¸Ïi
+âÎ¸Ïi
+where Î· is the coefï¬cient for correction regularization. By the chain rule, the gradient of each message
+encoder network parameterized by Î¸ei can be further derived as,
+
+J (Î¸Ïi ) = Eo,a[EÏi[âÎ¸Ïi
+
+DKL(Ïi(Â·|ci, oi)(cid:107)P (Â·|aâi, o))],
+
+âÎ¸ei
+
+J (Î¸ei) =Eo,m,a[EÏi[âÎ¸ei
+â Î·âÎ¸ei
+
+ei(ci|mi)âci log Ïi(ai|ci, oi)QÏ(ai, aâi, o)]
+
+ei(ci|mi)âciDKL(Ïi(Â·|ci, oi)(cid:107)P (Â·|aâi, o))].
+
+The prior network parameterized by Î¸bi is trained as a binary classiï¬er using the training data set S,
+and it updates with the loss,
+
+L(Î¸bi) = E
+
+(oi,dj ),Ij
+
+i â¼S [â(1 â yj
+
+i ) log(1 â bi(oi, dj)) + yj
+
+i log(bi(oi, dj))],
+
+i = 1 if I j
+
+where yj
+i â¥ Î´, zero otherwise, and Î´ is a hyperparameter. The prior network can be learned
+end-to-end or in a two-phase manner. As for two-phase manner, phase one is to train the prior network
+with data generated from any pre-trained CTDE algorithm, and phase two is to train the rest of the
+architecture from scratch, with the prior network ï¬xed. We found that the two-phase manner learns
+faster and thus is employed in the experiments.
+
+4 Experiments
+
+We evaluate I2C in three multi-agent cooperative tasks: cooperative navigation, predator prey, and
+trafï¬c junction. For cooperative navigation and predator prey, I2C is built on MADDPG [10] to
+learn agent-agent communication. For trafï¬c junction [19], our main purpose is to investigate the
+effectiveness of I2C on communication reduction, and thus we built I2C directly on TarMAC [1] and
+it serves as communication control. In the experiments, I2C and baselines are parameter-sharing.
+Moreover, to ensure the comparison is fair, their basic hyperparameters are the same and their sizes
+of network parameters are also similar. Please refer to the supplementary for the hyperparameter
+settings.
+
+4.1 Cooperative Navigation
+
+Task and Setting. In this task, N agents try to occupy L
+landmarks. Each agent obtains partial observation of the
+environment and it is only allowed to communicate with
+observed agents. The team reward is based on the proximity
+of agents to landmarks, which is the sum of negative dis-
+tances of all landmarks to their closest agents. Moreover,
+agents are penalized for collision. In this task, each agent
+needs to consider the intentions of other agents to infer the
+right landmark to occupy and avoid collision meanwhile. In
+the experiment, we train I2C and baselines in the setting
+of N = 7 and L = 7 with random initial locations, and
+each agent observes relative positions of three nearest agents
+and three nearest landmarks. The collision penalty is set to
+rcollision = â1. The length of each episode is 40 timesteps.
+Quantitative Results. We compare I2C with three existing
+methods: IC3Net [17], TarMAC [1] and MADDPG [10].
+
+5
+
+Figure 3: Reward of I2C against base-
+lines during training in cooperative
+navigation. Shadowed area is enclosed
+by the min and max value of three
+training runs, and solid line in middle
+is mean.
+
+Table 1: Cooperative Navigation
+
+I2C
+
+I2C-R
+
+FC
+
+RC
+
+MADDPG
+
+IC3NET
+
+TARMAC
+
+REWARD â0.73 Â±0.20 â0.77 Â±0.15 â1.08 Â±0.22 â1.30 Â±0.48 â1.26 Â±0.26 â3.03 Â±0.71 â2.93 Â±0.26
+0.88 Â±0.33
+OCCUPIED 6.13 Â±1.26
+
+0.76 Â±0.67
+
+4.25 Â±2.01
+
+5.85 Â±1.12
+
+4.69 Â±1.31
+
+4.79 Â±1.30
+
+We do not choose [6] as baseline, because it focuses on social dilemma where each agent has
+an individual reward, not fully cooperative tasks we consider. Moreover, it assumes inï¬uence is
+unidirectional, meaning they set a disjoint set of inï¬uencer and inï¬uencee agents, and all inï¬uencers
+must act ï¬rst. As I2C learns the prior network to determine whether to communicate with each
+observed agent, I2C is also compared against two baselines with only difference in communication:
+each agent always communicates with all observed agents, denoted as FC, and each agent randomly
+communicates with each observed agent with probability pcomm, denoted as RC. Moreover, we also
+investigate I2C without correlation regularization, denoted as I2C-R. Figure 3 shows the learning
+curves of all the methods in terms of ï¬nal reward in cooperative navigation. We can see that I2C
+converges to the highest reward compared with all other baselines. For testing, we evaluate all the
+methods by 100 test runs. Table 1 shows the results, including reward and occupied landmarks.
+I2C achieves the best performance in terms of both reward and occupied landmarks. TarMAC and
+IC3Net have the worst performance and they fail to develop cooperative strategy in this task. One of
+possible reasons is that they are poor at handling tasks where team reward cannot be decomposed to
+individual ones since TarMAC also struggles in all the scenarios of StarCraft II (cooperative game)
+[24]. As observed in the experiments, both TarMAC and IC3Net agents do not have a clear goal at
+the beginning so that they perform conservatively and aimlessly and prefer to avoid collisions rather
+than approach landmarks.
+
+Ablations. As illustrated in Figure 3 and Table 1, FC
+achieves higher reward than MADDPG, demonstrat-
+ing communication could help agents obtain valuable
+information and learn better policies. However, RC is
+worse than MADDPG, verifying that useless informa-
+tion can impair the performance. I2C outperforms FC.
+This demonstrates that there exists redundancy even
+in full communication with only observed agents and
+I2C is able to extract necessary communication for
+faster convergence and better performance. More-
+over, in the experiments, RC is tuned by pcomm to
+have nearly the same amount of communication with
+I2C. However, I2C substantially outperforms RC.
+This veriï¬es that the causal effect between agents
+truly captures the necessity of communication and
+the learned prior network is also effective. In addition,
+the superior performance of I2C to I2C-R proves the
+effectiveness of correlation regularization for learn-
+ing better policy.
+
+Model Interpretation. We ï¬rst analyze the learned
+policies by I2C and the baselines. I2C agents have
+explicit targets to occupy and they tend to choose dif-
+ferent landmarks as much as possible to ensure more
+landmarks can be occupied. However, the baselines
+do not develop such behaviors. Moreover, I2C also
+learns cooperative strategies. For example, one agent
+would abandon its target landmark and occupy other
+landmark while seeing there exists other agent having
+more advantages for occupying its target landmark,
+as illustrated in the top row of Figure 4. Moreover,
+one agent would give up the occupied landmark for
+other agent that possesses the same target so that they
+could together occupy the landmarks more quickly,
+as illustrated in the mid row of Figure 4. These co-
+
+6
+
+Figure 4: Illustration of learned cooperative
+behaviors of I2C agents comparing to MAD-
+DPG agents in cooperative navigation. Each
+row has the same initial positions of agents
+and landmarks, where black circles are land-
+marks and purple circles are trajectories of
+agents and darker circles are more recent
+agent positions.
+
+newagent	1agent	2landmark	1landmark	2I2Cagent	1agent	2landmark	1landmark	2MADDPGlandmark	1landmark	2agent	1agent	2I2Clandmark	1landmark	2agent	1agent	2MADDPGagent	1agent	2I2Cagent	1agent	2MADDPG(a)(c)agent	1agent	2landmark	1landmark	2I2Cagent	1agent	2landmark	1landmark	2MADDPGagent	1agent	2landmark	1landmark	2agent	3landmark	3I2Cagent	1agent	2landmark	1landmark	2landmark	3agent	3MADDPGI2Cagent	1agent	2landmark	1landmark	2MADDPGagent	1agent	2landmark	1landmark	2(a)(b)oldagent	1agent	2landmark	1landmark	2agent	3landmark	3I2Cagent	1agent	2landmark	1landmark	2landmark	3agent	3MADDPGoperative strategies together form more sophisticated team strategies, as illustrated in the bottom
+row of Figure 4. The development of all these strategies requires inferring the intentions of other
+agents. However, without communication, it is hard to ï¬gure out otherâs intention. As illustrated
+in Figure 4, when two MADDPG agents approach a same target landmark, they always choose to
+share this landmark and none of them are willing to leave, regardless of collisions. On the other hand,
+IC3Net and TarMAC agents are very conservative. They behave hesitantly and wander around as
+soon as they ï¬nd out other agent is targeting the same landmark to avoid collision. It seems the agent
+understands the intention of other agent, but it does not know how to cooperatively react.
+
+We then investigate the communication pattern of I2C.
+Figure 5 illustrates the change of communication over-
+head as one episode progresses, where the communication
+overhead is the ratio between the sum of communicated
+agents and the sum of observed agents for all agents. As
+the episode starts, the communication overhead quickly
+increases to more than 80%. This is because at the begin-
+ning of an episode, agents need to determine targets and
+avoid target conï¬icts, and thus more communications are
+needed to reach a consensus. As the episode progresses,
+agents are moving more closely to their targets and agents
+become less inï¬uential on the policies of others. Thus,
+the communication overhead is also progressively reduced.
+Eventually, the communication overhead is reduced to the
+minimal, about only 10%.
+
+4.2 Predator Prey
+
+Figure 5: Change of communication
+overhead as one episode progresses in
+cooperative navigation.
+
+Task and Setting. In this task, N predators (agents) try to capture M preys. Each predator obtains
+partial observation and can only communicate with observed predators. Preys have a pre-deï¬ned area
+of activity and move in the opposite direction of the closest predator. Moreover, preys move faster
+than predators, and thus it is impossible for a predator to capture a prey alone. As for difference in
+predator-prey between ours and the IC3Net settings [17], ours has three moving preys, while IC3Net
+has only one prey and it is stationary. The team reward of predators is the sum of negative distances of
+all the preys to their closest predators. Predators are also penalized for colliding with other predator.
+In this task, predators need to learn how to cooperate with others to surround and capture preys. In
+the experiment, there are N = 7 predators and M = 3 preys with random initial locations, and
+each predator can observe relative positions of three nearest predators and three preys. The collision
+penalty is set to rcollision = â1, and one episode is 40 timesteps.
+
+Figure 6: Mean reward of I2C against
+baselines during training in predator prey.
+
+Figure 7: Illustration of learned strategies of I2C
+agents in predator prey. Black and purple circles
+are trajectories of preys and predators, respectively,
+and darker circles are more recent positions.
+
+Quantitative Results and Analysis. We compare I2C with MADDPG, TarMAC, IC3Net and FC.
+As shown in Figure 6, I2C converges to the highest mean reward, averaged over timesteps. Table 2
+shows the test results of 100 runs in terms of mean reward. I2C also performs the best. Comparing to
+cooperative navigation, the difference between I2C and FC in both performance and communication
+overhead narrows down, where the communication overhead of I2C is about 48%. This is because
+communication is more crucial in predator prey and there is no much communication redundancy.
+
+7
+
+Communication Overhead00.250.50.751Timestep010203040Predator	1Predator	2Prey	1Prey	2Predator	1Predator	2Predator	3Predator	4Prey	1Prey	2Predator	5Predator	1Prey	1	Predator	2Predator	3Predator	4Prey	2	Table 2: Predator Prey
+
+I2C
+
+FC
+
+MADDPG
+
+TARMAC
+
+IC3NET
+
+MEAN REWARD â0.83 Â±0.02 â0.88 Â±0.02 â0.98 Â±0.02 â1.36 Â±0.00 â1.66 Â±0.08
+
+More speciï¬cally, when a predator moves close to a prey, it is quite necessary to keep communicating
+with its close predators, because they need to cooperate with each other consistently to capture the
+highly active prey.
+
+As observed in the experiments, I2C agents learn sophisticated cooperative strategies to capture preys.
+Normally, it is hard for less than three predators to surround a prey since there always exists a gap for
+the prey to escape. However, I2C agents learn to drive preys to the corner and exploit it to help them
+encircle preys, as illustrated in Figure 7 (left). Thus, even two I2C agents could capture a prey. In
+addition, I2C agents chasing different preys are prone to drive their preys together, so that a large
+encirclement can be formed, as illustrated in Figure 7 (right).
+
+4.3 Trafï¬c Junction
+
+Task and Setting. In trafï¬c junction [19], many cars move along two-way roads with one or more
+road junctions following the predeï¬ned routes. Cars only have two actions: brake (stay at its current
+location) and gas (move one step forward following the route). At each timestep, a new car enters the
+environment with probability parrive from each entry point until the total number of car reaches Nmax.
+After a car completes its route, it will be removed from the grid immediately, but it can be added back
+with a reassigned route. Cars will continue to move even after collisions. The agent gets a penalty
+rcollision = â10 for colliding with other car and gets a reward of â0.01Ï at every timestep, where Ï is
+the number of timesteps since the car arrived. The team reward is the sum of all individual rewards.
+
+We implement the medium and hard mode
+in the experiments. In the medium mode as
+illustrated in Figure 8a, there are one junc-
+tion, four entry points, and three possible
+routes at each entry point, and Nmax = 10,
+parrive = 0.05.
+In the hard mode as il-
+lustrated in Figure 8b, there are four junc-
+tions, eight entry points, and seven possible
+routes at each entry point, Nmax = 20 and
+parrive = 0.03. In both modes, it turns out
+communication is trivial as long as cars have
+vision, since just one-grid vision provides
+cars enough reaction time to avoid collisions.
+Thus, all cars are set to only observe the grid
+it locates. In other words, cars only know
+the information of where they stay currently
+and are blind to anything else. In this setting, it is extremely hard for cars to ï¬nish the entire route
+safely without communication. Unlike previous two experiments, in trafï¬c junction we measure the
+causal effect directly from messages so that the prior network predicts whether it is necessary to send
+requests to all other agents for communication at each timestep. In this setting, we investigate whether
+the causal effect inferred from messages can also help reduce communication for full communication
+methods. I2C is build on TarMAC and serves as communication control, denoted as I2C+TarMAC.
+
+Figure 8: Communication overhead at different loca-
+tions in the medium and hard mode of trafï¬c junc-
+tion. Darker color indicates higher communication
+overhead.
+
+(a) medium mode
+
+(b) hard mode
+
+Quantitative Results. We compare I2C+TarMAC with TarMAC, IC3Net and no communication
+baseline in the medium and hard mode of trafï¬c junction. Table 3 shows the performance of all
+the methods in terms of success rate of 10000 runs (an episode succeeds if it completes without
+any collisions) for both the medium and hard mode. In the medium mode, both I2C+TarMAC and
+TarMAC perform very well in success rate and reach above 97%. No communication baseline has a
+success rate of 79.19%, while IC3Net only gets 78.08%. In the hard mode, I2C+TarMAC is the only
+model that achieves more than 90% success rate, while TarMAC, IC3Net and no communication
+baseline have 89.24%, 40.47%, and 48.10%, respectively. This again veriï¬es I2C can not only reduce
+communication but also improve performance, which is attributed to the prior network that accurately
+captures the necessity of communication. Note that the performance of TarMAC and IC3Net is
+
+8
+
+Table 3: Trafï¬c Junction
+
+I2C+TARMAC TARMAC IC3NET NO COMMUNICATION
+
+MEDIUM
+HARD
+
+97.92%
+92.17%
+
+97.60% 78.08%
+89.24% 40.47%
+
+79.19%
+48.10%
+
+different from that in their original paper, due to different experiment settings. We make heavier
+trafï¬c and restrict carsâ vision so as to demonstrate the superiority of I2C. They all have similar
+performance in easier settings.
+
+Model Interpretation. Figure 8 shows the communication overhead at different locations for both
+modes. The communication overhead at a location is the ratio between communicating cars at the
+location and total cars that pass the location. In the medium mode, as illustrated in Figure 8a, the
+communication overhead is reduced by nearly 34% compared to TarMAC. More speciï¬cally, cars
+communicate with other cars with high probability when moving towards and crossing the junction.
+However, communication occurs less after passing the junction. Intuitively, cars want to know as
+much information as possible, especially the location of other agents, in order to avoid collisions
+when crossing the junction. Even for the cars at the beginning of the route, they also need to prepare
+for the brake of front cars, which cannot be realized without communication. In contrast, the optimal
+action for all the cars is gas all the time after passing the junction. This strategy guarantees that no
+collisions occur and time delay is minimal, and thus communication is much less necessary.
+
+Figure 8b shows the communication overhead for the hard mode, where the communication overhead
+is reduced by nearly 37%. Note that the hard mode is far more complicated than the medium mode
+(more junctions, entry points and routes), which makes communication more crucial for cars to
+avoid collision. Similarly, cars tend to communicate with other cars before entering all the four
+junctions. However, in the hard mode, keeping gas after crossing a junction may not be appropriate
+anymore since there may be another junction in the route. For the locations between two junctions,
+communication occurs with low probability. After crossing a junction, cars are prone to communicate
+less compared with other locations, which accords with the communication pattern shown in the
+medium mode.
+
+5 Conclusions
+
+We have proposed I2C to enable agents to learn a prior for agent-agent communication. The prior
+knowledge is learned via the causal effect between agents which accurately captures the necessity of
+communication. In addition, the agent policy is also regularized to better make use of communicated
+messages. Moreover, I2C can also serve as a component for communication reduction. As I2C
+relies on only a joint action-value function, it can be instantiated by many centralized training and
+decentralized execution frameworks. Empirically, it is demonstrated that I2C outperforms existing
+methods in a variety of cooperative multi-agent scenarios.
+
+Broader Impact
+
+The experimental results are encouraging in the sense that we demonstrate I2C is a promising method
+for dealing with targeted communication in multi-agent communication based on causal inï¬uence.
+It is not yet at the application stage, and does not have broader impact. However, this work learns
+one-to-one communication instead of one/all-to-all communication, making I2C more practical in
+real-world applications.
+
+Acknowledgments and Disclosure of Funding
+
+This work is supported by NSF China under grant 61872009.
+
+References
+
+[1] Abhishek Das, ThÃ©ophile Gervet, Joshua Romoff, Dhruv Batra, Devi Parikh, Mike Rabbat, and
+Joelle Pineau. Tarmac: Targeted multi-agent communication. In International Conference on
+
+9
+
+Machine Learning (ICML), 2019.
+
+[2] Ernst Fehr and Ivo Schurtenberger. Normative foundations of human cooperation. Nature
+
+Human Behaviour, 2(7):458â468, 2018.
+
+[3] Jakob Foerster, Ioannis Alexandros Assael, Nando de Freitas, and Shimon Whiteson. Learning to
+communicate with deep multi-agent reinforcement learning. In Advances in Neural Information
+Processing Systems (NeurIPS), 2016.
+
+[4] Jakob Foerster, Gregory Farquhar, Triantafyllos Afouras, Nantas Nardelli, and Shimon Whiteson.
+Counterfactual multi-agent policy gradients. In AAAI Conference on Artiï¬cial Intelligence
+(AAAI), 2018.
+
+[5] Shariq Iqbal and Fei Sha. Actor-attention-critic for multi-agent reinforcement learning. In
+
+International Conference on Machine Learning (ICML), 2019.
+
+[6] Natasha Jaques, Angeliki Lazaridou, Edward Hughes, Caglar Gulcehre, Pedro Ortega,
+Dj Strouse, Joel Z Leibo, and Nando De Freitas. Social inï¬uence as intrinsic motivation
+for multi-agent deep reinforcement learning. In International Conference on Machine Learning
+(ICML), 2019.
+
+[7] Jiechuan Jiang, Chen Dun, Tiejun Huang, and Zongqing Lu. Graph convolutional reinforcement
+
+learning. In International Conference on Learning Representation (ICLR), 2020.
+
+[8] Jiechuan Jiang and Zongqing Lu. Learning attentional communication for multi-agent coopera-
+
+tion. Advances in Neural Information Processing Systems (NeurIPS), 2018.
+
+[9] Daewoo Kim, Sangwoo Moon, David Hostallero, Wan Ju Kang, Taeyoung Lee, Kyunghwan
+Son, and Yung Yi. Learning to schedule communication in multi-agent reinforcement learning.
+In International Conference on Learning Representations (ICLR), 2019.
+
+[10] Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, OpenAI Pieter Abbeel, and Igor Mordatch. Multi-
+agent actor-critic for mixed cooperative-competitive environments. In Advances in Neural
+Information Processing Systems (NeurIPS), 2017.
+
+[11] Volodymyr Mnih, Nicolas Heess, Alex Graves, et al. Recurrent models of visual attention. In
+
+Advances in neural information processing systems (NeurIPS), 2014.
+
+[12] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G
+Bellemare, Alex Graves, Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
+Human-level control through deep reinforcement learning. Nature, 518(7540):529, 2015.
+
+[13] Peng Peng, Ying Wen, Yaodong Yang, Quan Yuan, Zhenkun Tang, Haitao Long, and Jun Wang.
+Multiagent bidirectionally-coordinated nets: Emergence of human-level coordination in learning
+to play starcraft combat games. arXiv preprint arXiv:1703.10069, 2017.
+
+[14] Tabish Rashid, Mikayel Samvelyan, Christian Schroeder de Witt, Gregory Farquhar, Jakob
+Foerster, and Shimon Whiteson. Qmix: Monotonic value function factorisation for deep
+multi-agent reinforcement learning. In International Conference on Machine Learning (ICML),
+2018.
+
+[15] Shai Shalev-Shwartz, Shaked Shammah, and Amnon Shashua. Safe, multi-agent, reinforcement
+
+learning for autonomous driving. arXiv preprint arXiv:1610.03295, 2016.
+
+[16] David Silver, Aja Huang, Chris J Maddison, Arthur Guez, Laurent Sifre, George Van Den Driess-
+che, Julian Schrittwieser, Ioannis Antonoglou, Veda Panneershelvam, Marc Lanctot, et al.
+Mastering the game of go with deep neural networks and tree search. nature, 529(7587):484,
+2016.
+
+[17] Amanpreet Singh, Tushar Jain, and Sainbayar Sukhbaatar. Individualized controlled continuous
+In International
+
+communication model for multiagent cooperative and competitive tasks.
+Conference on Learning Representations (ICLR), 2019.
+
+10
+
+[18] Kyunghwan Son, Daewoo Kim, Wan Ju Kang, David Earl Hostallero, and Yung Yi. Qtran:
+Learning to factorize with transformation for cooperative multi-agent reinforcement learning.
+In International Conference on Machine Learning (ICML), 2019.
+
+[19] Sainbayar Sukhbaatar, Rob Fergus, et al. Learning multiagent communication with backpropa-
+
+gation. In Advances in Neural Information Processing Systems (NeurIPS), 2016.
+
+[20] Peter Sunehag, Guy Lever, Audrunas Gruslys, Wojciech Marian Czarnecki, Vinicius Zambaldi,
+Max Jaderberg, Marc Lanctot, Nicolas Sonnerat, Joel Z. Leibo, Karl Tuyls, and Thore Graepel.
+Value-decomposition networks for cooperative multi-agent learning based on team reward. In
+International Conference on Autonomous Agents and MultiAgent Systems (AAMAS), 2018.
+
+[21] Ming Tan. Multi-agent reinforcement learning: Independent vs. cooperative agents. In Interna-
+
+tional Conference on Machine Learning (ICML), 1993.
+
+[22] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
+Åukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in neural information
+processing systems (NeurIPS), 2017.
+
+[23] Oriol Vinyals, Igor Babuschkin, Wojciech M Czarnecki, MichaÃ«l Mathieu, Andrew Dudzik, Jun-
+young Chung, David H Choi, Richard Powell, Timo Ewalds, Petko Georgiev, et al. Grandmaster
+level in starcraft ii using multi-agent reinforcement learning. Nature, 575(7782):350â354, 2019.
+
+[24] Tonghan Wang, Jianhao Wang, Chongyi Zheng, and Chongjie Zhang. Learning nearly de-
+composable value functions via communication minimization. In International Conference on
+Learning Representations (ICLR), 2020.
+
+[25] Hua Wei, Nan Xu, Huichu Zhang, Guanjie Zheng, Xinshi Zang, Chacha Chen, Weinan Zhang,
+Yanmin Zhu, Kai Xu, and Zhenhui Li. Colight: Learning network-level cooperation for trafï¬c
+signal control. arXiv preprint arXiv:1905.05717, 2019.
+
+[26] Yaodong Yang, Jianye Hao, Mingyang Sun, Zan Wang, Changjie Fan, and Goran Strbac.
+Recurrent deep multiagent q-learning for autonomous brokers in smart grid. In International
+Joint Conferences on Artiï¬cial Intelligence (IJCAI), 2018.
+
+[27] Sai Qian Zhang, Qi Zhang, and Jieyu Lin. Efï¬cient communication in multi-agent reinforcement
+learning via variance based control. In Advances in Neural Information Processing Systems
+(NeurIPS), 2019.
+
+11
+
+A Environmental Settings
+
+Cooperative Navigation and Predator Prey. In cooperative navigation, there are 7 agents and the
+size of each is 0.05. They need to occupy 7 landmarks with size of 0.05. Each agent is only allowed
+to communicate with three closest agents. And the acceleration of agents is 0.7. In predator prey, the
+number of predators (agents) and preys is set to 7 and 3, respectively, and their sizes are 0.04 and
+0.05. Each predator is only allowed to communicate with three closest predators. The acceleration
+is 0.5 for predators and 0.7 for preys. The team reward is similar for both tasks. At a timestep t, it
+can be written as rt
+i + C trcollision, where dt
+i is the distance of landmark/prey i to
+its nearest agent/predator, C t is the number of collisions (when the distance between two agents is
+less than the sum of their sizes) occurred at timestep t, and rcollision = â1. In addition, agents act
+discretely and have 5 actions (stay and move up, down, left, right).
+
+team = â (cid:80)n
+
+i=1 dt
+
+Trafï¬c Junction. Each car observes its previous ac-
+tion, route identiï¬er, location, and a vector specifying
+sum of one-hot vectors for any car presented at that
+carâs location. For medium mode, it has 14 Ã 14
+grids consisting of one junction of two-way roads as
+shown in Figure 9 (left). The maximum number of
+steps is 40, Nmax = 10 and parrive = 0.05. For hard
+mode, it has 18 Ã 18 grids consisting of four junc-
+tions of two-way roads. The maximum number of
+steps is 80, Nmax = 20 and parrive = 0.03. The team
+reward is deï¬ned the same in both modes, which is
+team = (cid:80)n
+i=1 rt
+rt
+i rcollision + Ïirtime.
+Car i has C t
+i collisions (when two cars are in the same grid) at timestep t and has spent Ïi in the
+junction. In addition, rcollision = â10 and rtime = â0.01. Each car has two actions, gas or brake, and
+follows speciï¬c route as illustrated in Figure 9 (right).
+
+i is individual reward for car i and deï¬ned as rt
+
+Figure 9: Trafï¬c junction environment.
+
+i, where rt
+
+i = C t
+
+B Implementation Details
+
+In cooperative navigation and predator prey, our model is trained based on MADDPG. The centralized
+critic and policy network are realized by three fully connected layers. The prior network has two fully
+connected layers. As for message encoder, two LSTM layers are used to encode messages. Leaky
+rectiï¬ed linear units are used as the nonlinearity. The size of hidden layers is 128. For TarMAC and
+IC3Net, we use their default settings of basic hyperparameters and networks.
+
+In trafï¬c junction, our model is built on TarMAC. All networks (except for centralized critic, state
+encoder and prior network) use one fully connected layer. The centralized critic and prior network
+are realized by two fully connected layers. In addition, the state encoder uses gated recurrent units
+to encode trajectories, including historical messages and observations. Tanh units are used as the
+nonlinearity. The size of hidden layers is 128.
+
+For threshold Î´ selection, we sort the causal effect I of all the samples in the training set and choose
+values of some certain percentile, e.g., 90%, 80% and 70%, as candidates, then we use grid search to
+get optimal Î´ among these candidates.
+
+Table 4 and 5 summarize the hyperparameters used by I2C and the baselines in the experiments.
+
+Table 4: Hyperparameters for cooperative navigation and predator prey
+
+Hyperparameter
+
+I2C
+
+MADDPG TARMAC IC3NET
+
+discount (Î³)
+batch size
+buffer capacity
+learning rate
+Î»
+Î´ (percentile)
+Î·
+
+0.95
+800
+
+1 Ã 106
+1 Ã 10â2
+
+-
+
+-
+
+5 Ã 10â4 1 Ã 10â3
+
+10
+70%, 80%
+1 Ã 10â2
+
+-
+-
+-
+
+-
+-
+-
+
+-
+-
+-
+
+12
+
+car enteringcar leavingtwo wayobservationTable 5: Hyperparameters for trafï¬c junction (medium and hard)
+
+Hyperparameter I2C+TARMAC TARMAC IC3NET
+
+discount (Î³)
+batch size
+learning rate
+Î»
+Î´(percentile)
+Î·
+
+0.95,0.90
+40,80
+
+7 Ã 10â4
+
+10
+95%
+1 Ã 10â2
+
+-
+-
+-
+
+1 Ã 10â3
+-
+-
+-
+
+C Additional Experiment
+
+Î´
+
+compare
+
+thresholds
+
+four different
+
+(90%,
+We
+80%,70%,50%) in prior network and evaluate how
+it affects the performance of model in the cooperative
+navigation. Figure 10 shows the learning curves in terms
+of ï¬nal rewards of different Î´. As we can ï¬nd out, I2C
+converges faster and is able to achieve higher reward
+as Î´ drops from 90% to 70%. Then I2C gets worse
+convergence as Î´ continues dropping.
+It is noted that
+the average communication overhead increases as value
+of Î´ decreases. Therefore, it turns out that too much
+communication contains redundancy and it can impair
+the convergence of model, and too little communication
+provides less valuable information for agents to make
+good decision.
+
+Figure 10: Reward of I2C of different
+Î´ during training in cooperative naviga-
+tion.
+
+13
+
+

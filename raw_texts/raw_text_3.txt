@@ -1,0 +1,880 @@
+3
+2
+0
+2
+
+g
+u
+A
+1
+2
+
+]
+
+C
+H
+.
+s
+c
+[
+
+2
+v
+7
+4
+2
+0
+0
+.
+4
+0
+3
+2
+:
+v
+i
+X
+r
+a
+
+Improving of Robotic Virtual Agentâs errors that
+are accepted by reaction and humanâs preference
+
+Takahiro Tsumura1,2[0000â0002â3145â3120] and Seiji
+Yamada2,1[0000â0002â5907â7382]
+
+1 Department of Informatics, The Graduate University for Advanced Studies,
+SOKENDAI, Tokyo, Japan
+2 Digital Content and Media Sciences Research Division, National Institute of
+Informatics, Tokyo, Japan
+
+Abstract. One way to improve the relationship between humans and
+anthropomorphic agents is to have humans empathize with the agents.
+In this study, we focused on a task between an agent and a human
+in which the agent makes a mistake. To investigate significant factors
+for designing a robotic agent that can promote humans empathy, we
+experimentally examined the hypothesis that agent reaction and humanâs
+preference affect human empathy and acceptance of the agentâs mistakes.
+The experiment consisted of a four-condition, three-factor mixed design
+with agent reaction, selected agentâs body color for humanâs preference,
+and pre- and post-task as factors. The results showed that agent reaction
+and humanâs preference did not affect empathy toward the agent but did
+allow the agent to make mistakes. It was also shown that empathy for
+the agent decreased when the agent made a mistake on the task. The
+results of this study provide a way to control impressions of the robotic
+virtual agentâs behaviors, which are increasingly used in society.
+
+Keywords: human-agent interaction Â· empathy agent Â· humanâs prefer-
+ence
+
+1
+
+Introduction
+
+Humans use a variety of tools in their daily lives. They become attached to
+these tools and sometimes treat them like humans. The Media Equation claims
+that humans treat artifacts like humans [19]. It has been shown that humans
+have the same feelings toward artifacts as they do toward other humans. In
+fact, there are examples of people empathizing with artifacts in the same way
+that humans empathize with humans. Typical examples include cleaning robots,
+pet-type robots, characters in competitive video games, and anthropomorphic
+agents that provide services such as online shopping and help desks. However,
+when humans and agents work together, such as at a help desk or when cleaning,
+there can be problems when humans view these agents as tools. There are also
+certain types of humans who cannot accept agents [10,11,9]. Currently, such
+agents are already being used in human society and coexist with humans.
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+T. Tsumura et al.
+
+Agents used in society often perform tasks with humans. At times, an agent
+may get the task wrong. When an agent makes a mistake on a task, many humans
+lower their expectations and trust in the agent. However, we often develop agents
+so that they do not make mistakes, but rarely do we take an approach that
+preserves the humanâs impression of the agent when it actually makes a mistake.
+One way to do so is to have the human empathize with the agent. When agents
+are used as tools, they may not need empathy, but when they are used in place of
+humans, being empathized with by humans can help build a smooth relationship.
+Humans and anthropomorphic agents already interact in a variety of tasks.
+For a human to develop a good relationship with an agent, empathy toward the
+agent is necessary. Empathy makes it easier for humans to take positive action
+toward an agent and to accept it [21,22,23]. This can also be effective when an
+agent makes a mistake on a task.
+
+Although various factors have been studied that cause empathy, including
+verbal and nonverbal information, situations, and relationships, this study fo-
+cuses on situations in which the robotic virtual agent (RVA) gets the task wrong
+and experimentally examines how the agentâs reaction and the agentâs humanâs
+preference affect empathy. The empathy investigated in this study is human em-
+pathy toward the agent, and we investigated changes in impressions of the agent
+used in the experiment.
+
+2 Related work
+
+In the field of psychology, empathy has been the focus of much attention and
+research. Omdahl [14] classified empathy into three main categories: (1) affective
+empathy, which is an emotional response to another personâs emotional state,
+(2) cognitive empathy, which is a cognitive understanding of another personâs
+emotional state, and (3) empathy that includes both of the above. Preston and
+De Waal [18] proposed that at the heart of empathic responses is a mechanism
+that allows the observer access to the subjective emotional state of the subject.
+The Perception-Action Model (PAM) was defined by them to unify the differ-
+ences in empathy. They defined empathy as a total of three types: (a) sharing or
+being affected by the emotional states of others, (b) evaluating the reasons for
+emotional states, and (c) the ability to identify and incorporate the perspectives
+of others.
+
+Various questionnaires are used as measures of empathy, but we used the
+Interpersonal Reactivity Index (IRI). IRI, also used in the field of psychology,
+is used to investigate the characteristics of empathy [4]. There is another ques-
+tionnaire, the Empathy Quotient (EQ) [2], but we did not use it in our study
+because we wanted to investigate which categories of empathy were affected after
+experiencing the task.
+
+In the fields of human-agent interaction (HAI) and human-robot interaction
+(HRI), empathy between humans and agents or robots is studied. The following
+studies have been conducted in various areas of HRI. Leite et al. [7] conducted
+a long-term study in elementary schools to present and evaluate an empathy
+
+RVA errors are accepted by reaction and humanâs preference
+
+3
+
+model for a social robot that interacts with children over a long period of time.
+They measured childrenâs perceptions of social presence, engagement, and social
+support. Mathur et al. [8] present a first approach to modeling user empathy
+elicited during interaction with a robot agent. They collected a new dataset from
+a novel interaction context in which participants listen to a robotic storyteller.
+Johanson et al. [6] examined whether the use of verbal empathic statements and
+head nodding by a robot during video-recorded interactions between a healthcare
+robot and a patient could improve participantsâ trust and satisfaction.
+
+In addition, the following studies have been conducted in the field of HAI.
+Okanda et al. [13] focused on appearance and investigated Japanese adultsâ be-
+liefs about friendship and morality toward robots. They examined whether the
+appearances of robots (i.e., humanoid, dog-like, oval-shaped) differed in rela-
+tion to their animistic tendencies and empathy. Samrose et al. [20] designed a
+protocol to elicit user boredom to investigate whether empathic conversational
+agents can help reduce boredom. With the help of two conversational agents,
+an empathic agent and a non-empathic agent, in a Wizard-of-Oz setting, they
+attempted to reduce the userâs boredom. Al Farisi et al. [1] believe that in or-
+der for chatbots to have human-like cues, it is necessary to apply the concepts
+of human-computer interaction (HCI) to chatbots and compare the empathy of
+two chatbots, one with anthropomorphic design cues (ADC), and one without.
+Tsumura and Yamada [21] focused on tasks between agents and humans, experi-
+mentally examining the hypothesis that task difficulty and task content promote
+human empathy. We also considered the design of empathy factors from previous
+studies of anthropomorphic agents using empathy. Tsumura and Yamada [22]
+focused on self-disclosure from agents to humans in order to enhance human
+empathy toward anthropomorphic agents, and they experimentally investigated
+the potential for self-disclosure by agents to promote human empathy. Tsumura
+and Yamada [23] also focused on tasks in which humans and agents engage in a
+variety of interactions, and they investigated the properties of agents that have
+a significant impact on human empathy toward them.
+
+Paiva defined the relationship between human beings and empathic agents,
+referred to as empathy agents, as designed in previous HAI and HRI research.
+As a definition of empathy between an anthropomorphic agent or robot and a
+human, Paiva represented empathy agents in two different ways and illustrated
+them [16,15,17]: A) targets to be empathized with by humans and B) observers
+who empathize with humans. In this study, we use the empathic target agent to
+promote human empathy.
+
+3 Experimental methods
+
+3.1 Experimental goals and design
+
+The purpose of this study is to investigate whether human empathy toward an
+agent is affected by the agentâs reaction and humanâs preference during interac-
+tion with an robotic virtual agent (RVA). It will then investigate whether agents
+can be forgiven when they make mistakes. We believe that this research will
+
+4
+
+T. Tsumura et al.
+
+facilitate the use of agents in human society by influencing human empathy. In
+addition, knowing the factors that allow agents to make mistakes will be use-
+ful for future use of agents in society. For these purposes, we formulated two
+hypotheses.
+
+H1: Agentâs reaction and humanâs preference affect human empathy toward agents.
+H2: Agentâs reaction and humanâs preference influence when humans accept
+
+agentsâ mistakes.
+
+We arrived at this hypothesis because previous studies have shown that agent
+reactions (facial expressions and gestures) affect human empathy. In addition,
+the intention of the agentâs humanâs preference was to investigate whether the
+results of human selections affect empathy toward an agent by adding an element
+that allows humans to interact with the agent.
+
+Similarly, this study focuses on whether agentsâ mistakes are acceptable.
+This study investigates an agentâs relationship with a human in situations where
+the agent is wrong. If the agentâs reaction and humanâs preference affect how
+a human accepts the agentâs mistakes, then there is no need to incorporate
+empathy toward the agent in order to maintain the humanâs impression of the
+agent.
+
+To test these hypotheses, an experiment was conducted with a three-factor
+mixed design with three factors: agent reaction, humanâs preference, and pre-
+and post-task. The levels between participants were 2 (available, not available)
+for agent reaction and 2 (available, not available) for humanâs preference. The
+within-participants level was 2 pre- and post-task. Participants participated in
+only one of the four different content conditions. The dependent variable was
+the questionnaire that participants responded to (empathy, tolerance for error,
+other).
+
+3.2 Experimental details
+
+The experiment was conducted in an online environment. The environment used
+is already a common method of experimentation[5,3,12]. As mentioned earlier,
+the goal of this study is to promote human empathy toward RVA. A scheduling
+agent was also used in this study to measure the acceptance of the agentâs
+mistakes. For this reason, we believed that the same effect as being face to face
+could be achieved even in an online environment.
+
+Before performing the task, a questionnaire was administered to measure
+empathy toward RVA. At the same time, another questionnaire was administered
+to determine whether participants could accept the agentâs mistakes. At this
+time, participants were not allowed to see the agentâs reactions or to select the
+color of the agent. This questionnaire was administered before the task in order
+to see the effect of participantsâ empathy toward the agent and the change in
+the acceptance of the agentâs mistakes.
+
+Participants selected an agent by color from among multiple differently col-
+ored agents before beginning the scheduling task. In the no humanâs preference
+
+RVA errors are accepted by reaction and humanâs preference
+
+5
+
+Fig. 1. Flowchart of the schedule
+
+condition, participants were told that the agent displayed would manage a sched-
+ule. The schedule consisted of 10 items: the participantâs weekly schedule, waking
+time, sleeping time, and number of outings per week. Fig. 1 is a flowchart of the
+schedule entry order and up to the confirmation screen. During the scheduling
+task, the agent exhibited several reactions to the input information. The schedul-
+ing agent was designed to remember the participantâs schedule but to make sure
+that the agent made a mistake when participant checked the schedule for the
+last time. There were three areas where mistakes were made: (1) the waking and
+sleeping times were reversed, the (2) Monday and Wednesday schedules were re-
+versed, and (3) the schedules for Thursday and Saturday were reversed. Waking
+and sleeping times and the number of outings per week were selected from a list
+of options, and schedules from Monday to Sunday were answered in the form of
+free-text responses.
+
+This was done to investigate how an agentâs mistakes affect human empathy
+and acceptance. To screen out unfair participants, participants reported whether
+the schedule was correct or incorrect at the last confirmation of the schedule.
+Only those participants who reported that the schedule was wrong were sub-
+sequently administered the same questionnaire about RVA as before the task.
+Two additional questions were also asked. Finally, they were asked to write their
+impressions of the experiment in free text.
+
+3.3 Experimental environment and Participants
+
+Participants were recruited for the experiment using a Yahoo! crowdsourcing
+company. They were paid 55 yen after completing all tasks as a reward for
+participating. A website was created for the experiment, which was limited to
+using a PC.
+
+6
+
+T. Tsumura et al.
+
+Table 1. Number of participants in each condition
+
+Yes 50
+humanâs preference No 49
+
+Reaction
+Yes No
+50
+48
+
+Fig. 2. Types of agent reactions
+
+There were a total of 197 participants. The average age was 48.82 years
+(standard deviation: 11.08), with a minimum of 19 years and a maximum of
+77 years. The gender breakdown was 144 males and 53 females. The number of
+participants in each condition is shown in Table 1. We then applied Cronbachâs
+Î± coefficient to determine the reliability of the questionnaire responses, which
+was found to be between 0.4040 and 0.8190 in all conditions. Some participant
+groups had lower Cronbachâs Î± values, but we also found several conditions with
+values between 0.7 and 0.8. Therefore, we used the questionnaire without any
+modifications.
+
+3.4 Agentâs reactions
+
+In this study, two levels of agent reactions were prepared. In the one with the
+agentâs reaction, RVA responded with gestures and comments when the partic-
+ipantâs schedule was sent. For the one without the agentâs reaction, it did not
+respond to the participantâs schedule and stayed upright. The three types of
+reactions actually seen by the participants are shown in Fig. 2. The three types
+were displayed three times equally and in the order in which they were displayed
+to the participants. Because the reactions were based on the content of the par-
+ticipantâs schedule, RVA did not react to anything when the schedule was first
+entered.
+
+There is a study by Tsumura and Yamada [23] as an example of how agent
+representations affected human empathy toward agents, but unlike reactions,
+which are very brief representations, they did not focus on detailed representa-
+tions for a single action, as in this experiment.
+
+RVA errors are accepted by reaction and humanâs preference
+
+7
+
+Fig. 3. Types of agentâs color
+
+3.5 Humanâs preference
+
+There were two levels for a humanâs preference factor. In this study, participants
+were asked to choose the color of the agentâs appearance to investigate peopleâs
+preferences. If a humanâs preference was had, the participants were required to
+choose one of three types of RVA: red, blue, or green. There was no difference in
+the agentâs personality or behavior based on humanâs preference. If no humanâs
+preference was had, the gray agent would manage the schedule. The color of
+each agent is shown in Fig. 3.
+
+In this study, we did not consider bias in humanâs preference. The humanâs
+preference factor was chosen as a factor that allowed participants to interact with
+RVA. The purpose was to investigate whether the participantsâ impressions of
+RVA changed depending on the selection. Therefore, differences in participantsâ
+feelings towards particular colors and gender bias were ignored in this study.
+
+3.6 Questionnaire
+
+Participants completed a questionnaire before and after the task. In this study,
+human empathy for the agent was evaluated based on changes in human em-
+pathy characteristics. The questionnaire was a 12-item questionnaire modified
+from the Interpersonal Reactivity Index (IRI), which is used to investigate the
+characteristics of empathy, to suit the present experiment [4]. The modified ques-
+tionnaire has already been used in several previous studies by Tsumura and Ya-
+mada [21,22,23]. The two questionnaires before and after were the same. Both
+were based on the IRI and were surveyed on a 5-point Likert scale (1: not appli-
+cable, 5: applicable). The questionnaire used is shown in Table 2. Q4, Q9, and
+Q10 are inverted items, so the scores were reversed when analyzing them.
+
+Three questions other than those related to empathy were prepared: QA,
+QB, and QC. QA was surveyed before and after the task, while QB and QC
+were surveyed only after the task. QA was investigated before and after the
+
+8
+
+T. Tsumura et al.
+
+Table 2. Summary of questionnaire used in this experiment
+
+Affective empathy
+Personal distress
+Q1: If an emergency happens to the character, you would be anxious and restless.
+Q2: If the character is emotionally disturbed, you would not know what to do.
+Q3: If you see the character in need of immediate help, you would be confused and would not know what to do.
+Empathic concern
+Q4: If you see the character in trouble, you would not feel sorry for that character.
+Q5: If you see the character being taken advantage of by others, you would feel like you want to protect that character.
+Q6: The characterâs story and the events that have taken place move you strongly.
+Cognitive empathy
+Perspective taking
+Q7: You look at both the characterâs position and the human position.
+Q8: If you were trying to get to know the character better, you would imagine how that character sees things.
+Q9: When you think youâre right, you donât listen to what the character has to say.
+Fantasy scale
+Q10: You are objective without being drawn into the characterâs story or the events taken place.
+Q11: You imagine how you would feel if the events that happened to the character happened to you.
+Q12: You get deep into the feelings of the character.
+Other questions than empathy
+QA: If the scheduling agent makes a mistake, can you forgive the mistake?
+QB: Did the scheduling agent express emotions?
+QC: Would you like to use a scheduling agent in the future?
+
+task to compare the difference between the participantsâ assumed tolerance of
+agent error and the actual agent error after it occurred. QB was prepared to
+investigate whether the agentâs very brief reactions appeared emotional. QC was
+an item to investigate the impact of differences in factors on the participantsâ
+evaluations of the agentâs future use. These three questions were also surveyed
+on a 5-point Likert scale (1: not applicable, 5: applicable). The questionnaire is
+shown in Table 2.
+
+3.7 Analysis method
+
+The analysis was a three-factor analysis of variance (ANOVA). The between-
+participant factors were the two levels of agentâs reaction and two levels of
+agentâs humanâs preference. The within-participants factor consisted of two lev-
+els of empathy values before and after the task. On the basis of the results of
+the participantsâ questionnaires, we investigated how the agentâs reaction and
+humanâs preference influenced the promotion of empathy as factors that elicit
+human empathy. The numerical values of empathy aggregated before and after
+the task were used as the dependent variable. Three of our own questions were
+also used as dependent variables. R (R ver. 4.1.0) was used for the ANOVA.
+
+4 Results
+
+All 12 questionnaire items were analyzed together. Table 3 shows the statistical
+results for each. Table 4 shows the results of each ANOVA.
+
+To begin, as can be seen from Table 4, when the participantsâ empathy for the
+agent was examined, there were no significant differences other than the main
+
+RVA errors are accepted by reaction and humanâs preference
+
+9
+
+Table 3. Results of participantsâ statistical information
+
+Category
+
+Empathy pre
+
+Conditions
+reaction-preference
+reaction-no preference
+no reaction-preference
+
+Category
+
+Mean S.D.
+36.94 5.705
+38.78 5.363
+36.90 6.370 Agentâs
+
+no reaction-no preference 38.67 6.096 acceptance
+
+(Q1-Q12)
+
+reaction-preference
+reaction-no preference
+post no reaction-preference
+
+33.98 7.347
+34.94 6.710
+34.72 6.716
+no reaction-no preference 35.71 6.694
+2.840 0.9116
+2.674 1.068 Continued
+2.000 0.8571
+no reaction-no preference 1.896 0.7217
+
+reaction-preference
+Expressed
+reaction-no preference
+emotions post no reaction-preference
+
+use
+(QC)
+
+(QA)
+
+(QB)
+
+pre
+
+reaction-preference
+reaction-no preference
+post no reaction-preference
+
+Conditions
+reaction-preference
+reaction-no preference
+no reaction-preference
+
+Mean S.D.
+2.660 0.8947
+2.837 0.7457
+2.880 0.8722
+no reaction-no preference 2.563 0.9655
+2.560 0.9510
+2.755 0.7781
+2.600 1.107
+no reaction-no preference 2.271 0.9618
+2.140 0.9260
+2.286 0.9129
+2.080 0.9223
+no reaction-no preference 1.979 0.8627
+
+reaction-preference
+reaction-no preference
+post no reaction-preference
+
+Table 4. Analysis results of ANOVA
+
+Empathy Before/after task
+(Q1-12) Reaction Ã humanâs preference
+
+Î·2
+p
+
+F
+
+Factor
+
+Reaction
+humanâs preference
+
+p
+0.1567 0.6926 ns 0.0008
+2.606 0.1081 ns 0.0133
+94.11 0.0000 *** 0.3278
+0.0001 0.9909 ns 0.0000
+1.817 0.1793 ns 0.0093
+Reaction Ã Before/after task
+1.810 0.1801 ns 0.0093
+humanâs preference Ã Before/after task
+Reaction Ã humanâs preference Ã Before/after task 0.0064 0.9363 ns 0.0000
+1.132 0.2887 ns 0.0058
+Reaction
+0.3440 0.5582 ns 0.0018
+humanâs preference
+10.68 0.0013 ** 0.0525
+0.0239
+4.725 0.0309 *
+2.864 0.0922 ns 0.0146
+Reaction Ã Before/after task
+humanâs preference Ã Before/after task
+0.0008 0.9768 ns 0.0000
+Reaction Ã humanâs preference Ã Before/after task 0.0170 0.8964 ns 0.0001
+39.86 0.0000 *** 0.1712
+1.116 0.2921 ns 0.0057
+0.0592 0.8080 ns 0.0003
+2.012 0.1577 ns 0.0103
+0.0302 0.8623 ns 0.0002
+0.9100 0.3413 ns 0.0047
+
+humanâs preference
+Reaction Ã humanâs preference
+
+Reaction Ã humanâs preference
+
+(QA)
+
+(QB)
+
+use
+(QC)
+
+Expressed Reaction
+emotions humanâs preference
+
+Continued Reaction
+
+Agentâs Before/after task
+
+acceptance Reaction Ã humanâs preference
+
+p: *p<0.05 **p<0.01 ***p<0.001
+
+Table 5. Analysis results of simple main effect
+
+Agentâs Reaction with no preference
+
+acceptance humanâs preference with reaction
+
+Factor
+
+Reaction with preference
+
+p
+0.5613 0.4555 ns 0.0057
+5.851 0.0175 * 0.0580
+1.577 0.2122 ns 0.0160
+humanâs preference with no reaction 3.160 0.0786 + 0.0319
+
+F
+
+Î·2
+p
+
+(QA)
+p: +p<0.1 *p<0.05 **p<0.01
+
+10
+
+T. Tsumura et al.
+
+Fig. 4. Result of each main effect or simple main effect
+
+pre- and post-task effects. Comparing the pre- and post-task empathy values in
+Table 3 for the ability to empathize with the agent, empathy decreased after the
+task (all pre-task: mean = 37.81, S.D. = 5.921; all post-task: mean = 34.83, S.D.
+= 6.850).
+
+The results for agent tolerance showed an interaction between the agentâs
+reaction factor and humanâs preference factor. Therefore, we analyzed the sim-
+ple main effect in Table 5 and found that the agentâs reaction more likely lead
+to tolerance to the agentâs error when the participant did not make a humanâs
+preference. We also found that, although a significant trend, the humanâs prefer-
+ence made its mistake more acceptable when there was no agent reaction. These
+results are shown in Fig. 4(a) and (b).
+
+The results for the agentâs emotional expression showed a main effect for
+the agentâs reaction factor. However, no main effect was found for the agentâs
+humanâs preference factor. This indicated that the agentâs reactions appeared to
+be emotionally charged. These results are shown in Fig. 4(c). Finally, there were
+no significant differences in the continued use of the agents in all conditions.
+
+5 Discussion
+
+5.1 Supporting hypotheses
+
+This experiment was designed to investigate the conditions necessary for humans
+to empathize with anthropomorphic agents. In particular, by investigating when
+an agent makes a mistake on a task, the goal was to identify factors that influence
+empathy between an agent who makes a mistake on a task and a human. To this
+end, two hypotheses were formulated, and the data obtained from the experiment
+were analyzed.
+
+The results supported one hypothesis, but not the other. In H1, we thought
+that the agentâs reaction and humanâs preference would affect the participantsâ
+empathy toward the agent, but this one was not supported. In the present ex-
+periment, there was a decrease in empathy after the task in all conditions. This
+
+RVA errors are accepted by reaction and humanâs preference
+
+11
+
+was also the case in Tsumura and Yamada [21]. The reason for the decrease in
+empathy may be that the all agents made mistakes, as there was no significant
+difference in each factor. Therefore, as a future study, we will compare the results
+with those obtained when the agents did not make mistakes.
+
+In H2, we thought that the agentâs reaction and humanâs preference would
+affect the tolerance toward the mistakes the agent made, which was supported
+here. In each case, when the agentâs reaction was absent, the agentâs mistake
+was accepted when humanâs preference was present, and when it was absent,
+the agentâs mistake was accepted when the agentâs reaction was present. On
+the other hand, when both agent reaction and humanâs preference were present,
+there was no effect. A possible reason for the lack of acceptance of agent error
+when both conditions were included is discouragement toward the agent. There-
+fore, as a future study, we will compare the results with those obtained when
+the agent does not make mistakes.
+
+We also investigated the agentâs emotional expressions and found that the
+agentâs reactions appeared to be emotional expressions. However, regardless of
+the agentâs reaction, empathy toward the agent was reduced, indicating that even
+when the agent acts emotionally, it is unlikely to affect empathy in situations
+where the agent makes a mistake on the task.
+
+5.2 Limitations
+
+One limitation of this experiment is that by eliminating factors other than the
+agentâs reaction and the humanâs preference, the task itself was perceived as te-
+dious, and the simplicity of the task may have reduced empathy. By not allowing
+RVA to engage in conversation or introduce themselves beyond the scheduling
+task, participants may have decreased their impression of RVA. Also, RVA were
+silent in this experiment, which was also done to eliminate the effect of voice on
+empathy and thus simplified the agentsâ reactions.
+
+Although there was no need for an in-person experiment in this experiment,
+an in-person experiment using actual equipment could have made a difference
+in the impact on participantsâ impressions. A scheduling task was used in this
+study to investigate whether humans empathize with RVA and accept their mis-
+takes even when they make mistakes on a task. However, even when agentsâ
+mistakes are acceptable, it is necessary to investigate the extent to which they
+are acceptable.
+
+6 Conclusions
+
+In this study, we investigated agent reaction and humanâs preference, focusing
+on human-agent task error as a factor that causes humans to empathize with
+RVA. RVA was designed to be in charge of managing the humanâs schedule
+and to make some mistakes in the input information. Two hypotheses were
+formulated and tested. The results showed that empathy toward RVA decreased
+when RVA made a mistake on the task. In addition, agent reaction and humanâs
+
+12
+
+T. Tsumura et al.
+
+preference were shown to be effective in helping humans accept agent mistakes.
+However, it was shown that the use of either factor was not effective. Future
+research should investigate empathy and acceptance toward agents when they
+do not make mistakes on a task since it was confirmed that empathy toward
+RVA decreases when they make mistakes on a task.
+
+Acknowledgments
+
+This work was partially supported by JST, CREST (JPMJCR21D4), Japan.
+This work was also supported by JST, the establishment of university fellow-
+ships towards the creation of science technology innovation, Grant Number JP-
+MJFS2136.
+
+References
+
+1. Al Farisi, R., Ferdiana, R., Adji, T.B.: The effect of anthropomorphic design
+cues on increasing chatbot empathy. In: 2022 1st International Conference on
+Information System & Information Technology (ICISIT). pp. 370â375 (2022).
+https://doi.org/10.1109/ICISIT54091.2022.9873008
+
+2. Baron-Cohen, S., Wheelwright, S.: The empathy quotient: an investigation of
+adults with asperger syndrome or high functioning autism, and normal sex dif-
+ferences. J Autism Dev Disord 34(2), 163â175 (Apr 2004)
+
+3. Crump, M.J.C., McDonnell, J.V., Gureckis, T.M.: Evaluating amazonâs mechanical
+turk as a tool for experimental behavioral research. PLOS ONE 8(3), 1â18 (03
+2013). https://doi.org/10.1371/journal.pone.0057410, https://doi.org/10.1371/
+journal.pone.0057410
+
+4. Davis, M.H.: A multidimensional approach to individual difference in empathy. In:
+
+JSAS Catalog of Selected Documents in Psychology. p. 85 (1980)
+
+5. Davis, R.: Web-based administration of a personality questionnaire: Comparison
+with traditional methods. Behavior Research Methods, Instruments, & Computers
+31, 572â577 (1999), https://doi.org/10.3758/BF03200737
+
+6. Johanson, D., Ahn, H.S., Goswami, R., Saegusa, K., Broadbent, E.: The ef-
+fects of healthcare robot empathy statements and head nodding on trust
+and satisfaction: A video study. J. Hum.-Robot Interact. 12(1) (feb 2023).
+https://doi.org/10.1145/3549534, https://doi.org/10.1145/3549534
+
+I., Castellano, G., Pereira, A., Martinho, C., Paiva, A.: Empathic
+7. Leite,
+robots
+International Journal of Social Robotics
+for
+(2014). https://doi.org/10.1007/s12369-014-0227-1, https://doi.org/10.1007/
+s12369-014-0227-1
+
+long-term interaction.
+
+8. Mathur, L., Spitale, M., Xi, H., Li, J., MatariÂ´c, M.J.: Modeling user em-
+pathy elicited by a robot storyteller. In: 2021 9th International Conference
+on Affective Computing and Intelligent Interaction (ACII). pp. 1â8 (2021).
+https://doi.org/10.1109/ACII52823.2021.9597416
+9. Nomura, T., Kanda, T., Kidokoro, H.,
+
+Suehiro, Y., Yamada,
+
+do
+
+Why
+(2016).
+//www.jbe-platform.com/content/journals/10.1075/is.17.3.02nom
+
+children
+https://doi.org/https://doi.org/10.1075/is.17.3.02nom,
+
+Interaction
+
+robots?
+
+Studies
+
+17(3),
+
+abuse
+
+S.:
+347â369
+https:
+
+RVA errors are accepted by reaction and humanâs preference
+
+13
+
+10. Nomura, T., Kanda, T., Suzuki, T.: Experimental investigation into influence of
+negative attitudes toward robots on humanârobot interaction. AI & SOCIETY
+20(2), 138â150 (Mar 2006). https://doi.org/10.1007/s00146-005-0012-7, https://
+doi.org/10.1007/s00146-005-0012-7
+
+11. Nomura, T., Kanda, T., Suzuki, T., Kato, K.: Prediction of human behavior in
+humanârobot interaction using psychological scales for anxiety and negative at-
+titudes toward robots. IEEE Transactions on Robotics 24(2), 442â451 (2008).
+https://doi.org/10.1109/TRO.2007.914004
+
+12. Okamura, K., Yamada, S.: Adaptive trust calibration for human-ai collaboration.
+PLOS ONE 15(2), 1â20 (02 2020). https://doi.org/10.1371/journal.pone.0229132,
+https://doi.org/10.1371/journal.pone.0229132
+
+13. Okanda, M., Taniguchi, K., Itakura, S.: The role of animism tendencies and empa-
+thy in adult evaluations of robot. In: Proceedings of the 7th International Confer-
+ence on Human-Agent Interaction. p. 51â58. HAI â19, Association for Computing
+Machinery, New York, NY, USA (2019). https://doi.org/10.1145/3349537.3351891,
+https://doi.org/10.1145/3349537.3351891
+
+14. Omdahl, B.L.: Cognitive appraisal, emotion, and empathy. Lecture Notes in Com-
+puter Science, Psychology Press, New York, 1 edn. (1995), https://doi.org/10.
+4324/9781315806556
+
+15. Paiva, A.: Empathy in social agents. International Journal of Virtual Reality
+1â4 (Jan 2011). https://doi.org/10.20870/IJVR.2011.10.1.2794, https:
+
+10(1),
+//ijvr.eu/article/view/2794
+
+16. Paiva, A., Dias, J., Sobral, D., Aylett, R., Sobreperez, P., Woods, S., Zoll, C.,
+Hall, L.: Caring for agents and agents that care: Building empathic relations with
+synthetic agents. Autonomous Agents and Multiagent Systems, International Joint
+Conference on 1, 194â201 (01 2004). https://doi.org/10.1109/AAMAS.2004.82
+17. Paiva, A., Leite, I., Boukricha, H., Wachsmuth, I.: Empathy in virtual agents
+and robots: A survey. ACM Trans. Interact. Intell. Syst. 7(3) (Sep 2017).
+https://doi.org/10.1145/2912150, https://doi.org/10.1145/2912150
+de Waal, F.B.M.: Empathy:
+
+ultimate
+
+and
+
+Its
+
+Sciences
+
+25(1),
+
+1â20
+
+prox-
+(2002).
+
+S.D.,
+
+18. Preston,
+imate
+https://doi.org/10.1017/S0140525X02000018
+
+bases. Behavioral
+
+and Brain
+
+19. Reeves, B., Nass, C.: The Media Equation: How People Treat Computers, Tele-
+vision, and New Media like Real People and Places. Cambridge University Press,
+USA (1996)
+
+20. Samrose, S., Anbarasu, K., Joshi, A., Mishra, T.: Mitigating boredom using an
+empathetic conversational agent. In: Proceedings of the 20th ACM International
+Conference on Intelligent Virtual Agents. IVA â20, Association for Computing Ma-
+chinery, New York, NY, USA (2020). https://doi.org/10.1145/3383652.3423905,
+https://doi.org/10.1145/3383652.3423905
+
+21. Tsumura, T., Yamada, S.: Agents facilitate one category of human empa-
+thy through task difficulty. In: 2022 31st IEEE International Conference on
+Robot and Human Interactive Communication (RO-MAN). pp. 22â28 (2022).
+https://doi.org/10.1109/RO-MAN53752.2022.9900686
+
+22. Tsumura, T., Yamada, S.: Influence of agentâs self-disclosure on human empathy.
+PLOS ONE 18(5), 1â24 (05 2023). https://doi.org/10.1371/journal.pone.0283955,
+https://doi.org/10.1371/journal.pone.0283955
+
+23. Tsumura, T., Yamada, S.:
+
+man empathy through games.
+https://doi.org/10.1109/ACCESS.2023.3269301
+
+Influence of anthropomorphic agent on hu-
+(2023).
+
+IEEE Access 11,
+
+40412â40429
+
+

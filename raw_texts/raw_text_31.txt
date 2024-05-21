@@ -1,0 +1,1377 @@
+Situation-Dependent Causal Influence-Based Cooperative Multi-agent
+Reinforcement Learning
+
+Xiao Du, Yutong Ye, Pengyu Zhang, Yaning Yang, Mingsong Chen, Ting Wang*
+
+Software Engineering Institute, East China Normal University
+{52265902007, 52205902007, pengyu.zhang, 52215902011}@stu.ecnu.edu.cn, {mschen, twang}@sei.ecnu.edu.cn
+
+3
+2
+0
+2
+c
+e
+D
+5
+1
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+9
+3
+5
+9
+0
+.
+2
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Learning to collaborate has witnessed significant progress
+in multi-agent reinforcement learning (MARL). However,
+promoting coordination among agents and enhancing explo-
+ration capabilities remain challenges. In multi-agent environ-
+ments, interactions between agents are limited in specific
+situations. Effective collaboration between agents thus re-
+quires a nuanced understanding of when and how agentsâ
+actions influence others. To this end, in this paper, we pro-
+pose a novel MARL algorithm named Situation-Dependent
+Causal Influence-Based Cooperative Multi-agent Reinforce-
+ment Learning (SCIC), which incorporates a novel Intrinsic
+reward mechanism based on a new cooperation criterion mea-
+sured by situation-dependent causal influence among agents.
+Our approach aims to detect inter-agent causal influences in
+specific situations based on the criterion using causal inter-
+vention and conditional mutual information. This effectively
+assists agents in exploring states that can positively impact
+other agents, thus promoting cooperation between agents.
+The resulting update links coordinated exploration and intrin-
+sic reward distribution, which enhance overall collaboration
+and performance. Experimental results on various MARL
+benchmarks demonstrate the superiority of our method com-
+pared to state-of-the-art approaches.
+
+Introduction
+
+Along with the rapid development of deep reinforcement
+learning (RL), MARL has attracted increasing attention in
+recent years and witnessed significant in real-world prob-
+lems such as traffic light control (Wu et al. 2020), coordina-
+tion of autonomous vehicles (Kiran et al. 2022), and robotics
+control (Wang et al. 2023), which can be effectively mod-
+eled as multi-agent game models. The most original MARL
+training method is the complete independent training of each
+agent, in which other agents are treated as part of the en-
+vironment without any coordinated interaction between the
+behaviors of agents. Nonetheless, this training method suf-
+fers from the dilemma within a non-stationarity environ-
+ment.
+
+The Centralized Training with Decentralized Execution
+(CTDE) emerges as a widely adopted solution for mitigat-
+ing the challenges posed by non-stationary environments,
+
+*Corresponding Author
+
+where centralized training allows agents to access informa-
+tion about other agents. However, due to partial observ-
+ability, during the execution phase, only local behavior-
+observation information can be relied upon. Both policy-
+based and value-based approaches have been introduced for
+CTDE, such as MADDPG (Lowe et al. 2017), COMA (Fo-
+erster et al. 2018), MAAC (Iqbal and Sha 2019), and QMIX
+(Rashid et al. 2018). Although global information can be ac-
+cessed during the centralized training phase, these methods
+make an assumption that decentralized policies remain in-
+dependent of each other such that the joint policy can be
+expressed as a product of independent policies. Thus, two
+pivotal challenges stem from the above issues. Firstly, the
+complete independence of agentsâ policies disregards the in-
+fluence of other agents, thereby restricting the agents from
+learning coordinated behavior. Secondly, optimizing decen-
+tralized strategies for multiple agents solely based on task-
+dependent dense reward signals often proves inefficient, par-
+ticularly when these reward signals are stochastic or sparse.
+Some studies (Liu et al. 2020; Wen et al. 2019) suggest that
+to alleviate the non-stationary issue and achieve collabora-
+tion between agents, it is imperative for agents to consider
+their impact on the behavior of other agents when making
+decisions. Other works (Chen et al. 2021; Mahajan et al.
+2019; Kim et al. 2023; Li et al. 2022) propose to quantify
+the correlation of agent behaviors through mutual informa-
+tion (MI), so as to maximize the correlation of agent behav-
+iors to enhance collaboration. MI has been identified as an
+effective intrinsic reward in promoting coordination in these
+works. Unfortunately, effectively coordinating the simulta-
+neous actions of multi-agents in these approaches remains
+a challenging and intractable issue. To this end, the primary
+objective of this study is to address this challenge from a
+causal inference perspective.
+
+In the context of control, if an agent can control other
+agents, it signifies that the agent can impact other agents
+through its actions. However, there is an underappreciated
+aspect hidden in this seemingly obvious observation, which
+is that the causal effects of behavior are state-dependent.
+Considering the multi-robot navigation scenario, when the
+current position of robot a is close to robot b and aligned
+with the current direction of movement of robot b, then robot
+a evidently exerts a strong influence on robot b, irrespective
+of the next action of robot a. Conversely, if robot a is situ-
+
+ 
+ 
+ 
+ 
+ 
+ 
+ated far from robot b and not in the movement direction of
+robot b, then robot a has a comparatively weaker influence
+on robot b. Generally, there are situations in which agents
+have immediate causal influence, while in other situations,
+such influence is absent. The key intuition of this study lies
+in the recognition that the states that enable an agent to have
+the ability to influence other agents of interest are important
+from both exploration and collaboration perspectives, and
+we name these states of importance as significant states. Due
+to the fact that the initial states of an agent are rarely able to
+control the agents of interest, leading to inefficient training,
+these initial states are typically not regarded as significant
+states. Nonetheless, recognizing that the significant states
+are conducive to inter-agent collaboration, it becomes imper-
+ative for the training process to prioritize and proactively ex-
+plore these significant states. This exploration impels agents
+to consider the state-dependent causal effects among agents
+during the exploration process.
+
+In this work, we exploit situation-dependent nature to
+measure the causal influence between agents. We propose
+an algorithm designed to achieve coordination among agents
+and coordinate agentsâ exploration, which gives agents an
+intrinsic reward based on state-dependent causal influence.
+Specifically, at each time step, all agents measure the causal
+influence between their actions in the current state and the
+next state of other agents, which is used to quantify the ex-
+tent of causality between the agent and other agents at the
+current moment. The mean of the causal influence origi-
+nating from other agents is then taken as the agentâs in-
+trinsic reward. Furthermore, the computation of situation-
+dependent causal effects leverages conditional mutual in-
+formation, which reliably identifies the significant states.
+This intrinsic reward mechanism effectively facilitates the
+detection of significant states, thereby enhancing the col-
+laboration between agents. Itâs worth noting that calculat-
+ing mutual information of continuous variables is known
+to be challenging. Compared to the variational information
+maximizing-based algorithms (Chalk, Marre, and Tkacik
+2016; Kolchinsky, Tracey, and Wolpert 2019), MINE (Belg-
+hazi et al. 2018), which learns a neural estimate of the mu-
+tual information, has shown superior performance (Hjelm
+et al. 2019; Velickovic et al. 2019). Hence, we employ MINE
+to learn the conditional mutual information between agents
+by utilizing a forward dynamics model. To summarize, this
+paper makes the following three major contributions:
+
+â¢ We model multi-agent reinforcement learning as a causal
+graph model by explicitly modeling the influence of
+causal factors in a multi-agent setting.
+
+â¢ We formalize the causal influence between agents as
+situation-dependent
+instead of action-dependent. Ac-
+cordingly, a new Intrinsic Reward method with peer in-
+centives is further proposed to promote the cooperation
+between agents using state-dependent causal influence,
+which is measured based on intervention and conditional
+mutual information.
+
+â¢ We conduct comprehensive experiments on various
+MARL benchmarks. The experimental results demon-
+strate that our approach outperforms other competitive
+
+methods, and the learned intrinsic reward proves to be
+conducive to learning better policies that achieve agentsâ
+better cooperation in these complex tasks.
+
+Related Work
+As an important training paradigm for solving agent co-
+ordination problems, CTDE has been widely adopted in
+MARL in recent years, where VDN (Sunehag et al. 2018)
+and QMIX based on value function decomposition, and
+MADDPG and MAAC based on centralized critic are typi-
+cal CTDE-based algorithms. Since our approach is designed
+to utilize causal influence as an intrinsic reward to enhance
+inter-agent collaboration in MARL, in this section we will
+briefly review related work in terms of Intrinsic Reward for
+MARL and causality in reinforcement learning.
+
+Intrinsic Reward for MARL
+Intrinsic rewards help agents learn useful policies across
+a wide variety of tasks and environments, even sometimes
+with sparse environmental rewards. At each time step, the
+agents receive not only environmental rewards but also in-
+trinsic rewards. Intrinsic rewards can help agents improve
+their exploration ability and enhance social influence. In
+reinforcement learning, all kinds of information have vari-
+ous signals as intrinsic rewards, such as empowerment (Mo-
+hamed and Rezende 2015), model surprise (Blaes et al.
+2019), information gain (Houthooft et al. 2016), and learn-
+ing progress (Blaes et al. 2019). In MARL, some exist-
+ing approaches utilize the correlation or influence of agents
+as intrinsic rewards to facilitate collaboration. EITI (Wang
+et al. 2020) leverages MI to capture the influence between an
+agentâs current trajectory and the next states of other agents
+in the environment, which is used as an intrinsic reward
+to encourage agents to explore cooperatively. SI (Jaques
+et al. 2019) proposes a method that utilizes social influ-
+ence as an intrinsic reward, measured by the MI between
+an agentâs current action and the estimated next action of
+other agents, to achieve coordination and communication in
+MARL. VM3-AC (Kim et al. 2023) is similar to the idea
+of coordinating inter-agent behavior in SI-MOA, except that
+additional latent variables are introduced to induce nonzero
+mutual information between multi-agent actions, and the
+policy iteration algorithm is modified based on MI. PMIC
+(Li et al. 2022) utilizes the MI between global states and
+joint actions as a new standard. Based on this standard, it
+maximizes the MI related to behaviors that are conducive
+to collaboration and minimizes the MI related to behaviors
+that are not conducive to collaboration, breaking the current
+suboptimal collaboration and learning higher-level collab-
+orative behaviors. Comparatively, our approach tackles the
+challenge of collaboration among agents from a causal infer-
+ence perspective, which detects situation-dependent causal
+relationships among agents as intrinsic rewards to facilitate
+the exploration of inter-agent coordination.
+
+Causality in Reinforcement Learning
+The combination of reinforcement learning and causality has
+achieved some progress. The work (SchÂ¨olkopf et al. 2021)
+
+utilizes causal modeling to achieve better state abstraction,
+enabling the agent to concentrate on key aspects and in-
+directly improving sampling efficiency. The work (Seitzer,
+SchÂ¨olkopf, and Martius 2021) proposes integrating mea-
+sures of causal influence into reinforcement learning algo-
+rithms to address the problems of exploration and learn-
+ing in the robot manipulation environment. The work (Lee
+et al. 2021) utilizes causal intervention to identify the most
+relevant state variables for completing a task, thereby re-
+ducing the dimensionality of the state space. The work
+(Pitis, Creager, and Garg 2020) utilizes influence detec-
+tion to create counterfactual data to enhance the training of
+RL agents. (Maes, Meganck, and Manderick 2007) extends
+causal Bayesian networks to multi-agent models, which in-
+spires us to develop a causal graph model for MARL.
+
+Background
+
+t â U i according to its policy Ï(Ëâ£oi
+
+Preliminaries
+In this work, we consider the fully cooperative multi-agent
+game in the partially observable setting, which can be
+modeled as a decentralized partially observable Markov
+Decision Process (Dec-POMDP) (Oliehoek and Amato
+2016). The Dec-POMDP is formally defined as a tuple
+â¨I, S, U, O, P, R, Î³â©, where I = {1, 2, ....N } denotes the fi-
+nite set of agents, st â S denotes the set of joint states that
+cannot be observed by agents at the time step t. At each time
+step t, each agent i â I can only observe its local observa-
+tion oi
+t from observation function O(st, i) and chooses an
+action ui
+t), forming a joint
+action ut â U. After executing ut in environment, each agent
+i achieves a shared extrinsic reward rt from the reward func-
+tion R(st, ut) with a discount factor Î³ â [0,1) and the next
+state st+1 according to the transition function P(st+1â£st, ut).
+The goal of a collaborative team is to find a joint policy
+Ïâ that can maximize the expected extrinsic discount return
+E[ââ
+k=1 Î³trt] under the setting of fully-cooperative MARL.
+In our approach, we adopt a CTDE paradigm, which has
+been a widely considered training paradigm in recent efforts
+in MARL (Sunehag et al. 2018; Rashid et al. 2018; Lowe
+et al. 2017; Iqbal and Sha 2019). During training, each agent
+can access to full information including the states, actions,
+rewards, and actions of other agents, while decentralized ex-
+ecution is conditioned solely on individual observation oi
+t.
+
+Causal Graphical Models
+A causal graphical model (CGM) (Shanmugam 2001) is
+commonly represented as directed cyclic graphs (DAGs)
+G = (V, E) and is defined by a distribution P over the set
+of random variables X . The graph G consists of nodes V
+and edges E â V 2 with (v, v) for any v â V . Each node
+vi is associated with a random variable X i and each edge
+(vi â vj) represents that X i is a direct cause of X j, i.e., X i
+is called a parent of X j. The set of parents of X j is denoted
+by PAG
+j . The distribution P can be represented as
+
+p(X 1, ..., X v) =
+
+v
+â
+i=1
+
+pi(X iâ£PAG
+
+j ),
+
+(1)
+
+where PAG
+j â {X 1, ..., X v} / {X j} denotes the set of par-
+ents of X j. The CGM models the structure of the causal-
+ity. To reveal the causal structure from the data distribution,
+we assume that CGM satisfies the Markov condition and
+the faithfulness assumption, which makes the independence
+consistent between the joint distribution P (X 1, ..., X v) and
+the graph G.
+
+Intervention
+Intervention sampling is a typical operation in causal discov-
+ery. Different from standard sampling, it sets the distribu-
+tion of variables that require intervention in the causal graph
+model to a uniform distribution or fixed value, and then con-
+ducts sampling to obtain intervention data. Intervention data
+has more causal information than observational data, which
+is beneficial to measure causal relationships between ran-
+dom variables. In this work, we need to measure the influ-
+ence of the current time stepâs action of an agent on the state
+of other agents in the next time step, which can be obtained
+by intervening in the current behavior distribution.
+
+Our Approach
+In this section, we present the design of our SCIC approach,
+in which the agents simultaneously learn a policy and an in-
+trinsic reward function by maximizing the causal influence
+between agents, as illustrated in Figure 1. Our SCIC ap-
+proach detects the inter-agent causal influences in particular
+situations based on causal intervention and conditional mu-
+tual information, facilitating agents to explore states that can
+affect other agents, thereby promoting cooperation among
+agents.
+
+Causal Influence-based Intrinsic Reward Design
+A key component of SCIC is the intrinsic reward mecha-
+nism that brings each agent to a state where it can influ-
+ence interested agents as much as possible. Intuitively, an
+agent is more likely to influence interested agents in certain
+states, and making agents reach these states as much as pos-
+sible is more likely to enhance the causal influence between
+agents. We represent agent j being able to be influenced
+by agent i as âagent i being able to take control of agent
+jâ. Through mutual incentives between agents, agents can
+achieve friendly interaction and efficient cooperation with
+their peers. Thus, the causal influence of other agents on an
+agent can be viewed as a necessity for learning intrinsic re-
+ward mechanisms. We detect the causal influences between
+agents in particular situations using causal intervention and
+conditional mutual information. It is worth noting that the
+computation of causal influence is only executed during in-
+tensive training, where each agent can know the policies and
+actions of other agents.
+
+Multi-agent Causal Graph Model We extend the CGM
+to the case of decentralized multi-agents as Multi-agent
+Causal Graph Model (MACGM), where agents share an en-
+vironment and have access to private and/or public variables
+of interest during centralized training. The one-step transi-
+tion dynamics of MACGM at time step t is modeled a causal
+
+Figure 1: An overview of SCIC framework.
+
+t â Sj
+
+t â
+t+1 is a controllable state
+
+tervention in one mechanism does not affect other mech-
+anisms (Parascandolo et al. 2017). We believe that this is
+also due to the limited scope of intelligent agent interven-
+tion, which limits the breadth and frequency of mechanism
+changes. Therefore, in this work, we are interested in infer-
+ring the influence of the action of agent i over other agents
+in a particular situation, i.e. a local inter-agent causal model.
+Next, we provide the following definitions:
+Definition 1 (Controllable State Variable) If the edge Ai
+Sj
+t+1 in the graph is âactiveâ, Sj
+variable of Ai
+t.
+Definition 2 (Uncontrollable State Variable) If the edge
+t+1 in the graph is âinactiveâ, Sj
+Ai
+t+1 is a uncontrol-
+lable state variable of Ai
+t.
+Given these definitions, in this work, our aim is to detect
+whether the state is a âControllable State Variableâ for other
+agents in a particular situation, i.e. whether the presence of
+red arrows in Figure 2 is âactiveâ.
+The Cause of an Influence When is action A = a the
+cause of outcome S = s? Inspired by the âbut-forâ test, i.e.
+âWithout A = a, S = s would not have happened.â, we can
+derive that A = a is a necessary condition for S = s to hap-
+pen, and when A changes, S also gets a different value. This
+fits with the algorithmic view of causality: if the value of
+S is determined by the value of A, then A is the cause of
+S. The âbut-forâ test yields potentially counter-intuitive as-
+sessments. Considering the influence between two agents lo-
+cated close to each other, the behavior of agent a is regarded
+as the cause of the influence on another agent b, because dif-
+ferent behaviors of agent a will lead to different behavior
+choices of agent b, thus affecting the next state of b. Algo-
+rithmically, the behavior of the agent a needs to be known in
+order to determine the effect on agent b - all possible behav-
+iors of agent a are considered as causes. This means that we
+cannot distinguish whether the agentâs behavior is the cause,
+but only whether the agent has a causal influence on other
+agents in the current situation.
+
+Intervention for Causal Inference As discussed above,
+the causal relationship between agents depends on the cur-
+rent situation rather than the behavior chosen by the agents.
+
+Figure 2: Multi-agent Causal Graph Model.
+
+t , S1
+
+t , A1
+
+t , ..., SN
+
+t , ..., AN
+
+t+1, ..., SN
+
+graphical G (see Figure 2) over the set of random variables
+V = {St, St+1, S1
+t+1}, con-
+sisting of a conditional distribution P (Viâ£P A(Vi)), where
+Vi represents an agentâs state component e.g. St, or the
+agentâs action component e.g. A1
+t . Apart from the actions
+computed by the policy Ï(Atâ£St), within a time step, there
+are no edges, i.e. no transient effects. In the MACGM, the
+actions At at the t time step are intended to affect St+1 by
+influencing the environment. To better express the causal re-
+lationship between actions and states, considering that the
+influence of At on St+1 is actually the influence on the en-
+vironment at time t+1, thus the influence on the environ-
+ment can be differentiated into the influence on the state
+Sj
+t+1 of each agent j at t+1 time step. Nevertheless, at most
+time steps, there should be no instantaneous effects between
+agents in the world. In particular, an agentâs sphere of influ-
+ence is limited, i.e., its action A can only affect other agents
+sparsely, which rests on two basic assumptions about the
+causal structure of the world. First, the multi-agent environ-
+ment is composed of independent agents, according to the
+principle of independent causal mechanism (ICM) (Parunak
+2018), which states that the generative process of the world
+is composed of autonomous modules. The second assump-
+tion is that latent influences between entities are spatially
+local and temporally sparse. We can view this as explain-
+ing the sparsity mechanism shift hypothesis, which suggests
+that natural distribution shift will be caused by changes in
+local mechanisms (SchÂ¨olkopf et al. 2021). This can usually
+be traced back to the ICM principle, which states that in-
+
+Environmentðð1ðð2ðð3ðð¡1ðð¡2â¦ðð¡ððð¡1ðð¡2ðð¡ðPolicy:ðð½ððð¡=[ðð¡1,ðð¡2,â¯,ðð¡ð]ðð¡,ðð¥Store[ð ð¡+1ð,ð ð¡1,ðð¡1][ð ð¡+1ð,ð ð¡2,ðð¡2][ð ð¡+1ð,ð ð¡ð,ðð¡ð]â¦NNNNNNâ¦ð1,ðð1,ðð2,ðð2,ððð,ððð,ðForward Dynamic ModelTrain MINEState Encoderð¬ðAction Encoderð¬ððð+ðððððà·ðððð¤(ð¨)ÃÃð°ð´ð°ðµð¬ð»Ï(ðð+ðð,à·ððð)ð»Ï(ðð+ðð,ððð)ðð¡ð=ðð¡,ðð¥+ð¼à·ðâ ððð¡,ððð,ððð¡1,ððð¡2,ððð¡ð,ðâ¯ðÎ¦ðð£ðInferring Casual InfluenceTraj1â¦â¦Traj2TrajNBufferðð¡,ðð¥+11212+11+12+1tâ£si
+
+t = si
+
+t=Ï(ai
+
+t â Sj
+
+t+1â£Si
+t to Sj
+
+In order to detect whether there is a causal relationship be-
+tween agents, we utilize an intervention method to achieve
+it. Formally, we define âagent i can causally affect agent j
+in the current situationâ (or âagent i takes control of agent
+jâ) if there exists an edge Ai
+t+1 in causal graph (as
+shown in Figure 2) under all interventions do(Ai
+t))
+with Ï having full support. According to Markov property
+and the faithfulness assumption of the causal graph model,
+t Ì¸ Sj
+if Ai
+t, then there must be an unblocked
+edge from Ai
+t+1 in a causal graph G. Since the path
+over Sj
+t+1 is blocked by observing Si
+t, while assuming no
+t â Sj
+instantaneous influences, the direct path Ai
+t+1 is the
+only possible path. Therefore, in causal graph G, there is an
+edge Ai
+t+1 under the intervention do(Ai
+t)) if
+t Ì¸ Sj
+Ai
+t. The following lemma shows that a conclusion
+taken from an intervention generalize to numerous interven-
+tions with Ï having full support (proofs in Suppl. A). Ac-
+cording to the lemma, the conclusion from an intervention
+can determine whether there is a causal influence between
+agents.
+t Ì¸ Sj
+Lemma 1 If Ai
+t+1 holds under an intervention
+tâ£si
+â¶= Ï(ai
+do(Ai
+t)), then the dependence holds and the
+t
+t â Sj
+edge Ai
+t+1 exits under all interventions with Ï hav-
+ing full support. If Ai
+t+1 holds under an intervention
+do(Ai
+t â¶= Ï(ai
+t)) with Ï having full support, then the in-
+t â Sj
+dependence holds and the edge Ai
+t+1 does not exit
+under all interventions.
+
+t â Sj
+t+1â£Si
+
+t Ã Sj
+
+t=Ï(ai
+
+tâ£si
+
+tâ£si
+
+t = si
+
+t = si
+
+t+1â£Si
+
+t Ã Sj
+
+t Ì¸ Sj
+
+Causal Influence Detection between Agents Our goal is
+to measure state-dependent causal influence between agents,
+which is linked to the independence Ai
+t+1â£Si
+t or de-
+pendence Ai
+t. Conditional mutual informa-
+tion (CMI) is a well-known measure of dependence, which
+is proposed to be utilized as a measure of causal influence
+(CI) between agents. If CMI >0, it suggests that Ai
+t is nec-
+essary to predict Sj
+t = si
+t is true, and the
+causal path Ai
+t+1 exists. However, mutual informa-
+tion (MI) of continuous variables is notoriously difficult to
+compute in real-world settings. Compared to the variational
+inference-based approaches, MINE-based algorithms have
+shown superior performance. Motivated by MINE, our ap-
+proach learns a neural estimate of MI, which utilizes a lower
+bound to approximate the MI.
+
+t â Sj
+
+t Ì¸ Sj
+
+t+1, Ai
+
+t+1â£Si
+
+CI ij â¶= I(Sj
+
+t+1; Ai
+
+tâ£Si
+t)
+â¥PSj
+
+= KL(PSj
+E
+= sup
+T â¶â¦âR
+
+t+1,Ai
+
+tâ£si
+t
+
+p(Sj
+
+t+1,Ai
+
+tâ£si
+
+)
+
+â PAi
+tâ£si
+t+1â£si
+t
+t
+t)[T ] â log(E
+
+p(Sj
+
+t+1â£si
+
+t)p(Ai
+
+tâ£si
+
+E
+
+â¥ sup
+ÏâÎ¨
+
+p(Sj
+
+t+1,Ai
+
+tâ£si
+
+t)[TÏ] â log(E
+
+p(Sj
+
+t+1â£si
+
+t)p(Ai
+
+tâ£si
+
+(2)
+
+(3)
+t)[eT ])
+(4)
+t)[eTÏ ]).
+(5)
+
+First, the CMI formulation is rewritten as Equation (3)
+using the Donsker-Varadhan representation (Donsker and
+
+Varadhan 2010). The input space â¦ is a domain of Rd. The
+upper bound holds for all functions T such that two expec-
+tations are finite. Then, the CMI in the Donsker-Varadhan
+representation is derived with a lower bound using the com-
+pression lemma in the PAC-Bayes literature in Equation (5)
+(Banerjee 2006). The statistical model T is parameterized
+by a deep neural network with parameter Ï. In addition,
+since the data in the off-policy reinforcement learning algo-
+rithm stems from a mixture of different policies, the agentâs
+sampling strategy cannot be used for intervention. Fortu-
+nately, Lemma 1 has shown that a single policy is sufficient
+to demonstrate (in-)dependence. Therefore, we select a uni-
+form distribution U(A) over the action space as the inter-
+vention policy.
+
+t, ai
+
+t+1â£si
+
+t) and the distribution p(sj
+
+One thing to note is that the forward dynamics model
+p(sj
+t+1â£si
+t) need to be
+calculated. The following will elaborate on how to calcu-
+late these two distributions. Computing these two distribu-
+tions involves representing complex distributions, comput-
+ing high-dimensional integrals, and only limited data. In ad-
+dition, each state si
+t actually can only be seen once in con-
+tinuous space. Since methods based on non-parametric es-
+timation do not scale well to high dimensions, we address
+this issue by learning neural network models with appro-
+priately simplifying assumptions. As shown in Figure 1, we
+first utilize the sampled data from the buffer to estimate the
+transition distribution p(sj
+t+1â£si
+t), assuming that the tran-
+sition distribution is a normal distribution. Then, the for-
+ward dynamics model is utilized to compute the transition
+marginal distribution p(sj
+t+1â£si
+t) by marginalizing out the
+actions p(sj
+t)p(sj
+tâ£si
+t) = â« Ï(ai
+t+1â£si
+t). Actually, we
+utilize Monte-Carlo to approximate the mixture p(sj
+t) â
+tâ£si,(k)
+K âK
+1
+), instead of integrals. During the
+t
+training process, the dynamic model p(sj
+t) is trained
+simultaneously with the statistical network T and agentsâ
+policy network.
+
+k=1 p(sj
+
+t+1, ai
+
+t+1, ai
+
+t+1â£si
+
+t+1â£si
+
+t, ai
+
+tâ£si
+
+Training with Causal Influence as Intrinsic Reward
+With the causal influence estimations introduced in the pre-
+vious subsection, the goal of the following is to learn the
+joint policy that maximizes the expected discounted reward,
+using causal influence between agents as an intrinsic reward.
+Specifically, agent i receives a joint reward, combining the
+extrinsic team reward and the intrinsic reward from peer
+causal influence, that can be represented as
+CI i,j,
+
+(6)
+
+ri
+t,total = rt,ex + Î± â
+jâ i
+
+i on Sj
+
+where CI i,j represents the causal influence of At
+t+1.
+Î± is a hyper-parameter, which is utilized to balance the in-
+trinsic reward and the extrinsic reward. The intrinsic reward
+t,in of agent i is represented as ri
+ri
+t,in = âjâ i CI i,j. In par-
+ticular, each agent needs to learn a policy to maximize the
+conventional objective J(Ï) â¶ J(Ïi
+t,total]. By
+maximizing the conventional objective, agent i can take con-
+trol of other interested agents. In principle, our proposed in-
+trinsic reward mechanism can be combined with different
+
+Î¸) = E[
+
+â
+â
+t=0
+
+Î³tri
+
+Algorithm 1: Training algorithm
+Initialize: The critic networks Ï = (Ï1, ..., Ïn), the actor
+networks Î¸ = (Î¸1, ..., Î¸n), experience replay buffer D
+and target networks Ï
+, the parameters of the statistic
+networks T , the forward dynamic models f = {fi}n
+i=1 and
+the state encoder networks e.
+
+, Î¸
+
+â²
+
+â²
+
+1: while episode <M do
+2:
+3:
+
+for t = (1,...,T) do
+
+t).
+
+t+1}n
+
+Collecting st+1={si
+i=1 and extrinsic reward
+rt,ex by executing joint actions at via collecting
+ai
+t â¼ ÏÎ¸i(si
+end for
+Store episode trajectory {st, at,st+1,rt,ex} from the
+multi-agent environment to replay buffer D.
+Sample a batch data of transition form buffer D.
+Update forward dynamic model for each agent i.
+Update T via Equation 5.
+Compute intrinsic reward ri
+t,in = âjâ i CI i,j.
+ri
+Update critic networks via Equation 7 and intrinsic
+reward.
+Update actor networks via Equation 8.
+
+t,in for each agent i via
+
+4:
+5:
+
+6:
+7:
+8:
+9:
+
+10:
+
+11:
+12: end while
+
+CTDE-based MARL algorithms. In this work, our method
+is built upon MADDPG. The joint action-value function of
+each agent i is approximated by the joint action-value net-
+work QÏ by minimizing the following loss
+
+to move in 2D space. Like Cooperative Navigation, Coop-
+erative Predator Prey is a well-known evaluation task for
+MARL. The Cooperative Line environment is a complex
+task environment, where there are M agents and 2 targets,
+with the goal of allowing agents to evenly distribute them-
+selves on the line between two targets. All algorithms are
+trained in a Linux server with a 2.30 GHz Xeon(R) CPU
+and two Nvidia 4090 graphics cards. The learning rates of
+the critic network and the actor network are set to 0.001.
+The discount factor Î³ is set to 0.95. Each episode lasts up to
+25 timesteps. To estimate the transition marginal distribution
+p(sj
+t), the number K of per Monte-Carlo sample is set
+to 64.
+
+t+1â£si
+
+Baselines
+
+To verify the superiority of our method, we employed three
+baseline algorithms for comparison, namely PMIC, MAD-
+DPG and SI, with a relaxation that all SI agents are equipped
+with the social influence reward. Among them, PMIC and
+SI are currently state-of-the-art MARL algorithms using in-
+trinsic rewards in Multi-Agent Particle Environment (MPE).
+Since our proposed algorithm is based on MADDPG, MAD-
+DPG is also utilized as a baseline algorithm for compari-
+son. Additionally, to verify the effectiveness of the compo-
+nents of the proposed method, some ablation studies also
+will be provided. Furthermore, considering the significant
+role played by the temperature parameters of intrinsic re-
+ward in balancing the relative importance between extrinsic
+and intrinsic reward, we also provide an experimental study
+on the temperature parameters.
+
+LQ(Ïi) = Est,at,rt,st+1â¼D[(Ëyi â QÏi(st, at))2],
+
+(7)
+
+Experimental Results
+
+t,in + Î³QÏâ²
+
+where Ëy = rt + ri
+(st+1, ÏÎ¸â² (st+1)), Ïi indicates
+the parameters of critic network, and Ï
+i and Î¸
+are the pa-
+rameters of target networks. Then, the policy of agent i is
+updated by minimizing the loss
+
+i
+
+â²
+
+â²
+
+LÏ(Î¸i) = Estâ¼D[âQÏi (st, ÏÎ¸(ââ£st))],
+where Î¸ = (Î¸1, ..., Î¸n) are the parameters of actor networks.
+The training algorithm is described in Algorithm 1.
+
+(8)
+
+Performance Evaluation
+To verify the effectiveness of our proposed method, in this
+section, we conduct extensive experiments to evaluate SCIC
+on various multi-agent tasks and compare SCIC with state-
+of-the-art methods. Moreover, we also evaluate the effective-
+ness of the components of the proposed method by ablation
+experiments.
+
+Multi-Agent Task Benchmark
+We evaluate our proposed approach on three benchmark
+multi-agent tasks: Partial Observation Cooperative Preda-
+tor Prey, Cooperative Navigation, and Cooperative Line
+Control. The benchmarksâ environment is implemented in
+a Multi-Agent Particle Environment ((Lowe et al. 2017)),
+where agents can follow a dual integrator dynamic model
+
+Since our approach is based on MADDPG with central-
+ized training and decentralized executing, we name it SCIC-
+MADDPG in the experiments. First, we evaluate the perfor-
+mance of our approach and other baseline approaches on Co-
+operative Predator Prey with 3, 4, and 5 predators, in which
+the policy of predators needs to be trained and the policy of
+prey is fixed. Figure 3(a), Figure 3(b), and Figure 3(c) illus-
+trate the comparison results of rewards for SCIC-MADDPG,
+PMIC, SI, and MDDDPG on Predator-Prey tasks with 3, 4,
+5 predators, respectively. We can observe that our SCIC-
+MADDPG demonstrates better performance compared to
+other algorithms, although there are relatively minor advan-
+tages when there are 4 predators in the environment. SCIC-
+MADDPG converges to a better reward than MADDPG,
+which indicates that the intrinsic reward is indeed conducive
+to improving the cooperation among agents. Both PMIC and
+SI receive lower rewards, suggesting that promoting agents
+to reach significant states is more beneficial for cooperation
+between agents than merely focusing on behavior coordina-
+tion. From another perspective, enhancing the causal influ-
+ence between agents is evidently more conducive to coop-
+eration between agents than solely focusing on enhancing
+their correlation.
+
+Moreover, we further perform evaluations on the Coop-
+erative Navigation task with 3, 4, and 5 robots, which re-
+quires each agent to reach a distinct landmark to achieve
+
+(a) Predator Prey (3 agents).
+
+(b) Predator Prey (4 agents)
+
+(a) Ablation Performance.
+
+(b) Temperature Parameters.
+
+Figure 4: Ablation Study.
+
+Ablation study
+To further evaluate our proposed approach, we further con-
+ducted a series of ablation experiments in this subsec-
+tion. Specifically, to evaluate the effectiveness of interven-
+tion sampling, we implemented the SCIC w/o Intervention
+method, which obtains the action set when estimating causal
+effects between agents, not through intervention with a uni-
+form distribution, but by sampling from the replay buffer.
+The ablation study was conducted on the Predator Prey task
+with 5 agents. As shown in Figure 4(a), SCIC-MADDPG
+performs significantly better than MADDPG and SCIC w/o
+Intervention. The key reason behind this achievement can
+be attributed to the fact that the sampling actions in the
+off-policy reinforcement learning algorithm originate from a
+mixture of different policies, which cannot be utilized to es-
+timate causality. The results reveal two facts: 1) Using causal
+influence between agents as a Reward Bonus contributes to
+enhancing the performance of MARL algorithms by facili-
+tating cooperation among agents; 2) The adoption of inter-
+vention leads to more accurate estimates of causal influence.
+
+Temperature Parameters Î± The role of temperature
+parameters Î± is to control
+the relative importance be-
+tween intrinsic and extrinsic reward. We evaluate SCIC-
+MADDPG by varying Î± values within the range of [0,
+0.001,0.01,0.1,0.5] in the Predator Prey task with 5 preda-
+tors. As illustrated in Figure 4(b), SCIC-MADDPG with a
+temperature value of 0.01 outperforms its performance with
+other temperature values.
+
+Conclusion
+To promote coordination between agents and encourage ex-
+ploration, we propose the SCIC approach, which incorpo-
+rates a new intrinsic reward mechanism based on a new co-
+operation criterion measured by situation-dependent causal
+influence between agents. SCIC encourages agents to ex-
+plore states that positively affect other agents by detecting
+inter-agent causal influences and utilizing them as intrinsic
+rewards, thereby enhancing collaboration and overall perfor-
+mance. We conduct comprehensive experiments to evaluate
+the performance of our proposed approach across various
+cooperative MARL tasks. Extensive experimental results
+prove the effectiveness of our SCIC. In the future, we ex-
+pect to further extend SCIC to decentralized training-based
+MARL algorithms and model-based MARL algorithms.
+
+(c) Predator Prey (5 agents).
+
+(d) Cooperative Navi. (3 agents).
+
+(e) Cooperative Navi. (4 agents). (f) Cooperative Navi. (5 agents).
+
+(g) Cooperative Line (3 agents). (h) Cooperative Line (5 agents).
+
+Figure 3: Performances comparison of SCIC-MADDPG
+with the other three approaches in various multi-agent tasks.
+
+the shortest total distance traveled. From Figure 3(d), Fig-
+ure 3(e), and Figure 3(f), we can observe that our SCIC-
+MADDPG consistently achieves higher rewards than the
+other baseline methods in the Cooperative Navigation tasks
+with varying numbers of agents. Furthermore, we evalu-
+ate the performance of SCIC-MADDPG on more challeng-
+ing Control Line tasks involving 3 and 5 agents, repre-
+senting an exceptionally difficult task scenario. The exper-
+imental findings illustrated in Figure 3(h) reveal that SCIC-
+MADDPG outperforms other methods in the context of a
+5-agent scenario. Additionally, Figure 3(g) illustrates that
+SCIC-MADDPG achieves superior performance in compar-
+ison to SI and MADDPG, while achieving comparable per-
+formance to PMIC. In summary, the results of these exper-
+iments collectively indicate that SCIC-MADDPG proves to
+be an effective approach, consistently outperforming other
+methods across various tasks.
+
+0.00.51.01.52.02.53.03.54.0Time Steps (le6)010203040RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)01020304050RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)01020304050RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)240220200180160140120RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)425400375350325300275250225RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)650600550500450400350RewardSCIC-MADDPGPMICSIMADDPG0123456Time Steps (le6)20181614121086RewardSCIC-MADDPGPMICSIMADDPG0123456Time Steps (le6)20181614121086RewardSCIC-MADDPGPMICSIMADDPG0.00.51.01.52.02.53.03.54.0Time Steps (le6)1020304050RewardSCIC-MADDPGSCIC w/o InterventionMADDPG (baseline)0.00.51.01.52.02.53.03.54.0Time Steps (le6)1020304050Rewardalpha=0.001alpha=0.01alpha=0.1alpha=0.5alpha=0 (baseline)Acknowledgments
+This work was supported by the National Key Research and
+Development Program of China (No. 2022ZD0119102).
+
+References
+Banerjee, A. 2006. On Bayesian bounds. In International
+Conference on Machine Learning.
+Belghazi, I.; Rajeswar, S.; Baratin, A.; Hjelm, R. D.; and
+Courville, A. C. 2018. MINE: Mutual Information Neural
+Estimation. CoRR, abs/1801.04062.
+Blaes, S.; Pogancic, M. V.; Zhu, J.; and Martius, G.
+2019. Control What You Can: Intrinsically Motivated Task-
+Planning Agent. In NeurIPS, 12520â12531.
+Chalk, M.; Marre, O.; and Tkacik, G. 2016. Relevant sparse
+In NIPS,
+codes with variational information bottleneck.
+1957â1965.
+Chen, L.; Guo, H.; Du, Y.; Fang, F.; Zhang, H.; Zhang, W.;
+and Yu, Y. 2021. Signal Instructed Coordination in Coop-
+In DAI, vol-
+erative Multi-agent Reinforcement Learning.
+ume 13170 of Lecture Notes in Computer Science, 185â205.
+Springer.
+Donsker, M. D.; and Varadhan, S. R. S. 2010. Asympototic
+evalution of certain Markov process expectations for large
+time, IV. Communications on Pure & Applied Mathematics,
+36(2): 183â212.
+Foerster, J. N.; Farquhar, G.; Afouras, T.; Nardelli, N.; and
+Whiteson, S. 2018. Counterfactual Multi-Agent Policy Gra-
+dients. In AAAI, 2974â2982. AAAI Press.
+Hjelm, R. D.; Fedorov, A.; Lavoie-Marchildon, S.; Grewal,
+K.; Bachman, P.; Trischler, A.; and Bengio, Y. 2019. Learn-
+ing deep representations by mutual information estimation
+and maximization. In ICLR. OpenReview.net.
+Houthooft, R.; Chen, X.; Duan, Y.; Schulman, J.; Turck,
+F. D.; and Abbeel, P. 2016. VIME: Variational Information
+Maximizing Exploration. In NIPS, 1109â1117.
+Iqbal, S.; and Sha, F. 2019. Actor-attention-critic for multi-
+agent reinforcement learning. In International Conference
+on Machine Learning (ICML), 2961â2970. PMLR.
+Jaques, N.; Lazaridou, A.; Hughes, E.; GÂ¨ulcÂ¸ehre, CÂ¸ .; Ortega,
+P. A.; Strouse, D.; Leibo, J. Z.; and de Freitas, N. 2019. So-
+cial Influence as Intrinsic Motivation for Multi-Agent Deep
+Reinforcement Learning. In ICML, volume 97 of Proceed-
+ings of Machine Learning Research, 3040â3049. PMLR.
+Kim, W.; Jung, W.; Cho, M.; and Sung, Y. 2023. A Varia-
+tional Approach to Mutual Information-Based Coordination
+for Multi-Agent Reinforcement Learning. In Proceedings of
+the 2023 International Conference on Autonomous Agents
+and Multiagent Systems, AAMAS 2023, London, United
+Kingdom, 29 May 2023 - 2 June 2023, 40â48. ACM.
+Kiran, B. R.; Sobh, I.; Talpaert, V.; Mannion, P.; Sallab, A.
+A. A.; Yogamani, S. K.; and PÂ´erez, P. 2022. Deep Reinforce-
+IEEE
+ment Learning for Autonomous Driving: A Survey.
+Trans. Intell. Transp. Syst., 23(6): 4909â4926.
+Kolchinsky, A.; Tracey, B. D.; and Wolpert, D. H. 2019.
+Nonlinear Information Bottleneck. Entropy, 21(12): 1181.
+
+Lee, T. E.; Zhao, J. A.; Sawhney, A. S.; Girdhar, S.; and
+Kroemer, O. 2021. Causal Reasoning in Simulation for
+Structure and Transfer Learning of Robot Manipulation
+Policies. In ICRA, 4776â4782. IEEE.
+Li, P.; Tang, H.; Yang, T.; Hao, X.; Sang, T.; Zheng, Y.; Hao,
+J.; Taylor, M. E.; Tao, W.; and Wang, Z. 2022. PMIC: Im-
+proving Multi-Agent Reinforcement Learning with Progres-
+In ICML, volume
+sive Mutual Information Collaboration.
+162 of Proceedings of Machine Learning Research, 12979â
+12997. PMLR.
+Liu, M.; Zhou, M.; Zhang, W.; Zhuang, Y.; Wang, J.; Liu,
+W.; and Yu, Y. 2020. Multi-Agent Interactions Modeling
+with Correlated Policies. arXiv.
+Lowe, R.; Wu, Y.; Tamar, A.; Harb, J.; Abbeel, P.; and
+Mordatch, I. 2017. Multi-agent actor-critic for mixed
+In Proceedings of
+cooperative-competitive environments.
+the 31st International Conference on Neural Information
+Processing Systems, 6382â6393.
+Maes, S.; Meganck, S.; and Manderick, B. 2007. Inference
+in multi-agent causal models. International Journal of Ap-
+proximate Reasoning, 46(2): 274â299.
+Mahajan, A.; Rashid, T.; Samvelyan, M.; and Whiteson, S.
+2019. MAVEN: Multi-Agent Variational Exploration.
+In
+NeurIPS, 7611â7622.
+Mohamed, S.; and Rezende, D. J. 2015. Variational Infor-
+mation Maximisation for Intrinsically Motivated Reinforce-
+ment Learning. In NIPS, 2125â2133.
+Oliehoek, F. A.; and Amato, C. 2016. A Concise Introduc-
+tion to Decentralized POMDPs. Springer Briefs in Intelli-
+gent Systems. Springer.
+Parascandolo, G.; Rojas-Carulla, M.; Kilbertus, N.; and
+SchÂ¨olkopf, B. 2017. Learning Independent Causal Mech-
+anisms. CoRR, abs/1712.00961.
+Parunak, H. V. D. 2018. Elements of causal inference:
+foundations and learning algorithms. Computing reviews,
+59(11): 588â589.
+Pitis, S.; Creager, E.; and Garg, A. 2020. Counterfactual
+Data Augmentation using Locally Factored Dynamics.
+In
+NeurIPS.
+Rashid, T.; Samvelyan, M.; Schroeder, C.; Farquhar, G.; Fo-
+erster, J.; and Whiteson, S. 2018. Qmix: Monotonic value
+function factorisation for deep multi-agent reinforcement
+learning. In International Conference on Machine Learning
+(ICML), 4295â4304. PMLR.
+SchÂ¨olkopf, B.; Locatello, F.; Bauer, S.; Ke, N. R.; Kalch-
+brenner, N.; Goyal, A.; and Bengio, Y. 2021. Towards
+Causal Representation Learning. CoRR, abs/2102.11107.
+Seitzer, M.; SchÂ¨olkopf, B.; and Martius, G. 2021. Causal
+Influence Detection for Improving Efficiency in Reinforce-
+ment Learning. In NeurIPS, 22905â22918.
+Shanmugam, R. 2001. Causality: Models, Reasoning, and
+Inference : Judea Pearl; Cambridge University Press, Cam-
+bridge, UK, 2000, pp 384, ISBN 0-521-77362-8. Neurocom-
+puting, 41(1-4): 189â190.
+Sunehag, P.; Lever, G.; Gruslys, A.; Czarnecki, W. M.; Zam-
+baldi, V. F.; Jaderberg, M.; Lanctot, M.; Sonnerat, N.; Leibo,
+
+J. Z.; Tuyls, K.; and Graepel, T. 2018. Value-Decomposition
+Networks For Cooperative Multi-Agent Learning Based On
+Team Reward. In AAMAS, 2085â2087. International Foun-
+dation for Autonomous Agents and Multiagent Systems
+Richland, SC, USA / ACM.
+Velickovic, P.; Fedus, W.; Hamilton, W. L.; Li`o, P.; Bengio,
+Y.; and Hjelm, R. D. 2019. Deep Graph Infomax. In ICLR
+(Poster). OpenReview.net.
+Wang, T.; Du, X.; Chen, M.; and Li, K. 2023. Hierarchi-
+cal Relational Graph Learning for Autonomous Multi-Robot
+IEEE
+Cooperative Navigation in Dynamic Environments.
+Transactions on Computer-Aided Design of Integrated Cir-
+cuits and Systems, 1â1.
+Wang, T.; Wang, J.; Wu, Y.; and Zhang, C. 2020. Influence-
+Based Multi-Agent Exploration. In ICLR. OpenReview.net.
+Wen, Y.; Yang, Y.; Luo, R.; Wang, J.; and Pan, W. 2019.
+Probabilistic Recursive Reasoning for Multi-Agent Rein-
+forcement Learning. In ICLR (Poster). OpenReview.net.
+Wu, T.; Zhou, P.; Liu, K.; Yuan, Y.; Wang, X.; Huang, H.;
+and Wu, D. O. 2020. Multi-Agent Deep Reinforcement
+Learning for Urban Traffic Light Control in Vehicular Net-
+works. IEEE Transactions on Vehicular Technology, 69(8):
+8243â8256.
+
+A Proof of Lemma 1
+First, the dependence Ai
+tion do(Ai
+and ai,1
+t
+
+t â¶= Ï(ai
+, ai,2
+t
+
+tâ£si
+
+t Ì¸ Sj
+
+t+1â£Si
+
+t = si
+t)) signifies that there are some Sj
+
+t under an interven-
+t+1,
+
+that satisfy the following conditions:
+
+pdo(Ai
+â  p(sj
+
+tâ¶=Ï)(sj
+t+1â£si
+
+t, ai,1
+t+1â£si
+t ) = pdo(Ai
+t, ai,2
+
+t ) = p(sj
+
+t+1â£si
+
+t, ai,1
+t )
+t, ai,2
+t )
+
+tâ¶=Ï)(sj
+
+t+1â£si
+Any Ïâ² with full support would satisfy Ïâ²(ai,1
+t
+Ïâ²(ai,2
+t
+that the dependence Ai
+Ïâ²).
+
+t) > 0 and
+t) > 0. So the following formula holds, implying
+t = si
+t â¶=
+
+t holds under do(Ai
+
+t Ì¸ Sj
+
+t+1â£Si
+
+â£si
+
+â£si
+
+pdo(Ai
+â  p(sj
+
+tâ¶=Ïâ²)(sj
+t+1â£si
+t+1â£Si
+
+t, ai,1
+t+1â£si
+t ) = pdo(Ai
+t = si
+
+t, ai,2
+
+t ) = p(sj
+
+t+1â£si
+
+tâ¶=Ïâ²)(sj
+
+t, ai,1
+t )
+t, ai,2
+t )
+
+t+1â£si
+
+t hold under all intervention with
+t â Sj
+t+1 exits, implying that Ai
+t has
+
+t Ì¸ Sj
+Since Ai
+full support, the edge Ai
+a causal effect on Sj
+t+1.
+
+Second, if the independent Ai
+
+der an intervention do(Ai
+support, any intervention do(Ai
+
+t â¶= Ï(ai
+
+t Ã Sj
+tâ£si
+
+t = si
+t+1â£Si
+t hold un-
+t)) with Ï having full
+
+pdo(Ai
+= p(Sj
+
+tâ¶=Ïâ²)(Sj
+t+1â£si
+
+t+1â£si
+t, Ai
+t) = pdo(Ai
+
+t â¶= Ïâ²) holds that
+t) = p(Sj
+tâ¶=Ïâ²)(Sj
+
+t+1â£si
+t, Ai
+t)
+t+1â£si
+t),
+
+(9)
+
+(10)
+
+where the equation 9 contributes to the autonomy property
+of causal mechanisms, the equation 10 is due to the inde-
+pendence Ai
+t+1â£Si
+t+1 holds under
+an intervention do(Ai
+tâ£si
+t)) with Ï having full sup-
+port, then the independence holds. So far, Lemma 1 has been
+proven.
+
+t = si
+t â¶= Ï(ai
+
+t. So, if Ai
+
+t Ã Sj
+
+t Ã Sj
+
+

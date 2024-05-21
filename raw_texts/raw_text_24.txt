@@ -1,0 +1,1050 @@
+Contrastive Learning-Based Agent Modeling for Deep Reinforcement Learning
+
+Wenhao Ma1 , Yu-Cheng Chang1 , Jie Yang1 , Yu-Kai Wang1 , Chin-Teng Lin1
+1GrapheneX-UTS Human-centric Artificial Intelligence Centre (HAI),
+University of Technology Sydney,
+Ultimo NSW 2007, Australia
+
+4
+2
+0
+2
+
+n
+a
+J
+
+8
+1
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+2
+v
+2
+3
+1
+0
+0
+.
+1
+0
+4
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Multi-agent systems often require agents to collab-
+orate with or compete against other agents with di-
+verse goals, behaviors, or strategies. Agent mod-
+eling is essential when designing adaptive policies
+for intelligent machine agents in multi-agent sys-
+tems, as this is the means by which the controlled
+agent (ego agent) understands other agentsâ (mod-
+eled agents) behavior and extracts their meaning-
+ful policy representations. These representations
+can be used to enhance the ego agentâs adaptive
+policy which is trained by reinforcement learning.
+However, existing agent modeling approaches typ-
+ically assume the availability of local observations
+from modeled agents during training or a long ob-
+servation trajectory for policy adaption. To remove
+these constrictive assumptions and improve agent
+modeling performance, we devised a Contrastive
+Learning-based Agent Modeling (CLAM) method
+that relies only on the local observations from the
+ego agent during training and execution. With these
+observations, CLAM is capable of generating con-
+sistent high-quality policy representations in real
+time right from the beginning of each episode.
+We evaluated the efficacy of our approach in both
+cooperative and competitive multi-agent environ-
+ments. The experiment results demonstrate that our
+approach improves reinforcement learning perfor-
+mance by at least 28% on cooperative and compet-
+itive tasks, which exceeds the state-of-the-art.
+
+1 Introduction
+The rapid evolution of artificial intelligence has led to the
+widespread deployment of machine agents in real-world set-
+tings, where they collaborate with other machines and hu-
+mans as multi-agent systems to achieve diverse tasks [OâNeill
+et al., 2022]. In multi-agent systems, intelligent agents are
+expected to work tacitly with agents having diverse goals,
+behaviors, or strategies. Maintaining effective and flexi-
+ble responses when facing different types of agents in a
+multi-agent environment becomes a crucial question. This
+challenge leads the agent modeling as a key research topic
+within the field of multi-agent systems [Shoham et al., 2007;
+
+Albrecht and Stone, 2018]. Specifically, it enables the con-
+trolled agent (ego agent) to acquire a more profound compre-
+hension and prediction of the policies of other agents (mod-
+eled agents) present in the system. This capacity can be uti-
+lized to augment the decision-making process and empower
+the ego agent to adapt its behavior in accordance with the
+policies of the modeled agents. For this reason, agent model-
+ing, as a kind of policy representation technique, has become
+an indispensable and vital component of multi-agent systems.
+Existing approaches [He et al., 2016; Grover et al., 2018;
+Papoudakis et al., 2021] involve using observation signals
+from both the ego agent and the modeled agents to gener-
+ate distinctive policy representations through deep neural net-
+work models. These representations, commonly referred to
+as âcontext informationâ, are then combined with the ego
+agentâs real-time observation signals to train adaptive policies
+for cooperating or competing with other agents via reinforce-
+ment learning[Sutton and Barto, 2018]. [Grover et al., 2018]
+leveraged the encoder-decoder architecture to learn modeled
+agentsâ policies by reconstructing the observation of the ego
+agent. However, it relies on long historical observation trajec-
+tories from the ego agent to generate informative policy rep-
+resentation. LIAM [Papoudakis et al., 2021], following the
+same architecture, feeds the ego agentâs local observations
+into the encoder during the training phase and reconstructs
+the local observation of the modeled agent. This process
+builds the predictive capability of the ego agent regarding the
+policies of modeled agents, which is why the LIAM model
+solely relies on the ego agentâs local observation during exe-
+cution. However, the assumption that observations from the
+perspective of modeled agents are available during the train-
+ing phase may not always hold in many real-world scenar-
+ios. Especially in human-autonomy collaboration, it is diffi-
+cult for ego agents to obtain observational information from
+a human agentâs perspective for agent modeling tasks.
+
+To address these challenges, we propose a self-supervised
+representation learning method to achieve agent modeling.
+Employing both attention mechanism [Vaswani et al., 2017]
+and contrastive learning [Chen et al., 2020], the method en-
+codes the ego agentâs local observation trajectories using an
+attention-based policy encoder and identifies the most repre-
+sentative trajectory features by an asymmetric sample aug-
+mentation strategy in contrastive learning. Through this pro-
+cess, our method produces differentiated policy representa-
+
+ 
+ 
+ 
+ 
+ 
+ 
+This capacity can be utilized to augment the decision-making
+process and empower the ego agent to adapt its behavior in
+accordance with the policies of the modeled agents. [He et
+al., 2016] proposed a neural network-based model to jointly
+learn the adaptive policy and agent modeling model. The
+Theory of mind Network (TomNet) [Rabinowitz et al., 2018],
+used two networks called character net and mental net to infer
+the goals of modeled agent efficiently. [Grover et al., 2018]
+proposed an encoder-decoder architecture, which embeds the
+input observation trajectory into feature vectors in a point-
+wise manner and uses the average pooling method to generate
+the representation of the trajectory. [Papoudakis et al., 2021]
+also based on an encoder-decoder architecture. But they use
+a recurrent encoder which can better leverage historical ob-
+servation information to aid the ego agent. These mentioned
+agent modeling approaches either assume the availability of
+local observations from other agents (modeled agents) during
+training or a long observation trajectory for policy adaption.
+The key distinction between our approach and these studies
+lies in the fact that we only rely on observations from the ego
+agent and adapt the ego agentâs policy within a few steps.
+
+2.2 Contrastive Learning
+In recent years, contrastive learning has emerged as a promi-
+nent paradigm in the realm of machine learning and repre-
+sentation learning. The underlying principle of contrastive
+learning revolves around learning representations by maxi-
+mizing the similarity between positive pairs and minimizing
+the similarity between negative pairs [Oord et al., 2018]. This
+concept has gained widespread interest and has been exten-
+sively explored across a spectrum of domains, encompassing
+computer vision and natural language processing [Jaiswal et
+al., 2020]. Seminal works like SimCLR [Chen et al., 2020]
+have paved the way by introducing the concept of large-batch
+training coupled with negative samples to augment the qual-
+ity of learned representations. Building upon this foundation,
+MoCo [He et al., 2020] incorporated a momentum moving-
+averaged encoder to facilitate better feature extraction. Ad-
+ditionally, approaches like SwAV [Caron et al., 2020] have
+ventured into novel augmentation strategies to enhance con-
+trastive learning.
+
+3 Method
+3.1 Problem Statement
+In this section, we formally introduce the problem to be ad-
+dressed. Overall, our goal is to create an intelligent machine
+agent (ego agent) that, using its local observation to infer the
+intentions, behavioral preferences, policies, and other char-
+acteristics of other agents (modeled agents) within the same
+environment. Through training, the ego agent will be given
+the ability to interact efficiently with the modeled agents that
+execute different policies picked from a diverse policy set.
+
+This entire problem can be modeled as a Partially Observ-
+able Stochastic Game (POSG) [Hansen et al., 2004] involv-
+ing N agents, defined as the tuple (I, S, A, O, P, R). Here,
+I = {1, ..., n} represents the set of agents. S represents the
+set of states, A = A1 Ã A2 Ã . . . Ã AN is the joint action
+space and O = O1 Ã O2 Ã . . . Ã ON is joint observation
+
+Figure 1: Diagram of our proposed CLAM model and adaptive pol-
+icy training architecture. The left part is for CLAM training. The
+right part is for adaptive policy training.
+
+tion embeddings of modeled agents based on the interaction
+between the ego agent and modeled agents, which creates
+a more straightforward and practical solution for real-world
+scenarios. The key contributions of our method are as fol-
+lows:
+
+â¢ We propose a Contrastive Learning-based Agent Mod-
+eling (CLAM) model that consists of a Transformer en-
+coder module and an attention pooling module. The em-
+ployment of the attention mechanism in two modules
+enables CLAM to dynamically allocate weights to dif-
+ferent parts of the observation sequence data based on
+their importance. This process significantly enhances
+the modelâs capability to capture the most representa-
+tive feature elements during the feature representation
+and aggregation stages.
+
+â¢ The model is trained using self-supervised contrastive
+learning with accompanying asymmetric sample aug-
+mentation strategy that creates positive sample pairs.
+The results of comparative experiments demonstrate that
+our method produces better policy representations than
+those produced through symmetric sample augmenta-
+tion techniques. Moreover, this novel method enables
+the model to generate policy representations of modeled
+agents in real time and only requires local observations
+of ego agents.
+
+â¢ The unified training architecture concurrently trains
+the agent modeling model and reinforcement learning
+model resulting in a more concise, efficient, and easily
+deployable framework, as shown in Fig. 1.
+
+2 Related Work
+2.1 Agent Modeling
+Agent modeling (or opponent modeling) plays a crucial role
+in the design of adaptive policies for intelligent machine
+agents within multi-agent systems, as it enables the ego agent
+to acquire a deeper comprehension and prediction of the poli-
+cies of other agents (modeled agents) present in the system.
+
+Online CLAM ModelContrastiveLearningEnvironmentReplay BufferReinforcement Learning ð¶ðððððððððð ððð¨ððððð ððEpisodic TrajectoryCurrent EpisodeTrajectoryðð: {ð¶ð,ð¶ð,â¦,ð¶ð}Projection LayerTarget CLAM ModelTrajectory AugmentationMomentum Updateð·ððððð ððððððððð ððFigure 2: Diagram of CLAM model training process.
+
+space. P represents the state transition and observation prob-
+abilities, where P (st+1, ot+1|st, at) denotes the probability
+of taking joint action at at state st to the next state st+1 and
+joint observation ot+1 and R represents the reward function,
+where R : S Ã A â â.
+
+To ensure clarity and precision, we use âmâ and âeâ to la-
+bel the modeled agent and the ego agent, e.g., om and oe rep-
+resent the local observations of the modeled agent and the
+ego agent, respectively. It is assumed that a set of predefined
+fixed policies exists Î  = {Ïm
+i |i = 1, 2, . . . , n}, which can
+either be hand-coded or created via reinforcement learning.
+The policies within this policy set are randomly selected and
+made available for execution by the modeled agent. A fixed
+policy Ïm
+t ) represents a function that maps the mod-
+eled agentâs current observation om
+to a distribution over its
+t
+action am
+t . Our objective is to train the ego agentâs adaptive
+policy ÏÎ±, which is parameterized by Î±, to achieve the max-
+imum expected return through interactions with the policies
+in the fixed policy set Î :
+
+i (am
+
+t |om
+
+EÏm
+
+i â¼u(Î )[EÏÎ±,Ïm
+
+i
+
+T â1
+(cid:88)
+[
+
+t=0
+
+Î³trt(oe
+
+t , ae
+
+t )]]
+
+(1)
+
+where the inner expectation accounts for the discounted cu-
+mulative reward acquired by the ego agent throughout one
+episode length T and the outer expectation accounts for the
+ego agentâs average episodic return over various policies Ïm
+i
+of the modeled agent. The policy Ïm
+is drawn from a uniform
+i
+distribution u(Î ). rt(Â·) is the ego agentâs reward function and
+Î³ â (0, 1) is the discount factor to balance the trade-off be-
+tween immediate return and long-term return.
+
+3.2 Contrastive Learning-based Agent Modeling
+
+To address our research problem, a contrastive learning-based
+agent modeling model is proposed to generate real-time pol-
+icy representation of modeled agents. As its input, this model
+takes an observation trajectory of the ego agent from the be-
+ginning of an episode 0 up to the current time t, i.e., Ït =
+[oe
+t ]. It then generates and outputs a policy repre-
+sentation vector ct. This vector is intended to encapsulate the
+policy-specific information of the modeled agent, including
+its objectives, its behavioral characteristics, and policy infor-
+mation. This real-time policy representation vector ct will be
+
+2, ..., oe
+
+1, oe
+
+used in conjunction with the real-time observations oe
+ego agent to condition the adaptive policies as ÏÎ±(at|oe
+
+t of the
+t , ct).
+In this work, the agent modeling model CLAM is com-
+posed of two components: (1) a Transformer encoder to trans-
+form the original observation trajectory Ït into corresponding
+feature representation sequence Rt := {ri}i=0:t, where ri is
+the representation vector at time-step i; (2) an attention pool-
+ing module to aggregation the temporal feature sequence Rt
+into a policy representation vector ct. Next, how the two com-
+ponents are constructed will be described in detail.
+
+Transformer Encoder: The observation trajectory of the
+ego agent can be considered a form of sequential data, which
+naturally prompted us to consider using a Transformer en-
+coder fÎ¸(Â·), parameterized by Î¸, to capture patterns and rela-
+tionships within the ego agentâs observation trajectories. We
+leverage the standard Transformer encoder [Vaswani et al.,
+2017] which consists of multiple multi-head self-attention
+blocks. Firstly, we encode the ego agentâs observation trajec-
+tory with position embeddings to retain temporal information.
+Given the ego agentâs observation trajectory Ï â RtÃd, where
+d and t represent observation vector dimension and trajectory
+length respectively, we encode the observation trajectory Ï
+with position embeddings method pos(Â·) to retain temporal
+information, i.e.,
+
+Ï â² = Ï + pos(Ï ).
+(2)
+Then, the multi-head self-attention method is used to ex-
+tract policy features from different perspectives simultane-
+ously, which has been found to significantly enhance the
+modelâs representation capacity [Devlin et al., 2018; Rad-
+ford et al., 2018; Dosovitskiy et al., 2020]. Given n attention
+heads, Ï â² is projected into the query Qn, key Kn and value
+Vn as:
+
+{Qn, Kn, Vn} = {Ï â²WQ
+n â RdÃdk , WK
+
+n , Ï â²WV
+n },
+(3)
+n â RdÃdv , dk =
+where WQ
+dv = d/n are learnable weight matrices. The computation of
+multi-head attention can be expressed as follows:
+
+n , Ï â²WK
+n â RdÃdk , WV
+
+For the nth head hn:
+
+hn = Softmax
+
+(cid:19)
+
+(cid:18) QnKT
+nâ
+dk
+
+Vn
+
+(4)
+
+Finally, the outputs of each head are concatenated and lin-
+early transformed to obtain the observation trajectoryâs cor-
+responding feature representation sequence Rt as:
+
+Rt = concat(h1, h2, . . . , hn)WO
+
+(5)
+
+   ðð´ðð¾  ð(cid:2871)(cid:4593)ðð´ðð¾  ð(cid:2869)(cid:4593)â¦  ð(cid:2870)(cid:4593)(cid:4593)  ð(cid:2871)(cid:4593)(cid:4593)  ð(cid:3041)(cid:4593)(cid:4593)  ð(cid:2869)(cid:4593)(cid:4593)â¦  ð(cid:2870)(cid:4593)  ð(cid:2871)(cid:4593)   ð(cid:3040)(cid:4593)  ð(cid:2869)(cid:4593)  ð(cid:2870)(cid:4593)(cid:4593)  ð(cid:2871)(cid:4593)(cid:4593)  ð(cid:3041)(cid:4593)(cid:4593)  ð(cid:2869)(cid:4593)(cid:4593)PositionEmbeddingContrastiveLoss  ðâ¦ð (cid:4593)ð (cid:4593)(cid:4593)PositionEmbeddingTransformerEncoderAttentionPoolingAttentionPoolingâ¦TrajectorySampleð(cid:4593)ð(cid:4593)(cid:4593)  ð  ð(cid:4593)  ð(cid:4593)(cid:4593)Cropped trajectory pointsPolicy tokenPosition-wise AdditionDot product of query and keysGradient update  ðProjection HeadTransformerEncoderProjection Headwhere WO is a trainable weight matrix used for linear trans-
+formation.
+
+Attention Pooling Module: After the Transformer en-
+coder generates the feature embedding sequence Rt for each
+episode step within the observation trajectory, the next step
+is to aggregate the feature embedding sequence into a single
+policy representation vector for the current interaction time-
+step. Conventional methods usually employ average pooling
+[Rabinowitz et al., 2018; Grover et al., 2018] for this feature
+aggregation step. However, since each vector in the trajectory
+might have a different contribution to the final policy repre-
+sentation vector, we believe that using an attention mecha-
+nism might better capture complex temporal relationships and
+patterns within the trajectory. Thus, our model appends an at-
+tention pooling module poolÏ(Â·) parameterized by Ï after the
+Transformer encoder. We create a special trainable policy to-
+ken P â R1Ãd as the query in the attention mechanism to ag-
+gregate the feature embedding sequence Rt, attention pooling
+function poolÏ(Â·) with policy token P is defined as:
+
+poolÏ(Rt) = rF F (MultiHead(P, Rt, Rt))
+
+(6)
+
+where rF F is row-wise feedforward layers and MultiHead
+means the multi-head attention mechanism. This policy token
+P helps to aggregate the entire input feature vector sequence
+Rt into a single policy representation vector ct. Our experi-
+ments also verify that attention-based pooling helps the agent
+to get higher returns compared to average pooling. A detailed
+analysis can be found in the ablation study.
+
+Contrastive Learning Training: We optimize the param-
+eters of the transformer encoder Î¸ and attention-based pool-
+ing module Ï through self-supervised contrastive learning.
+The overall training process is depicted in Fig. 2. Firstly, We
+select a batch of size N observation trajectories {Ïi}i=1:N
+from the replay buffer. Then, we randomly crop two tra-
+jectory windows from each sampled trajectory and form two
+sample sets S = {si}i=1:N and Sâ² = {sâ²
+i}i=1:N . The two
+cropped samples si and sâ²
+i extracted from the same original
+trajectory Ïi can be considered positive sample pairs, while
+trajectory samples cropped from different original trajectory
+samples serve as negative sample pairs. Subsequently, we
+conduct secondary sample augmentation on one sample set
+S. This involves randomly masking a certain ratio of ob-
+servation steps in the trajectory sample, resulting in a new
+sample set Sâ²â², while the other sample set Sâ² remains un-
+altered. The masked observation steps are replaced with 0.
+The sample set Sâ²â² subjected to mask-based augmentation is
+termed âstrong augmentation,â while the unaltered one Sâ² is
+referred to as âweak augmentationâ. This asymmetric sam-
+ple augmentation approach has been experimentally shown
+to enhance the performance of contrastive learning models
+[Wang et al., 2022]. We believe the underlying rationale for
+our asymmetric sample augmentation approach is to compel
+the model to extract more representative policy features from
+sparser and less informative observation trajectories. This ap-
+proach enhances the modelâs ability to capture subtle patterns,
+making it more adept at handling real-time policy representa-
+tion tasks.
+
+We utilize the InfoNCE loss proposed in [Oord et al., 2018]
+
+as the loss function for contrastive learning:
+
+LC(Î¸, Ï) = â
+
+1
+N
+
+N
+(cid:88)
+
+i=1
+
+log
+
+i Â· câ²â²
+
+exp(câ²
+k=1 exp(câ²
+
+i /Î´)
+i Â· câ²â²
+
+(cid:80)N
+
+k/Î´)
+
+,
+
+(7)
+
+is a positive pair of policy representations and câ²â²
+
+where N is the batch size, Î´ is a temperature parameter, câ²
+i
+and câ²â²
+k is
+i
+any other samples generated by the agent modeling model.
+Note that a projection head is also used, which is the same as
+in [Chen et al., 2020].
+
+3.3 Reinforcement Learning Training
+Reinforcement learning is employed to train adaptive poli-
+cies. The real-time output policy representation vector ct
+from the agent modeling mode is combined with the ego
+agentâs observation state oe
+t , to condition the optimal policy,
+i.e., ÏÎ±(at|oe
+t , ct). As a result, the trained agent policy can
+generate optimal action outputs specialized for the represen-
+tation information ct. In this paper, we select PPO [Schul-
+man et al., 2017] as the backbone algorithm for reinforcement
+learning training. However, itâs important to note that other
+reinforcement learning algorithms can also be equally appli-
+cable. The specific objective function is defined as follows:
+
+(cid:20)
+LP P O(Î±) = E
+
+min
+
+(cid:18) ÏÎ±(at|oe
+t , ct)
+ÏÎ±old(at|oe
+t , ct)
+(cid:18) ÏÎ±(at|oe
+t , ct)
+ÏÎ±old(at|oe
+t , ct)
+â c Â· E [H(ÏÎ±(at|oe
+
+clip
+
+t , ct))] ,
+
+Â· At,
+
+(cid:19)
+
+(cid:19)(cid:21)
+
+, 1 â Ïµ, 1 + Ïµ
+
+Â· At
+
+(8)
+where At is the advantage function, representing the advan-
+tage of taking action at with observation oe
+t , H(Â·) is the en-
+tropy function, c is the coefficient of entropy regularization
+and clip(Â·) is a clipping function used to restrict the magni-
+tude of policy updates.
+
+4 Experiments
+4.1 Environments
+We selected two representative multi-agent environments to
+evaluate our method: a cooperative environment, level-based
+foraging [Christianos et al., 2020; Papoudakis et al., 2020]
+and a competitive environment, predator-prey [Mordatch and
+Abbeel, 2018]. We created a fixed policy set of ten policies
+for each environment. At the beginning of each episode, a
+policy is randomly selected from the policy set with equal
+probability and assigned to the modeled agent.
+
+Level-based Foraging: This is a grid environment consist-
+ing of two agents and a number of apples, as shown in Fig.
+3a. Each agent and apple has its level value, and the agent has
+six action options: up, down, left, right, stay still, and pick the
+apple. Agents can successfully pick up an apple when one or
+both agents are located in one of the four grid cells adjacent
+to the targeted apple and the sum of the agentsâ levels is not
+less than the appleâs level. When an apple is picked up, each
+agent receives a reward based on their contribution to com-
+pleting the task. The total reward value for each episode is
+normalized to 1. An episode ends when all apples are picked
+
+(a)
+
+(b)
+
+Figure 3: The two multi-agent environments for evaluation.
+(a)
+Level-based foraging. In this cooperative scenario, agents and ap-
+ples are randomly placed in a grid world with assigned levels.
+Agents can move around to collect adjacent apples, which is suc-
+cessful if their combined levels meet or exceed the appleâs level.
+(b) Predator prey. In this competitive scenario, predators (red dots)
+work together to tag the prey (green dot) while the prey tries to evade
+them. Both the prey and predators need to learn how to avoid obsta-
+cles (black dots).
+
+up or after 50 time steps.
+In this environment, one of the
+agents serves as the modeled agent while the other agent is
+the ego agent and is trained via reinforcement learning. Since
+our aim is to assess the modelâs performance in a cooperative
+environment, we compute the total reward obtained by both
+agents as the team returns in each episode. A higher value
+indicates more efficient cooperation among the agent team.
+
+Predator-prey: This competitive multi-agent environment
+consists of three predators, one prey, and two circular obsta-
+cles, as illustrated in Fig. 3b. Each agent has five action
+options: up, down, left, right, and stay still. The three preda-
+tors are assigned fixed policy combinations, while the prey
+is the ego agent under training. The reward setting in the
+environment is such that when a predator collides with the
+prey, the prey receives -10 and the predator receives +10. In
+the event of a predator-predator collision, each predator re-
+ceives -3 and the prey receives +3. This reward scheme en-
+courages the prey to learn adversarial policy by evading the
+predator teamâs pursuit while inducing more chaos and col-
+lisions among them. This environment is highly suitable for
+evaluating the effectiveness and performance of agent model-
+ing methods. By employing agent modeling methods to ac-
+quire informative policy representations, the ego agent can
+learn targeted adversarial policy based on different opponent
+policies to obtain greater rewards. Each episode in this envi-
+ronment lasts for 50 time steps.
+
+4.2 Baseline Methods
+We chose two widely recognized and representative methods
+in the field of agent modeling as baselines for our comparative
+experiments. Additionally, we included a naÂ¨Ä±ve PPO method
+that does not involve agent modeling as another baseline.
+
+No Agent Modeling (NAM): Since this approach does not
+employ any agent modeling techniques, we expect this to be
+the worst of the methods. NAM merely serves as a bench-
+
+Figure 4: Episodic evaluation returns and 95 % confidence interval
+of the four evaluated methods in two scenarios.
+
+mark to evaluate whether agent modeling methods do any-
+thing to enhance the ego agentâs policy performance and, if
+so, to quantify the degree of that improvement.
+
+Policy Representation Learning in Multi-Agent System
+(PR): This baseline is based on the method proposed by
+[Grover et al., 2018]. The method is built on an encoder-
+decoder architecture, where the encoder embeds the input ob-
+servation trajectory into feature vectors in a point-wise man-
+ner, yielding vectors for each time step within the trajectory.
+The feature vectors are aggregated using the average pool-
+ing method to obtain the trajectoryâs representation. This ap-
+proach generally requires modeling an ego agentâs complete
+observation trajectory from a previous episode to generate the
+modeled agentâs policy representation.
+
+Local Information Agent Modeling (LIAM): This base-
+line was introduced by [Papoudakis et al., 2021]. Like PR,
+it employs an encoder-decoder architecture. But unlike PR,
+the encoder is a recurrent encoder. The encoder takes in the
+history of the ego agentâs observations and actions up to the
+current time step and outputs the modeled agentâs policy rep-
+resentation ct in real time during the current episode. This
+method requires obtaining the modeled agentâs observations
+and actions for the reconstruction task during the training
+phase but only needs the ego agentâs observations and actions
+
+0.00.20.40.60.81.0Time steps1e70.40.50.60.7RewardsLevel_based ForagingNAMCLAMPRLIAM0.00.20.40.60.81.0Time steps1e76050403020100102030RewardsPredator PreyNAMCLAMPRLIAMduring the execution.
+
+4.3 Policy Evaluation
+Fig. 4 shows the average return curves for the three baselines
+and CLAM in two multi-agent environments. We trained
+each method for 10 million time steps, conducting evalua-
+tions every 10,000 time steps. We evaluated each method us-
+ing five different random seeds. The solid lines represent the
+average return values over five separate runs, while the shaded
+regions indicate the 95% confidence interval. From the fig-
+ure, it is evident that the NAM baseline performs the worst in
+both environments, in line with our expectations. NaÂ¨Ä±ve rein-
+forcement learning algorithms without agent modeling mod-
+ules cannot acquire any auxiliary information to distinguish
+between the policies of its opponents or teammates. The PR
+method performed slightly better than NAM in both environ-
+ments but fell short compared to the other two methods. We
+attribute this outcome to the point-wise encoding approach of
+PR, which does not seem to effectively capture temporal re-
+lationships between trajectory steps. This limitation results
+in so few informative policy representation vectors that the
+model cannot accurately model the agentsâ strategy features.
+Hence, the representation provides little assistance in the ego
+agentâs adaptive policy training. Additionally, using the aver-
+age pooling method to aggregate feature vectors might not
+be the optimal approach. LIAM, which employs a recur-
+rent encoder, receives the second-highest returns (on aver-
+age) in both scenarios. This method capitalizes on the tem-
+poral information within trajectories for effective representa-
+tion learning, resulting in policy representations with richer
+information than PR. As can be seen, the performance im-
+provement is substantial compared to the other two baselines.
+CLAM achieved the highest returns in both environments
+and improved naÂ¨Ä±ve reinforcement learning performance by
+at least 28%. We reason this is due to the attention mecha-
+nism, which captures long-range temporal patterns within the
+trajectory sequences. Moreover, CLAM employs the mask
+method in the sample augmentation step of contrastive learn-
+ing. This enhances the modelâs capability to identify the most
+distinctive feature information within the trajectories of dif-
+ferent policies, resulting in superior performance.
+
+4.4 Model Evaluation
+Continuing our analysis, we delve into why the CLAM
+method achieves such remarkable performance. Utilizing
+the t-SNE method [Van der Maaten and Hinton, 2008], we
+projected the policy representation embeddings into a two-
+dimensional space, as shown in Fig. 5a. These were the pol-
+icy embeddings output by CLAMâs encoder at the 25th time
+step of each episode in the Predator-prey environment. Each
+color represents a different fixed policy combination for the
+predator team, and each point represents an episode. From the
+figure, it is apparent that points of the same color are strongly
+clustered. This is a good indication that the CLAM model
+can identify and differentiate the behavioral characteristics of
+different predator team policies.
+
+However, we did notice an overlap between Policy 5 and
+Policy 8. Further examination reveals that these two policy
+combinations inherently share similar features. As a result,
+
+(a)
+
+(b)
+
+Figure 5: (a) t-SNE projection of the embeddings in the predator-
+prey environment, where different colors represent different fixed
+policies and different points represent different episodes. (b) Policy
+prediction accuracy.
+
+the self-supervised contrastive learning scheme struggled to
+tell them apart. Nevertheless, this underscores that CLAM
+can indeed represent policies based on their behavioral simi-
+larities, effectively aiding the training of adaptive cooperative
+or adversarial policies through reinforcement learning.
+
+Subsequently, we verified the rapid generation of informa-
+tive real-time policy representations by freezing the policy en-
+coderâs parameters and attaching a prediction head composed
+of MLPs. We input the complete episodic observation trajec-
+toriesâ representation embeddings into the prediction head.
+The prediction head uses the policy class labels as supervi-
+sion signals to predict the corresponding class for each policy
+representation embedding. After training, we tested the pre-
+dictive accuracy of policy representations for observation tra-
+jectories of lengths from 0 to 49, the idea being to validate the
+modelâs representation capabilities. The results appear in Fig.
+5b. The solid line represents the average accuracy over five
+tests, while the shaded region denotes the 95% confidence in-
+terval.
+
+From the figure, we can see that, at time step 0, the repre-
+sentations are random due to the lack of sufficient temporal
+information available, and so the result is an average accu-
+
+6040200204060t-SNE-x604020020406080t-SNE-yt-SNE EmbeddingPolicy index012345678901020304050Episode Time Steps20406080100Accuracy (%)Policy Prediction AccuracyMethod \ Time step
+CLAM
+CLAM-avg
+CLAM-unmask
+
+10
+0.89
+0.94
+0.89
+
+20
+0.78
+0.88
+0.83
+
+30
+0.75
+0.85
+0.81
+
+40
+0.74
+0.83
+0.80
+
+50
+0.74
+0.82
+0.79
+
+Table 1: Intra-Inter Clustering Ratios (IICR) of policy representation
+embeddings in predator-prey environment.
+
+Our next experiment was to test the mask-based sample
+augmentation technique. Comparing CLAM and CLAM-
+unmask in Fig. 6, CLAM amassed higher returns. The IICR
+values also suggest that CLAM outperforms CLAM-unmask
+in terms of policy representation clustering. This indicates
+that incorporating a maske-based asymmetric sample aug-
+mentation method enhances the modelâs policy representa-
+tion ability. Based on our empirical insights, we conjecture
+that the model is forced to rely on the remaining unmasked
+portions to capture the most essential and discriminative fea-
+tures. This would lead to more focused learning of the im-
+portant temporal patterns and relationships within the obser-
+vation trajectory. Again, the result is more robust and infor-
+mative embeddings that capture the essential characteristics
+of the modeled agentsâ policies.
+
+5 Conclusion
+
+This paper presented a novel agent modeling model that
+leverages a Transformer encoder and an attention-pooling
+module. The model effectively captures real-time policy rep-
+resentations of the modeled agents, utilizing only the obser-
+vation signals from the ego agent. Importantly, our work pi-
+oneers the integration of the attention mechanism into the
+field of agent modeling. This innovative attention mecha-
+nism empowers the proposed model to efficiently learn how
+to capture useful information from the ego agentâs local ob-
+servation, thereby substantially augmenting the modelâs ca-
+pacity for representation. Through contrastive learning, and
+combined with an innovative asymmetric sample augmen-
+tation technique for creating positive sample pairs, we suc-
+cessfully trained a policy encoder to model agent policies in
+a self-supervised manner and encouraged the model to un-
+earth the most distinctive information and features within the
+ego agentâs observation trajectories. Our experimental results
+demonstrate that CLAM significantly increases the episodic
+returns obtained by the ego agent compared to baseline meth-
+ods. More importantly, in contrast to the baseline methods,
+our approach stands out by eliminating the necessity to ac-
+quire observations from the perspective of the modeled agent
+or to rely on long-range trajectories. It exclusively relies on
+In
+the observations of the ego agent as the modelâs input.
+the future, we will use the CLAM model in human-machine
+collaboration environments. The proposed approach has the
+potential to enhance the versatility of multi-agent reinforce-
+ment learning methods, making them applicable to scenarios
+involving human-machine collaboration to achieve a common
+goal, such as in manufacturing or logistics.
+
+Figure 6: Average returns comparison of CLAM against two ablated
+versions of CLAM in predator-prey environment.
+
+racy of 10% for predicting the 10 policies. However, as the
+time steps progress, the accuracy rapidly increases, reaching
+around 60% at step 10, close to 80% at step 20, and surpass-
+ing 90% accuracy for full trajectory representations at the fi-
+nal step of 49. This demonstrates that the CLAM method can
+generate informative representations early in each episode
+and ensure high consistency in the representation space across
+trajectory lengths.
+
+4.5 Ablation Study
+This section presents the results of an ablation study we con-
+ducted to better understand the impact of different designs in
+our CLAM model. Our two assessment metrics were: i) the
+average returns obtained by the agents in a multi-agent envi-
+ronment, and ii) the Intra-Inter Clustering Ratio (IICR) of the
+policy embeddings. IICR essentially assesses the clustering
+properties of feature vectors in an embedding space. It is a
+valuable metric for evaluating the feature learning capability
+of self-supervised methods and the discriminative power of
+learned features in representing diverse sample classes. An
+IIRC value of less than 1 indicates the effectiveness of the
+feature representation method in aggregating similar samples
+and separating dissimilar samples. The smaller the value,
+the more pronounced the clustering effect and the better the
+modelâs representation performance.
+
+We evaluated two ablated versions of CLAM: CLAM-avg
+which replaced the attention pooling module with the aver-
+age pooling method and CLAM-unmask which did not use
+the mask-based sample augmentation method. Fig. 6 illus-
+trates the average return curves for CLAM and CLAM-avg.
+It is evident from the figure that CLAM yields higher aver-
+age returns. Table 1 presents the IICR results. We scored the
+policy embeddings at time steps (10, 20, 30, 40, 50). From a
+comparison of the score, it is clear that the values for CLAM
+are consistently lower than those of CLAM-avg, indicating its
+superior representation performance. We attribute this to the
+attention pooling moduleâs ability to better focus on crucial
+temporal features in the ego agentâs observation trajectories
+resulting in a more distinct aggregation of feature vectors and
+ultimately yielding more informative policy representations.
+
+0.00.20.40.60.81.0Time steps1e76050403020100102030RewardsPredator PreyCLAMCLAM-unmaskCLAM-avgReferences
+[Albrecht and Stone, 2018] Stefano V Albrecht and Peter
+Stone. Autonomous agents modelling other agents: A
+comprehensive survey and open problems. Artificial In-
+telligence, 258:66â95, 2018.
+
+[Caron et al., 2020] Mathilde Caron,
+
+Ishan Misra, Julien
+Mairal, Priya Goyal, Piotr Bojanowski, and Armand
+Joulin. Unsupervised learning of visual features by con-
+trasting cluster assignments. Advances in neural informa-
+tion processing systems, 33:9912â9924, 2020.
+
+[Chen et al., 2020] Ting Chen, Simon Kornblith, Moham-
+mad Norouzi, and Geoffrey Hinton. A simple framework
+In In-
+for contrastive learning of visual representations.
+ternational conference on machine learning, pages 1597â
+1607. PMLR, 2020.
+
+[Christianos et al., 2020] Filippos
+
+Lukas
+SchÂ¨afer, and Stefano Albrecht. Shared experience actor-
+critic for multi-agent reinforcement learning. Advances in
+neural information processing systems, 33:10707â10717,
+2020.
+
+Christianos,
+
+[Devlin et al., 2018] Jacob Devlin, Ming-Wei Chang, Ken-
+ton Lee, and Kristina Toutanova. Bert: Pre-training of
+deep bidirectional transformers for language understand-
+ing. arXiv preprint arXiv:1810.04805, 2018.
+
+[Dosovitskiy et al., 2020] Alexey Dosovitskiy, Lucas Beyer,
+Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai,
+Thomas Unterthiner, Mostafa Dehghani, Matthias Min-
+derer, Georg Heigold, Sylvain Gelly, et al. An image is
+worth 16x16 words: Transformers for image recognition
+at scale. arXiv preprint arXiv:2010.11929, 2020.
+
+[Grover et al., 2018] Aditya Grover, Maruan Al-Shedivat,
+Jayesh Gupta, Yuri Burda, and Harrison Edwards. Learn-
+In In-
+ing policy representations in multiagent systems.
+ternational conference on machine learning, pages 1802â
+1811. PMLR, 2018.
+
+[Hansen et al., 2004] Eric A Hansen, Daniel S Bernstein,
+and Shlomo Zilberstein. Dynamic programming for par-
+In AAAI, volume 4,
+tially observable stochastic games.
+pages 709â715, 2004.
+
+[He et al., 2016] He He, Jordan Boyd-Graber, Kevin Kwok,
+and Hal DaumÂ´e III. Opponent modeling in deep reinforce-
+In International conference on machine
+ment learning.
+learning, pages 1804â1813. PMLR, 2016.
+
+[He et al., 2020] Kaiming He, Haoqi Fan, Yuxin Wu, Sain-
+ing Xie, and Ross Girshick. Momentum contrast for unsu-
+pervised visual representation learning. In Proceedings of
+the IEEE/CVF conference on computer vision and pattern
+recognition, pages 9729â9738, 2020.
+
+[Jaiswal et al., 2020] Ashish Jaiswal, Ashwin Ramesh Babu,
+Mohammad Zaki Zadeh, Debapriya Banerjee, and Fillia
+Makedon. A survey on contrastive self-supervised learn-
+ing. Technologies, 9(1):2, 2020.
+
+[Mordatch and Abbeel, 2018] Igor Mordatch and Pieter
+Abbeel. Emergence of grounded compositional language
+
+In Proceedings of the AAAI
+
+in multi-agent populations.
+conference on artificial intelligence, volume 32, 2018.
+[Oord et al., 2018] Aaron van den Oord, Yazhe Li, and Oriol
+Vinyals. Representation learning with contrastive predic-
+tive coding. arXiv preprint arXiv:1807.03748, 2018.
+[OâNeill et al., 2022] Thomas OâNeill, Nathan McNeese,
+Amy Barron, and Beau Schelble. Humanâautonomy team-
+ing: A review and analysis of the empirical literature. Hu-
+man factors, 64(5):904â938, 2022.
+
+[Papoudakis et al., 2020] Georgios Papoudakis,
+
+Filippos
+Christianos, Lukas SchÂ¨afer, and Stefano V Albrecht.
+Benchmarking multi-agent deep reinforcement
+learn-
+arXiv preprint
+ing algorithms in cooperative tasks.
+arXiv:2006.07869, 2020.
+
+[Papoudakis et al., 2021] Georgios Papoudakis,
+
+Filippos
+Christianos, and Stefano Albrecht. Agent modelling under
+partial observability for deep reinforcement
+learning.
+Advances in Neural Information Processing Systems,
+34:19210â19222, 2021.
+
+[Rabinowitz et al., 2018] Neil Rabinowitz, Frank Perbet,
+Francis Song, Chiyuan Zhang, SM Ali Eslami, and
+Matthew Botvinick. Machine theory of mind. In Interna-
+tional conference on machine learning, pages 4218â4227.
+PMLR, 2018.
+
+[Radford et al., 2018] Alec Radford, Karthik Narasimhan,
+Tim Salimans, Ilya Sutskever, et al. Improving language
+understanding by generative pre-training. 2018.
+
+[Schulman et al., 2017] John Schulman, Filip Wolski, Pra-
+fulla Dhariwal, Alec Radford, and Oleg Klimov. Prox-
+arXiv preprint
+imal policy optimization algorithms.
+arXiv:1707.06347, 2017.
+
+[Shoham et al., 2007] Yoav Shoham, Rob Powers,
+
+and
+Trond Grenager.
+If multi-agent learning is the answer,
+what is the question? Artificial intelligence, 171(7):365â
+377, 2007.
+
+[Sutton and Barto, 2018] Richard S Sutton and Andrew G
+Barto. Reinforcement learning: An introduction. MIT
+press, 2018.
+
+[Van der Maaten and Hinton, 2008] Laurens Van der Maaten
+and Geoffrey Hinton. Visualizing data using t-sne. Journal
+of machine learning research, 9(11), 2008.
+
+[Vaswani et al., 2017] Ashish Vaswani, Noam Shazeer, Niki
+Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
+Åukasz Kaiser, and Illia Polosukhin. Attention is all you
+need. Advances in neural information processing systems,
+30, 2017.
+
+[Wang et al., 2022] Xiao Wang, Haoqi Fan, Yuandong Tian,
+Daisuke Kihara, and Xinlei Chen. On the importance of
+In Pro-
+asymmetry for siamese representation learning.
+ceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition, pages 16570â16579, 2022.
+
+

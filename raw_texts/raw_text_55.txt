@@ -1,0 +1,797 @@
+The 5 Iranian Conference on Renewable Energy & Distributed Generation (ICREDG2017) â University of Guilan 
+
+A Multi-Agent Approach to Optimal Sizing of a 
+Combined Heating and Power Microgrid  
+
+Soheil Mohseni  
+Department of Electrical Engineering, University Campus 2, 
+University of Guilan  
+Rasht, Iran 
+soheilmohseni92@gmail.com 
+
+Seyed Masoud Moghaddas Tafreshi  
+Department of Electrical Engineering, Faculty of 
+Engineering, University of Guilan 
+Rasht, Iran 
+tafreshi@guilan.ac.ir
+
+AbstractâIn this paper, a novel multi-agent based method is 
+applied to the problem of optimal sizing of the components of an 
+islanded combined heating and power residential microgrid such 
+that  the  residential  power  and  heat  demands  and  hydrogen 
+refilling  demands  of  the  fuel  cell  electric  vehicles  (FCEVs)  are 
+is  assumed  that  the  proposed  multi  agent-based 
+met.  It 
+architecture  consists  of  five  different  agents,  namely  generation 
+agent  (GA),  electrical  and  thermal  loads  agent  (LA),  FCEV 
+refilling station agent (SA), control agent (CA), and design agent 
+(DA) which are organized in three levels. Design agent (DA) is the 
+main  agent  of  the  proposed  multi-agent  system  (MAS)  that  
+according to its interactions with CA and by minimizing the total 
+costs  of  the  system  through  particle  swarm  optimization  (PSO), 
+finds the optimal sizes of the systemâs components. This study is 
+performed for a typical stand-alone combined heating and power 
+microgrid. 
+
+Keywordsârenewable  energy;  microgrid;  micro-CHP;  optimal 
+
+sizing; multi-agent system. 
+
+I.   INTRODUCTION  
+
+Sustainable  energy  systems  have  received  global  attention 
+in  many  countries  according  to  the  depletion  of  fossil  fuels, 
+global warming and climate change issues. Renewable energy 
+sources  (RESs)  such  as  wind  and  solar  are  well  accepted 
+sustainable  energy  sources  [1].  A  microgrid  is  a  low-voltage 
+distribution  system  with  distributed  energy  resources,  storage 
+devices, and controllable loads that are operated either islanded 
+or connected to the main power grid in a controlled way. The 
+steady  progress  in  the  development  of  distributed  power 
+generation,  such  as  microgrids  and 
+renewable  energy 
+technologies,  are  opening  up  new  opportunities  for  the 
+utilization of distributed energy resources [2].  
+
+Optimal  sizing  of  hybrid  micro-combined  heat  and  power 
+(CHP)  systems  defined  on  the  basis  of  linear  programming 
+techniques have been addressed in [3] that takes advantage of 
+rapid  calculations  even  in  the  presence  of  a  high  number  of 
+variables.  The  optimal  design  of  microgrids  with  CHP 
+generators, through the development of a mixed-integer linear 
+programming (MILP) model has been addressed in [4] that has 
+considered  both  environmental  and  economic  concerns.  A 
+MILP-based  optimal  structural  design  model  of  residential 
+power and heat supply devices has been developed in [5] that 
+considers  the  operational  and  capital  recovery  constraints  of 
+
+these devices. A decision model for the planning of the energy 
+production  has  been  proposed  in  [6]  that  aims  to  find  the 
+optimal sizes of the components of a smart district that satisfy 
+its electrical and thermal demands. 
+
+In  this  paper,  the  optimal  sizing  problem  of  a  combined 
+heating and power residential microgrid is considered which is 
+equipped  with  photovoltaic/wind  turbine/fuel  cell  generation, 
+electrolyzer  and  hydrogen  storage,  boiler  and  heater,  and  a 
+FCEV refilling station. For this purpose, a multi-agent system 
+is proposed that finds  the  optimal  sizes  of the  components  by 
+mean  of  particle  swarm  optimization  (PSO).  The  considered 
+energy management strategy in the proposed MAS controls the 
+refilling of FCEVs depending on the hour of the day to reduce 
+cost and avoid overload during peak hours.  
+
+The rest of this paper is organized as follows: In section II, 
+configuration  of  the  microgrid  is  presented.  Section  III 
+describes  the  multi-agent  architecture  used  for  optimal  sizing 
+along  with  the  description  of  components  belonging  to  each 
+agent. Section  IV presents the simulation results of the MAS-
+based  architecture  used  for  optimal  sizing  of  the  microgrid. 
+Finally, the conclusion of this study is presented in section V. 
+
+II.  CONFIGURATION OF THE MICROGRID 
+
+Power flow diagram of the proposed microgrid is shown in 
+Fig.  1.  According  to  this  diagram,  the  output  power  of  the 
+photovoltaic  unit  is  equal  to  PPV  that  depends  on  the  solar 
+radiation and the output power of the wind generation unit is 
+equal  to  Pwg  that  depends  on  the  wind  speed.  When  the 
+summation  of  the  output  powers  of  PV  arrays  and  wind 
+turbines  is  more  than  electricity  demand  (Pload),  the  first 
+priority  of  using  this  surplus  power  (Pren-el)  is  producing 
+hydrogen  in  the  electrolyzer  and  storing  the  hydrogen  in  the 
+tank.  If  the  surplus  power  exceeds  electrolyzerâs  rated  power 
+or  the  tank  becomes  full,  the  surplus  power  (Pren-h)  will  be 
+used  for  heat  production  in  the  heater  to  supply  the  thermal 
+load to the amount of Qh-tl. In this case, if there is shortage of 
+heat  production,  boiler  compensates  it.  On  the  other  hand, 
+when  the  summation  of  the  output  powers  of  the  PV  arrays 
+and wind turbines is less than the electricity demand, fuel cell 
+consumes  the  hydrogen  stored  in  the  tank  to  the  amount  of 
+Ptank-fc and compensates the shortage of the power production 
+(Pfc-conv).  If  the  shortage  of  power  exceeds  fuel  cellâs  rated 
+
+ 
+ 
+ 
+power or the stored hydrogen cannot afford that, some fraction 
+of the electricity demand of the microgrid must be shed which 
+leads to loss of load. In this case, if the heat production of the 
+fuel  cell  does  not  satisfy  the  thermal  load  (Qload),  boiler  will 
+compensate the shortage of the heat production. Finally, if the 
+power production of renewable sources  (PPV+Pwg) is equal  to 
+the  electrical  load  demand,  all  of  the  renewable  generations 
+will  be  delivered  to  the  electrical  loads  and  boiler  should 
+satisfy the thermal loads. In all of these cases, FCEVs can be 
+refilled  at  the  station  and  consume  the  hydrogen  power  of 
+Ptank-sta. 
+
+a) PV arrays: The output power of the PV generator can 
+
+be calculated according to the following equation [7]: 
+
+PPV ï½ï ï¨g NPV Am Gt,                              (1) 
+
+where ï¨g  is  the  instantaneous  PV  generator  efficiency  that  is 
+considered  to  be  15.4%  in  this  paper  [7],  Am  is  the  area  of  a 
+single module used in the system (m2) which is considered to 
+be  1.9  m2  in  this  paper  [7],  Gt    is  the  total  global  irradiance 
+incident on the titled plane (W/m2), and NPV  is the number of 
+modules. In this analysis, each PV array has a rated power of 1 
+kW.  The  capital  cost  of  1  unit  is  $2000  [7],  while  the 
+replacement  and  maintenance  costs  are  taken  as  $1800,  and 
+$0/yr,  respectively.  The  lifetime  of  a  PV  array  is  taken  to  be 
+20 years [8]. 
+
+b) Wind  turbine:  The  power  of  the  wind  turbine  (Pwg 
+
+(kW/m2)) can be described in terms of wind speed by (2) [9]. 
+
+Fig. 1. Schematic diagram of the proposed microgrid system 
+
+III.  MULTI-AGENT SYSTEM 
+
+The  considered  MAS  for  optimal  sizing  of  the  proposed 
+microgrid  has  five  agents,  namely  generation  agent,  electrical 
+and  thermal  loads  agent,  refilling  station  agent,  control  agent, 
+and  design  agent  which  are  organized  in  three  levels.  All  the 
+agents  associated  with  the  generation  or  consumption  of 
+electricity, heat, and hydrogen belong to the field level, which 
+is the lowest level of the considered architecture for the MAS. 
+GA, LA, and SA belong to this level. In the coordination level, 
+coordination  of 
+the  generation  of  electricity,  heat,  and 
+hydrogen  with  consumption  of  the  electrical,  thermal,  and 
+hydrogen loads obtains. CA belongs to this level. Design level 
+is  the  highest  level  of  the  proposed  architecture  that  finds  the 
+optimal  sizes  of  the  components  according  to  the  interactions 
+with coordination level such that the residential power and heat 
+demands, and FCEVsâ hydrogen refilling demands are met. In 
+the proposed MAS, DA belongs to this level.  
+
+A.  Generation agent 
+
+ This agent is responsible for management of the resources 
+of  the  microgrid.  Generation  resources  of  the  microgrid 
+include PV arrays, wind turbines, and the fuel cell. Also, this 
+agent has an electrolyzer to provide hydrogen for the fuel cell 
+and uses a hydrogen tank as a storage unit.  
+
+1)  Components under the supervision of generation agent: 
+Modeling of the components which are under the supervision 
+of generation agent is presented in the following subsections. 
+
+where Vcin is the cut in wind speed (m/s) that is considered to 
+be  2.5  m/s,  Vcoff    is  the  cut  off  wind  speed  (m/s)  that  is 
+considered to  be 25 m/s, V is the wind speed  (m/s), Vr is the 
+nominal  wind  speed  (m/s)  that  is  considered  to  be  11  m/s, 
+Prated  is  the  nominal  power  of  wind  turbine  which  is 
+considered to be 1 kW, Pwg-max is the maximum power of wind 
+turbine,  Pwg-min  is  the  minimum  power  of  wind  turbine,  and 
+Pfurl is the power of wind turbine in cut off wind speed. Actual 
+power available from wind turbines is given by (3). 
+
+Pwg(t)= ï¨w Nwg Aw Pw(t),                          (3) 
+
+where ï¨w  is  the  efficiency  of  the  wind  turbine  generator  and 
+corresponding  converters,  Nwg  is  the  number  of  wind  turbine 
+generators, and Aw is the swept area. The capital cost of 1 unit 
+is $1500 [7], while the replacement and maintenance costs are 
+taken as $900, and $45/yr, respectively. The lifetime of a wind 
+turbine is taken to be 20 years [8]. 
+
+c) Fuel cell: Proton exchange membrane fuel cell is an 
+environmentally  clean  power  generator  which  combines 
+hydrogen  fuel  with  oxygen  from  air  to  produce  heat  and 
+electricity.  The  efficiency  of  the  fuel  cell  is  fed  to  the 
+computational  program  as  the  input.  Fuel  cellâs  power  and 
+heat outputs can be defined by the following equations: 
+
+Pfc-conv ï½ï Ptank-fc ï´ ï¨fc,el,                              (4)  
+
+Qfc-tl ï½ï  Ptank-fc ï´ ï¨fc,th.                            (5) 
+
+3maxmax0                                                        ,(()/())     ,      (2)()           cincoffwgcinrcincinrfurlrwgrrcoffcoffrVVVVPVVVVVVVPPPVVVVVVVï­ï­ï¬ï¯ï¼ï¾ï¯ï¯ï´ï­ï­ï£ï¼ï­ï¯ï­ï¯ï´ï´ï­ï£ï£ï¯ï­ï® 
+where ï¨fc,el and ï¨fc,th are the electeical and thermal efficiencies 
+of  the  fuel  cell  and  considered  to  be  40%  and  50%, 
+respectively. The capital, replacement, and maintenance costs 
+are taken as $2000 [7], $1500, and $100/yr for a 1 kW system, 
+respectively. The FCâs lifetime is considered to be 5 years [8]. 
+d) Electrolyzer:  Electrolysis  to  dissociate  water  into  its 
+separate hydrogen and oxygen constituents has been in use for 
+decades, primarily to meet industrial chemical needs. 
+
+The  electrolyzerâs  output  power  can  be  calculated  by  the 
+
+following equation: 
+
+Pel-tank ï½ï Pren-el ï´ ï¨el,                           (6) 
+
+In  this  analysis,  a  1  kW  system  is  associated  with  $1500 
+capital  [7],  $1000  replacement,  and  $15/yr  maintenance  cost. 
+The electrolyzerâs lifetime and efficiency are considered to be 
+20 years and 75%, respectively [8]. 
+
+e) Hydrogen tank: The energy of hydrogen stored in the 
+
+tank at time step t is obtained by the following equation: 
+
+Etank(t)ï ï½ï Etank(t-1) ï«ï Pel-tank(t) ï´ï ït ï­ (Ptank-fc(t) + Ptank-sta(t))  ï´ 
+ ï¨storage ï´ï ït,                                                             (7) 
+
+where ï¨storage  is the efficiency of the storage system which is 
+assumed to be 95%, and ït  is the duration of each time step 
+which is equal to one hour in this study. 
+
+To  calculate  the  mass  of  the  stored  hydrogen  in  the  tank, 
+
+the following equation can be used [8]: 
+
+mstorage(t) = Etank(t) / HHVH2,                       (8) 
+
+where HHVH2  is the higher heating value of hydrogen which is 
+equal to 39.7 kWh/kg [8]. It is worth mentioning that there are 
+lower and upper limits for amount of the stored hydrogen. It is 
+not  possible  that  the  mass  of  stored  hydrogen  exceeds  the 
+rated capacity of the tank. On the other hand, because of some 
+problems, e.g. hydrogen pressure drop, a small fraction of the 
+hydrogen (here, 5%) may not be extracted. This fraction is the 
+lower limit of the stored hydrogen.  
+
+In  this  analysis,  a  1  kg  system  is  associated  with  $500 
+capital  [7],  $450  replacement,  and  $5/yr  maintenance  cost. 
+The hydrogen tankâs lifetime and efficiency are considered to 
+be 20 years and 95%, respectively [8]. 
+
+f)  Heater:  The  equipments  that  have  heating  elements 
+are called heaters. In this analysis, heater is used for supplying 
+the  heat  load  of  the  microgrid  when  there  is  surplus  power 
+generation.  Heaterâs  output  power  can  be  defined  by  the 
+following equation: 
+
+g) Boiler: It is assumed that boilerâs fuel is natural gas. 
+Equation  (10)  shows  the  heat  output  of  the  boiler  based  on 
+input fuel and (11) shows the cost of the input fuel per kWh. 
+
+Qb-tl ï½ï Cin ï´ ï¨b,                              (10)    
+
+Cboiler ï½ï Cinï´ Cfuel.                            (11)        
+
+where ï¨b is the boilerâs efficiency, Cin is the input fuel of the 
+boiler and Cfuel is the fuel cost which is equal to $0.03/kWh in 
+this  study.  In  this  analysis,  a  1  kW  gas  boiler  is  associated 
+with $85 capital [11], $60 replacement, and $2/yr maintenance 
+cost. The boilerâs lifetime and efficiency are considered to be 
+15 years and 94%, respectively [11].                                         
+
+h)  DC/AC converter: The power electronic circuit used 
+to convert DC into AC is known as inverter. In this analysis, a 
+1  kW  system  is  associated  with  $700  capital  [7],  $650 
+replacement,  and  $7/yr  maintenance  cost.  The  converterâs 
+lifetime and efficiency are considered to be 15 years and 90%, 
+respectively [8]. 
+
+2)  Simulation  algorithm  of  the  generation  agent:  This 
+agent, by coordination of the control agent, interacts with LA 
+and  SA  in  order  to  supply  the  electricity,  thermal,  and 
+hydrogen demands. In this regard, first CA sends the sizes of 
+PV  arrays,  wind  turbines,  electrolyzer,  hydrogen  tank,  fuel 
+cell, boiler, heater, and DC/AC converter that are determined 
+by  the  DA,  to  the  GA  and  at  each  time  step  t  asks  it  for  the 
+next  hour  value  of  the  output  power  of  solar  and  wind 
+generations. Then, GA sends the requested data to the CA. In 
+this  paper,  it  is  assumed  that  GA  acts  such  that  when  it 
+receives the request of storing the surplus power from the CA, 
+it  will  use  the  excess  energy  in  electrolyzer  and  stores  the 
+produced  hydrogen  in  the  tank.  On  the  other  hand,  when  the 
+GA receives the request of supplying the shortage of electrical 
+power production from the CA, it uses the stored hydrogen in 
+the  fuel  cell  to  compensate  the  shortage  of  the  power 
+production. Also, when it receives the request of supplying the 
+shortage of thermal load, it turns the boiler on. 
+
+B.  Electical and Thermal loads agent 
+
+ Electrical and thermal loads agent is a simple reflex agent 
+that aggregates all the electricity and heat consumptions of the 
+residential  loads.  The  electrical  loads  that  LA  is  responsible 
+for  forecasting  them  are  interruptible  (Pi)  and  uninterruptible 
+(Puni)  loads  and  should  be  supplied  subject  to  a  reliability 
+constraint.  It  is  assumed  that  at  each  hour,  15%  of  loads  are 
+interruptible and 85% of them are uninterruptible.  
+
+Qh-tl ï½ï Pren-h ï´ ï¨h.                               (9) 
+
+C.  FCEV refilling station agent 
+
+where ï¨h  is  the  efficiency  of  the  heater.  In  this  analysis,  a  1 
+kW  system  is  associated  with  $281  capital  [10],  $150 
+replacement, and $5/yr maintenance cost. The heaterâs lifetime 
+and  efficiency  are  considered  to  be  20  years  and  90%, 
+respectively [10].      
+
+Refilling  station  agent  is  responsible  for  refilling  the 
+FCEVs  that  arrive  at  the  station  and  sends  the  forecasted 
+refilling demand to the control agent.  In this paper, hydrogen 
+pipeline  transport  is  used  to  deliver  hydrogen  from  the 
+hydrogen  tank  of  the  GA  to  the  station.  The  next  stage  is  to 
+compress  the  hydrogen  from  1  bar  to  700  bar  and  pump  the 
+
+ 
+gas  to  storage  vessels  for  delivery  to  the  fuel  pump.  FCEVs 
+are designed to accept 350 or 700 bar with the greater pressure 
+adding to the cost per kg. Therefore, a hydrogen compressor is 
+needed  at  the  station.  Also,  in  order  to  fuel  700  bar  fuel  cell 
+vehicles, a hydrogen dispenser is needed.  
+
+In  this  study,  Pure  Energy  Centreâs  hydrogen  compressor 
+and  dispenser  are  used  to  achieve  the  700  bar  hydrogen 
+needed  for  refilling  the  FCEVs.  This  compressor  has  the 
+maximum  power  of  200  kW  which  is  enough  for  supplying 
+the FCEVs that arrive at the station. It is assumed that the size 
+of  hydrogen  compressor-dispenser  system  is  fixed  and  does 
+not participate in the optimal sizing problem. The capital cost 
+of  this  system  is  $100,000  [12],  while  the  replacement  and 
+maintenance  costs  are 
+taken  as  $80,000  and  $200/yr, 
+respectively.  The  lifetime  and  efficiency  of  this  system  are 
+considered to be 20 years and 49%, respectively [13]. 
+
+1)  Modeling  of  FCEVs:  In  this  paper,  Toyota  Mirai  is 
+chosen  as  a  mid-size  sedan  FCEV  which  is  manufactured  by 
+Toyota.  Mirai  is  equipped  with  a  113  kW  fuel  cell-powered 
+electric  motor  and  two hydrogen  tanks with  a  three-layer 
+structure  made  of carbon  fiber-reinforced  plastic consisting 
+of nylon 6 from Ube Industries, and other materials. The tanks 
+store  hydrogen  at  700  bar  and  have  a  combined  weight  of 
+87.5 kg and 5 kg capacity. The Mirai refueling takes between 
+3 and 5 minutes and Toyota has expected a total range of 300 
+miles on a full tank. 
+
+2)  Simulation algorithm of the station agent: It is assumed 
+that unmanaged refilling profile of the station is available for a 
+year and FCEVs can be managed to be refilled in the evening 
+and  night-time  off-peak  hours,  thereby  the  total  cost  of  the 
+microgrid reduces. This method is such that at each step time 
+t, the SA sends the hydrogen demand to the CA and when it 
+receives  the  request  of  the  reduction  of  the  demand  from  the 
+CA, it calculates the deferrable hydrogen loads and adds them 
+to  the next  hour demand and then sends the updated demand 
+of the tth hour to the CA. Also, if it cannot refill some of the 
+FCEVs  by  the  allocated  hydrogen  power  of  the  CA,  it  sends 
+the information of unsupplied hydrogen demand to the CA.  
+
+D.  Control agent 
+
+Control  agent  coordinates  the  interactions  between  the 
+generation  agent  and  electrical  and  thermal  loads  agent  and 
+station  agent.  This  agent,  after  receiving  a  request  for 
+operating  the  microgrid  with  determined  sizes  from  DA  and 
+sending the related sizes to the GA and SA, at each time step t, 
+requests  GA  for  the  next  hour  solar  and  wind  power 
+productions,  requests  LA  for  the  next  hour  electricity  and 
+thermal demands, and requests SA for the next hour hydrogen 
+demand  needed  for  refilling  the  FCEVs.  After  receiving  the 
+information  on  the  operation  of  the  generation  and  storage 
+components  of  the  microgrid  from  the  GA,  it  establishes  the 
+energy management strategy that is presented in section II and 
+when  it  finds  that  some  of  the  electrical  loads  should  be 
+interrupted  for  balancing  the  generation  and  demand,  it 
+interrupts  them  and  when  it  finds  that  some  of  the  hydrogen 
+
+loads  can  be  deferred  to  the  evening  and  night-time  off-peak 
+hours,  it  manages  them  to  be  refilled  at  those  hours.  Finally, 
+CA sends the information on the operation of the microgrid to 
+the DA. 
+
+E.  Design  agent 
+
+Design  agent  is  responsible  for  optimal  sizing  of  the 
+
+components of the microgrid.  
+
+1)  Systemâs  cost:  In  this  paper  the  capital,  replacement, 
+and  maintenance  costs  of  each  component  of  the  microgrid 
+have been considered and net present cost (NPC) is chosen for 
+the  calculation  of  the  systemâs  cost.  The  NPC  for  a  specific 
+device can be expressed by the following equation: 
+
+NPCi ï½ Ni ï´ (CCi+RCi ï´ Ki + MCi ï´ PWA(ir,R)),     (12) 
+
+where: 
+
+N 
+
+Number of units and/or the unit capacity (kW or kg) 
+
+CC 
+
+Capital investment cost ($/unit) 
+
+K 
+
+Single payment present worth 
+
+RC 
+
+Replacement cost ($/unit) 
+
+MC  Maintenance and repair cost ($/unit.yr) 
+
+PWA  Present worth annual payment 
+
+ir 
+
+R 
+
+Real interest rate (6%) 
+
+Project lifetime (20 years) 
+
+2)  The objective function: The objective function is sum of 
+
+all net present costs:  
+
+NPC = NPCPV + NPCWT +NPCel + NPCtank + NPCFC + 
+NPCboiler+ NPCheater + NPCconv + NPCsta + NPCem + 
+
+NPCfuel+NPCPi+NPCPuni+NPCQ+NPCh,        (13) 
+
+loads, 
+
+thermal 
+
+where  NPCPi,  NPCPuni,  NPCQ,  and  NPCh  are  the  NPCs  of 
+interrupting  the  interruptible  electrical  loads,  uninterruptible 
+electrical 
+loads, 
+respectively. It is worth mentioning that the penalty factors for 
+unsupplied  uninterruptible  electrical  loads  and  thermal  loads 
+are  considered  to  be  5.6  $/kWh  and  the  penalty  factors  for 
+unsupplied  interruptible  electrical  loads  and  hydrogen  loads 
+are considered to be 0.56 $/kWh. 
+
+loads,  and  hydrogen 
+
+3)  Reliability:  In  order  to  evaluate  the  reliability  of 
+supplying the electrical and thermal loads of the microgrid, the 
+equivalent  loss  factor  (ELF)  index  is  used  and  these  indices 
+can be calculated by the following equations: 
+
+ELFel = ï¨ï±ï¯ï¸ï·ï¶ï°ï©
+
+( 
+
+/ Puni(t)),           (14) 
+
+ELFth = ï¨ï±ï¯ï¸ï·ï¶ï°ï©
+
+( 
+
+/ Q (t)),             (15) 
+
+87601.tï½ï¥_()UnsuniPt87601.tï½ï¥()UnsQtIn obtaining the hydrogen load curve of the FCEV station, 
+it  is  assumed  that  there  are  150  FCEVs  in  the  microgrid  that 
+should be refilled two times in a week.  
+
+Fig. 2. Annual sun irradiance 
+
+where 
+
+  and 
+
+indicate 
+
+the  unsupplied 
+
+uninterruptible electrical loads and unsupplied thermal loads at 
+time step t, respectively. 
+
+4)  Emission cost: Emission cost function can be calculated 
+
+by the following equation [14]: 
+
+    (16)  
+
+where ï¡k is the externality costs of emission type k, EFik is the 
+emission factor of generation unit i and emission type k, N is 
+the  number  of  generation  units  and  M  is  the  emission  type 
+(NOx, CO2 or SO2). Externality costs and emission factors of 
+the boiler are shown in Table I [14].  
+
+TABLE I.  
+
+EXTERNALITY COSTS AND EMISSION FACTORS           
+
+Emission 
+type 
+
+Externality 
+costs ($/lb) 
+
+Emission factors 
+of the boiler 
+(lb/MWh) 
+
+NOX 
+SO2 
+CO2 
+
+4.2 
+0.99 
+0.014 
+
+5.06 
+11.9 
+1965 
+
+5)  fuel cost: Net present cost of the input fuel of the boiler 
+
+can be calculated according to the following equation: 
+
+      (17) 
+
+The  considered  annual  electrical  and  thermal  load  curves 
+
+are shown in Fig. 4 and Fig. 5, respectively. 
+
+Fig. 3. Annual wind speed 
+
+6)  Simulation  algorithm  of  the  design  agent:  After  the 
+determination of the sizes of the components through PSO by 
+this agent, the determined sizes of the components will be sent 
+to the CA. Accordingly, CA sends the determined sizes of the 
+components to the GA. Then, CA coordinates the GA with LA 
+and  SA  and  sends  the  information  on  the  operation  of  the 
+microgrid  to  the  DA.  After  receiving  this  information,  DA 
+calculates the objective function and ELF indices. If ELFel and 
+ELFth are less than 0.01, and the energy content of the tank at 
+the  end  of  a  year  is  not  less  than  its  initial  amount,  then  DA 
+selects the obtained sizes as optimum sizes. 
+
+IV.  SIMULATION RESULTS 
+
+In  this  section,  the  proposed  MAS-based  architecture  for 
+optimal  sizing  of  the  components  of  the  proposed  islanded 
+combined  heating  and  power  microgrid  is  simulated  and  the 
+optimum  combination  of  the  components  is  calculated.  The 
+simulation  of 
+is  performed  using 
+MATLAB software.  
+
+the  proposed  MAS 
+
+The  annual  solar  radiation  and  wind  speed  data  that  have 
+been considered in the simulation program are shown in Fig. 2 
+and  Fig.  3,  respectively.  It  is  obvious  that  sun  irradiance  is 
+equal to zero at nights but because of the scale of the figure, it 
+cannot be seen in Fig. 2. 
+
+Fig. 4. Annual electrical load curve of the microgrid 
+
+Fig. 5. Annual thermal load curve of the microgrid 
+
+_()UnsuniPt()UnsQt8760111(,)(),NMemkikitikNPCPWAirREFPï¡ï½ï½ï½ï½ï´ï¥ï¥ï¥87601()(,).boilerfuelfueltboilerQtNPCPWAirRCï¨ï½ï½ï´ï´ï¥ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Simulations  are  done  in  two  scenarios.  In  scenario1, 
+electrical  and  hydrogen  demands  of  the  microgrid  are 
+considered  as  fixed  loads  and  the  MAS  is  simulated  without 
+controlling  them.  In  scenario2,  it  is  assumed  that  the 
+considered energy management strategy in the proposed MAS 
+controls  the  supplying  of  the  interruptible  loads  and  refilling 
+of the FCEVs depending on the hour of the day. 
+
+the amounts of pollution penalties that the boiler is responsible 
+for  them  decrease  significantly.  The  reason  of  the  decreased 
+capacity  of  the  fuel  cell  and  converter  is  that  in  the  second 
+scenario,  it  is  assumed  that  15%  of  the  electrical  loads  are 
+interruptible  at  each  hour.  Moreover,  the  capacity  of  the 
+hydrogen  tank  does  not  change  very  much  and  the  proposed 
+energy management strategy has not affected its size. 
+
+A.  Scenario1:  In  this  scenario,  hydrogen  refilling  demand  is 
+considered as a fixed load and all of the electric loads are 
+uninterruptible  loads.  Results  of  optimal  sizing  problem 
+through the MAS in this case are shown in Table II. In this 
+scenario, the total cost is equal to $36,547,871. 
+
+TABLE II.  
+
+OPTIMAL SIZES OF THE COMPONENTS IN SCENARIO1 
+
+PV 
+
+WT 
+
+2851 
+Fuel cell 
+(kW) 
+389.07 
+
+232 
+DC/AC 
+ (kW) 
+391.43 
+
+Electrolyzer  
+(kW) 
+
+Tank 
+ (kg) 
+
+1391 
+Boiler 
+ (kW) 
+254.32 
+
+1563.03 
+Heater 
+(kW) 
+31.87 
+
+B.  Scenario2:  In  this  scenario,  hydrogen  refilling  demand  is 
+considered  as  a  deferrable  load  and  at  each  hour,  15%  of 
+the  electrical  loads  are  considered  as  interruptible  loads. 
+Results of optimal sizing problem through the MAS in this 
+case are shown in Table III. In this scenario, the total cost 
+is equal to $34,911,246. 
+
+TABLE III.  
+
+OPTIMAL SIZES OF THE COMPONENTS IN SCENARIO2 
+
+PV 
+
+WT 
+
+2593 
+Fuel cell 
+(kW) 
+312.55 
+
+308 
+DC/AC 
+ (kW) 
+329.76 
+
+Electrolyzer  
+(kW) 
+
+Tank 
+ (kg) 
+
+1498 
+Boiler 
+ (kW) 
+98.30 
+
+1529.74 
+Heater 
+(kW) 
+179.22 
+
+Results  show  that  using  the  proposed  deferrable  refilling  
+method  and  benefitting  from  the  potential  of  interruptible 
+loads in the MAS, decreases the optimal size of PVs, fuel cell, 
+converter,  and  boiler  and  increases  the  optimal  size  of  the 
+WTs,  electrolyzer,  and  heater,  which  in  turn  decreases  the 
+total cost of the system. This is because of that the summation 
+of the costs of reduced number of PVs, decreased capacity of 
+fuel  cell,  converter,  and  boiler,  and  decreased  amounts  of 
+pollution penalties is more than the summation of the costs of 
+added WTs and higher capacity electrolyzer and heater. In the 
+proposed  MAS,  the  reason  behind  decreasing  the  number  of 
+PVs  is  that  it  uses  a  control  strategy  that  avoids  overload 
+during peak hours, the reason behind increasing the number of 
+WTs is that the majority of the FCEVs are going to be charged 
+in  the  evening  and  night-time  off-peak  hours  when  solar 
+energy  is  not  available.  Furthermore,  the  reason  behind 
+increasing  the  capacity  of  the  heater  and  decreasing  the 
+capacity  of  the  boiler  is  that  by  interrupting  some  of  the 
+electrical  loads  and  deferring  the  refilling  of  the  FCEVs,  it 
+would  be  possible  to  use  the  surplus  power  of  the  PVs  and 
+WTs for supplying the thermal loads by heater and therefore, 
+
+V.  CONCLUSION 
+
+In this paper, a multi-agent system for optimal sizing of an 
+islanded  combined  heating  and  power  microgrid  has  been 
+developed.  It  is  observed  that  according  to  the  considered 
+energy  management  strategy  in  the  proposed  MAS  and 
+interrupting  some  of  the  electrical  loads  and  deferring  the 
+refilling  of  the  FCEVsâ  tanks,  overloading  can  be  avoided, 
+available  components  can  be  utilized  better  and  therefore,  a 
+lower NPC for a 20 year investment horizon achieves. 
+
+REFERENCES 
+
+[1]  U. K. Debnath, I. Ahmad, D. Habibi, and A. Y. Saber, âEnergy storage 
+model  with  gridable  vehicles  for  economic  load  dispatch  in  the  smart 
+grid,â  Electrical  Power  and  Energy  Systems,  vol.  64,  pp.  1017-1024, 
+2015. 
+
+[2]  H.  Hassanzadehfard,  S.  M.  Moghaddas-Tafreshi,  and  S.  M.  Hakimi, 
+âOptimization  of  grid  connected  micro-grid  consisting  of  PV/FC/UC 
+with  considered  frequency  control,â  Turkish  Journal  of  Electrical 
+Engineering & Computer Sciences, vol.  23, pp. 1-16, 2015. 
+
+[3]  C. Brandoni and M. Renzi, âOptimal sizing of hybrid solar micro-CHP 
+systems  for  the  household  sector,â  Applied  Thermal  Engineering,  vol. 
+75, pp. 896-907, 2015. 
+
+[4]  D. Zhang, S. Evangelisti, P. Lettieri, and L. G. Papageorgiou, âOptimal 
+design  of    CHP-based  microgrid:Multiobjective  optimisation  and  life 
+cycle assessment,â Energy, vol. 85, pp. 181-193, 2015. 
+
+[5]  T. Wakui, H. Kawayoshi, and R. Yokoyama, âOptimal structural design 
+of  residential  power  and  heat  supply  devices  in  consideration  of 
+operational and capital recovery constraints,â Applied Energy, vol. 163, 
+pp. 118-133, 2016. 
+
+[6]  S.  Bracco,  F.  Delfino,  M.  Rossi,  M.  Robba,  and  L.  Pagnini,  âOptimal 
+planning  of  the  energy  production  mix  in  smart  districts  including 
+renewable  and  cogeneration  power  plants,â  in  Proceedings  of  2016 
+IEEE International Smaty Cities Conference, Trento, Italy, Sept. 2016. 
+
+system 
+
+[7]  M.  Smaoui,  A.  Abdelkafi,  and  L.  Krichen,  âOptimal  sizing  of  a  stand-
+a 
+
+alone  photovoltaic/wind/hydrogen  hybrid 
+desalination unit,â Solar Energy, vol. 120, pp. 263-276,  Oct. 2015. 
+[8]  S. Dehghan, B. Kiani, A. Kazemi, and A. Parizad, âOptimal sizing of a 
+hybrid  wind/PV  plant  considering  reliability  indices,â  World  Academy 
+of Science, Eng. and Technology, vol. 56, pp. 527-535, Aug. 2009. 
+[9]  M. J. Khan and M. T. Iqbal, âPre-feasibility study of stand-alone hybrid 
+energy systems for applications in Newfoundland,â vol. 30, pp. 835-854, 
+May 2005. 
+
+supplying 
+
+[10]  A.  Lekov,  V.  Franco,  S.  Meyers,  L.  Thompson,  and  V.  Letschert, 
+âEnergy  Efficiency  Design  Options  for  Residential  Water  Heaters: 
+Economic  Impacts  on  Consumers,â  ASHRAE  Transactions,  vol.  117, 
+pp. 103-110, 2011. 
+
+[11]  [Online]. Available: http:// www.nera.com 
+[12]  [Online]. Available: http:// www. pureenergycentre.com 
+[13]  DOE  Hydrogen  and  Fuel  Cells  Program  Record,  Energy  requirements 
+for  hydrogen  gas  compression  and  liquefacation  as  related  to  vehicle 
+storage needs (U.S. Department of Energy, Washington, DC, 2009) 
+[14]  F. A. Mohamed, H. N. Koivo, â System Modelling and Online Optimal 
+Management  of  Microgrid  Using  Mesh  Adaptive  Direct  Search,â 
+Electrical Power and Energy Systems, vol. 32, pp. 398-407, 2010. 
+
+ 
+ 
+ 
+

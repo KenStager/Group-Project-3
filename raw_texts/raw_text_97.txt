@@ -1,0 +1,3148 @@
+3
+0
+0
+2
+
+n
+u
+J
+
+0
+2
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+3
+v
+8
+0
+0
+1
+0
+0
+0
+/
+s
+c
+:
+v
+i
+X
+r
+a
+
+Autonomous Agents and Multiagent Systems, January, 2003.
+
+Predicting the Expected Behavior of Agents that
+Learn About Agents: The CLRI Framework
+
+JosÂ´e M. Vidal and Edmund H. Durfee
+Swearingen Engineering Center, University of South
+Carolina, Columbia, SC, 29208
+Advanced Technology Laboratory, University of
+Michigan, Ann Arbor, MI, 48102
+
+October 29, 2018
+
+Abstract
+
+We describe a framework and equations used to model and predict the
+behavior of multi-agent systems (MASs) with learning agents. A diï¬erence
+equation is used for calculating the progression of an agentâs error in its
+decision function, thereby telling us how the agent is expected to fare in
+the MAS. The equation relies on parameters which capture the agentâs
+learning abilities, such as its change rate, learning rate and retention rate,
+as well as relevant aspects of the MAS such as the impact that agents
+have on each other. We validate the framework with experimental results
+using reinforcement learning agents in a market system, as well as with
+other experimental results gathered from the AI literature. Finally, we
+use PAC-theory to show how to calculate bounds on the values of the
+learning parameters.
+
+Multi-Agent Systems, Machine Learning, Complex Systems.
+
+1 Introduction
+
+With the steady increase in the number of multi-agent systems (MASs) with
+learning agents [9, 5, 10, 31] the analysis of these systems is becoming increas-
+ingly important. Some of the research in this area consists of experiments where
+a number of learning agents are placed in a MAS, then diï¬erent learning or sys-
+tem parameters are varied and the results are gathered and analyzed in an
+eï¬ort to determine how changes in the individual agent behaviors will aï¬ect the
+system behavior. We have learned about the dynamics of market-based MASs
+using this approach [34]. However, in this article we will take a step beyond
+these observation-based experimental results and describe a framework that can
+be used to model and predict the behavior of MASs with learning agents. We
+give a diï¬erence equation that can be used to calculate the progression of an
+
+c(cid:13) Kluwer Academic Publishers 2002.
+
+ 
+ 
+ 
+ 
+ 
+ 
+PSfrag replacements
+
+w:
+
+Î´
+
+Î´
+
+Î´
+
+Î´2
+
+Î´3
+
+Î´1
+
+a:
+
+Figure 1: The agents in a MAS.
+
+agentâs error in its decision function. The equation relies on the values of pa-
+rameters which capture the agentsâ learning abilities and the relevant aspects
+of the MAS. We validate the framework by comparing its predictions with our
+own experimental results and with experimental results gathered from the AI
+literature. Finally, we show how to use probably approximately correct (PAC)
+theory to get bounds on the values of some of the parameters.
+
+The types of MAS we study are exempliï¬ed by the abstract representation
+shown in Figure 1. We assume that the agents observe the physical state of
+the world (denoted by w in the ï¬gure) and take some action (a) based on their
+observation of the world state. An agentâs mapping from states to actions is
+denoted by the decision function (Î´) inside the agent. Notice that the âphysicalâ
+state of the world includes everything that is directly observable by the agent
+using its sensors. It could include facts such as a robotâs position, or the set
+outstanding bids in an auction, depending on the domain. The agent does not
+know the decision functions of the other agents. After taking action an agent
+can change its decision function as prescribed by whatever machine-learning
+algorithm the agent is using.
+
+We have a situation where agents are changing their decision function based
+on the eï¬ectiveness of their actions. However, the eï¬ectiveness of their actions
+depends on the other agentsâ decision functions. This scenario leads to the
+immediate problem: if all the agents are changing their decisions functions then
+it is not clear what will happen to the system as a whole. Will the system
+settle to some sort of equilibrium where all agents stop changing their decision
+functions? How long will it take to converge? How do the agentsâ learning
+abilities inï¬uence the systemâs behavior and possible convergence? These are
+some of the questions we address in this article.
+
+Section 2 presents our framework for describing an agentâs learning abilities
+and the error in its behavior. Section 3 presents an equation that can be used
+to predict an agentâs expected error, as a function of time, when the agent is
+in a MAS composed of other learning agents. This equation is simpliï¬ed in
+Section 4 by making some assumptions about the type of MAS being modeled.
+Section 5 then deï¬nes the last few parameters used in our frameworkâvolatility
+and impact. Section 6 gives an illustrative example of the use of the framework.
+The predictions made by our framework are veriï¬ed by our own experiments, as
+
+2
+
+shown in Section 7, and with the experiments of others, as shown in Section 8.
+The use of PAC theory for determining bounds on the learning parameters is
+detailed in Section 9. Finally Section 10 describes some of the related work and
+Section 12 summarizes our claims.
+
+2 A Framework for Modeling MASs
+
+In order to analyze the behaviors of agents in MASs composed of learning
+agents, we must ï¬rst construct a formal framework for describing these agents.
+The framework must state any assumptions and simpliï¬cations it makes about
+the world, the agents, and the agentsâ behaviors. It must also be mathemati-
+cally precise, so as to allow us to make quantitative predictions about expected
+behaviors. Finally, the simpliï¬cations brought about because of the need for
+mathematical precision should not be so constraining that they prevent the ap-
+plicability of the framework to a wide variety of learning algorithms and diï¬erent
+types of MASs. We now describe our framework and explain the types of MASs
+and learning behaviors that it can capture.
+
+2.1 The World and its Agents
+
+A MAS consists of a ï¬nite number of agents, actions, and world states. We
+let N denote the ï¬nite set of agents in the system. W denotes the ï¬nite set of
+world states. Each agent is assumed to have a set of perceptors (e.g., a camera,
+microphone, bid queue) with which it can perceive the world. An agent uses is
+sensors to âlookâ at the world and determine which world state w it is in; the
+set of all these states is W . Ai, where |Ai| â¥ 2, denotes the ï¬nite set of actions
+agent i â N can take.
+
+We assume discrete time, indexed in the various functions by the superscript
+t, where t is an integer greater than or equal to 0. The assumption of discrete
+It
+time is made, for practical reasons, by a number of learning algorithms.
+means that, while the world might be continuous, the agents perceive and learn
+in separate discrete time steps.
+
+We also assume that there is only one world state w at each time, which all
+the agents can perceive in its completeness. That is, we asume the enviroment
+is accessible (as deï¬ned in [26, p46]). This assumption holds for market systems
+in which all the actions of all the agents are perceived by all the agents, and
+for software agent domains in which all the agents have access to the same
+information. However, it might not hold for robotic domains where one agentâs
+view of the world might be obscured by some physical obstacle. Even in such
+domains, it is possible that there is a strong correlation between the states
+perceived by each agent. These correlations could be used to create equivalency
+classes over the agentsâ perceived states, and these classes could then be used
+as the states in W .
+
+Finally, we assume the environment is determistic [26, p46]. That is, the
+agentsâ combined actions will always have the expected eï¬ect. Of course, agent
+
+3
+
+New world wt â D
+
+/Perceive world wt
+
+iSSSSSSSSSSSSSSSSSS
+
+tât+1
+
+Learn
+
+/Take action Î´i(wt)
+
+Receive payoï¬
+or feedback.
+
+Figure 2: Action/Learn loop for an agent.
+
+i might not know what action agent j will take so i might not know the eventual
+eï¬ect of its own individual action.
+
+2.2 A Description of Agent Behavior
+
+In the types of MASs we are modeling, every agent i perceives the state of the
+world w and takes an action ai, at each time step. We assume that every agentâs
+behavior, at each moment in time, can be described with a simple state-to-
+action mapping. That is, an agentâs choice of action is solely determined by its
+current state-to-action mapping and the current world w.
+
+Formally, we say that agent iâs behavior is represented by a decision func-
+tion (also known as a âpolicyâ in control theory and a âstrategyâ in game
+theory), given by Î´t
+i : W â Ai. This function maps each state w â W to the
+action ai â Ai that agent i will take in that state, at time t. This function can
+eï¬ectively describe any agent that deterministically chooses its action based on
+the state of the world. Notice that the decision function is indexed with the
+time t. This allows us to represent agents that change their behavior.
+
+The action agent i should take in each state w is given by the target func-
+tion ât
+i : W â Ai, which also maps each state w â W to an action ai â Ai.
+The agent does not have direct access to its target function. The target function
+is used to determine how well an agent is doing. That is, it represents the âper-
+fectâ behavior for a given agent. An agentâs learning task is to get its decision
+function to match its target function as much as possible.
+
+Since the choice of action for agent i often depends on the actions of other
+agents, the target function for i needs to take these actions into account. That
+is, in order to generate ât
+i, one would need to know Î´t
+j(w) for all j â Nâi and
+w â W . These Î´t
+j(w) functions tell us the actions that all the other agents will
+take in every state w. For example, in order for one to determine what an agent
+should bid in every world w of an auction-based market system, one will need
+to know what the other agents will bid in every world w. One can use these
+actions, along with the state w, in order to identify the best action for i to take.
+i . These changes
+in an agentâs decision function reï¬ect its learned knowledge. The agents in
+the MASs we consider are engaged in the discrete action/learn loop shown in
+Figure 2. The loop works as follows: At time t the agents perceive a world
+wt â W which is drawn from a ï¬xed distribution D(w). They then each take
+the action dictated by their Î´t
+i functions; all of these actions are assumed to
+be taken eï¬ectively in parallel. Lastly, they each receive a payoï¬ which their
+
+i (w) can change over time, so that Î´t+1
+
+An agentâs Î´t
+
+6= Î´t
+
+i
+
+4
+
+/
+/
+(cid:15)
+(cid:15)
+i
+o
+o
+i
+
+j of all other agents j â Nâi.
+
+respective learning algorithms use to change the Î´t
+i so as to, hopefully, better
+i. By time t + 1, the agents have new Î´t+1
+match ât
+functions and are ready to
+perceive the world again and repeat the loop. Notice that, at time t, an agentâs
+ât
+
+i is derived by taking into account the Î´t
+We assume that D(w) is a ï¬xed probability distribution from which we take
+the worlds seen at each time. This assumption is not unreasonably limiting.
+For example, in an economic domain where the new state is the new good being
+oï¬ered, or in an episodic domain where the agents repeatedly engage in diï¬erent
+games (e.g. a Prisonerâs Dilemma competition) there is no correlation between
+successive world states or between these states and the agentsâ previous actions.
+However, in a robotic domain one could argue that the new state of the world
+will depend on the current state of the world; after all, the agents probably
+move very little each time step.
+
+Our measure of the correctness of an agentâs behavior is given by our error
+
+measure. We deï¬ne the error of agent iâs decision function Î´t
+
+i (w) as
+
+e(Î´t
+
+i ) =
+
+D(w)Pr[Î´t
+
+i (w) 6= ât
+
+i(w)]
+
+XwâW
+= PrwâD[Î´t
+
+i (w) 6= ât
+
+i(w)].
+
+(1)
+
+e(Î´t
+
+i ) gives us the probability that agent i will take an incorrect action; it
+is in keeping with the error deï¬nition used in computational learning theory
+[17]. We use it to gauge how well agent i is performing. An error of 0 means
+that the agent is taking all the actions dictated by its target function. An
+error of 1 means that the agent never takes an action as dictated by its target
+function. Each action the agent takes is either correct or incorrect, that is, it
+either matches the target function or it does not. We do not model degrees of
+incorrectness. However, since the error is deï¬ned as the average over all possible
+world states, an agent that takes the correct action in most world states will
+have a small error. Extending the theory to handle degrees of incorrectness is
+one of the subjects of your continuing work, see Section 11. All the notation
+from this section is summarized in Figure 3.
+
+2.3 The Moving Target Function Problem
+
+The learning problem the agent faces is to change its Î´t
+i (w) so that it matches
+ât
+i(w). If we imagine the space of all possible decision functions, then agent iâs
+Î´t
+i and ât
+i will be two points in this space, as shown in Figure 4. The agentâs
+learning problem can then be re-stated as the problem of moving its decision
+function as close as possible to its target function, where the distance between
+the two functions is given by the error e(Î´t
+i ). This is the traditional machine
+learning problem.
+
+However, once agents start to change their decision functions (i.e., change
+their behaviors) the problem of learning becomes more complicated because
+these changes might cause changes in the other agentsâ target functions. We
+end up with a moving target function, as seen in Figure 5. In these systems, it
+
+5
+
+N the set of all agents, where i â N is one particular agent.
+
+W the set of possible states of the world, where w â W is one particular
+
+state.
+
+Ai the set of all actions that agent i can take.
+
+Î´t
+i : W â Ai the decision function for agent i at time t.
+
+It tells which
+
+action agent i will take in each world.
+
+ât
+
+i : W â Ai the target function for agent i at time t. It tells us what
+It takes into account the actions that
+
+action agent i should take.
+other agents will take.
+
+e(Î´t
+
+i ) = Pr[Î´t
+
+i (w) 6= ât
+
+i(w) | w â D] the error of agent i at time t. It is the
+probability that i will take an incorrect action, given that the worlds
+w are taken from the ï¬xed probability distribution D.
+
+Figure 3: Summary of notation used for describing a MAS and the agents in it.
+
+Learn
+
+8qqqqqqqqqqqqq
+
+Î´t
+i
+
+Î´t+1
+i
+
+e(Î´t+1
+i
+
+)
+
+e(Î´t
+i )
+
+âi
+
+Figure 4: The traditional learning problem.
+
+6
+
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+)
+i
+8
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+is not clear if the error will ever reach 0 or, more generally, what the expected
+error will be as time goes to inï¬nity. Determining what will happen to an agentâs
+error in such a system is what we call the moving target function problem,
+which we address in this article. However, we will ï¬rst need to deï¬ne some
+parameters that describe the capabilities of an agentâs learning algorithm.
+
+Learn
+
+8qqqqqqqqqqqqq
+
+Î´t
+i
+
+Î´t+1
+i
+
+e(Î´t
+i )
+
+e(Î´t+1
+i
+
+)
+
+ât
+
+i Move
+
+/ ât+1
+i
+
+Figure 5: The learning problem in learning MASs.
+
+2.4 A Model of Learning Algorithms
+
+i into Î´t+1
+
+An agentâs learning algorithm is responsible for changing Î´t
+so that it
+is a better match of ât
+i. Diï¬erent machine learning algorithms will achieve this
+match with diï¬erent degrees of success. We have found a set of parameters that
+can be used to model the eï¬ects of a wide range of learning algorithms. The
+parameter are: Change rate, Learning rate, Retention rate, and Impact; and
+they will be explained in this section, except for Impact which will be introduced
+in Section 5. These parameters, along with the equations we provide, form the
+CLRI framework (the letters correspond to the ï¬rst letter of the parametersâ
+names).
+
+i
+
+After agent i takes an action and receives some payoï¬, it activates its learning
+algorithm, as we showed in Figure 2. The learning algorithm is responsible for
+using this payoï¬ in order to change Î´t
+i as much
+as possible. We can expect that for some w it was true that Î´t
+i(w),
+while for some other w this was not the case. That is, some of the w â ai
+mappings given by Î´t
+In general, a learning
+algorithm might aï¬ect both the correct and incorrect mappings. We will treat
+these two cases separately.
+
+i (w) might have been incorrect.
+
+i match ât
+
+, making Î´t+1
+
+i into Î´t+1
+
+i (w) = ât
+
+i
+
+We start by considering the incorrect mappings and deï¬ne the change rate
+of the agent as the probability that the agent will change at least one of its
+incorrect mappings. Formally, we deï¬ne the change rate ci for agent i as
+
+âw Pr[Î´t+1
+
+i
+
+(w) 6= Î´t
+
+i (w) | Î´t
+
+i (w) 6= ât
+
+i(w)] = ci.
+
+(2)
+
+The change rate tells us the likelihood of the agent changing an incorrect
+mapping into something else. This âsomething elseâ might be the correct action,
+but it could also be another incorrect action. The probability that the agent
+changes an incorrect mapping to the correct action is called the learning rate
+of the agent. It is deï¬ned as li where
+
+âw Pr[Î´t+1
+
+i
+
+(w) = ât
+
+i(w) | Î´t
+
+i (w) 6= ât
+
+i(w)] = li.
+
+(3)
+
+7
+
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
++
+k
+8
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+o
+/
+There are two constraints which must always be satisï¬ed by these two rates.
+Since changing to the correct mapping implies that a change was made, the
+value of li must be less than or equal to ci, that is, li â¤ ci must always be true.
+Also, if |Ai| = 2 then ci = li since there are only two actions available, so the
+one that is not wrong must be right.
+
+The complementary value for the learning rate is 1 â li and refers to the
+probability that an incorrect mapping does not get changed to a correct one. An
+example learning rate of li = .5 means that if agent i initially has all mappings
+wrong it will make half of them match the original target function after the ï¬rst
+iteration.
+
+We now consider the agentâs correct mappings and deï¬ne the retention
+rate as the probability that a correct mapping will stay correct in the next
+iteration. The retention rate is given by ri where
+
+âw Pr[Î´t+1
+
+i
+
+(w) = ât
+
+i(w) | Î´t
+
+i (w) = ât
+
+i(w)]. = ri.
+
+(4)
+
+We propose that the behavior of a wide variety of learning algorithms can be
+captured (or at least approximated) using appropriate values for ci, li, and
+ri. Notice, however, that these three rates claim that the w â a mappings
+that change are independent of the w that was just seen. We can justify this
+independence by noting that most learning algorithms usually perform some
+form of generalization. That is, after observing one world state w and the
+payoï¬ associated with it, a typical learning algorithm is able to generalize what
+it learned to some other world states. This generalization is reï¬ected in the
+fact that the change, learning, and retention rates apply to all wâs. However, a
+more precise model would capture the fact that, in some learning algorithms,
+the mapping for the world state that was just seen is more likely to change than
+the mapping for any other world state.
+
+The rates are not time dependent because we assume that agents use one
+learning algorithm during their lifetimes. The rates capture the capabilities of
+this learning algorithm and, therefore, do not need to vary over time.
+
+Finally, we deï¬ne volatility to mean the probability that the target function
+will change from time t to time t + 1. Formally, volatility is given by vi where
+
+âw Pr[ât+1
+
+i
+
+(w) 6= ât
+
+i(w)] = vi
+
+(5)
+
+In Section 5, we will show how to calculate vi in terms of the error of the other
+agents. We will then see that volatility is not a constant but, instead, varies
+with time.
+
+3 Calculating the Agentâs Error
+
+We now wish to write a diï¬erence equation that will let us calculate the agentâs
+expected error, as deï¬ned in Eq. (1), at time t+1 given the error at time t and the
+other parameters we have introduced. We can do this by observing that there
+are two conditions that determine the new error: whether ât+1
+i(w) or
+
+(w) = ât
+
+i
+
+8
+
+not, and whether Î´t
+and b â¡ Î´t
+i (w) = ât
+where: a â§ b, a â§ Â¬b, Â¬a â§ b, and Â¬a â§ Â¬b. Formally, this implies that
+
+i (w) = ât
+i(w),
+i(w), we can then say that we need to consider the four cases
+
+i(w) or not. If we deï¬ne a â¡ ât+1
+
+(w) = ât
+
+i
+
+Pr[Î´t+1
+i
+
+(w) 6= ât+1
+
+(w)] =
+
+Pr[Î´t+1
+i
+Pr[Î´t+1
+i
+
+i
+(w) 6= ât+1
+(w) 6= ât+1
+
+i
+
+i
+
+(w) â§ a â§ b] + Pr[Î´t+1
+(w) â§ Â¬a â§ b] + Pr[Î´t+1
+
+i
+
+(w) 6= ât+1
+
+i
+
+(w) â§ a â§ Â¬b]+
+
+(6)
+
+(w) 6= ât+1
+
+i
+
+(w) â§ Â¬a â§ Â¬b],
+
+i
+
+since the four cases are exclusive of each other. Applying the chain rule of
+probability, we can rewrite each of the four terms in order to get
+
+Pr[Î´t+1
+i
+
+(w) 6= ât+1
+
+i
+
+(w)] = Pr[a â§ b] Â· Pr[Î´t+1
+i
+Pr[a â§ Â¬b] Â· Pr[Î´t+1
+Pr[Â¬a â§ b] Â· Pr[Î´t+1
+Pr[Â¬a â§ Â¬b] Â· Pr[Î´t+1
+
+i
+
+i
+
+(w) 6= ât+1
+
+i
+(w) 6= ât+1
+(w) 6= ât+1
+
+i
+
+i
+
+(w) | a â§ b]+
+
+(w) | a â§ Â¬b]+
+
+(w) | Â¬a â§ b]+
+
+(7)
+
+(w) 6= ât+1
+
+i
+
+(w) | Â¬a â§ Â¬b].
+
+i
+
+We can now ï¬nd values for these conditional probabilities. We start with the
+ï¬rst term where, after replacing the values of a and b, we ï¬nd that
+
+Pr[Î´t+1
+i
+
+(w) 6= ât+1
+
+i
+
+(w) | ât+1
+
+i
+
+(w) = ât
+
+i(w) â§ Î´t
+
+i (w) = ât
+
+i(w)] = 1 â ri.
+
+(8)
+
+Since the target function does not change from time t to t + 1 and the agent was
+correct at time t, the agent will also be correct at time t + 1; unless it changes
+its correct w â a mapping. The agent changes this mapping with probability
+1 â ri.
+
+The value for the second conditional probability is
+
+Pr[Î´t+1
+i
+
+(w) 6= ât+1
+
+i
+
+(w) | ât+1
+
+i
+
+(w) = ât
+
+i(w) â§ Î´t
+
+i (w) 6= ât
+
+i(w)] = 1 â li.
+
+(9)
+
+In this case the target function still stays the same but the agent was incorrect.
+If the agent was incorrect then it will change its decision function to match
+the target function with probability li. Therefore, the probability that it will
+be incorrect next time is the probability that it does not make this change, or
+1 â li.
+
+The third probability has a value of
+
+Pr[Î´t+1
+(w) 6= ât+1
+i
+= (ri + (1 â ri) Â· B)
+
+i
+
+(w) | ât+1
+
+i
+
+(w) 6= ât
+
+i(w) â§ Î´t
+
+i (w) = ât
+
+i(w)]
+
+(10)
+
+In this case the agent was correct and the target function changes. This means
+that if the agent retains the same mapping, which it does with probability ri,
+then the agent will deï¬nitely be incorrect at time t + 1. If it does not retain the
+same mapping, which happens with probability 1 â ri, then it will be incorrect
+with probability B, where
+
+B = Pr[Î´t+1
+
+(w) 6= ât+1
+(w) 6= ât
+
+i
+â§ Î´t+1
+i
+
+i
+
+i(w)].
+
+(w)|Î´t
+
+i (w) = ât
+
+i(w) â§ ât+1
+
+i
+
+(w) 6= ât
+
+i(w)
+
+(11)
+
+9
+
+Finally, the fourth conditional probability has a value of
+
+(w) 6= ât+1
+
+Pr[Î´t+1
+i
+= (1 â ci)D + li + (ci â li)F,
+
+(w) | ât+1
+
+i
+
+i
+
+(w) 6= ât
+
+i(w) â§ Î´t
+
+i (w) 6= ât
+
+i(w)]
+
+where
+
+D = Pr[Î´t
+F = Pr[Î´t+1
+i
+â§ Î´t+1
+i
+
+i (w) 6= ât+1
+
+(w)|Î´t
+
+i (w) 6= ât
+
+i(w) â§ ât+1
+
+(w) 6= ât
+
+i(w)]
+
+i
+(w) 6= ât+1
+(w)|Î´t
+i
+i(w) â§ Î´t+1
+(w) 6= ât
+
+i
+
+i (w) 6= ât
+
+(w) 6= Î´t
+
+i
+i(w) â§ ât+1
+i (w)].
+
+i
+
+(w) 6= ât
+
+i(w)
+
+(12)
+
+(13)
+
+(14)
+
+This is the case where the target function changes and the agent was wrong.
+We have to consider three possibilities. The ï¬rst possibility is for the agent
+not to change its decision function, which happens with probability 1 â ci. The
+probability that the agent will be incorrect in this case is given by D. The
+second possibility, when the agent changes its mapping to the correct function,
+has a probability of li and ensures that the agent will be incorrect the next time.
+The third possibility happens, with probability ci â li when the agent changes
+its mapping to an incorrect value. In this case, the probability that it will be
+wrong next time is given by F .
+
+We can substitute Eqs. (8), (9), (10), and (12) into Eq. (7), substitute the
+
+values of a and b, and expand Pr[a â§ b] into Pr[a | b] Â· Pr[b], in order to get
+
+E[e(Î´t+1
+
+i
+
+)] = E[
+
+D(w)Pr[Î´t+1
+
+i
+
+(w) 6= ât+1
+
+i
+
+(w)]] =
+
+D(w)(
+
+i
+
+XwâW
+(w) = ât
+(w) = ât
+(w) 6= ât
+
+Pr[ât+1
++ Pr[ât+1
++ Pr[ât+1
+i
+i (w) = ât
+Â· Pr[Î´t
++ Pr[ât+1
+
+i
+
+i(w)] Â· Pr[Î´t
+i(w)] Â· Pr[Î´t
+i(w)]
+
+i(w)|Î´t
+i(w)|Î´t
+i(w)|Î´t
+
+i (w) = ât
+i (w) 6= ât
+i (w) = ât
+i(w)] Â· (ri + (1 â ri) Â· B)
+i (w) 6= ât
+
+i(w)] Â· Pr[Î´t
+
+i(w)|Î´t
+
+(w) 6= ât
+Â· (1 â ci)D + li + (ci â li)F.
+
+i
+
+XwâW
+i (w) = ât
+i (w) 6= ât
+
+i(w)] Â· (1 â ri)
+i(w)] Â· (1 â li)
+
+(15)
+
+i (w) 6= ât
+
+i(w)]
+
+Equation (15) will model any MAS whose agent learning can be described with
+the parameters presented Section 2.4 and whose action/learn loop is the same
+as we have described. We can use Eq. (15) to calculate the successive expected
+errors for agent i, given values for all the parameters and probabilities. In the
+next section we show how this is done in a simple example game.
+
+3.1 The Matching game
+
+In this matching game we have two agents i and j each of whom, in every
+world w, wants to play the same action as the other one. Their set of actions is
+Ai = Aj , where we assume |Ai| > 2 (for |Ai| = 2 the equation is simpler). After
+every time step, the agents both learn and change their decision functions in
+
+10
+
+accordance to their learning rates, retention rates, and change rates. Since the
+agents are trying to match each other, in this game it is always true that ât
+i(w) =
+Î´t
+j(w) and ât
+i (w). Given all this information, we can ï¬nd values for
+some of the probabilities in Eq. (15) (including values for Equations (11) (13)
+(14)) and rewrite (see Appendix A for derivation) it as:
+
+j (w) = Î´t
+
+E[e(Î´t+1
+
+i
+
+)] =
+
+XwâW
+
+D(w){rj Â· Pr[Î´t
+
+i (w) = ât
+
+i(w)] Â· (1 â ri)
+
++ (1 â cj) Â· Pr[Î´t
+
+i (w) 6= ât
+
+i(w)] Â· (1 â li)
+
++ (1 â rj ) Â· Pr[Î´t
+
+i (w) = ât
+
+i(w)] Â·
+
+ri + (1 â ri) Â·
+
+(cid:18)
+
+|Ai| â 2
+|Ai| â 1 (cid:19)(cid:19)
+
+(cid:18)
+
+(16)
+
++ cj Â· Pr[Î´t
+
+i (w) 6= ât
+
+i(w)] Â·
+
+1 â lj +
+
+(cid:18)
+
+cilj(|Ai| â 1) + li(1 â lj) â ci
+|Ai| â 2
+
+}
+(cid:19)
+
+We can better understand this equation by plugging in some values and sim-
+plifying. For example, lets assume that ri = rj = 1 and li = lj = 1, which
+implies that ci = cj = 1. This is the case where the two agents always change
+all their incorrect mappings so as to match their respective target functions at
+i (w1) = x and Î´t
+time t. That is, if we had Î´t
+j(w1) = y, then at time t + 1 we will
+have Î´t+1
+(w1) = y and Î´t+1
+(w1) = x. This means that agent i changes all its
+incorrect mappings to match j, while j changes to match i, so all the mappings
+stay wrong after all (i.e., i ends up doing what j did before, while j does what
+i did before). The error, therefore, stays the same. We can see this by plugging
+the values into Eq. (16). The ï¬rst three terms will become 0 and the fourth
+term will simplify to the deï¬nition of error, as given by Eq. (1). Since the fourth
+term is the only one that is non-zero, we end up with E[e(Î´t+1
+
+)] = e(Î´t
+
+j
+
+i
+
+i ).
+
+i
+
+)] = cie(Î´t
+
+We can also let ci and li (keeping cj = lj = 1) be arbitrary numbers, which
+gives us E[e(Î´t+1
+i ). This tells us that the error will drop faster for
+a smaller change rate ci. The reason is that iâs learning (remember li â¤ ci) in
+this game is counter-productive because it is always made invalid by jâs learning
+rate of 1. That is, since j is changing all its mappings to match iâs actions, iâs
+best strategy is to keep its actions the same (i.e., ci = 0).
+
+i
+
+4 Further Simpliï¬cation
+
+We can further simplify Eq. (15) if we are willing to make two assumptions.
+The ï¬rst assumption is that the new actions chosen when either Î´t
+i (w) changes
+(and does not match the target), or when ât
+i(w) changes, are both taken from
+ï¬at probability distributions over Ai. By making this assumption we can ï¬nd
+values for B, D, and F , namely:
+
+B = D =
+
+|Ai| â 2
+|Ai| â 1
+
+F =
+
+|Ai| â 3
+|Ai| â 2
+
+(17)
+
+The second assumption we make is that the probability of ât
+
+for a particular w, is independent of the probability that Î´t
+
+i(w) changing,
+i (w) was correct.
+
+11
+
+In Section 3.1 we saw that in the matching game the probabilities of ât
+and Î´t
+i (w) changing were correlated since, if Î´t
+also wrong, which meant j would probably change Î´t
+ât
+
+i(w)
+j(w) was
+j(w), which would change
+
+i (w) was wrong then Î´t
+
+i(w).
+
+However, the matching game is a degenerate example in exhibiting such tight
+coupling between the agentsâ target functions. In general, we can expect that
+there will be a number of MASs where the probability that any two agents i and
+j are correct is uncorrelated (or loosely correlated). For example, in a market
+system all sellers try to bid what the buyer wants, so the fact that one seller
+bids the correct amount says nothing about another sellerâs bid. Their bids are
+all uncorrelated. In fact, the Distributed Artiï¬cial Intelligence literature is full
+of systems that try to make the agentsâ decisions as loosely-coupled as possible
+[19, 21].
+
+This second assumption we are trying to make can be formally represented
+
+by having Eq. (18) be true for all pairs of agents i and j in the system.
+
+Pr[Î´t
+
+i (w) = ât
+= Pr[Î´t
+
+i(w) â§ Î´t
+i (w) = ât
+
+j(w) = ât
+i(w)] Â· Pr[Î´t
+
+j(w)]
+j(w) = ât
+
+j(w)]
+
+(18)
+
+Once we make these two assumptions we can rewrite Eq. (15) as:
+
+E[e(Î´t+1
+
+i
+
+)] =
+
+XwâW
+
+D(w)(Pr[ât+1
+
+i
+
+(w) = ât
+
+i(w)] Â· (Pr[Î´t
+
+i (w) = ât
+
+i(w)] Â· (1 â ri)
+
++ Pr[Î´t
+
+i (w) 6= ât
+
+i(w)] Â· (1 â li))
+
++ Pr[ât+1
+
+i
+
+(w) 6= ât
+
+i(w)] Â· (Pr[Î´t
+
+i (w) = ât
+
+i(w)] Â·
+
+ri + (1 â ri) Â·
+
+(cid:18)
+
+|Ai| â 2
+|Ai| â 1 (cid:19)(cid:19)
+
+(cid:18)
+
++ Pr[Î´t
+
+i (w) 6= ât
+
+i(w)] Â·
+
+|Ai| â 2 â ci + 2li
+|Ai| â 1
+
+(cid:18)
+
+))
+
+(cid:19)
+
+(19)
+
+Some of the probabilities in this equation are just the deï¬nition of vi, and others
+simplify to the agentâs error. This means that we can simplify Eq. (19) to:
+
+E[e(Î´t+1
+
+i
+
+)] = 1 â ri + vi (cid:18)
+
+|Ai|ri â 1
+|Ai| â 1 (cid:19)
+
++ e(Î´t
+i )
+
+ri â li + vi (cid:18)
+(cid:18)
+
+|Ai|(li â ri) + li â ci
+|Ai| â 1
+
+(cid:19)(cid:19)
+
+(20)
+
+Eq. (20) is a diï¬erence equation that can be used to determine the expected
+error of the agent at any time by simply using E[e(Î´t+1
+i ) for the
+next iteration. While it might look complicated, it is just the function for a line
+y = mx + b where x = e(Î´t
+). Using this observation, and the
+fact that e(Î´t+1
+) will always be between 0 and 1, we can determine that the
+ï¬nal convergence point for the error is the point where Eq. (20) intersects the
+line y = x. The only exception is if the slope equals â1, in which case we will
+see the error oscillating between two points.
+
+i ) and y = e(Î´t+1
+
+)] as the e(Î´t
+
+i
+
+i
+
+i
+
+12
+
+)
+
+1
++
+t
+Î´
+
+i
+
+(
+e
+
+PSfrag replacements
+
+learning
+volatility
+t+1
+i
+
+e(Î´
+
+)
+
+1
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+0
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+e(Î´t
+i )
+
+0.8
+
+1
+
+Figure 6: Error progression for agent i, assuming a ï¬xed volatility vi = .2,
+ci = 1, li = .3, ri = 1, |Ai| = 20. We show the error function (e(Î´t+1
+)), as well
+as its two components: learning and volatility. The line y = x allows us trace
+the agentâs error as it starts at .95 and converges to .44.
+
+i
+
+By looking at Eq. (20) we can also determine that there are two âforcesâ
+acting on the agentâs error: volatility and the agentâs learning abilities. The
+volatility tends to increase the agentâs error past its current value while the
+learning reduces it. We can better appreciate this eï¬ect by separating the vi
+terms in Eq. (20) and plotting the vi terms (volatility) and the rest of the terms
+(learning) as two separate lines. By deï¬nition, these will add up to the line
+given by Eq. (20). We have plotted these three lines and traced a sample error
+progression in Figure 6. The error starts at .95 and then decreases to eventually
+converge to .44. We notice the learning curve always tries to reduce the agentâs
+error, as conï¬rmed by the fact that its line always falls below y = x. Meanwhile,
+the volatility adds an extra error. This extra error is bigger when the agentâs
+error is small since, any change in the target function is then likely to increase
+the agentâs error.
+
+5 Volatility and Impact
+
+Equation (20) is useful for determining the agentâs error when we know the
+volatility of the system. However, it is likely that this value is not available
+to us (if we knew it we would already know a lot about the dynamics of the
+In this section we determine the value of vi in terms of the other
+system).
+agentsâ changes in their decision functions. That is, in terms of Pr[Î´t+1
+j],
+for all other agents j.
+
+6= Î´t
+
+j
+
+In order to do this we ï¬rst need to deï¬ne the impact Iji that agent jâs
+
+13
+
+changes in its decision function have on iâs target function.
+
+âwâW Iji = Pr[ât+1
+
+i
+
+(w) 6= ât
+
+i(w) | Î´t+1
+
+j
+
+(w) 6= Î´t
+
+j(w)]
+
+(21)
+
+We can now start to deï¬ne volatility by ï¬rst determining that, for two agents
+
+i and j
+
+âwâW vt
+
+i
+
+i = Pr[ât+1
+= Pr[ât+1
++ Pr[ât+1
+
+i
+
+i
+
+(w) 6= ât
+(w) 6= ât
+(w) 6= ât
+
+i(w)]
+i(w) | Î´t+1
+i(w) | Î´t+1
+
+j
+
+j
+
+(w) 6= Î´t
+(w) = Î´t
+
+j(w)] Â· Pr[Î´t+1
+j(w)] Â· Pr[Î´t+1
+
+j
+
+(w) 6= Î´t
+(w) = Î´t
+
+j(w)]
+j(w)].
+
+j
+
+(22)
+
+The reader should notice that volatility is no longer constant;
+
+it varies
+with time (as recorded by the superscript). The ï¬rst conditional probability
+in Eq. (22) is just Iji. The second one we will set to 0, since we are speciï¬cally
+interested in MASs where the volatility arises only as a side-eï¬ect of the other
+agentsâ learning. That is, we assume that agent iâs target function changes only
+when jâs decision function changes. For cases with more than two agents, we
+similarly assume that one agentâs target function changes only when some other
+agentâs decision function changes. That is, we ignore the possibility that outside
+inï¬uences might change an agentâs target function.
+
+We can simplify Eq. (22) and generalize it to N agents, under the assumption
+that the other agentsâ changes in their decision functions will not cancel each
+i stay the same as a consequence. vt
+other out, making ât
+i = Pr[ât+1
+(w) 6= ât
+âwâW vt
+(1 â IjiPr[Î´t+1
+= 1 â
+
+i then becomes
+
+(w) 6= Î´t
+
+i(w)]
+
+(23)
+
+i
+
+j(w)]).
+
+j
+
+YjâNâi
+
+We now need to determine the expected value of Pr[Î´t+1
+
+(w) 6= Î´t
+
+j(w)] for
+
+j
+
+any agent. Using i instead of j we have
+(w) 6= Î´t
+
+âwâW Pr[Î´t+1
+
+i (w)]
+i (w) 6= ât
+i (w) = ât
+where the expected value is:
+
+i
+= Pr[Î´t
++ Pr[Î´t
+
+i(w)] Â· Pr[Î´t+1
+i(w)] Â· Pr[Î´t+1
+
+i
+
+i
+
+(w) 6= ât
+(w) 6= ât
+
+i(w) | Î´t
+i(w) | Î´t
+
+i (w) 6= ât
+i (w) = ât
+
+i(w)]
+i(w)],
+
+E[Pr[Î´t+1
+
+i
+
+(w) 6= Î´t
+
+i (w)]] = cie(Î´t
+
+i ) + (1 â ri) Â· (1 â e(Î´t
+
+i )).
+
+We can then plug Eq. (25) into Eq. (23) in order to get the expected volatility
+
+E[vt
+
+i ] = 1 â
+
+YjâNâi
+
+1 â Iji(cje(Î´t
+
+j) + (1 â rj) Â· (1 â e(Î´t
+
+j))).
+
+(26)
+
+We can use this expected value of vt
+
+i in Eq. (20) in order to ï¬nd out how the
+other agentsâ learning will aï¬ect agent i. In MASs that have identical learning
+agents (i.e., their c, l, r, and I rates are all the same and they start with the
+same initial error) we can replace the multiplier in Eq. (26) with an exponent
+of |N | â 1. We use this simpliï¬cation later in Section 8.2.
+
+14
+
+(24)
+
+(25)
+
+Final Error for i
+
+1
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+
+PSfrag replacements
+
+0
+
+0.2
+
+0.4
+Iij
+
+0.6
+
+0.8
+
+1
+
+0
+
+0.4
+
+0.2
+
+Error
+     0.9
+     0.8
+     0.7
+     0.6
+     0.5
+     0.4
+     0.3
+     0.2
+     0.1
+
+1
+
+0.8
+
+Iji
+
+0.6
+
+Figure 7: Plot of Final Error for agent i, given li = lj = .2, ri = rj = 1,
+ci = cj = 1, |Aj| = |Ai| = 20.
+
+6 An Example with Two Agents
+
+In a MAS with just two agents i and j, we can use Eq. (26) to rewrite Eq. (20)
+as
+
+E[e(Î´t+1
+
+i
+
+)] = 1 â ri + Iji(cje(Î´t
+
+j) + (1 â rj) Â· (1 â e(Î´t
+
+j)))
+
++ e(Î´t
+
+i ){ri â li + Iji(cje(Î´t
+
+j) + (1 â rj) Â· (1 â e(Î´t
+
+j)))
+
+|Ai|ri â 1
+|Ai| â 1 (cid:19)
+
+(cid:18)
+
+(27)
+
+|Ai|(li â ri) + li â ci
+|Ai| â 1
+
+Â·
+
+(cid:18)
+
+}.
+
+(cid:19)
+
+We can now use Eq. (27) to plot values for one particular example. Let us
+say that li = lj = .2, ci = cj = 1, ri = rj = 1, |Aj| = |Ai| = 20 and we let
+the impacts Iij and Iji vary between zero and one. Figure 7 shows the ï¬nal
+error, after convergence, for this situation. It shows an area where the error is
+expected to be below .1, corresponding to low values for either Iij , Iji or both.
+This area represents MASs that are loosely coupled, i.e., one agentâs change
+in behavior does not signiï¬cantly aï¬ect the otherâs target function.
+In these
+systems we can expect that the error will eventually1 reach a value close to zero.
+We see that as the impact increases the ï¬nal error also increases, with a fairly
+abrupt transition between a ï¬nal error of 0 and bigger ï¬nal errors. This abrupt
+transition is characteristic of these types of systems where there are tendencies
+for the system to either converge or diverge, and both of them are self-enforcing
+behaviors. Notice also that the graph is not symmetricâIij has more weight in
+determining iâs ï¬nal error than Iji. This result seems counterintuitive, until we
+realize that it is jâs error that makes it hard for i to converge to a small error.
+1Notice that we are not representing how long it takes for the error to converge. This can
+
+easily be done and is just one more of the parameters our theory allows us to explore.
+
+15
+
+1
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+)
+tj
+Î´
+
+(
+e
+
+PSfrag replacements
+
+0
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+e(Î´t
+i )
+
+0.8
+
+1
+
+Figure 8: Vector plot for e(Î´t
+j), where |Ai| = |Aj | = 20, li = lj = .2,
+ri = rj = 1, ci = .5, cj = 1, Iij = .1, Iji = .3. It shows the error progression for
+a pair agents i and j. For each pair of errors (e(Î´t
+j)), the arrows indicate
+), e(Î´t+1
+the expected (e(Î´t+1
+j
+
+i ) and e(Î´t
+
+i ), e(Î´t
+
+)).
+
+i
+
+If Iij is high then, if i has a large error then jâs error will increase, which will
+make j change its decision function often and make it hard for i to reduce its
+error. If Iij is low then, even if Iji is high, j will probably settle down to a low
+error and as it does i will also be able to settle down to a low error.
+
+If we were about to design a MAS we would try to build it so that it lies
+in the area where the ï¬nal error is zero. This way we can expect all agents to
+eventually have the correct behavior. We note that a substantial percentage of
+the research in DAI and MAS deals with taking systems that are not inherently
+in this area of near-zero error and designing protocols and rules of encounter so
+as to move them into this area, as in [25].
+
+The fact that the ï¬nal error is 1 for the case with Iij = Iji = 1 can seem
+non-intuitive to readers familiar with game theory. In game theory there are
+many games, such as the âmatching gameâ from Section 3.1, where two agents
+have an impact of 1 on each other. However, it is known [3] that, in these
+games, two learning agents will eventually converge to one of the equilibria (if
+there are any), making their ï¬nal error equal to 0. This is certainly true, and
+it is exactly what we showed in Section 3.1. The same result is not seen in
+Figure 7 because the ï¬gure was plotted using our simpliï¬ed Equation. (20),
+which makes the simplifying independence assumption given by Eq. (18). This
+assumption cannot be made in games such as the matching game because, in
+these games, there is a correlation between the correctness of each of the agents
+actions. Speciï¬cally, in the matching game it is always true that both agents are
+either correct, or incorrect, but it is never true that one of them is correct while
+the other one is incorrect, i.e., either they matched, or they did not match.
+
+Another view of the system is given by Figure 8 which shows a vector plot
+
+16
+
+PSfrag replacements
+
+r
+o
+r
+r
+e
+
+lj = .005
+
+lj = .04
+
+lj = .055
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+Î±j = .1
+Î±j = .3
+Î±j = .9
+
+PSfrag replacements
+
+Î±j = .1
+
+Î±j = .3
+
+Î±j = .9
+
+r
+o
+r
+r
+e
+
+200
+
+400
+
+600
+
+800
+
+1000
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+lj = .005
+lj = .04
+lj = .055
+
+200
+
+400
+
+600
+
+800
+
+1000
+
+time
+
+time
+
+(a) Experiment
+
+(b) Theory
+
+Figure 9: Comparison of observed and predicted error.
+
+of the agentsâ errors. We can see how the bigger errors are quickly reduced but
+the pace of learning decreases as the errors get closer to the convergence point.
+Notice also that an agentâs error need not change in a monotonic fashion. That
+is, an agentâs error can get bigger for a while before it starts to get smaller.
+
+7 A Simple Application
+
+In order to demonstrate how our theory can be used, we tested it on a simple
+market-based MAS. The game consists of three agents, one buyer and two seller
+agents i and j. The buyer will always buy at the cheapest priceâbut the sellers
+do not know this fact. In each time step the sellers post a price and the buyer
+decides which of the sellers to buy from, namely, the one with the lowest bid.
+The sellers can bid any one of 20 prices in an eï¬ort to maximize their proï¬ts.
+The sellers use a reinforcement learning algorithm with their reinforcements
+being the proï¬t the agent achieved in each round, or 0 if it did not sell the good
+at the time. In this system we had one good being sold (|W | = 1).As predicted
+by economic theory, the price in this system settles to the sellersâ marginal cost,
+but it takes time to get there due to the learning ineï¬ciencies.
+
+We experimented with diï¬erent Î±j rates2 for the reinforcement learning of
+agent j, while keeping Î±i = .1 ï¬xed, and plotted the running average of the
+error of agent i. A comparison is shown in Figure 9. Figure 9(a) gives the
+experimental results for three diï¬erent values of Î±j. It shows iâs average error,
+over 100 runs, as a function of time. Since both sellers start with no knowledge,
+their initial actions are completely random which makes their error equal to .5.
+
+2Î± is the relative weight the algorithm gives to the most recent payoï¬. Î± = 1 means that
+it will forget all previous experience and use only the latest payoï¬ to determine what action
+to take.
+
+17
+
+Then, depending on Î±j, iâs error will either start to go down from there or will
+ï¬rst go up some and then down. Eventually, iâs error gets very close to 0, as
+the system reaches a market equilibrium.
+
+We can predict this behavior using Eq. (27). Based on the game description,
+we set |Ai| = |Aj| = 20, since there were 20 possible actions. We let ri =
+rj = 1 because reinforcement learning with ï¬xed payoï¬s enforces the condition
+that once an agent is taking the correct action it will never change its decision
+function to take a diï¬erent action. The agent might, however, still take a wrong
+action but only when its exploration rate dictates it.
+
+We then let Iij = Iji = .17 based on the rough calculation that each agent
+has an equal probability of bidding any one of the 20 prices. If ât
+i = 20 then
+Iji for this situation is the probability that j was also bidding 20 or above,
+i.e., 1/20, times the probability that jâs new price is lower than 20, i.e. 19/20.
+Similarly, if ât
+i = 19 then Iji is equal to 2/20 times 18/20. The average of all
+of these probabilities is .17. A more precise calculation of the impact would
+require us to ï¬nd it via experimentation by actually running the system.
+
+Finally, we chose li = lj = ci = cj = .005 for the ï¬rst curve (i.e., the one that
+compares with Î±j = .1). We knew that for such a low Î±j the learning and change
+rate should be the same. The actual value was chosen via experimentation. The
+resulting curve is shown in Figure 9(b). At this moment, we do not possess a
+formal way of deriving learning and change rates from Î±-rates.
+
+For the second curve (Î±j = .3) we knew that, since only Î±j had changed
+from the ï¬rst experiment, we should only change lj and cj.
+In fact, these
+two values should only be increased. We found their exact values, again by
+experimentation, to be lj = .04, cj = .4. For the third curve we found the
+values to be lj = .055, cj = .8.
+
+One diï¬erence we notice between the experimental and the theoretical results
+is that the experimental results show a longer delay before the error starts to
+decrease. We attribute this delay to the agentâs initially high exploration rate.
+That is, the agents initially start by taking all random actions but progressively
+reduce this rate of exploration. As the exploration rate decreases the discrepancy
+between our theoretical predictions and experimental results is reduced.
+
+In summary, while it is true that we found lj and cj by experimentation,
+all the other values were calculated from the description of the problem. Even
+the relative values of lj and cj follow the intuitive relation with Î±j that, as
+Î±j increases so does lj and (even more) cj. Section 9 shows how to calculate
+lower bounds on the learning rate. We believe that this experiment provides
+solid evidence that our theory can be used to approximately determine the
+quantitative behaviors of MASs with learning agents.
+
+18
+
+n
+o
+
+i
+t
+c
+a
+
+t
+
+n
+o
+
+i
+
+j
+
+l
+
+a
+m
+
+i
+t
+
+p
+o
+
+n
+a
+
+i
+
+g
+n
+s
+o
+o
+h
+c
+
+f
+
+o
+
+y
+t
+i
+l
+i
+
+b
+a
+b
+o
+r
+P
+
+PSfrag replacements
+
+time
+
+1 - error
+
+li = .1
+
+1
+
+0.95
+
+0.9
+
+0.85
+
+0.8
+
+0.75
+
+0.7
+
+0.65
+
+0.6
+
+0.55
+
+0.5
+
+0
+
+Choosing optimal joint actions
+
+Independent learners
+Joint action learners
+
+PSfrag replacements
+
+r
+o
+r
+r
+e
+
+-
+
+1
+
+1
+
+0.9
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+li = .1
+
+5
+
+10
+
+15
+
+20
+
+25
+
+30
+
+35
+
+40
+
+45
+
+50
+
+5
+
+10
+
+15
+
+20
+30
+25
+Number of Interactions
+
+35
+
+40
+
+45
+
+50
+
+(a) Experiment
+
+time
+
+(b) Theory
+
+Figure 10: Comparing theory (b) with results from [6] (a).
+
+8 Application of our Theory to Experiments in
+
+the Literature
+
+In this section we show how we can apply our theory to experimental results
+found in the AI and MAS literature. While we will often not be able to com-
+pletely reproduce the authorsâ results exactly, we believe that being able to
+reproduce the ï¬avor and the main quantitative characteristics of experimental
+results in the literature shows that our theory can be widely applied and used
+by practitioners in this area of research.
+
+8.1 Claus and Boutilier
+
+Claus and Boutilier [6] study the dynamics of a system that contains two re-
+inforcement learning agents. Their ï¬rst experiment puts the two agents in a
+matching game exactly like the one we describe in Section 3.1 with |Ai| =
+|Aj| = 2. Their results show the probability that both agents matched (i.e., 1
+- e(Î´t
+i )) as time progressed. Since they were using two reinforcement learning
+agents, it was not surprising that the curve they saw, seen in Figure 10(a), was
+nearly identical to the curve we saw in our experiments with the two buying
+agents (Figure 9(a) with Î±j = Î±i = .1, except upside-down).
+
+We can reproduce their curve using our equation for the matching game
+Eq. (16). The results can be seen in Figure 10(b). Our theory again fails to
+account for the initial exploration rate. We can, however, conï¬rm that by time
+15 their Boltzmann temperature (the authors used Boltzmann exploration) had
+been reduced from an initial value of 16 to 3.29 and would keep decreasing by
+a factor of .9 each time step. This means that by time 15 the agents were,
+indeed, starting to do more exploitation (i.e., reduce their error) while doing
+
+19
+
+ 
+ 
+ 
+ 
+ 
+ 
+Success
+
+3800
+
+3600
+
+3400
+
+3200
+
+PSfrag replacements
+li
+ï¬nal error
+
+theory
+
+experiment
+
+r
+o
+r
+r
+e
+
+l
+a
+n
+ï¬
+
+PSfrag replacements
+
+50
+
+100
+
+150
+
+200
+
+Update delay
+
+1
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+0
+
+0.001
+
+theory
+
+experiment
+
+0.01
+
+li
+
+0.1
+
+(a) Original Experiment
+
+(b) Theory and Experiment
+
+Figure 11: Comparing theory (b) with results from [30] (a).
+
+little exploration.
+
+8.2 Shoham and Tennenholtz
+
+Shohan and Tennenholtz [30] investigate how learning agents might arrive at
+social conventions. The authors introduce a simple learning algorithm (strategy-
+selection rule) called highest cumulative reward (HCR) which their agents use for
+learning these conventions. Shoham and Tennenholtz also provide the results of
+a series of experiments using populations of learning agents. We try to reproduce
+the results they present in their Section 4.1 where they study the âcoordination
+gameâ which is similar to our matching game, but with only two actions.
+
+The experiment in question involves 100 agents, all of them identical and all
+of them using HCR. At each time instant the agents take one of two available
+actions. The aim is for every pair of chosen agents to take the same action
+as each other. Agents are randomly made to form pairs. The agents update
+their behavior (i.e., apply HCR) after a given delay. The authors try a series
+of delays (from 0 to 200) and show that increasing the update delay decreases
+the percentage of trials where, after 1600 iterations, at least 95% of the agents
+reached a convention. The authors show surprise at ï¬nding this phenomenon.
+Their results are reproduced in Figure 11(a) (cf. Figure 1 in their article).
+The number of actions for all agents is easily set to |Ai| = 2, which implies that
+we must have li = ci. By examining HCR, it is easy to determine that ri = 1
+(i.e if an agent took the right action, it will only get more support for it). At
+ï¬rst intuition, oneâs impulse is to set Iij = 1 for every pair of agents i and j.
+However, since there are 100 of them and only pairs of them interact at every
+time instant, the real impact is Iij = 1/99.
+
+We will now convert from their units of measurement into ours.
+
+In Fig-
+
+20
+
+ure 11(a) we can see that their x-axis is called the update delay, which we will
+refer to as d. This value is the number of time units that pass before the agent
+is allowed to learn. For d = 0 the agent learns after every interaction (i.e., on
+every time t), while for d = 200 the agent takes the same action for 200 time in-
+stances and only learns after every 200 iterations. This means that we must set
+li = 1
+p(d+1) where p > 0. The value of p depends on their learning algorithmâs
+performance, but we know that it must be a small number (< 50) greater than
+0. Through some experimentation we settled on p = 6 (other values close to
+this one give similar results). Since in their graph they look at 0 â¤ d â¤ 200, we
+must then look at li where
+6 Finally, we ï¬nd the value of d in terms
+of li to be
+
+1206 â¤ li â¤ 1
+
+1
+
+d =
+
+â 1
+
+(28)
+
+1
+pli
+
+The y-axis of Figure 11(a) is the success, i.e., number of trials, out of 4000,
+where at least 95% of the agents reached a convention. We will refer to this
+value as s. We know that in s/4000 of the trials at least 95% of the agents have
+error close to 0 (i.e., reaching a convention means that the agents take the right
+action almost all the time), and for the rest of the trials the error was greater.
+We can approximately map this to an error by saying that in s/4000 of the trials
+the error was 0 (a slight underestimate), while in 1 â s/4000 of the trials the
+error was 1 (a slight overestimate). We add these two up (the 0 makes the ï¬rst
+term disappear) and arrive at an equation that maps s to e(Î´t
+
+i ).
+
+e(Î´t
+
+i ) â
+
+4000 â s
+
+(cid:18)
+
+4000 (cid:19)
+
+(29)
+
+The mapping from d to s is given by their actual data. Their data can be
+
+ï¬t by the following function:
+
+s = 3900 â 4d â
+
+(d â 100)2
+100
+
+(30)
+
+Plugging Eq. (28) into Eq. (30), and the result into Eq. (29), we ï¬nally arrive
+
+at a function that maps their experimental results into our units:
+
+Final error =
+
+(cid:16)
+
+4000 â
+
+3900 â 4(1/pli â 1) â
+
+4000
+
+(1/pliâ1â100)2
+100
+
+(cid:16)
+
+(cid:17)(cid:17)
+
+(31)
+
+for the range
+
+1
+
+1206 â¤ li â¤ 1
+6 .
+
+Now that we have values for ci, li, ri, Iij , |Ai|, a range for li and an equation
+that maps their experimental results into our units, we can plot both functions,
+as seen in Figure 11(b). The x-axis was plotted on a log-scale in order to better
+show the shape of the experiment curve, otherwise it would appear mostly as a
+straight line. For our theory curve we used Equations (20) and (26), and iterated
+for 1600 time units, just like in the experiment, and plotted the error at that
+point. For the experiment curve we used Eq. (31). We plotted both of these
+curves in the speciï¬ed range for li. The reader will notice that our theory was
+
+21
+
+able to make precise quantitative predictions. The maximum distance from our
+theory curve to the experimental curve is .05, which means that our predictions
+for the ï¬nal error were, at worst, within 5% of the experimental values. Also, an
+error of about 5% was introduced when mapping from their success percentage
+s to our error.
+
+8.3 Others
+
+There are several other examples in the literature where we believe our theory
+can be successfully applied.
+[16, chapter 3.7] gives results of an experiment
+where two agents try to ï¬nd each other in a 100 by 100 grid. He shows that if
+the grid has few obstacles it is faster if both agents move towards each other,
+while if there are many obstacles it is faster if one of the agents stays still
+while the other one searches for it. We believe that the number of obstacles is
+proportional to the change rate that the agents experience and, perhaps, to the
+impact that they have on each other. When there are no obstacles the agents
+never change their decision functions (because their initial Manhattan heuristics
+lead them in the correct path). As the number of obstacles increases, the agents
+will start to change their decision functions as they move, which will have an
+impact on the other agentâs target function. If, however, one of them stays put,
+this means that his change rate is 0 so the other agentâs target function will
+stay still and he will be able to reach his target (i.e., error 0) quicker.
+
+Notice that the problem of a moving target that Ishida studies is diï¬erent
+from the problem of a moving target function which we study. It is, however,
+interesting to note their similarities and how our theory can be applied to some
+aspects of that domain.
+
+Another possible example is given by [29]. They show two Q-learning agents
+trying to cooperate in order to move a block. The authors show how diï¬erent Î±
+rates (Î² in their article) aï¬ect the quality of the result that the agents converge
+to. This quality roughly corresponds to our error, except for the fact that their
+measurements implicitly consider some actions to be better than others, while
+we consider an action to be either correct or incorrect. This discrepancy would
+make it harder to apply our theory to their results but we still believe that a
+rough approximation is possible. Our future work includes the extension of the
+CLRI framework to handle a more general deï¬nition of errorâone that attaches
+a utility to each state-action pair, rather than the simple correct/incorrect cat-
+egorization we use.
+
+9 Bounding the Learning Rate with Sample Com-
+
+plexity
+
+In the previous examples we have used our knowledge of the learning algorithms
+to determine the values of the agentâs ci, li, and ri parameters. However, there
+might be cases where this is not possibleâthe learning algorithm might be too
+complicated or unknown. It would be useful, in these cases, to have some other
+
+22
+
+measure of the agentâs learning abilities, which could be used to determine some
+bounds on the values of these parameters.
+
+One popular measure of the complexity of learning is given by Probably
+Approximately Correct (PAC) theory [17], in the form of a measure called the
+sample complexity. The sample complexity gives us a loose upper bound on
+the number of examples that a consistent learning agent must observe before
+arriving at a PAC hypothesis.
+
+There are two important assumptions made by PAC-theory. The ï¬rst as-
+sumption is that the agents are consistent learners3. Using our notation, a
+consistent learner is one who, once it has learned a correct w â a mapping does
+not forget it. This simply means that the agent must have ri = 1. The second
+assumption is that the agent is trying to learn a ï¬xed concept. This assumption
+makes ât+1
+
+i true for all t.
+
+i = ât
+
+The sample complexity m of an agentâs learning problem is given by
+
+m â¥
+
+1
+Ç« (cid:18)
+
+ln
+
+|H|
+Î³ (cid:19)
+
+,
+
+(32)
+
+where |H| is the size of the hypothesis space for the agent. In other words, |H|
+is the total number of diï¬erent Î´i(w) functions that the agent will consider. For
+an agent with no previous knowledge we have |H| = |Ai||W |. However, agents
+with previous knowledge might have smaller |H|, since this knowledge might be
+used to eliminate impossible mappings. If a consistent learning agent has seen
+m examples then, with probability at least (1 â Î³), it has error at most Ç«.
+
+While we cannot map the sample complexity m to a particular learning rate
+li, we can use it to put a lower bound on the learning rate for a consistent
+learning agent. That is, we can ï¬nd a lower bound for the learning rate of an
+agent who does not forget anything it has seen, and who is trying to learn a
+ï¬xed target function. Since the agent does not forget anything it has seen, we
+can deduce that its retention rate must be ri = 1. Since the target function
+is not changing, we know that Pr[ât+1
+(w) =
+ât
+i(w)] = 1. We can plug these values into Eq. (19) and simplify in order to
+get:
+
+i(w)] = 0 and Pr[ât+1
+
+(w) 6= ât
+
+i
+
+i
+
+We can solve the diï¬erence Eq. (33), for any time n, in order to get:
+
+E[e(Î´t+1
+
+i
+
+)] = e(Î´t
+
+i ) Â· (1 â li).
+
+E[e(Î´n
+
+i )] = e(Î´0
+
+i ) Â· (1 â li)n.
+
+(33)
+
+(34)
+
+We now remember that after m time steps we expect, with probability (1 â Î³),
+the error to be less than Ç«. Since Eq. (34) only gives us an expected error,
+not a probability distribution over errors, we cannot use it to calculate the
+likelihood of the agent having that expected error. That is, we cannot calculate
+the âprobablyâ (Î³) part of probably approximately correct. We will, therefore,
+assume that the Î³ chosen for m is small enough so that it will be safe to say
+that, after m time steps, the error is less than Ç«. In a typical application one
+
+3See [24, p162] for a formal deï¬nition of a consistent learner.
+
+23
+
+uses a small Î³ because it guarantees a high degree of certainty on the upper
+bound of the error.
+
+Since we can now safely say that, after m time steps, the error is less than Ç«,
+we can then deduce that the li for this agent should be small enough such that,
+if n = m, then E[e(Î´n
+
+i )] â¤ Ç«. This is expressed mathematically as:
+
+e(Î´0
+
+i ) Â· (1 â li)m â¤ Ç«.
+
+We solve this equation for li in order to get:
+
+li â¥ 1 â
+
+(cid:18)
+
+1/m
+
+Ç«
+e(Î´0
+
+i ) (cid:19)
+
+(35)
+
+(36)
+
+.
+
+This equation is not deï¬ned for e(Î´0
+i ) = 0. However, given our assumption of
+a ï¬xed target function and ri = 1, we already know, from Eq. (33), that if an
+agent starts with an error of 0 it will maintain this error of 0 for any future time
+t > 0. Therefore, in this case, the choice of a learning rate has no bearing on
+the agentâs error, which will always be 0.
+
+Equation (36) gives us a lower bound on the learning rate that a consistent
+learner must have, given that it has sample complexity m, and based on an
+error Ç« and a suï¬ciently small Î³. A designer of an agent that uses a reason-
+able learning algorithm can expect that, if his agent has sample complexity m
+(for Ç« error), then his agent will have a learning rate of at least li, as given by
+Eq. (36). Furthermore, if a designer is comparing two possible agent designs,
+each with a diï¬erent sample complexity but both with similarly powerful learn-
+ing algorithms, he can calculate bounds on the learning rates of both agents
+and compare their relative performance.
+
+10 Related Work
+
+The topic of agents learning about agents arises often in the studies of com-
+In fact, systems where the agents try to adapt to endogenously
+plexity [7].
+created dynamics are being widely studied [15, 2].
+In these systems, like in
+ours, the agents co-create their expectations as they learn and change their be-
+haviors. Complexity research uses simulated agents in an eï¬ort to understand
+the complex behaviors of these systems as observed in the real world.
+
+One example is the work of Arthur et. al. [2], who arrive at the conclusion
+that systems of adaptive agents, where the agents are allowed to change the
+complexity of their learning algorithms, end up in one of two regimes: a sta-
+ble/simple regime where it is trivial to predict an agentâs future behavior, and a
+complex regime where the agentsâ behaviors are very complex. It is this second
+regime that interests complexity researchers the most. In it, the agents are able
+to reach some kind of âequilibriumâ point in model building complexity. These
+same results are echoed by Darley and Kauï¬man [8] in a similar experiment. In
+this article we have not allowed the agents to dynamically change the complex-
+ity of their learning algorithms. Therefore, our dynamics are simpler. Allowing
+
+24
+
+the agents to change their complexity amounts to allowing them to change the
+values of their c, l, and r parameters while learning.
+
+However, while complexity research is very important and inspiring, it is only
+partially relevant to our work. Our emphasis is on ï¬nding ways to predict the
+behavior of MASs composed of machine-learning agents. We are only concerned
+with the behavior of simpler artiï¬cial programmable agents, rather than the
+complex behavior of humans or the unpredictable behavior of animals.
+
+The dynamics of MASs have also been studied by Kephart et. al. [18]. In
+this work the authors show how simple predictive agents can lead to globally
+cyclic or chaotic behaviors. As the authors explain, the chaotic behaviors were a
+result of the simple predictive strategies used by the agents. Unlike our agents,
+most of their agents are not engaged in learning, instead they use simple ï¬xed
+predictive strategies, such as âif the state of the world was x ten time units
+before, then it will be x next time so take action aâ. The authors later show
+how learning can be used to eliminate these chaotic global ï¬uctuations.
+
+MatariÂ´c [22] has studied reinforcement learning in multi-robot domains. She
+notes, for example, how learning can give rise to social behaviors [23]. The
+work shows how robots can be individually programmed to produce certain
+group behaviors. It represents a good example of the usefulness and ï¬exibility
+of learning agents in multi-agent domains. However, the author does not oï¬er
+a mathematical justiï¬cation for the chosen individual learning algorithms, nor
+does she explain why the agents were able to converge to the global behaviors.
+Our research hopes to provide the ï¬rst steps in this direction.
+
+One particularly interesting approach is taken by Carmel and Markovitch
+[4]. They work on model-based learning, that is, agents build models of other
+agents via observations. They use models based on ï¬nite state machines. The
+authors show how some of these models can be eï¬ectively learned via observation
+of the other agentâs actions. The authors concentrate on the development of
+learning algorithms that would let one agent learn a ï¬nite-state machine model
+of another agent. They have not considered the case where two or more agents
+are simultaneously learning about each other, which we study in this article.
+However, their work is more general in the sense that they model agents as
+state machines, rather than the state-action pairs we use.
+
+Finally, a lot of experimental work has been done in the area of agents
+learning about agents [27, 36]. For example, Sen and Sekaran [28] show how
+learning agents in simple MAS converge to system-wide optimal behavior. Their
+agents use Q-learning or modiï¬ed classiï¬er systems in order to learn. The
+authors implement these agents and compare the performance of the diï¬erent
+learning algorithms for developing agent coordination. Hu and Wellman [14, 12]
+have studied reinforcement learning in market-base MASs, showing how certain
+initial learning biases can be self-fulï¬lling, and how learning can be useful but
+is aï¬ected by an agentâs models of other agents. Claus and Boutilier [6] have
+also carried out experimental studies of the behavior of reinforcement learning
+agents. We have been able to use the CLRI framework to predict some of their
+experimental results [33]. Other researchers [32, 20, 13] have extended the basic
+Q-learning [35] algorithm for use with MASs in an eï¬ort to either improve or
+
+25
+
+prove convergence to the optimal behavior.
+
+We have also successfully experimented with reinforcement learning simula-
+tions [34], but we believe that the formal treatment elucidated in these pages
+will shed more light into the real nature of the problem and the relative im-
+portance of the various parameters that describe the capabilities of an agentâs
+learning algorithm.
+
+11 Limitations and Future Work
+
+The CLRI framework places some constraints on the type of systems it can
+model, which limits its usability. However, it is important to understand that,
+as we remove the limitations from the CLRI framework, the dynamics of the
+system become much harder to predict. In the extreme, without any limitations
+on the agentsâ abilities, the system becomes a complex adaptive system, as
+studied by Holland [11] and others in the ï¬eld of complexity. The dynamic
+behavior of these systems continues to be studied by complexity researchers
+with only modest progress. It is only by placing limitations on the system that
+we were able to predict the expected error of agents in the systems modeled by
+the CLRI framework.
+
+Our ongoing work involves the relaxation of some of the constraints made by
+the CLRI framework so that it may become more easily and widely applicable,
+without making the system dynamics impossible to analyze. We are targeting
+three speciï¬c constraints.
+
+1. The values of ci, li, ri, and Iij cannot, in all situations, be mathematically
+determined from the systemâs description. We have found that bounds for
+the ci, li, and ri values can often be determined when using reinforcement
+learning or supervised learning. However, the bounds are often very loose.
+The values of the Iij parameter depend on the particular system. Some-
+times it is trivial to calculate the impact, sometimes it requires extensive
+simulation.
+
+2. The CLRI framework assumes that an agentâs action is either correct or
+incorrect. The framework does not allow degrees of correctness. Speciï¬-
+cally, in many systems the agents can often take several actions, any one
+of which is equally good. When modeling these systems, the CLRI frame-
+work requires the user to designate one of those actions as the correct one,
+thereby ignoring some possibly useful information.
+
+3. The world states are taken from a uniform probability distribution which
+does not change over time. The environment is assumed to be episodic.
+As such, the framework is limited in the type of domains it can eï¬ectively
+describe.
+
+We are attacking these challenges with some of the same tools used by re-
+searchers in complex adaptive systems, namely, agent-based simulations and
+
+26
+
+co-evolving utility landscapes. We believe we can gain some insight into the dy-
+namics of adaptive MASs by constructing and analyzing various types of MASs.
+We also believe that the next step for the CLRI framework is the replacement of
+the current error deï¬nition with a utility function. The agents can then be seen
+as searching for the maximum value in the changing utility landscape deï¬ned
+by their utility function. The degree to which the agents are successful on their
+climb to the landscape peaks depends on the abilities of their learning algo-
+rithm (change rate, learning rate, and retention rate), and the speed at which
+the landscape changes as the other agents change their behavior (impact).
+
+The use of utility landscapes will allow us to consider an agentâs utility
+for any particular action, rather than simply considering whether an action is
+correct or incorrect. The landscapes will also allow us to consider systems where
+agents cannot travel between any two world states in one time step. That is, the
+agentsâ moves on the landscape will be constrained in the same manner as their
+actions or behaviors are constrained the actual system. Finally, the new theory
+will likely need to redeï¬ne the CLRI parameters. We hope the new parameters
+will be easy to derive directly from the values that govern the machine-learning
+algorithmsâ behavior. These extensions will make the new theory applicable to
+a much wider set of domains.
+
+12 Summary
+
+We have presented a framework for studying and predicting the behavior of
+MASs composed of learning agents. We believe that this framework captures the
+most important parameters that describe an agentsâ learning and the systemâs
+rules of encounter. Various comparisons between the frameworkâs predictions
+and experimental results were given. These comparisons showed that the theo-
+retical predictions closely match our experimental results and the experimental
+results published by others. Our success in reproducing these results allows us
+to conï¬dently state the eï¬ectiveness and accuracy of our theory in predicting
+the expected error of machine learning agents in MASs.
+
+Since our theory describes an agentâs behavior at a high-level (i.e., the agentâs
+error), it is not capable of making system-speciï¬c predictions (e.g., predicting
+the particular actions that are favored). These types of system-speciï¬c predic-
+tions can only be arrived at by the traditional method of implementing popula-
+tions of such agents and testing their behaviors. However, we expect that there
+will be times when the predictions from our theory will be enough to answer a
+designerâs questions. A MAS designer that only needs to determine how âgoodâ
+the agentâs behavior will be could probably use the CLRI framework. A de-
+signer that needs to know which particular emergent behaviors will be favored
+by his agents will need to implement the agents.
+
+Finally, while we have given some examples as to how learning rates can be
+determined for particular machine learning implementations, we do not have
+any general method for determining these rates. However, we showed how to
+use the sample complexity of a learning problem to determine a lower bound on
+
+27
+
+the learning rate of a consistent learning agent. This bound is useful for quickly
+ruling out the possibility of having agents with high expected errors and of
+stating that an agentâs expected error will be, at most, a certain constant value.
+Still, if the agentâs learning algorithm is much better than the one assumed by
+a consistent learner (e.g., the agent is very good at generalizing from one world
+state to many others), then these lower bounds could be signiï¬cantly inaccurate.
+
+A Derivation for Matching Game
+
+If we can assume that the action chosen when an agent changes Î´t
+result does not match ât
+distribution, then we can say that:
+
+i (w) and the
+i(w) (for some speciï¬c w) is taken from a ï¬at probability
+
+|Ai| â 2
+|Ai| â 1
+We will now show how to calculate the fourth term in (16). For the matching
+
+B =
+
+(37)
+
+.
+
+game we ï¬nd that we can set:
+
+D = 1 â lj
+
+F = lj + (1 â lj)
+
+|Ai| â 3
+|Ai| â 2 (cid:19)
+
+.
+
+(cid:18)
+
+(38)
+
+(39)
+
+Having |Ai| = 2 implies that ci = li, this means that for this case we have
+
+(1 â ci)D + li + (ci â li)F = li + (1 â ci)(1 â lj).
+
+(40)
+
+For the case where |Ai| > 2, which is the case we are interested in, we can
+
+plug in the values for D and F and simplify, in order to get the fourth term:
+
+(1 â ci)D + li + (ci â li)F = 1 â lj +
+
+cilj(|Ai| â 1) + li(1 â lj) â ci
+|Ai| â 2
+
+.
+
+(41)
+
+References
+
+[1] W. Brian Arthur, Steven Durlauf, and David Lane, editors. The Economy
+as an Evolving Complex System II. Series in the Sciences of Complexity.
+Addison-Wesley, Reading, MA, 1997.
+
+[2] W. Brian Arthur, John H. Holland, Blake LeBaron, Richard Palmer, and
+Paul Tayler. Asset pricing under endogenous expectations in an artiï¬cial
+stock market. In Arthur et al. [1].
+
+[3] Ken Binmore. Modeling rational players, part 2. Economics and Philoso-
+
+phy, 4:9â55, 1988.
+
+[4] David Carmel and Shaul Markovitch. Exploration and adaptation in mul-
+tiagent systems: A model-based approach. In Proceedings of the Interna-
+tional Joint Conference on AI, 1997.
+
+28
+
+[5] A. Chavez and P. Maes. Kasbah: An agent marketplace for buying and sell-
+ing goods. In First International Conference on the Practical Application
+of Intelligent Agents and Multi-Agent Technology, pages 75â90, 1996.
+
+[6] Caroline Claus and Craig Boutilier. The dynamics of reinforcement learn-
+In Proceedings of Workshop on
+
+ing in cooperative multiagent systems.
+Multiagent Learning. AAAI Press, 1997.
+
+[7] George A. Cowan, David Pines, and David Meltzer, editors. Complexity:
+Metaphors, Models and Reality. Addison-Wesley, Reading, MA, 1995.
+
+[8] Vince M. Darley and Stuart Kauï¬man. Natural rationality. In Arthur et al.
+
+[1].
+
+[9] Edmund H. Durfee, Daniel L. Kiskis, and William P. Birmingham. The
+agent architecture of the University of Michigan Digital Library. IEE Pro-
+ceedings on Software Engineering, 144(1):61â71, 1997.
+
+[10] Oren Etzioni. Moving up the information food chain: Deploying softbots
+In Proceedings of the Thirteenth National Con-
+on the world wide web.
+ference on Artiï¬cial Intelligence and the Eighth Innovative Applications of
+Artiï¬cial Intelligence Conference, pages 1322â1326, Menlo Park, August4â
+8 1996. AAAI Press / MIT Press.
+
+[11] John H. Holland. Hidden Order. Addison-Wesley, 1995.
+
+[12] Junling Hu and Michael P. Wellman. Self-fulï¬lling bias in multiagent learn-
+ing. In Proceedings of the Second International Conference on Multi-Agent
+Systems, pages 118â125, 1996.
+
+[13] Junling Hu and Michael P. Wellman. Multiagent reinforcement learning:
+Theoretical framework and an algorithm. In Proceedings of the Fifteenth
+International Conference on Machine Learning, 1998.
+
+[14] Junling Hu and Michael P. Wellman. Online learning about other agents in
+a dynamic multiagent system. In Proceedings of the Second International
+Conference on Autonomous Agents, 1998.
+
+[15] Alfred HÂ¨ubler and David Pines. Complexity: Methaphors, Models and Re-
+ality, chapter Prediction and Adaptation in an Evolving Chaotic Environ-
+ment, pages 343â379. In Cowan et al. [7], 1994.
+
+[16] Toru Ishida. Real-Time Search for Learnig Autonomous Agents. Kluwer
+
+Academic Publishers, 1997.
+
+[17] Michael J. Kearns and Umesh V. Vazirani. An Introduction to Computa-
+
+tional Learning Theory. The MIT Press, Cambridge, MA, 1994.
+
+[18] Jeï¬ery O. Kephart, Tad Hogg, and Bernardo A. Huberman. Collective
+
+behavior of predictive agents. Physica D, 42(2):48â65, 1990.
+
+29
+
+[19] Victor R. Lesser and Daniel D. Corkill. Functionally accurate, cooperative
+distributed systems. IEEE Transactions on Systems, Man, and Cybernet-
+ics, 11(1):81â96, January 1981.
+
+[20] Michael L Littman. Markov games as a framework for multi-agent rein-
+forcement learning. In Proceedings of the Eleventh International Conference
+on Machine Learning, pages 157â163. Morgan Kaufmann, 1994.
+
+[21] Jyi-Shane Liu and Katia P. Sycara. Multiagent coordination in tightly
+In Victor Lesser, editor, Proceedings of
+coupled real-time environments.
+the First International Conference on Multi-Agent Systems. MIT Press,
+1995.
+
+[22] Maja J. MatariÂ´c.
+
+Issues and approaches in the design of collective au-
+tonomous agents. Robotics and Autonomous Systems, 16(2-4):321â331, Dec
+1995.
+
+[23] Maja J. MatariÂ´c. Learning social behaviors. Robotics and Autonomous
+
+Agents, 20:191â204, 1997.
+
+[24] Tom M. Mitchell. Machine Learning. McGraw-Hill, 1997.
+
+[25] Jeï¬rey S. Rosenschein and Gilad Zlotkin. Rules of Encounter. The MIT
+
+Press, Cambridge, MA, 1994.
+
+[26] Stuart Russell and Peter Norvig. Artiï¬cial Intelligence: A Modern Ap-
+
+proach. Prentice Hall, 1995.
+
+[27] Sandip Sen, editor. Working Notes from the AAAI Symposium on Adap-
+
+tation, Co-evolution and Learning in Multiagent Systems, 1996.
+
+[28] Sandip Sen and Mahendra Sekaran.
+
+Individual learning of coordination
+knowledge. Journal of Experimental and Theoretical AI, pages 156â170,
+1998.
+
+[29] Sandip Sen, Mahendra Sekaran, and John Hale. Learning to coordinate
+without sharing information. In Proceedings of the Twelfth National Con-
+ference on Artiï¬cial Intelligence, 1994.
+
+[30] Yoav Shoham and Moshe Tennenholtz. On the emergence of social con-
+ventions: modeling, analysis, and simulations. Artiï¬cial Intelligence,
+94(1):139â166, 1997.
+
+[31] Peter Stone and Manuela Velos. Multiagent systems: A survery from a
+machine learning perspective. Technical Report CMU-CS-97-193, Carnegie
+Mellon University, December 1997.
+
+[32] Peter Stone and Manuela Veloso. Team-partitioned, opaque-transition re-
+inforcement learning. In Proceedings of the Third International Conference
+on Autonomous Agents. Springer-Verlag, 1999.
+
+30
+
+[33] JosÂ´e M. Vidal. Computational Agents That Learn About Agents: Algorithms
+for Their Design and a Predictive Theory of Their Behavior. PhD thesis,
+University of Michigan, 1998.
+
+[34] JosÂ´e M. Vidal and Edmund H. Durfee. Learning nested models in an in-
+formation economy. Journal of Experimental and Theoretical Artiï¬cial In-
+telligence, 10(3):291â308, 1998.
+
+[35] Christopher J. Watkins and Peter Dayan. Q-learning. Machine Learning,
+
+8:279â292, 1992.
+
+[36] Gerhard WeiÃ, editor. Distributed Artiï¬cial Intelligence meets Machine
+
+Learning. Springer, 1997.
+
+31
+
+

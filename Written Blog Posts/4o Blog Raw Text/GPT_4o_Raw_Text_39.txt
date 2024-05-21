@@ -1,0 +1,72 @@
+# Understanding Broadcast Guidance of Agents in Deviated Linear Cyclic Pursuit
+
+## Introduction
+
+The coordination of multiple agents to perform complex tasks is a fascinating area of study within robotics and autonomous systems. This article delves into the emergent behaviors of a group of agents engaged in a deviated linear cyclic pursuit and how broadcast guidance can influence their collective motion. The research conducted by Ilana Segall and Alfred M. Bruckstein at the MultiAgent Robotic Systems (MARS) Lab at Technion provides valuable insights into this phenomenon.
+
+In this article, we will explore the key findings of the research, the methodologies used, and the implications for the field of multi-agent systems. By the end, you'll have a comprehensive understanding of how deviation angles and broadcast guidance can shape the group dynamics of autonomous agents.
+
+## The Concept of Cyclic Pursuit
+
+Cyclic pursuit is a scenario where each agent in a group follows the agent in front of it, forming a closed loop. This concept is widely studied in autonomous systems, as it offers a simple yet powerful mechanism for coordination. In a linear cyclic pursuit, agents move in straight lines, while in non-linear cyclic pursuits, their trajectories may curve.
+
+### Literature Survey
+
+Researchers have extensively studied formations achieved in autonomous cyclic pursuits without external input. For instance, Lin et al. demonstrated that agents in linear cyclic pursuit converge to the centroid of their initial positions. Sinha and Goose explored how varying control gains among agents can lead to directed motion, with agents aligning on straight lines over time. Pavone and Frazzoli introduced deviated cyclic pursuit, where agents operate with a common offset angle, leading to distinct formations such as circles or logarithmic spirals based on the angle.
+
+### Deviated Cyclic Pursuit
+
+In deviated cyclic pursuit, each agent moves at an angle (θ) to the line connecting it to its target (the next agent in the sequence). This deviation introduces intricate patterns in the agents' trajectories. The emergent behavior of the group depends on the deviation angle and the subset of agents detecting the broadcast guidance.
+
+## The Impact of Broadcast Guidance
+
+The researchers explored the influence of external broadcast guidance on agents performing deviated linear cyclic pursuit. Each agent senses the relative position of its target, and the broadcast control, a velocity signal, is detected by a random set of agents. These agents then act as temporary leaders, influencing the group's motion.
+
+### Dynamics of the Group
+
+The group's dynamics can be represented by the position vector of the agents, denoted as P. The motion rule changes to include the broadcast velocity vector signal (Uc) and an indicator (bi) showing which agents detect the signal. The matrix M, representing the system, is block circulant, indicating its time-independent nature.
+
+### Emergent Behavior
+
+The emergent behavior depends on the deviation angle (θ), the critical angle (θc), and the set of agents detecting the broadcast control. The key findings are:
+
+- **If θ < θc:**
+  - If all agents detect the broadcast control, they gather and move as a single point with velocity Uc.
+  - If only a subset detects it, agents align in a linear formation, rotated by -θ from Uc's direction.
+  
+- **If θ = θc:**
+  - If all agents detect the control, they move in a circular orbit around a common center with Uc's velocity.
+  - If only a subset detects it, the centers of the orbits shift, causing agents to move on parallel lines.
+
+## Demonstration by Simulation
+
+The researchers validated their theoretical findings through simulations, demonstrating the impact of deviation angles, broadcast control, and random sets of leaders on the group's emergent behavior.
+
+### Example Scenarios
+
+1. **Autonomous Deviated Cyclic Pursuit:**
+   - With no external control, agents gather at the centroid if θ < θc.
+   - If θ = θc, they move in circular orbits around the centroid.
+
+2. **Influence of Broadcast Control:**
+   - In a single time interval, agents detect the broadcast signal and align accordingly.
+   - Over multiple intervals, the group's behavior adapts to changes in the broadcast control and the set of detecting agents.
+
+## Conclusion
+
+The study of broadcast guidance in deviated linear cyclic pursuit reveals intricate patterns and behaviors in multi-agent systems. The deviation angle and the subset of agents detecting broadcast control significantly influence the group's emergent behavior. These findings have practical implications for designing autonomous systems, where coordinated group behavior is essential.
+
+### Engage with Us
+
+What are your thoughts on the influence of deviation angles in multi-agent coordination? Have you observed similar behaviors in other autonomous systems? Share your experiences and insights in the comments below!
+
+#### Keywords
+
+- Multi-agent systems
+- Cyclic pursuit
+- Broadcast guidance
+- Deviation angle
+- Autonomous systems
+- Group dynamics
+
+By understanding these fundamental principles, researchers and engineers can design more efficient and coordinated multi-agent systems, paving the way for advancements in robotics and autonomous technologies.

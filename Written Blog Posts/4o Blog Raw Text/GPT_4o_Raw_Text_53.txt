@@ -1,0 +1,87 @@
+# A Study in a Hybrid Centralised-Swarm Agent Community
+
+In the rapidly evolving landscape of artificial intelligence and machine learning, multi-agent systems have emerged as a revolutionary tool for solving large-scale, complex problems. These systems, inspired by social behaviors in nature, integrate the capabilities of multiple autonomous agents to achieve a common goal. In this blog post, we delve into a fascinating study by Bradley van Aardt and Tshilidzi Marwala from the University of Witwatersrand, Johannesburg, South Africa. Their research explores a hybrid centralised-swarm based multi-agent system, applied to the classic game of Pursuit. Let's embark on a journey to understand their innovative approach and its implications for the future of multi-agent systems.
+
+## Introduction to Multi-Agent Systems
+
+Multi-agent systems have been a subject of intense research and practical application for several years. These systems consist of multiple autonomous agents that interact and collaborate to solve problems that are beyond the capabilities of individual agents. By distributing the problem-solving process among several entities, multi-agent systems can tackle complex tasks efficiently through a "divide and conquer" strategy.
+
+### The Challenge of Local Goal Assignment
+
+One of the main challenges in designing multi-agent systems is assigning local strategies to individual agents that collectively result in the desired global behavior. This challenge is particularly prominent in swarm-based systems, where agents operate with limited local information and no central control. Researchers have proposed various methods to equip agents with a repertoire of strategies at design time, allowing them to learn and adapt their local strategies through interaction with the environment. However, the ideal solution would be for agents to dynamically develop their own local behaviors in response to the environment, leading to the globally desired behavior.
+
+### The Hybrid Approach
+
+To address the limitations of purely centralized or swarm-based systems, van Aardt and Marwala propose a hybrid approach. Their system combines centralized control with distributed learning, leveraging the strengths of both paradigms. A central global agent guides the agents initially, teaching them responses to various situations. Over time, the agents learn and adapt, reducing their reliance on the central agent and functioning more autonomously.
+
+## Background on Multi-Agent Systems
+
+### Advantages and Disadvantages
+
+Decentralized multi-agent systems offer several advantages, including robustness (no single point of failure), faster response times, and increased flexibility. However, they also present challenges such as measuring stability and security, excessive communication between agents, and the risk of getting stuck in non-optimal solutions due to the lack of global knowledge.
+
+### Swarm-Based Systems
+
+Swarm intelligence is a specific paradigm within multi-agent systems that emphasizes distributedness and simplicity. Inspired by the behavior of social insects like ants and bees, swarm systems rely on simple agents that interact indirectly through the environment. This approach has been successfully applied to problems such as routing in computer networks and manufacturing control systems.
+
+However, swarm-based systems have a significant drawback: no agent has a global view of the problem, which can lead to suboptimal solutions or system failure. In contrast, centralized systems benefit from a global perspective, making decisions that align with the overall system goal.
+
+## Neural Networks and Genetic Algorithms
+
+### Neural Networks
+
+Artificial neural networks mimic the functioning of biological neurons, enabling them to learn arbitrary relationships between data sets. Unlike traditional computing techniques, neural networks are not explicitly programmed with rules but learn from experience. Multi-layer perceptron (MLP) and radial basis function (RBF) networks are among the most widely used neural network models.
+
+### Genetic Algorithms
+
+Genetic algorithms (GAs) are inspired by natural selection and evolution, exploring the search space to find optimal solutions. Proposed by John Holland in 1975, GAs consist of encoding, selection, recombination, and evaluation modules. They encode possible solutions as chromosome strings, which evolve over generations through selection and recombination, guided by a problem-specific evaluation function.
+
+## Hypothesis and Methodology
+
+### Hypothesis
+
+The study hypothesizes that the human model of learning—using rational reasoning initially and pattern recognition as mastery is achieved—can be applied to agent strategizing. Evolutionary optimization and genetic programming techniques can discover strategies during the deliberative stage, after which neural networks are trained with these strategies. Over time, neural networks generalize these strategies to other scenarios, allowing agents to perform tasks "naturally."
+
+### Method
+
+The proposed hybrid system combines centralized control and swarm-based agents. Initially, a central global agent guides the agents using a genetic algorithm. As the agents learn and adapt, the system transitions towards a more decentralized, swarm-based approach.
+
+#### Test Problem: The Pursuit Game
+
+The Pursuit game serves as the test problem for this study. The game involves captor agents trying to surround or corner a fugitive agent on a 2D grid. Each agent can move up, down, left, right, or stay in place. The game ends when the fugitive is captured, with no legal moves left.
+
+#### System Architecture
+
+The system comprises four captor agents, each with its own neural network trained independently. A central global agent, using a genetic algorithm, proposes moves that best satisfy the global goal of capturing the fugitive. The captor agents learn from these moves, gradually reducing their reliance on the global agent.
+
+## Implementation and Results
+
+### System Operation
+
+The system operates by having the captor agents propose moves, which are tested for legality. If the moves are legal, they are implemented; otherwise, the global agent intervenes. The captor agents' neural networks are trained with the new move data, continuously improving their performance.
+
+### Captor Agents and Global Agent
+
+Captor agents use neural networks with inputs representing the relative positions of other agents. The global agent evaluates moves based on the Euclidean distance between captor agents and the fugitive. Illegal moves are penalized, while winning moves are heavily rewarded.
+
+### Discussion
+
+The Pursuit game, despite its simplicity, demonstrates the effectiveness of the hybrid system. Successful moves require cooperation among agents, achieved without explicit communication. Over time, the agents learn to anticipate each other's actions, improving their performance.
+
+## Recommendations and Future Work
+
+The study suggests that further work is needed to resolve instances where agents propose multiple directions. Future research could focus on enabling agents to formulate global strategies independently, without relying on an external global agent. This could involve distributing genetic algorithm evaluations among agents or developing more sophisticated methods.
+
+## Conclusion
+
+The hybrid centralised-swarm agent community proposed by van Aardt and Marwala offers a promising approach to multi-agent systems. By combining centralized control with distributed learning, the system leverages the strengths of both paradigms while mitigating their weaknesses. The successful application to the Pursuit game demonstrates the potential of this approach for solving complex, real-world problems.
+
+### Engage with Us
+
+How do you see hybrid centralised-swarm systems shaping the future of artificial intelligence? Share your thoughts in the comments below! If you found this article insightful, don't forget to subscribe to our blog for more in-depth explorations of cutting-edge AI research.
+
+In this blog post, we explored the innovative hybrid centralised-swarm agent system proposed by Bradley van Aardt and Tshilidzi Marwala. By combining centralized control with distributed learning, their approach addresses the limitations of purely centralized or swarm-based systems, offering a promising solution for complex multi-agent problems. As AI continues to evolve, such hybrid systems could play a crucial role in advancing our capabilities in areas ranging from robotics to network optimization.
+
+---
+
+**Keywords**: multi-agent

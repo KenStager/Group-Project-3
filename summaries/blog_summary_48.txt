@@ -1,0 +1,22 @@
+[Learning Altruistic Behaviours in Reinforcement Learning without
+  External Rewards](http://arxiv.org/abs/2107.09598v4)
+
+Title: Unveiling the Future of Altruism in Artificial Intelligence
+
+Introduction:
+
+In the realm of artificial intelligence, the concept of altruism has long been a subject of fascination and debate. Can machines be programmed to exhibit selfless behaviors, to assist others in achieving their goals without explicit instruction? A recent study by Tim Franzmeyer, Mateusz Malinowski, and JoÃ£o F. Henriques delves into this intriguing question, shedding light on the possibility of training artificial agents to behave altruistically without prior knowledge of other agents' goals.
+
+Key Findings:
+
+The crux of the research lies in the exploration of altruistic behaviors in reinforcement learning without the reliance on external rewards. Traditionally, reinforcement learning agents are trained to maximize rewards based on predefined goals. However, this study introduces a novel approach where agents are incentivized to benefit other agents in a given scenario, without explicit knowledge of their objectives.
+
+By rewarding agents for assisting others, the researchers demonstrate that artificial agents can indeed learn altruistic behaviors in a task-agnostic manner. This breakthrough challenges the conventional wisdom that altruism in AI necessitates a clear understanding of others' goals. Instead, the study suggests that agents can exhibit cooperative behaviors without explicit supervision, paving the way for more sophisticated and socially adept AI systems.
+
+Implications:
+
+The implications of this research are profound, extending far beyond the realm of artificial intelligence. In a world increasingly dominated by intelligent machines, the ability to cultivate altruistic behaviors in AI holds immense societal value. Imagine a future where autonomous systems are not only efficient and capable but also inherently altruistic, working collaboratively to benefit humanity as a whole.
+
+Moreover, the findings of this study have significant implications for human-AI interactions. As AI systems become more integrated into everyday life, the ability to understand and emulate altruistic behaviors will be crucial for fostering trust and cooperation between humans and machines. By developing AI agents that can act in the best interest of others without explicit instructions, we pave the way for a more harmonious coexistence between man and machine.
+
+In conclusion, the research by Franzmeyer, Malinowski, and Henriques represents a pivotal step towards unlocking the true potential of altruism in artificial intelligence. By demonstrating that agents can learn to assist others without prior knowledge of their goals, the study opens up new possibilities for the development of socially intelligent AI systems. As we continue to push the boundaries of AI research, it is clear that the future of altruism in artificial intelligence is bright and full of promise.

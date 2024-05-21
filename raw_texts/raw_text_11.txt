@@ -1,0 +1,1002 @@
+LanguagesÂ forÂ MobileÂ Agents 
+
+StevenÂ VersteegÂ 
+
+Supervisor:Â LeonÂ SterlingÂ 
+
+433Â­463Â ThesisÂ 
+DepartmentÂ ofÂ ComputerÂ ScienceÂ andÂ SoftwareÂ EngineeringÂ 
+UniversityÂ ofÂ MelbourneÂ 
+
+Â 25Â August,Â 1997Â 
+
+âAbstractÂ 
+
+MobileÂ agentsÂ representÂ aÂ newÂ modelÂ forÂ networkÂ computing.Â Â ManyÂ differentÂ languagesÂ 
+haveÂ beenÂ usedÂ toÂ implementÂ mobileÂ agents.Â Â TheÂ characteristicsÂ thatÂ makeÂ aÂ languageÂ 
+usefulÂ forÂ writingÂ mobileÂ agentsÂ are:Â (1)Â theirÂ supportÂ ofÂ agentÂ migration,Â (2)Â theirÂ supportÂ 
+forÂ agentÂ­toÂ­agentÂ communication,Â (3)Â howÂ theyÂ allowÂ agentsÂ toÂ interactÂ withÂ localÂ 
+resources,Â (4)Â securityÂ mechanisms,Â (5)Â executionÂ efficiency,Â (6)Â languageÂ 
+implementationÂ acrossÂ multipleÂ platforms,Â andÂ (7)Â theÂ language'sÂ easeÂ ofÂ programmingÂ 
+ofÂ theÂ tasksÂ mobileÂ agentsÂ perform.Â 
+
+ 
+Â 
+Â 
+Â 
+Â Â 
+Â 
+Â 
+1.Â IntroductionÂ 
+
+MobileÂ agentsÂ areÂ anÂ emergingÂ technologyÂ thatÂ promiseÂ manyÂ benefitsÂ inÂ networkÂ computing.Â Â AÂ 
+mobileÂ agentÂ isÂ aÂ programÂ thatÂ canÂ migrateÂ fromÂ oneÂ computerÂ toÂ anotherÂ forÂ remoteÂ execution.Â 
+ManyÂ differentÂ languagesÂ haveÂ beenÂ usedÂ toÂ implementÂ mobileÂ agents.Â Â ThisÂ thesisÂ examinesÂ 
+theÂ characteristicsÂ requiredÂ forÂ aÂ languageÂ toÂ beÂ usefulÂ forÂ writingÂ mobileÂ agents.Â Â Telescript,Â 
+Java,Â AgentÂ TclÂ andÂ ObliqÂ areÂ examplesÂ ofÂ mobileÂ agentÂ languagesÂ thatÂ areÂ examinedÂ toÂ 
+determineÂ whatÂ makesÂ themÂ useful.Â 
+
+2.Â BackgroundÂ 
+
+MobileÂ agentsÂ areÂ inÂ theÂ processÂ ofÂ graduatingÂ fromÂ beingÂ limitedÂ toÂ researchÂ systemsÂ toÂ beingÂ 
+aÂ practicalÂ technologyÂ inÂ networkÂ computing.Â Â MobileÂ agentsÂ areÂ computerÂ programsÂ whichÂ mayÂ 
+migrateÂ fromÂ oneÂ computerÂ toÂ anotherÂ onÂ aÂ network.Â Â OnÂ migration,Â theÂ agentÂ suspendsÂ atÂ anÂ 
+arbitraryÂ pointÂ beforeÂ migrating,Â andÂ restartsÂ executionÂ atÂ thatÂ pointÂ whenÂ itÂ resumesÂ executionÂ 
+onÂ theÂ targetÂ computer.Â [Ven97]Â [Gra95a]Â Â TheÂ wordÂ 
+rangeÂ ofÂ programs.Â Â TheÂ exactÂ definitionÂ ofÂ theÂ wordÂ isÂ vague.Â Â OftenÂ associatedÂ withÂ agentÂ isÂ 
+theÂ implicationÂ thatÂ theÂ programsÂ areÂ persistent,Â autonomousÂ andÂ interactÂ withÂ theirÂ 
+environment.Â Â OthersÂ defineÂ agentÂ toÂ simplyÂ meanÂ aÂ programÂ thatÂ doesÂ aÂ taskÂ onÂ behalfÂ ofÂ aÂ 
+user.Â Â BothÂ theseÂ setsÂ ofÂ propertiesÂ areÂ generallyÂ trueÂ ofÂ mobileÂ agents.Â Â InÂ theÂ contextÂ ofÂ thisÂ 
+discussionÂ mobileÂ agentÂ isÂ simplyÂ aÂ programÂ thatÂ canÂ migrateÂ fromÂ oneÂ computerÂ toÂ another.Â 
+AnyÂ otherÂ conflictingÂ definitionsÂ ofÂ theÂ wordÂ agentÂ shouldÂ beÂ ignored.Â 
+
+Â isÂ usedÂ toÂ describeÂ aÂ veryÂ broadÂ 
+â
+
+agent
+â
+
+TheÂ mainÂ advantageÂ ofÂ mobileÂ agentsÂ isÂ thatÂ theyÂ canÂ bringÂ aÂ programÂ closerÂ toÂ theÂ informationÂ 
+resources.Â Â TheÂ mobileÂ agentÂ paradigmÂ stipulatesÂ thatÂ theÂ serverÂ shouldÂ provideÂ setÂ ofÂ basicÂ 
+services.Â Â TheÂ clientÂ usesÂ theÂ servicesÂ providedÂ byÂ theÂ serverÂ byÂ dispatchingÂ aÂ program,Â thatÂ isÂ aÂ 
+mobileÂ agent,Â toÂ theÂ server.Â Â TheÂ mobileÂ agentÂ makesÂ useÂ ofÂ theÂ server'sÂ basicÂ services,Â inÂ theÂ 
+wayÂ thatÂ itsÂ ownerÂ intends.Â Â MobileÂ agentsÂ provideÂ noÂ newÂ functionalityÂ thatÂ cannotÂ beÂ achievedÂ 
+withÂ traditionalÂ clientÂ­serverÂ interaction,Â suchÂ asÂ remoteÂ procedureÂ callÂ (RPC).Â Â However,Â theyÂ 
+makeÂ implementingÂ anyÂ newÂ functionalityÂ muchÂ easier.Â Â TheÂ fundamentalÂ advantageÂ isÂ theyÂ 
+provideÂ aÂ layerÂ ofÂ abstraction,Â betweenÂ theÂ servicesÂ providedÂ byÂ theÂ serverÂ andÂ theÂ wayÂ theyÂ areÂ 
+used.Â Â ForÂ aÂ furtherÂ introductionÂ intoÂ mobileÂ agents,Â andÂ aÂ criticalÂ analysisÂ ofÂ theirÂ advantages,Â 
+theÂ readerÂ isÂ referredÂ toÂ Harrison,Â ChessÂ andÂ Kershenbaum,Â MobileÂ agents:Â AreÂ theyÂ aÂ goodÂ 
+idea?Â [HCK95]Â 
+
+Â 
+InÂ theÂ contextÂ ofÂ aÂ discussionÂ ofÂ whatÂ languagesÂ areÂ usefulÂ forÂ writingÂ mobileÂ agents,Â itÂ isÂ 
+necessaryÂ toÂ knowÂ whatÂ typeÂ ofÂ applicationsÂ areÂ beingÂ written.Â Â WhileÂ mobileÂ agentsÂ areÂ notÂ 
+new,Â theyÂ areÂ stillÂ inÂ theÂ processÂ ofÂ movingÂ fromÂ researchÂ systemsÂ toÂ mainstreamÂ computing.Â 
+MobileÂ agentsÂ areÂ expectedÂ toÂ beÂ ableÂ toÂ roamÂ overÂ heterogeneousÂ networks,Â suchÂ asÂ theÂ 
+Internet.Â Â TheÂ typesÂ ofÂ applicationsÂ thatÂ mobileÂ agentsÂ areÂ envisionedÂ toÂ beÂ usedÂ forÂ are:Â 
+
+â SearchÂ andÂ gatheringÂ applications.Â Â MobileÂ agentsÂ roamÂ acrossÂ theÂ network,Â searchingÂ 
+
+theÂ servers'Â resourcesÂ forÂ aÂ specificÂ pieceÂ ofÂ information.Â 
+
+â MonitoringÂ programs.Â Â AÂ mobileÂ agentÂ sitsÂ onÂ aÂ serverÂ monitoringÂ information,Â untilÂ aÂ 
+
+conditionÂ isÂ met.Â 
+
+â ElectronicÂ commerce.Â Â MobileÂ agentsÂ actÂ asÂ representativesÂ ofÂ aÂ user,Â andÂ searchÂ forÂ 
+
+andÂ buyÂ productsÂ onÂ theÂ user'sÂ behalf.Â 
+
+â DistributedÂ computing.Â Â MobileÂ agentsÂ canÂ beÂ usedÂ asÂ mechanismsÂ toÂ distributeÂ 
+
+computationÂ acrossÂ theÂ network.Â 
+
+ThisÂ simpleÂ exampleÂ illustratesÂ howÂ mobileÂ agentsÂ canÂ beÂ usefullyÂ applied.Â Â TheÂ problem:Â theÂ 
+userÂ needsÂ toÂ beÂ informed,Â exactlyÂ whenÂ theÂ stockÂ priceÂ ofÂ BHPÂ risesÂ aboveÂ aÂ certainÂ threshold.Â 
+TheÂ mobileÂ agentÂ solution:Â Â AÂ mobileÂ agentÂ isÂ dispatchedÂ fromÂ theÂ user'sÂ computerÂ toÂ aÂ stockÂ 
+exchangeÂ server,Â thatÂ providesÂ aÂ feedÂ ofÂ theÂ courseÂ ofÂ salesÂ inÂ realÂ time.Â Â TheÂ agentÂ sitsÂ atÂ theÂ 
+serverÂ andÂ monitorsÂ theÂ sales.Â Â WhenÂ itÂ findsÂ aÂ saleÂ withÂ aÂ priceÂ aboveÂ theÂ threshold,Â itÂ migratesÂ 
+backÂ toÂ theÂ clientÂ computerÂ andÂ informsÂ theÂ user.Â Â TheÂ wholeÂ scenarioÂ mayÂ takeÂ daysÂ orÂ evenÂ 
+weeksÂ toÂ complete.Â Â OnlyÂ twoÂ networkÂ communicationsÂ wereÂ made.Â Â OneÂ toÂ sendÂ theÂ agentÂ toÂ 
+theÂ stockÂ exchangeÂ server,Â andÂ oneÂ toÂ sendÂ itÂ backÂ again.Â Â ConsiderÂ theÂ alternativeÂ waysÂ ofÂ 
+implementingÂ thisÂ functionality.Â Â OneÂ wayÂ isÂ toÂ sendÂ allÂ theÂ courseÂ ofÂ salesÂ informationÂ fromÂ theÂ 
+stockÂ exchangeÂ serverÂ toÂ theÂ usersÂ computer.Â Â AtÂ theÂ user'sÂ computer,Â aÂ localÂ programÂ monitorsÂ 
+theÂ saleÂ price.Â Â ThisÂ solutionÂ involvesÂ thousandsÂ ofÂ networkÂ communications.Â Â AnotherÂ solutionÂ 
+isÂ toÂ useÂ RemoteÂ ProcedureÂ CallÂ (RPC).Â Â AÂ programÂ runsÂ onÂ theÂ user'sÂ computerÂ thatÂ pollsÂ 
+BHP'sÂ priceÂ atÂ certainÂ timeÂ intervalsÂ throughÂ aÂ RPC.Â Â ThisÂ alternativeÂ isÂ causesÂ lessÂ networkÂ 
+traffic,Â butÂ stillÂ muchÂ moreÂ thanÂ forÂ theÂ mobileÂ agentÂ solution.Â 
+
+AÂ mobileÂ agentÂ isÂ merelyÂ aÂ program.Â Â TheÂ mobileÂ agentÂ requiresÂ anÂ environmentÂ onÂ potentialÂ 
+hostsÂ toÂ runÂ on.Â Â AllÂ agentÂ systemsÂ haveÂ anÂ 
+TheÂ agentÂ serverÂ actsÂ likeÂ anÂ operatingÂ systemÂ forÂ mobileÂ agents.Â Â TheÂ agentÂ serverÂ isÂ 
+responsibleÂ for:Â (1)Â providingÂ anÂ environmentÂ forÂ theÂ agentÂ toÂ runÂ inÍ¾Â (2)Â transferringÂ andÂ 
+receivingÂ agentsÂ toÂ andÂ fromÂ differentÂ agentÂ serversÍ¾Â andÂ (3)Â implementingÂ anÂ APIÂ forÂ 
+messagingÂ betweenÂ agentsÂ andÂ agentÂ transferÂ requests.Â Â ItÂ isÂ alsoÂ theÂ responsibilityÂ ofÂ theÂ agentÂ 
+serverÂ toÂ protectÂ theÂ hostÂ computerÂ fromÂ hostileÂ mobileÂ agents.Â 
+
+Â runningÂ onÂ allÂ potentialÂ hostÂ machines.Â 
+â
+
+agentÂ server
+â
+
+MobileÂ agentsÂ programsÂ areÂ onlyÂ ableÂ toÂ runÂ onÂ hostsÂ thatÂ haveÂ anÂ executionÂ environmentÂ thatÂ 
+interpretsÂ theÂ languageÂ theyÂ wereÂ writtenÂ in.Â Â ThereÂ generallyÂ needsÂ toÂ beÂ aÂ separateÂ kindÂ ofÂ 
+executionÂ environmentÂ forÂ eachÂ language.Â Â ItÂ isÂ possibleÂ forÂ anÂ agentÂ serverÂ toÂ beÂ ableÂ toÂ 
+supportÂ moreÂ thanÂ oneÂ language,Â howeverÂ thereÂ areÂ presentlyÂ manyÂ competingÂ andÂ 
+incompatibleÂ typesÂ ofÂ agentÂ servers,Â eachÂ onlyÂ capableÂ ofÂ interpretingÂ atÂ mostÂ aÂ fewÂ languages.Â 
+SomeÂ agentÂ operatingÂ systemsÂ (orÂ typesÂ ofÂ agentÂ servers)Â areÂ AraÂ [RP97],Â TacomaÂ [JRS94],Â 
+andÂ theÂ KnowbotÂ OperatingÂ SystemÂ [Hyl96].Â Â AgentÂ TclÂ andÂ TelescriptÂ eachÂ haveÂ theirÂ ownÂ 
+agentÂ operatingÂ systems.Â Â TheÂ manyÂ differentÂ JavaÂ­basedÂ agentÂ systemsÂ alsoÂ eachÂ requireÂ 
+specialÂ agentÂ server.Â 
+
+ThisÂ thesisÂ isÂ concernedÂ withÂ programmingÂ languagesÂ forÂ writingÂ mobileÂ agentsÂ ratherÂ thanÂ theÂ 
+operatingÂ systemsÂ theyÂ executeÂ under.Â TheÂ implementationÂ ofÂ agentÂ serversÂ isÂ onlyÂ discussedÂ ifÂ 
+itÂ directlyÂ affectsÂ theÂ programsÂ thatÂ canÂ beÂ implemented.Â 
+
+3.Â LanguagesÂ UsedÂ toÂ WriteÂ MobileÂ AgentsÂ 
+
+InÂ theoryÂ anyÂ languageÂ canÂ beÂ usedÂ toÂ implementÂ mobileÂ agents.Â Â TheÂ onlyÂ necessaryÂ 
+requirementÂ isÂ thatÂ theÂ languageÂ isÂ supportedÂ byÂ anÂ executionÂ environmentÂ onÂ theÂ host.Â Â AÂ wideÂ 
+varietyÂ ofÂ languagesÂ haveÂ beenÂ usedÂ toÂ writeÂ mobileÂ agents,Â someÂ inÂ researchÂ systems,Â someÂ 
+inÂ prototypeÂ commercialÂ systems.Â Â SomeÂ languagesÂ suchÂ asÂ ObliqÂ andÂ TelescriptÂ haveÂ beenÂ 
+specificallyÂ designedÂ forÂ writingÂ mobileÂ agents.Â Â ThereÂ areÂ alsoÂ manyÂ mobileÂ agentsÂ beingÂ 
+writtenÂ inÂ generalÂ purposeÂ languagesÂ extendedÂ withÂ aÂ specialÂ library.Â Â BelowÂ isÂ aÂ briefÂ 
+descriptionÂ ofÂ someÂ ofÂ theÂ languagesÂ thatÂ haveÂ beenÂ usedÂ toÂ writeÂ mobileÂ agents.Â 
+
+Â Â­Â AÂ proprietaryÂ systemÂ developedÂ byÂ GeneralÂ Magic.Â [Whi96]Â Â TheÂ TelescriptÂ 
+â
+
+Telescript
+languageÂ hasÂ beenÂ specificallyÂ designedÂ forÂ implementingÂ mobileÂ agentÂ systems.Â Â TelescriptÂ 
+wasÂ designedÂ withÂ theÂ visionÂ forÂ theÂ computerÂ networkÂ becomeÂ aÂ programmableÂ platform.Â 
+GeneralÂ Magic'sÂ ambitionÂ wasÂ forÂ TelescriptÂ toÂ becomeÂ forÂ communicationsÂ whatÂ PostscriptÂ isÂ 
+forÂ printing.Â Â ContraryÂ toÂ theÂ name,Â TelescriptÂ isÂ notÂ aÂ scriptingÂ language.Â Â ItÂ isÂ aÂ completeÂ objectÂ 
+orientedÂ language.Â Â TelescriptÂ supportsÂ objects,Â classesÂ andÂ inheritance.Â Â TheÂ objectÂ orientedÂ 
+modelÂ andÂ theÂ syntaxÂ isÂ inÂ manyÂ wayÂ similarÂ toÂ thatÂ ofÂ C++.Â Â TelescriptÂ hasÂ aÂ libraryÂ ofÂ builtÂ­inÂ 
+classesÂ forÂ writingÂ mobileÂ agents.Â Â ThereÂ areÂ specialÂ classesÂ forÂ 
+.Â Â AgentsÂ 
+â
+areÂ aÂ baseÂ classÂ forÂ mobileÂ agents.Â Â LocationsÂ areÂ objectsÂ thatÂ representÂ sites.Â Â TheÂ TelescriptÂ 
+languageÂ hasÂ aÂ setÂ ofÂ builtÂ­inÂ commandsÂ forÂ agentÂ migrationÂ andÂ interÂ agentÂ communication.Â 
+TheÂ TelescriptÂ systemÂ includesÂ notionsÂ ofÂ whichÂ authorityÂ theÂ agentÂ isÂ representing.Â Â Â TelescriptÂ 
+programsÂ areÂ compiledÂ intoÂ aÂ portableÂ intermediateÂ representation,Â calledÂ 
+
+locations
+â
+
+agents
+â
+
+Â andÂ 
+â
+
+lowÂ Telescript
+â
+
+,Â 
+â
+
+Â Â 
+analogousÂ toÂ JavaÂ byteÂ code.Â Â TelescriptÂ programsÂ canÂ runÂ onÂ anyÂ computerÂ withÂ aÂ TelescriptÂ 
+executionÂ engine.Â Â TheÂ TelescriptÂ executionÂ engineÂ wasÂ designedÂ toÂ beÂ ableÂ toÂ runÂ onÂ evenÂ 
+smallÂ communicationÂ devices.Â Â TheÂ TelescriptÂ languageÂ hasÂ hadÂ aÂ greatÂ influenceÂ onÂ theÂ 
+developmentÂ ofÂ mobileÂ agents,Â andÂ mobileÂ agentÂ languages.Â Â ItÂ wasÂ GeneralÂ MagicÂ whoÂ firstÂ 
+coinedÂ theÂ termÂ 
+
+mobileÂ agent
+â
+
+.Â 
+â
+
+Â Â­Â JavaÂ isÂ aÂ generalÂ purposeÂ language.Â Â DespiteÂ itsÂ relativelyÂ youngÂ age,Â itÂ isÂ alreadyÂ 
+â
+
+Java
+establishingÂ itselfÂ asÂ theÂ deÂ factoÂ standardÂ forÂ developingÂ internetÂ andÂ intranetÂ applications.Â 
+JavaÂ isÂ anÂ objectÂ orientedÂ language.Â Â ItÂ usesÂ theÂ classesÂ Â objectÂ orientedÂ model.Â Â ItsÂ syntaxÂ isÂ 
+similarÂ toÂ thatÂ ofÂ CÂ andÂ C++.Â WhileÂ JavaÂ wasÂ notÂ specificallyÂ designedÂ forÂ writingÂ mobileÂ agents,Â 
+itÂ hasÂ mostÂ ofÂ theÂ necessaryÂ capabilitiesÂ forÂ mobileÂ agentÂ programming.Â Â JavaÂ isÂ multiÂ­threaded.Â 
+JavaÂ programsÂ areÂ compiledÂ toÂ JavaÂ byteÂ codes,Â binaryÂ instructionsÂ forÂ theÂ JavaÂ VirtualÂ 
+Machine.Â Â JavaÂ programsÂ areÂ ableÂ toÂ runÂ onÂ anyÂ platformÂ withÂ aÂ JavaÂ VirtualÂ MachineÂ 
+interpreter.Â Â ThisÂ makesÂ JavaÂ programsÂ highlyÂ portable.Â Â TheÂ JavaÂ librariesÂ haveÂ goodÂ supportÂ 
+forÂ communicationÂ procedures.Â Â JavaÂ hasÂ beenÂ usedÂ asÂ theÂ basisÂ forÂ manyÂ implementationsÂ ofÂ 
+mobileÂ agentÂ systems.Â Â NearlyÂ allÂ ofÂ theÂ systemsÂ makeÂ useÂ ofÂ JavaÂ 1.1'sÂ RMIÂ (RemoteÂ MethodÂ 
+Invocation).Â Â Â SomeÂ systemsÂ ofÂ noteÂ include:Â 
+
+â IBM'sÂ 
+
+Aglets
+â
+
+Â Â­Â underÂ developmentÂ byÂ IBMÂ ResearchÂ Centre,Â Japan.Â Â AnÂ 
+â
+
+aglet
+â
+
+Â isÂ aÂ 
+â
+
+mobileÂ agent.Â Â AllÂ agletsÂ areÂ derivedÂ fromÂ anÂ abstractÂ classÂ calledÂ Aglet.Â Â AgletsÂ usesÂ anÂ 
+eventÂ drivenÂ approachÂ toÂ mobileÂ agents,Â thatÂ isÂ analogousÂ toÂ theÂ JavaÂ libraryÂ AppletÂ 
+class.Â [KZ97]Â Â EachÂ agletÂ implementsÂ aÂ setÂ ofÂ eventÂ handlerÂ methodsÂ thatÂ defineÂ theÂ 
+agletsÂ behaviour.Â Â SomeÂ ofÂ theseÂ methodsÂ are:Â 
+
+â OnCreation()Â Â­Â­Â calledÂ whenÂ aÂ newÂ agletÂ isÂ created.Â 
+â OnDispatch()Â Â­Â­Â calledÂ whenÂ anÂ agletÂ receivesÂ aÂ requestÂ toÂ migrate.Â 
+â OnReverting()Â Â­Â­Â calledÂ whenÂ theÂ agletÂ receivesÂ aÂ requestÂ fromÂ itsÂ ownerÂ toÂ comeÂ 
+
+home.Â 
+
+â OnArrival()Â Â­Â­Â calledÂ afterÂ anÂ agletÂ isÂ dispatchedÂ 
+
+â GeneralÂ Magic'sÂ 
+
+Odyssey
+â
+
+Â Â­Â AÂ mobileÂ agentÂ systemÂ underÂ developmentÂ byÂ GeneralÂ 
+â
+
+Magic,Â thatÂ attemptsÂ toÂ achieveÂ theÂ functionalityÂ ofÂ Telescript,Â usingÂ Java.Â 
+
+â ObjectSpace'sÂ 
+
+Voyager
+â
+
+Â Â­Â TheÂ VoyagerÂ system'sÂ modelÂ ofÂ mobileÂ computingÂ isÂ veryÂ 
+â
+
+similarÂ toÂ thatÂ ofÂ Obliq.Â Â TheÂ systemÂ providesÂ aÂ mechanismÂ forÂ convertingÂ objectsÂ intoÂ aÂ 
+distributedÂ objects.Â Â ThisÂ allowsÂ objectsÂ atÂ remoteÂ sitesÂ toÂ beÂ semanticallyÂ treatedÂ inÂ theÂ 
+sameÂ wayÂ asÂ objectsÂ atÂ theÂ localÂ site.Â Â ObjectsÂ canÂ beÂ easilyÂ copiedÂ betweenÂ remoteÂ 
+sites.Â [KZ97]Â 
+
+Â Â­Â ObliqÂ isÂ anÂ experimentalÂ languageÂ underÂ developmentÂ byÂ DigitalÂ EquipmentÂ 
+â
+
+Obliq
+Corporation'sÂ SystemsÂ ResearchÂ Center.Â Â ObliqÂ isÂ aÂ lexicallyÂ scoped,Â objectÂ­based,Â interpretedÂ 
+languageÂ thatÂ supportsÂ distributedÂ computation.Â TheÂ languageÂ supportsÂ objects,Â butÂ notÂ classes.Â 
+ItÂ usesÂ theÂ prototypeÂ­basedÂ modelÂ [Bor86]Â ofÂ objectÂ­orientedÂ programming.Â Â NewÂ objectsÂ canÂ beÂ 
+createdÂ directly,Â orÂ clonedÂ fromÂ otherÂ objects.Â ObliqÂ usesÂ runtimeÂ typeÂ checking.Â ObliqÂ hasÂ 
+
+builtÂ­inÂ proceduresÂ forÂ importingÂ andÂ exportingÂ proceduresÂ andÂ objectsÂ betweenÂ machines.Â 
+ObliqÂ adheresÂ toÂ lexicalÂ scopingÂ inÂ aÂ distributedÂ context.Â WhenÂ proceduresÂ andÂ objectsÂ areÂ 
+dispatchedÂ toÂ aÂ remoteÂ siteÂ forÂ execution,Â anyÂ referencesÂ theyÂ containÂ pointÂ toÂ theÂ sameÂ objectsÂ 
+asÂ onÂ theÂ machineÂ fromÂ whichÂ theyÂ wereÂ dispatched.Â [Car95]Â [BC96]Â 
+
+TheÂ ObliqÂ distributedÂ semanticsÂ isÂ basedÂ onÂ theÂ notionsÂ ofÂ 
+AÂ siteÂ isÂ aÂ computerÂ onÂ theÂ network.Â AÂ locationÂ isÂ aÂ memoryÂ addressÂ onÂ aÂ siteÂ thatÂ storesÂ aÂ 
+value.Â AÂ valueÂ canÂ beÂ ofÂ aÂ basicÂ typeÂ orÂ anÂ object.Â ThreadsÂ areÂ virtualÂ sequentialÂ instructionÂ 
+processors.Â ThreadsÂ mayÂ beÂ executedÂ concurrentlyÂ onÂ theÂ sameÂ siteÂ orÂ atÂ differentÂ sites.Â ValuesÂ 
+mayÂ beÂ transmittedÂ overÂ theÂ network.Â WhenÂ anÂ objectÂ isÂ transmitted,Â basicÂ valuesÂ areÂ copiedÂ 
+exactly.Â LocationsÂ thatÂ theÂ objectÂ containsÂ areÂ copied,Â suchÂ thatÂ theyÂ pointÂ toÂ theÂ sameÂ addressÂ 
+onÂ theÂ sameÂ site,Â atÂ theÂ destinationÂ siteÂ asÂ theyÂ didÂ atÂ theÂ originalÂ site.Â 
+
+locations
+â
+
+threads
+â
+
+valuesÂ 
+â
+
+andÂ 
+â
+
+sites
+â
+
+.Â 
+â
+
+,Â 
+â
+
+,Â 
+â
+
+Obliq'sÂ semanticsÂ ofÂ networkÂ computingÂ isÂ fundamentallyÂ differentÂ toÂ theÂ otherÂ languagesÂ 
+considered.Â Â WhereÂ asÂ otherÂ languagesÂ seeÂ eachÂ computerÂ asÂ independentÂ worldsÂ thatÂ canÂ 
+communicateÂ withÂ eachÂ otherÂ throughÂ theÂ network,Â ObliqÂ treatsÂ theÂ networkÂ asÂ aÂ singleÂ 
+computerÂ withÂ sitesÂ asÂ components.Â 
+
+Â Â­Â AgentÂ TclÂ [Gra95b]Â isÂ aÂ mobileÂ agentÂ systemÂ beingÂ developedÂ byÂ DartmouthÂ 
+â
+
+AgentÂ Tcl
+College.Â Â TheÂ AgentÂ TclÂ languageÂ isÂ anÂ extensionÂ ofÂ theÂ ToolÂ CommandÂ LanguageÂ (Tcl),Â theÂ 
+languageÂ originallyÂ developedÂ byÂ Dr.Â JohnÂ Ousterhout.Â Â TheÂ AgentÂ TclÂ extensionsÂ addÂ 
+commandsÂ forÂ agentÂ migrationÂ andÂ messageÂ passing.Â TheÂ extraÂ commandsÂ giveÂ AgentÂ TclÂ 
+scriptsÂ similarÂ mobilityÂ capabilitiesÂ toÂ Telescript.Â Â AgentÂ TclÂ usesÂ aÂ modifiedÂ SafeÂ TclÂ [OLW96]Â 
+interpreterÂ toÂ executeÂ scripts.Â 
+
+PerlÂ 5
+Â Â­Â PenguinÂ isÂ aÂ PerlÂ 5Â moduleÂ withÂ functionsÂ enablingÂ theÂ sendingÂ ofÂ PerlÂ scriptsÂ toÂ aÂ 
+â
+remoteÂ machineÂ forÂ executionÂ andÂ forÂ receivingÂ perlÂ scriptsÂ fromÂ remoteÂ machinesÂ forÂ execution.Â 
+TheÂ scriptsÂ areÂ digitallyÂ signedÂ toÂ allowÂ authenticationÂ andÂ areÂ executedÂ inÂ aÂ secureÂ 
+environment.Â Â MobileÂ agentsÂ writtenÂ inÂ PerlÂ areÂ restrictedÂ inÂ thatÂ theyÂ mustÂ alwaysÂ restartÂ 
+executionÂ atÂ theÂ sameÂ point.Â Â ThereÂ isÂ alsoÂ noÂ supportÂ forÂ agentsÂ savingÂ theirÂ stateÂ onÂ migration.Â 
+AÂ newÂ AgentÂ ModuleÂ v3.0Â isÂ beingÂ createdÂ toÂ giveÂ PerlÂ 5Â moreÂ sophisticatedÂ mobileÂ agentÂ 
+capabilities.Â Â TheÂ extraÂ featuresÂ includeÂ givingÂ agentsÂ theÂ abilityÂ toÂ saveÂ theirÂ stateÂ onÂ migration.Â 
+
+Python
+Â Â­Â PythonÂ isÂ anÂ objectÂ­orientedÂ scriptingÂ language.Â Â TheÂ CorporationÂ forÂ NationalÂ 
+â
+ResearchÂ Institution,Â usesÂ PythonÂ asÂ aÂ languageÂ forÂ implementingÂ KnowbotÂ programs.Â [Hyl96]Â 
+
+ThisÂ isÂ byÂ noÂ meansÂ aÂ completeÂ listÂ ofÂ theÂ languagesÂ beingÂ usedÂ forÂ mobileÂ agents.Â Â ForÂ aÂ moreÂ 
+completeÂ list,Â theÂ readerÂ isÂ referredÂ toÂ KiniryÂ andÂ ZimmermanÂ [KZ97].Â 
+
+TheÂ languagesÂ thatÂ willÂ beÂ mainlyÂ consideredÂ inÂ theÂ followingÂ discussionsÂ areÂ Telescript,Â Java,Â 
+AgentÂ TclÂ andÂ Obliq.Â Collectively,Â theseÂ languagesÂ representÂ mostÂ ofÂ theÂ approachesÂ presentlyÂ 
+takenÂ toÂ languagesÂ forÂ mobileÂ agents.Â Â AgletsÂ willÂ beÂ mostÂ referredÂ toÂ ofÂ Â theÂ JavaÂ libraries.Â Â TheÂ 
+reasonÂ forÂ thisÂ isÂ theÂ techniquesÂ associatedÂ withÂ theÂ otherÂ twoÂ JavaÂ librariesÂ mentionedÂ areÂ 
+representedÂ byÂ TelescriptÂ andÂ Obliq.Â 
+
+4.Â CharacteristicsÂ ofÂ LanguagesÂ forÂ MobileÂ AgentsÂ 
+
+AnyÂ languageÂ usedÂ toÂ writeÂ aÂ mobileÂ agentÂ mustÂ beÂ ableÂ toÂ supportÂ theÂ following:Â 
+
+â agentÂ migration,Â 
+â communicationÂ betweenÂ agents,Â 
+â accessÂ toÂ serverÂ resources,Â 
+â securityÂ mechanisms,Â 
+â appropriateÂ efficiencyÂ 
+â theÂ abilityÂ toÂ runÂ onÂ multipleÂ platformsÂ 
+â easeÂ ofÂ programmingÂ forÂ writingÂ mobileÂ agentÂ application.Â 
+
+HowÂ wellÂ theÂ languageÂ isÂ ableÂ toÂ supportÂ theseÂ stipulatesÂ theÂ usefulnessÂ ofÂ theÂ languageÂ forÂ 
+writingÂ mobileÂ agentÂ applications.Â 
+
+4.1Â MigrationÂ 
+
+TheÂ agentÂ languageÂ mustÂ beÂ ableÂ toÂ supportÂ anÂ agentÂ migrating.Â Â Ideally,Â itÂ shouldÂ beÂ possibleÂ 
+toÂ suspendÂ anÂ agent'sÂ executionÂ atÂ anyÂ point,Â saveÂ theÂ state,Â includingÂ theÂ heap,Â theÂ stackÂ andÂ 
+evenÂ theÂ registers,Â moveÂ theÂ agentÂ toÂ anotherÂ computer,Â andÂ restartÂ execution,Â withÂ theÂ agentsÂ 
+executionÂ stateÂ exactlyÂ restored.Â 
+
+TelescriptÂ hasÂ builtÂ­inÂ supportÂ forÂ agentÂ migration.Â Â AgentsÂ mayÂ moveÂ toÂ anyÂ locationÂ withÂ theÂ goÂ 
+statement.Â Â Â UponÂ theÂ executionÂ ofÂ thisÂ command,Â theÂ agentÂ isÂ transportedÂ toÂ theÂ targetÂ site,Â 
+whereÂ itÂ continuesÂ executionÂ fromÂ theÂ lineÂ afterÂ theÂ goÂ statement.Â Â AllÂ theÂ agentsÂ propertiesÂ andÂ 
+theÂ programÂ executionÂ state,Â includingÂ thoseÂ ofÂ localÂ variablesÂ inÂ methodsÂ andÂ theÂ programÂ 
+counter,Â areÂ restoredÂ exactly.Â Â TheÂ agentÂ migrationÂ isÂ processÂ isÂ handledÂ completelyÂ byÂ theÂ 
+TelescriptÂ operatingÂ system.Â Â TheÂ programmerÂ doesÂ notÂ needÂ toÂ worryÂ aboutÂ savingÂ theÂ relevantÂ 
+stateÂ informationÂ justÂ beforeÂ migration.Â [Whi96]Â 
+
+AgentÂ TclÂ usesÂ aÂ similarÂ migrationÂ modelÂ toÂ thatÂ ofÂ Â Telescript.Â Â TheÂ builtÂ­inÂ statementÂ forÂ agentÂ 
+migrationÂ isÂ calledÂ agent_jump.Â Â AsÂ withÂ theÂ TelescriptÂ go,Â whenÂ thisÂ statementÂ isÂ issuedÂ theÂ 
+executionÂ environmentÂ handlesÂ theÂ transportationÂ ofÂ theÂ agent,Â andÂ restoresÂ theÂ agentÂ 
+executionÂ state.Â Â SinceÂ theÂ TclÂ languageÂ providesÂ absolutelyÂ noÂ supportÂ forÂ capturingÂ programÂ 
+state,Â thisÂ isÂ anÂ AgentÂ TclÂ extensionÂ ofÂ theÂ language.Â 
+
+JavaÂ wasÂ notÂ specificallyÂ designedÂ forÂ implementingÂ mobileÂ agentsÂ soÂ itÂ doesÂ notÂ haveÂ inÂ builtÂ­inÂ 
+supportÂ forÂ migration.Â Â SavingÂ theÂ programÂ stateÂ inÂ JavaÂ isÂ muchÂ moreÂ difficult.Â Â Java'sÂ securityÂ 
+architectureÂ makesÂ itÂ impossibleÂ toÂ directlyÂ saveÂ theÂ virtualÂ machineÂ executionÂ state.Â Â HoweverÂ 
+JavaÂ 1.1Â supportsÂ classÂ serialization.Â Â SerializationÂ allowsÂ anÂ entireÂ classÂ instanceÂ toÂ beÂ writtenÂ 
+toÂ file,Â includingÂ theÂ object'sÂ methods,Â attributesÂ andÂ theirÂ values.Â Â SerializationÂ willÂ notÂ saveÂ theÂ 
+programÂ stack,Â thatÂ is,Â theÂ valuesÂ ofÂ localÂ variablesÂ inÂ methods.Â Â TheÂ JavaÂ virtualÂ machineÂ doesÂ 
+notÂ allowÂ theÂ explicitÂ referencingÂ ofÂ theÂ stack,Â forÂ securityÂ reasons.Â Â WorkaroundsÂ haveÂ beenÂ 
+developedÂ forÂ savingÂ theÂ programÂ stackÂ state.Â Â InÂ Aglets,Â eachÂ agletÂ implementsÂ aÂ methodÂ 
+calledÂ onDispatch().Â Â ThisÂ methodÂ isÂ calledÂ whenÂ anÂ agletÂ receivesÂ aÂ requestÂ toÂ migrate.Â Â TheÂ 
+requestÂ mayÂ haveÂ comeÂ fromÂ theÂ agletÂ itselfÂ orÂ fromÂ anotherÂ process.Â Â InÂ thisÂ method,Â theÂ 
+programmerÂ mustÂ defineÂ aÂ procedureÂ forÂ placingÂ everythingÂ anÂ agletÂ needsÂ toÂ restoreÂ itsÂ stateÂ 
+onÂ theÂ heap.Â Â TheÂ agletÂ isÂ thenÂ serializedÂ andÂ transportedÂ toÂ itsÂ destination.Â [Ven97a]Â 
+
+ThereÂ areÂ advantagesÂ toÂ TelescriptÂ andÂ AgentÂ Tcl'sÂ builtÂ­inÂ supportÂ forÂ agentÂ migration.Â Â InÂ 
+TelescriptÂ itÂ isÂ possibleÂ toÂ migrateÂ fromÂ anyÂ pointÂ inÂ theÂ program,Â includingÂ inÂ theÂ middleÂ ofÂ 
+methodÂ calls.Â Â InÂ JavaÂ theÂ agentÂ programÂ mustÂ beÂ structuredÂ soÂ thatÂ everythingÂ neededÂ toÂ 
+restoreÂ executionÂ stateÂ isÂ storedÂ inÂ theÂ heap,Â beforeÂ migration.Â Â ItÂ isÂ leftÂ toÂ theÂ programmerÂ toÂ 
+makeÂ sureÂ thatÂ allÂ variablesÂ areÂ correctlyÂ saved.Â Â InÂ TelescriptÂ andÂ AgentÂ Tcl,Â theÂ 
+implementationÂ ofÂ agentÂ migrationÂ isÂ completelyÂ hiddenÂ fromÂ programmer.Â Â ThisÂ isÂ aÂ sourceÂ ofÂ 
+errorÂ thatÂ TelescriptÂ programmersÂ doÂ notÂ needÂ toÂ worryÂ about.Â 
+
+ObliqÂ takesÂ aÂ differentÂ viewÂ ofÂ agentÂ migration.Â Â InÂ Obliq,Â anÂ agentÂ canÂ beÂ writtenÂ asÂ aÂ procedureÂ 
+thatÂ takesÂ aÂ stateÂ objectÂ asÂ anÂ argument.Â Â AÂ siteÂ canÂ makeÂ itsÂ executionÂ engineÂ availableÂ forÂ 
+threadsÂ atÂ otherÂ sitesÂ toÂ use.Â Â AÂ procedureÂ canÂ beÂ executedÂ atÂ aÂ remoteÂ site,Â byÂ passingÂ theÂ 
+nameÂ ofÂ theÂ procedureÂ asÂ aÂ parameterÂ toÂ theÂ executionÂ engine.Â Â TheÂ followingÂ codeÂ fragmentÂ 
+showsÂ howÂ anÂ agentÂ canÂ beÂ sentÂ toÂ anotherÂ siteÂ forÂ execution.Â [Car95]Â 
+
+letÂ stateÂ =Â {Â ...Â }Í¾Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â 
+
+(defineÂ agentÂ state)Â 
+â
+
+letÂ agentÂ =Â proc(state,Â arg)Â ...Â endÍ¾Â Â Â Â Â Â Â Â Â Â Â Â 
+
+(defineÂ agentÂ procedure)Â 
+â
+
+(getÂ aÂ handleÂ toÂ remoteÂ siteÂ executionÂ engine)Â 
+
+letÂ remoteSiteÂ =Â net_import("RemoteServer",Â Namer)Í¾Â 
+
+(ExecuteÂ theÂ agentÂ atÂ theÂ remoteÂ site.)Â 
+
+remoteSite(procÂ (arg)Â agent(copy(state),Â arg)Â end)Â 
+
+4.2Â AgentÂ communicationÂ 
+
+TheÂ agentÂ languageÂ mustÂ allowÂ agentsÂ toÂ communicateÂ withÂ eachÂ other.Â 
+
+InÂ TelescriptÂ agentsÂ communicateÂ byÂ holdingÂ meetings.Â Â AnÂ agentÂ canÂ requestÂ aÂ meetingÂ withÂ 
+anotherÂ agentÂ atÂ theÂ sameÂ place,Â thatÂ isÂ theÂ sameÂ executionÂ environment.Â Â Â TheÂ TelescriptÂ 
+systemÂ passesÂ theÂ meetingÂ requestÂ toÂ theÂ relevantÂ agent.Â Â EveryÂ TelescriptÂ agentÂ mustÂ 
+implementÂ theÂ operationÂ meeting.Â Â ThisÂ isÂ calledÂ whenÂ anÂ agentÂ receivesÂ anÂ invitationÂ toÂ holdÂ aÂ 
+meeting.Â Â TheÂ implementationÂ ofÂ theÂ meetingÂ methodÂ containsÂ theÂ agentsÂ negotiatingÂ strategies,Â 
+whichÂ mayÂ includeÂ rejectingÂ holdingÂ aÂ meetingÂ underÂ certainÂ conditionsÂ orÂ withÂ certainÂ typesÂ ofÂ 
+agents.Â [Whi96]Â 
+
+AgentÂ TclÂ providesÂ extensionsÂ toÂ theÂ TclÂ languageÂ forÂ agentÂ communication.Â Â TheseÂ extensionsÂ 
+allowÂ agentsÂ toÂ communicateÂ throughÂ eitherÂ asynchronousÂ messageÂ passing,Â orÂ throughÂ remoteÂ 
+procedureÂ calls.Â [Kot97]Â 
+
+JavaÂ hasÂ noÂ builtÂ inÂ supportÂ forÂ agentÂ communication.Â Â InÂ Aglets,Â eachÂ JavaÂ agentÂ hasÂ aÂ proxyÂ 
+object.Â Â CommunicationÂ fromÂ oneÂ agentÂ toÂ anotherÂ happensÂ throughÂ theÂ proxy.Â Â ThisÂ isÂ toÂ 
+protectÂ theÂ agentÂ objectsÂ fromÂ beingÂ directlyÂ modified.Â TheÂ proxyÂ objectÂ providesÂ aÂ setÂ ofÂ 
+methodsÂ forÂ communicatingÂ toÂ theÂ representedÂ object.Â Â TheseÂ includeÂ requestsÂ forÂ agletsÂ toÂ takeÂ 
+actions,Â suchÂ asÂ migration,Â cloning,Â destroyingÂ andÂ suspending.Â ThereÂ areÂ alsoÂ twoÂ methodsÂ forÂ 
+sendingÂ synchronousÂ andÂ asynchronousÂ messagesÂ toÂ theÂ aglets.Â [Ven97a]Â 
+
+4.3Â InterfaceÂ toÂ serverÂ resourcesÂ 
+
+TheÂ fundamentalÂ purposeÂ ofÂ mobileÂ agentsÂ isÂ toÂ getÂ theÂ programÂ closerÂ theÂ sourceÂ ofÂ theÂ 
+information.Â Â TheÂ agentÂ implementationÂ languageÂ mustÂ provideÂ anÂ easyÂ wayÂ toÂ accessÂ theÂ 
+resourcesÂ onÂ theÂ hostÂ machine.Â 
+
+Â Â 
+InÂ Telescript,Â localÂ resourcesÂ areÂ treatedÂ asÂ anotherÂ agent.Â Â ThereÂ isÂ anÂ agentÂ presentÂ atÂ theÂ 
+serverÂ toÂ representÂ theÂ localÂ resources.Â ThisÂ modelÂ providesÂ anÂ elegantÂ andÂ consistentÂ interfaceÂ 
+toÂ localÂ resourcesÂ atÂ differentÂ computers,Â butÂ itÂ requiresÂ writingÂ aÂ TelescriptÂ wrapper.Â [Whi96]Â 
+
+ObliqÂ hasÂ categoriesÂ differentÂ typesÂ ofÂ servicesÂ providedÂ byÂ aÂ site.Â Â AÂ programÂ mayÂ requestÂ aÂ listÂ 
+ofÂ theÂ servicesÂ providedÂ byÂ aÂ siteÂ inÂ aÂ particularÂ category.Â 
+
+AgentÂ TclÂ andÂ AgletsÂ useÂ aÂ similarÂ methodÂ toÂ interactingÂ withÂ localÂ resourcesÂ toÂ Telescript.Â Â InÂ 
+Aglets,Â anÂ agletÂ isÂ associatedÂ withÂ anÂ AgletContextÂ object.Â Â ThisÂ objectÂ describesÂ theÂ 
+environmentÂ thatÂ theÂ agletÂ isÂ in.Â Â ThroughÂ theÂ agletÂ contextÂ object,Â anÂ agletÂ isÂ ableÂ toÂ findÂ outÂ 
+whatÂ otherÂ agletsÂ areÂ alsoÂ inÂ itsÂ currentÂ environment.Â Â LikeÂ inÂ Telescript,Â aÂ stationeryÂ agletÂ isÂ 
+usedÂ toÂ representÂ theÂ localÂ computer'sÂ services.Â 
+
+4.4Â SecurityÂ 
+
+SecurityÂ isÂ aÂ criticalÂ partÂ ofÂ mobileÂ agentÂ systems.Â Â Karjoth,Â LangeÂ andÂ OshimaÂ [KLO97]Â identifyÂ 
+threeÂ securityÂ issuesÂ specificÂ toÂ mobileÂ agentÂ systems.Â Â TheseÂ are:Â 
+
+â ProtectingÂ theÂ hostÂ fromÂ theÂ mobileÂ agent,Â 
+â ProtectingÂ theÂ mobileÂ agentÂ fromÂ otherÂ mobileÂ agents,Â andÂ 
+â ProtectingÂ theÂ mobileÂ agentÂ fromÂ theÂ host.Â 
+
+ResearchersÂ haveÂ soÂ farÂ onlyÂ foundÂ solutionsÂ toÂ theÂ firstÂ twoÂ issues.Â [KLO97]Â [BC96]Â 
+
+TwoÂ majorÂ techniquesÂ areÂ usedÂ toÂ protectÂ theÂ hostÂ computer:Â 
+
+â ExecutingÂ agentsÂ inÂ anÂ isolatedÂ environment.Â Â AgentsÂ cannotÂ directlyÂ accessÂ anyÂ partsÂ ofÂ 
+theÂ hostÂ systemÂ outsideÂ theirÂ executionÂ environment.Â Â TheÂ agentÂ systemÂ mayÂ grantÂ someÂ 
+agentsÂ specialÂ privilegesÂ toÂ accessÂ resourcesÂ outsideÂ ofÂ theirÂ executionÂ environment.Â 
+â AuthenticatingÂ theÂ sourceÂ ofÂ mobileÂ agents,Â andÂ grantingÂ executionÂ privilegesÂ toÂ agentsÂ 
+onÂ theÂ basisÂ ofÂ howÂ trustedÂ theirÂ sourceÂ is.Â Â SomeÂ agentsÂ mayÂ beÂ deniedÂ executionÂ 
+altogether.Â 
+
+Java,Â AgentÂ TclÂ andÂ TelescriptÂ useÂ bothÂ ofÂ theseÂ mechanismsÂ inÂ theirÂ securityÂ models.Â 
+
+JavaÂ programsÂ eachÂ runÂ inÂ theirÂ ownÂ environments.Â Â ThereÂ areÂ securityÂ mechanismsÂ builtÂ intoÂ 
+theÂ JavaÂ VirtualÂ MachineÂ instructionÂ setÂ toÂ preventÂ programsÂ fromÂ accessingÂ outsideÂ ofÂ theirÂ 
+environment.Â TheseÂ are:Â [Ven97b]Â 
+
+â TypeÂ­safeÂ referenceÂ casting.Â 
+â StructuredÂ memoryÂ access.Â 
+â AutomaticÂ garbageÂ collection.Â 
+â ArrayÂ boundÂ checking.Â 
+â CheckingÂ referencesÂ forÂ null.Â 
+
+TheÂ effectsÂ ofÂ theseÂ mechanismsÂ isÂ thatÂ JavaÂ programsÂ runÂ inÂ aÂ sandbox.Â ThatÂ isÂ theyÂ areÂ 
+limitedÂ toÂ theÂ environmentÂ allocatedÂ toÂ themÂ byÂ theÂ JavaÂ VirtualÂ Machine,Â andÂ theÂ JavaÂ byteÂ 
+codeÂ instructionÂ setÂ disallowsÂ themÂ fromÂ directlyÂ accessingÂ anythingÂ outsideÂ ofÂ thisÂ environment.Â 
+AccessesÂ outsideÂ ofÂ theÂ sandboxÂ canÂ onlyÂ beÂ doneÂ byÂ usingÂ someÂ ofÂ theÂ JavaÂ libraries,Â allowingÂ 
+diskÂ access,Â networkÂ access,Â andÂ printing,Â orÂ byÂ callingÂ nativeÂ methods.Â TheÂ JavaÂ SecurityÂ 
+ManagerÂ controlsÂ whichÂ programsÂ areÂ permittedÂ accessÂ outsideÂ ofÂ theÂ sandbox,Â andÂ theÂ natureÂ 
+ofÂ theÂ outsideÂ access.Â ForÂ example,Â byÂ default,Â appletsÂ areÂ permittedÂ toÂ makeÂ networkÂ 
+connectionsÂ toÂ theirÂ originalÂ sourceÂ computer,Â butÂ notÂ toÂ anyÂ otherÂ computers.Â Â Â TheÂ SecurityÂ 
+ManagerÂ mayÂ grantÂ specialÂ privilegesÂ toÂ allÂ classesÂ fromÂ theÂ sameÂ author,Â orÂ toÂ justÂ someÂ 
+classes.Â 
+
+AgentÂ TclÂ enforcesÂ runtimeÂ securityÂ checksÂ withÂ aÂ techniqueÂ similarÂ toÂ thatÂ usedÂ byÂ theÂ SafeÂ­TclÂ 
+[OLW96]Â interpreter.Â Â MobileÂ agentsÂ areÂ runÂ withinÂ theirÂ ownÂ 
+interpretersÂ commandsÂ thatÂ accessÂ outsideÂ resourcesÂ areÂ hidden.Â Â WhenÂ anÂ agentÂ invokesÂ aÂ 
+hiddenÂ command,Â itÂ isÂ redirectedÂ toÂ theÂ 
+securityÂ policyÂ ofÂ whatÂ commandsÂ mayÂ beÂ availableÂ toÂ whichÂ agents.Â Â IfÂ theÂ securityÂ policyÂ 
+allowsÂ theÂ commandÂ forÂ aÂ particularÂ agent,Â thenÂ theÂ masterÂ interpreterÂ callsÂ theÂ hiddenÂ 
+commandÂ inÂ theÂ safeÂ interpreter.Â Â TheÂ securityÂ policyÂ isÂ userÂ­definedÂ byÂ theÂ administratorÂ ofÂ theÂ 
+server.Â 
+
+Â interpreter.Â Â TheÂ masterÂ interpreterÂ implementsÂ aÂ 
+â
+
+Â interpreters.Â Â InÂ theÂ safeÂ 
+â
+
+master
+â
+
+safe
+â
+
+InÂ TelescriptÂ allÂ agentsÂ andÂ placesÂ haveÂ anÂ 
+definesÂ theÂ individualÂ orÂ organisationÂ inÂ theÂ physicalÂ worldÂ thatÂ theÂ agentÂ orÂ placeÂ represents.Â 
+AgentsÂ andÂ placesÂ mustÂ revealÂ theirÂ authorityÂ toÂ anotherÂ agentÂ ofÂ placeÂ onÂ request.Â TheyÂ mayÂ 
+underÂ theÂ 
+notÂ falsifyÂ orÂ withholdÂ theirÂ authority.Â TheÂ networkÂ ofÂ placesÂ isÂ dividedÂ intoÂ 
+â
+sameÂ authority.Â WhenÂ anÂ agentÂ triesÂ toÂ moveÂ fromÂ oneÂ regionÂ toÂ another,Â theÂ sourceÂ regionÂ 
+mustÂ proveÂ theÂ authorityÂ ofÂ theÂ agentÂ toÂ theÂ destinationÂ region.Â [Whi96]Â 
+
+Â property.Â TheÂ authorityÂ isÂ aÂ classÂ thatÂ 
+â
+
+authority
+â
+
+regionsÂ 
+â
+
+TheÂ TelescriptÂ languageÂ alsoÂ hasÂ 
+themÂ permits.Â PermitsÂ areÂ usedÂ toÂ limitÂ whatÂ instructionsÂ agentsÂ execute,Â andÂ toÂ limitÂ theirÂ 
+
+.Â AuthoritiesÂ limitÂ whatÂ agentsÂ canÂ doÂ byÂ assigningÂ 
+â
+
+permits
+â
+
+resourcesÂ toÂ aÂ budget.Â ForÂ exampleÂ theÂ agent'sÂ permitÂ canÂ limitÂ itsÂ lifetimeÂ orÂ theÂ amountÂ ofÂ 
+computationÂ itÂ mayÂ do.Â TelescriptÂ wasÂ designedÂ withÂ electronicÂ commerceÂ inÂ mind,Â soÂ theÂ sameÂ 
+resourceÂ permitsÂ canÂ beÂ usedÂ toÂ allocateÂ agentsÂ anÂ amountÂ ofÂ money.Â IfÂ anÂ agentÂ everÂ triesÂ toÂ 
+violateÂ theÂ conditionsÂ ofÂ itsÂ permitÂ itÂ isÂ destroyed.Â [Whi96]Â 
+
+TheÂ TelescriptÂ languageÂ providesÂ aÂ veryÂ powerfulÂ andÂ flexibleÂ frameworkÂ forÂ protectingÂ theÂ hostÂ 
+computersÂ fromÂ untrustedÂ sources,Â butÂ atÂ theÂ sameÂ timeÂ notÂ gettingÂ inÂ theÂ wayÂ ofÂ doingÂ 
+businessÂ withÂ trustedÂ sources.Â 
+
+TheÂ commonÂ wayÂ forÂ theÂ hostÂ toÂ authenticateÂ incomingÂ mobileÂ agentsÂ isÂ throughÂ digitalÂ signing.Â 
+MostÂ JavaÂ mobileÂ agentÂ systemsÂ andÂ AgentÂ TclÂ useÂ thisÂ method.Â Â WhenÂ anÂ agentÂ isÂ transported,Â 
+theÂ messageÂ containingÂ itÂ isÂ signedÂ byÂ theÂ senderÂ agentÂ server.Â Â TheÂ receiverÂ agentÂ serverÂ 
+authenticatesÂ theÂ mobileÂ agentÂ messageÂ onÂ arrival.Â Â IfÂ anyÂ partÂ ofÂ theÂ agentÂ messageÂ wasÂ 
+alteredÂ inÂ transit,Â theÂ digitalÂ signatureÂ isÂ noÂ longerÂ valid.Â Â TheÂ senderÂ agentÂ serverÂ signsÂ theÂ 
+agentÂ ratherÂ thanÂ theÂ originalÂ authorÂ becauseÂ anÂ agentÂ includesÂ theÂ programÂ plusÂ theÂ state.Â Â TheÂ 
+stateÂ willÂ change.Â 
+
+ObliqÂ hasÂ aÂ completelyÂ differentÂ mechanismÂ ofÂ achievingÂ security.Â Â ObliqÂ reliesÂ onÂ theÂ lexicalÂ 
+scopingÂ ofÂ theÂ semanticsÂ ofÂ theÂ language,Â togetherÂ withÂ strongÂ runtimeÂ checking.Â Â WhenÂ aÂ agentÂ 
+isÂ givenÂ toÂ aÂ remoteÂ siteÂ forÂ execution,Â becauseÂ ofÂ lexicalÂ scopingÂ theseÂ agentsÂ canÂ onlyÂ accessÂ 
+dataÂ orÂ resourcesÂ thatÂ theyÂ canÂ referenceÂ viaÂ freeÂ identifiers,Â orÂ thatÂ areÂ givenÂ inÂ asÂ procedureÂ 
+parameters.Â Â LexicalÂ scopingÂ dictatesÂ thatÂ theÂ freeÂ identifiersÂ referÂ toÂ valuesÂ thatÂ areÂ availableÂ atÂ 
+theÂ clientÂ site.Â Â Hence,Â theÂ onlyÂ wayÂ anÂ agentÂ canÂ obtainÂ accessÂ toÂ aÂ server'sÂ resourcesÂ isÂ byÂ 
+assigningÂ variablesÂ toÂ resourcesÂ thatÂ theÂ serverÂ exportsÂ toÂ theÂ clientÂ site.Â Â TheÂ valuesÂ ofÂ theseÂ 
+variablesÂ canÂ thenÂ beÂ passedÂ asÂ parametersÂ toÂ theÂ agent.Â Â Hence,Â theÂ agentÂ isÂ onlyÂ ableÂ toÂ 
+accessÂ serverÂ resourcesÂ thatÂ theÂ serverÂ explicitlyÂ exports.Â [Car95]Â 
+
+TheÂ followingÂ codeÂ fragementÂ illustrates.Â Â agent1Â usesÂ aÂ localÂ resource.Â Â agent2Â isÂ ableÂ toÂ useÂ aÂ 
+remoteÂ resourceÂ byÂ obtainingÂ aÂ bindingÂ toÂ anÂ exportedÂ remoteÂ resource,Â andÂ passingÂ thisÂ asÂ aÂ 
+parameterÂ toÂ theÂ agent.Â 
+
+letÂ agent1Â =Â proc(arg)Â 
+
+resourceÂ =Â getResource()Í¾Â 
+use(resource)Â 
+
+endÍ¾Â 
+letÂ agent2Â =Â proc(resource,Â arg)Â 
+
+use(resource)Â 
+
+endÍ¾Â 
+(getÂ aÂ handleÂ toÂ remoteÂ siteÂ executionÂ engine)Â 
+letÂ remoteSiteÂ =Â net_import("RemoteServer",Â Namer)Í¾Â 
+
+Â 
+(ExecuteÂ theÂ agent1Â atÂ theÂ remoteÂ siteÂ Â­Â­Â localÂ resourceÂ isÂ used)Â 
+remoteSite(procÂ (arg)Â agent1(arg)Â end)Â 
+(GetÂ resourceÂ thatÂ theÂ remoteÂ siteÂ exports)Â 
+resourceÂ =Â getResource(remoteSite)Â 
+(ExecuteÂ theÂ agent2Â atÂ theÂ remoteÂ site,Â remoteÂ resourceÂ isÂ passedÂ asÂ parameter)Â 
+remoteSite(procÂ (arg)Â agent2(resource,Â arg)Â end)Â 
+
+4.5Â EfficiencyÂ 
+
+MobileÂ agentsÂ needÂ toÂ beÂ executedÂ reasonablyÂ efficiently.Â Â ExecutionÂ performanceÂ isÂ oftenÂ notÂ 
+anÂ importantÂ issueÂ forÂ theÂ mobileÂ agentÂ itself.Â Â ForÂ agentsÂ withÂ aÂ highÂ mobilityÂ rate,Â theÂ 
+bottleneckÂ toÂ performanceÂ isÂ likelyÂ toÂ beÂ theÂ networkÂ ratherÂ thanÂ theirÂ executionÂ speed.Â 
+ExecutionÂ speedÂ isÂ alsoÂ notÂ criticalÂ forÂ agentsÂ thatÂ spendÂ mostÂ ofÂ theirÂ timeÂ idleÂ waitingÂ forÂ 
+eventsÂ toÂ happen,Â (suchÂ asÂ theÂ agentÂ thatÂ monitorsÂ stockÂ prices.)Â Â ForÂ suchÂ applications,Â evenÂ 
+theÂ slowestÂ scriptingÂ languagesÂ willÂ probablyÂ suffice.Â Â However,Â performanceÂ speedÂ mayÂ beÂ anÂ 
+issueÂ forÂ theÂ serverÂ runningÂ theÂ mobileÂ agents.Â Â IfÂ theÂ speedÂ ofÂ theÂ mobileÂ agentsÂ isÂ faster,Â thenÂ 
+theÂ serverÂ hasÂ aÂ capacityÂ forÂ runningÂ moreÂ agents.Â Â PerformanceÂ efficiencyÂ mayÂ alsoÂ becomeÂ anÂ 
+issueÂ forÂ theÂ user.Â Â InÂ theÂ future,Â itÂ mayÂ beÂ thatÂ usersÂ willÂ haveÂ toÂ payÂ forÂ theÂ computationÂ 
+resourcesÂ usedÂ byÂ theirÂ mobileÂ agents.Â Â AgentsÂ writtenÂ inÂ aÂ moreÂ efficientÂ languageÂ willÂ inflictÂ 
+lowerÂ bills.Â 
+
+JavaÂ wasÂ designedÂ toÂ beÂ highÂ performanceÂ interpretedÂ language.Â Â JavaÂ programsÂ areÂ compiledÂ 
+toÂ JavaÂ byteÂ code,Â instructionsÂ forÂ theÂ JavaÂ virtualÂ machine.Â Â TheÂ byteÂ codesÂ areÂ interpretedÂ atÂ 
+runtime.Â Â JavaÂ programsÂ runningÂ onÂ Sun'sÂ implementationÂ ofÂ theÂ JavaÂ 1.1Â virtualÂ machineÂ areÂ 
+estimatedÂ toÂ executeÂ atÂ aboutÂ 10Â timesÂ slowerÂ thanÂ optimizedÂ nativeÂ C.Â Â ThisÂ isÂ anÂ extremelyÂ 
+goodÂ performanceÂ forÂ anÂ interpretedÂ language.Â [Fla97]Â Â Java'sÂ performanceÂ willÂ beÂ improvedÂ 
+againÂ withÂ theÂ implementationÂ ofÂ JustÂ­InÂ­TimeÂ compilers.Â Â ThisÂ isÂ aÂ technologyÂ thatÂ numerousÂ 
+companiesÂ areÂ currentlyÂ workingÂ on.Â Â JavaÂ byteÂ codeÂ isÂ compiledÂ toÂ nativeÂ binariesÂ justÂ priorÂ toÂ 
+programÂ execution,Â givingÂ anÂ executionÂ speedÂ almostÂ asÂ fastÂ asÂ optimizedÂ nativeÂ C.Â Â [jav94]Â 
+TheÂ compilationÂ howeverÂ causesÂ anÂ overheadÂ atÂ theÂ applicationÂ startÂ up.Â Â WhetherÂ JustÂ­InÂ­TimeÂ 
+compilersÂ willÂ beÂ usefulÂ forÂ mobileÂ agentsÂ dependsÂ onÂ theÂ application.Â Â TheÂ compilationÂ penaltyÂ 
+willÂ onlyÂ payoffÂ forÂ mobileÂ agentsÂ thatÂ stayÂ atÂ oneÂ siteÂ forÂ aÂ relativelyÂ longÂ time.Â 
+
+TclÂ wasÂ notÂ designedÂ forÂ performance,Â butÂ asÂ aÂ highÂ levelÂ scriptingÂ languageÂ forÂ gluingÂ 
+componentsÂ together.Â Â TheÂ runtimeÂ speedÂ ofÂ aÂ TclÂ programÂ isÂ betweenÂ oneÂ hundredÂ andÂ tenÂ 
+thousandÂ timesÂ slowerÂ thanÂ optimizedÂ nativeÂ C.Â [SBD94]Â Â However,Â thisÂ speedÂ mayÂ beÂ 
+adequateÂ forÂ manyÂ mobileÂ agentÂ applications.Â Â ThereÂ isÂ workÂ beingÂ doneÂ onÂ TclÂ compilers.Â Â ThisÂ 
+
+Â Â 
+offersÂ aÂ significantÂ speedÂ upsÂ toÂ Tcl'sÂ runtimeÂ performance.Â Â Unfortunately,Â theÂ workÂ onÂ TclÂ 
+compilersÂ isÂ currentlyÂ notÂ unifiedÂ withÂ AgentÂ Tcl.Â 
+
+4.6Â CrossÂ platformÂ 
+
+InÂ mostÂ casesÂ itÂ isÂ desirableÂ forÂ aÂ mobileÂ agentÂ toÂ beÂ ableÂ toÂ migrateÂ acrossÂ aÂ heterogeneousÂ 
+network.Â Â Certainly,Â forÂ aÂ mobileÂ agentÂ toÂ beÂ usedÂ onÂ theÂ InternetÂ thisÂ isÂ aÂ requirement.Â Â ForÂ thisÂ 
+toÂ beÂ possible,Â theÂ agentÂ mustÂ beÂ writtenÂ inÂ aÂ languageÂ thatÂ isÂ supportedÂ onÂ allÂ itsÂ potentialÂ hostÂ 
+computers.Â Â ThisÂ isÂ oneÂ ofÂ theÂ reasonsÂ whyÂ nearlyÂ allÂ mobileÂ agentÂ systemsÂ useÂ interpretedÂ 
+languages.Â Â AllÂ theÂ languagesÂ lookedÂ atÂ areÂ interpreted.Â 
+
+Telescript,Â JavaÂ andÂ AgentÂ TclÂ agentsÂ areÂ allÂ interpretedÂ atÂ execution.Â Â InterpretersÂ forÂ theseÂ 
+languagesÂ existÂ acrossÂ differentÂ platforms.Â Â (ObliqÂ interpretersÂ areÂ currentlyÂ onlyÂ availableÂ forÂ 
+UNIX.)Â Â DespiteÂ thisÂ JavaÂ hasÂ aÂ numberÂ ofÂ advantagesÂ inÂ thisÂ area.Â Â First,Â JavaÂ VirtualÂ MachineÂ 
+interpretersÂ alreadyÂ existÂ onÂ manyÂ computers.Â Â MostÂ majorÂ operatingÂ systemÂ vendors,Â includingÂ 
+Microsoft,Â Sun,Â IBM,Â NovellÂ andÂ AppleÂ haveÂ announcedÂ thatÂ theyÂ planÂ toÂ includeÂ theÂ JavaÂ VirtualÂ 
+MachineÂ asÂ partÂ ofÂ theÂ nextÂ releasesÂ ofÂ theirÂ respectiveÂ operatingÂ systems.Â Â MobileÂ agentsÂ 
+writtenÂ inÂ JavaÂ willÂ notÂ requireÂ aÂ specialÂ purposeÂ interpreterÂ toÂ run.Â Â TheÂ mobileÂ agentÂ interpreterÂ 
+canÂ beÂ expectedÂ toÂ beÂ alreadyÂ availableÂ onÂ mostÂ machines.Â Â AgentÂ TclÂ requiresÂ aÂ specialÂ 
+purposeÂ interpreter.Â Â TelescriptÂ programsÂ requireÂ aÂ TelescriptÂ executionÂ engine,Â aÂ closedÂ 
+standardÂ commercialÂ product.Â Â OneÂ cannotÂ realisticallyÂ expectÂ theÂ TelescriptÂ executionÂ engineÂ toÂ 
+becomeÂ asÂ widelyÂ spreadÂ asÂ JavaÂ VirtualÂ MachineÂ interpreters.Â Â Second,Â aÂ generalÂ problemÂ withÂ 
+crossÂ platformÂ technologyÂ isÂ that,Â despiteÂ theÂ intentions,Â someÂ partsÂ ofÂ theÂ implementationÂ actÂ 
+differentlyÂ onÂ differentÂ platforms.Â Â WhileÂ thisÂ isÂ certainlyÂ aÂ problemÂ withÂ JavaÂ now,Â oneÂ mightÂ 
+optimisticallyÂ expectÂ theseÂ bugsÂ toÂ beÂ fixed,Â simplyÂ becauseÂ ofÂ theÂ magnitudeÂ ofÂ theÂ resourcesÂ 
+involvedÂ inÂ JavaÂ researchÂ andÂ development.Â 
+
+AsÂ aÂ signÂ perhapsÂ thatÂ GeneralÂ MagicÂ acceptsÂ thatÂ JavaÂ hasÂ becomeÂ theÂ crossÂ platformÂ 
+standard,Â itÂ isÂ attemptingÂ toÂ implementÂ aÂ JavaÂ­basedÂ equivalentÂ ofÂ itsÂ TelescriptÂ technology.Â 
+
+4.7Â LanguageÂ structureÂ 
+
+TheÂ languageÂ thatÂ theÂ programÂ isÂ writtenÂ inÂ shouldÂ suitÂ theÂ task.Â Â ThereÂ areÂ twoÂ viewsÂ asÂ toÂ whatÂ 
+isÂ requiredÂ ofÂ theÂ taskÂ forÂ mobileÂ agents.Â Â TheÂ languageÂ shouldÂ beÂ compatibleÂ withÂ 
+agentÂ­orientedÂ programming.Â Â ThereÂ isÂ alsoÂ anÂ issueÂ ofÂ whatÂ levelÂ ofÂ languageÂ isÂ suitableÂ forÂ 
+writingÂ mobileÂ agents.Â 
+
+Â Â 
+AgentsÂ canÂ beÂ wellÂ modelledÂ withÂ ObjectÂ orientedÂ languages.Â Â AghaÂ [Agh90]Â arguesÂ thatÂ agentsÂ 
+areÂ extensionsÂ ofÂ objects.Â Â LikeÂ objects,Â agentsÂ areÂ selfÂ­containedÂ autonomousÂ entities.Â Â LikeÂ 
+objects,Â agentsÂ haveÂ propertiesÂ andÂ performÂ actions,Â mappingÂ toÂ theÂ objectÂ­orientedÂ conceptsÂ ofÂ 
+attributesÂ andÂ methods.Â Â Â TheÂ otherÂ objectÂ­orientedÂ principles:Â inheritanceÂ andÂ polymorphismÂ 
+areÂ alsoÂ compatibleÂ withÂ agentÂ programming.Â Â ObjectÂ orientedÂ languagesÂ areÂ wellÂ suitedÂ toÂ 
+representingÂ agents.Â Â TelescriptÂ implementsÂ agentsÂ asÂ aÂ builtÂ­inÂ class.Â Â AllÂ TelescriptÂ agentsÂ 
+needÂ toÂ beÂ derivedÂ fromÂ thisÂ class.Â Â TheÂ variousÂ JavaÂ implementationsÂ ofÂ mobileÂ agentsÂ alsoÂ 
+defineÂ aÂ baseÂ agentÂ class,Â fromÂ whichÂ allÂ agentsÂ areÂ subclassesÂ of.Â 
+
+TclÂ isÂ notÂ objectÂ oriented.Â Â TclÂ hasÂ noÂ codeÂ modularisationÂ otherÂ thanÂ procedures.Â Â ThisÂ isÂ seenÂ 
+asÂ aÂ problemÂ byÂ theÂ makersÂ ofÂ AgentÂ Tcl.Â Â However,Â thereÂ isÂ anÂ objectÂ­orientedÂ extensionÂ ofÂ TclÂ 
+.Â Â TheÂ AgentÂ TclÂ developersÂ areÂ optimisticÂ thatÂ theyÂ willÂ beÂ ableÂ toÂ unifyÂ AgentÂ TclÂ 
+called
+â
+withÂ theÂ objectÂ­orientedÂ extensions.Â [Gra95b]Â 
+
+[incrÂ Tcl]
+â
+â
+
+ThereÂ isÂ alsoÂ anÂ issueÂ whetherÂ aÂ lowerÂ levelÂ systemÂ languageÂ orÂ aÂ highÂ levelÂ scriptingÂ languageÂ 
+isÂ moreÂ suitableÂ toÂ writingÂ mobileÂ agents.Â Â InÂ mobileÂ agentsÂ languages,Â JavaÂ representsÂ theÂ 
+systemÂ languages.Â Â Tcl,Â PythonÂ andÂ PerlÂ representÂ theÂ scriptingÂ languages.Â Â TelescriptÂ andÂ 
+ObliqÂ lieÂ somewhereÂ inÂ between.Â Â TheÂ advantageÂ ofÂ systemÂ languagesÂ areÂ executionÂ speedÂ andÂ 
+flexibility.Â Â ScriptingÂ languagesÂ areÂ wellÂ suitedÂ toÂ gluingÂ componentsÂ together.Â Â TheÂ advantageÂ ofÂ 
+scriptingÂ languagesÂ isÂ speedÂ ofÂ development.Â Â ForÂ writingÂ agentsÂ toÂ customiseÂ theÂ servicesÂ 
+providedÂ onÂ networkÂ servers,Â scriptingÂ languagesÂ seemÂ toÂ beÂ wellÂ suited.Â Â ForÂ lowerÂ levelÂ tasksÂ 
+andÂ performanceÂ criticalÂ applications,Â aÂ systemÂ languageÂ likeÂ JavaÂ isÂ wellÂ suited.Â Â AsÂ mobileÂ 
+agentsÂ becomeÂ widespreadÂ itÂ willÂ beÂ interestingÂ toÂ seeÂ whichÂ applicationsÂ dominate.Â 
+
+DeclarativeÂ languagesÂ mayÂ alsoÂ beÂ usefulÂ forÂ writingÂ mobileÂ agents.Â Â DeclarativeÂ languagesÂ areÂ 
+wellÂ suitedÂ toÂ knowledgeÂ representationÂ andÂ reasoning.Â Â HenceÂ theyÂ wouldÂ seemÂ suitableÂ forÂ 
+writingÂ intelligentÂ mobileÂ agents.Â Â ItÂ isÂ interestingÂ thatÂ thereÂ haveÂ beenÂ noÂ prominentÂ mobileÂ 
+agentÂ implementationsÂ usingÂ aÂ declarativeÂ language.Â 
+
+5.Â ConclusionsÂ 
+
+MobileÂ agentÂ languagesÂ areÂ ableÂ toÂ supportÂ theÂ followingÂ capabilities:Â 
+
+â supportÂ forÂ agentÂ migration,Â 
+â supportÂ forÂ agentÂ­toÂ­agentÂ communication,Â 
+â supportÂ forÂ interactionÂ withÂ localÂ resources,Â 
+â securityÂ mechanisms,Â 
+â suitableÂ executionÂ efficiency,Â 
+
+Â 
+â languageÂ implementationÂ acrossÂ multipleÂ platforms,Â andÂ 
+â easeÂ ofÂ programmingÂ ofÂ theÂ tasksÂ mobileÂ agentsÂ perform.Â 
+
+OfÂ theÂ languagesÂ considered,Â TelescriptÂ isÂ arguablyÂ theÂ bestÂ languageÂ forÂ implementingÂ mobileÂ 
+agents.Â Â ItÂ isÂ aÂ languageÂ thatÂ hasÂ beenÂ designedÂ specificallyÂ forÂ thisÂ purpose.Â Â TheÂ TelescriptÂ 
+languageÂ directlyÂ addressesÂ eachÂ ofÂ theÂ problemÂ specified.Â Â TheÂ problemÂ withÂ TelescriptÂ isÂ thatÂ 
+itÂ isÂ proprietaryÂ softwareÂ andÂ aÂ closedÂ standard.Â 
+
+TheÂ JavaÂ languageÂ isÂ multiÂ­purpose,Â butÂ itÂ hasÂ necessaryÂ capabilitiesÂ forÂ writingÂ mobileÂ agents.Â 
+JavaÂ isÂ inferiorÂ toÂ TelescriptÂ inÂ theÂ areasÂ ofÂ supportÂ forÂ agentÂ migration,Â communicationÂ betweenÂ 
+agentsÂ andÂ interfacingÂ accessÂ toÂ hostÂ computerÂ resources.Â Â InÂ theÂ otherÂ areasÂ howeverÂ JavaÂ atÂ 
+leastÂ equalsÂ Telescript.Â Â Java'sÂ advantageÂ overÂ TelescriptÂ isÂ thatÂ itÂ hasÂ anÂ openÂ specification.Â 
+WhatÂ makesÂ aÂ mobileÂ agentÂ usefulÂ isÂ theÂ abilityÂ toÂ runÂ onÂ remoteÂ machines.Â InÂ theÂ futureÂ itÂ 
+wouldÂ seemÂ likelyÂ thatÂ thereÂ willÂ beÂ manyÂ moreÂ hostsÂ availableÂ withÂ JavaÂ VirtualÂ MachinesÂ thanÂ 
+thoseÂ withÂ TelescriptÂ engines.Â HenceÂ evenÂ thoughÂ theÂ TelescriptÂ languageÂ mayÂ beÂ betterÂ thanÂ 
+JavaÂ forÂ writingÂ mobileÂ agents,Â JavaÂ agentsÂ willÂ probablyÂ beÂ ableÂ toÂ runÂ onÂ moreÂ machines.Â TheÂ 
+situationÂ isÂ inÂ someÂ waysÂ analogousÂ toÂ BetaÂ andÂ VHS,Â (AppleÂ MacsÂ andÂ PCs.)Â Â AnÂ openÂ 
+standardsÂ systemÂ thatÂ deliversÂ theÂ sameÂ functionalityÂ toÂ theÂ userÂ canÂ beÂ expectedÂ inÂ theÂ longÂ 
+runÂ toÂ gainÂ aÂ greaterÂ marketÂ shareÂ thanÂ aÂ proprietaryÂ technology.Â 
+
+AgentÂ TclÂ isÂ aÂ highÂ levelÂ scriptingÂ languageÂ thatÂ hasÂ manyÂ ofÂ Telescript'sÂ capabilitiesÂ withÂ 
+respectÂ toÂ agentÂ migrationÂ andÂ agentÂ communication.Â Â AgentÂ TclÂ andÂ JavaÂ areÂ notÂ inÂ directÂ 
+competition,Â sinceÂ theyÂ offerÂ differentÂ capabilities.Â 
+
+MobileÂ agentsÂ appearÂ toÂ beÂ onÂ theÂ vergeÂ ofÂ enteringÂ mainstreamÂ computing.Â Â ThereÂ areÂ 
+currentlyÂ manyÂ competingÂ agentÂ languages.Â Â OnlyÂ aÂ fewÂ willÂ gainÂ enoughÂ supportÂ toÂ enableÂ theÂ 
+visionÂ ofÂ mobileÂ agentsÂ roamingÂ theÂ internetÂ becomeÂ aÂ reality.Â 
+
+Â 
+Â 
+Â 
+ReferencesÂ 
+
+[Agh90]Â G.Â Agha,Â Â TheÂ StructureÂ andÂ SemanticsÂ ofÂ ActorÂ Languages,Â 
+ObjectÂ­OrientedÂ Languages
+
+,Â pp.Â 1Â­59,Â Springer,Â (1990).Â 
+â
+
+FoundationsÂ ofÂ 
+â
+
+[BC96]Â K.Â A.Â BharatÂ andÂ L.Â Cardelli,Â Â MigratoryÂ Applications,Â SRCÂ ResearchÂ Report,Â DigitalÂ 
+EquipmentÂ Corporation,Â FebruaryÂ (1996).availableÂ atÂ 
+http://www.research.digital.com/SRC/personal/Luca_Cardelli/Obliq/Obliq.htmlÂ 
+
+[Bor86]Â A.Â H.Â Borning,Â Â ClassesÂ versusÂ prototypesÂ inÂ objectÂ­orientedÂ languages,Â InÂ 
+ofÂ ACM/IEEEÂ FallÂ JointÂ ComputerÂ Conference,
+
+Â (1986).Â CitedÂ inÂ [Car95].Â 
+â
+
+ProceedingsÂ 
+â
+
+[BST89]Â H.Â E.Â Bal,Â J.Â G.Â SteinerÂ andÂ A.Â S.Â Tanenbaum,Â Â ProgrammingÂ languagesÂ forÂ distributedÂ 
+computingÂ systems,Â 
+
+,Â VolumeÂ 21,Â NoÂ 3(September),Â (1989).Â 
+â
+
+ACMÂ ComputingÂ Surveys
+â
+
+[Car95]Â L.Â Cardelli,Â Â AÂ LanguageÂ withÂ DistributedÂ Scope,Â DigitalÂ EquipmentÂ Corporation,Â 
+SystemsÂ ResearchÂ Center,Â 30Â MayÂ (1995).Â 
+
+[Gra95a]Â R.Â S.Â Gray,Â Â Ph.D.Â ThesisÂ Proposal:Â TransportableÂ Agents,Â DartmouthÂ College,Â 19Â MayÂ 
+(1995).Â 
+
+[Gra95b]Â R.Â S.Â Gray,Â AgentÂ Tcl:Â AÂ transportableÂ agentÂ system,Â Â DartmouthÂ College,Â 17Â 
+NovemberÂ (1995).Â 
+
+JavaÂ inÂ aÂ Nutshell:Â AÂ QuickÂ DesktopÂ Reference
+[Fla97]Â D.Â Flanagan,Â 
+â
+andÂ Associates,Â (1997).Â 
+
+,Â SecondÂ Edition,Â O'ReillyÂ 
+â
+
+[HCK95]Â C.Â G.Â Harrison.,Â D.Â M.Â ChessÂ andÂ A.Â Kershenbaum,Â Â MobileÂ Agents:Â AreÂ theyÂ aÂ goodÂ 
+idea?,Â 
+
+,Â IBMÂ ResearchÂ Division,Â NumberÂ RCÂ 19887,Â (1995).Â 
+â
+
+IBMÂ ResearchÂ Report
+â
+
+[Hyl96]Â J.Â Hylton,Â K.Â Manheimer,Â F.Â L.Â Drake,Â Jr.,Â B.Â Warsaw,Â R.Â MasseÂ andÂ G.Â vanÂ Rossum,Â 
+KnowbotÂ Programming:Â SystemÂ SupportÂ forÂ MobileÂ Agents.Â InÂ 
+
+ProceedingsÂ ofÂ theÂ 5thÂ 
+â
+
+Â 
+InternationalÂ WorkshopÂ onÂ ObjectÂ OrientationÂ inÂ OperatingÂ SystemsÂ (IWOOOSÂ '96)
+Oct.Â (1996).Â 
+
+,Â pagesÂ 8Â­13,Â 
+â
+
+[jav94]Â TheÂ JavaÂ language:Â AÂ whiteÂ paper.Â Â SunÂ MicrosystemsÂ WhiteÂ Paper,Â SunÂ Microsystems,Â 
+(1994).Â 
+
+[JRS94]Â D.Â Johansen,Â R.Â vanÂ RenesseÂ andÂ F.Â B.Â Scheider,Â Â OperatingÂ SystemÂ SupportÂ forÂ 
+MobileÂ Agents.Â Â PositionÂ paperÂ forÂ 
+5thÂ IEEEÂ WorkshopÂ onÂ HotÂ TopicsÂ inÂ OperatingÂ Systems
+â
+(1994).Â 
+availableÂ at
+
+http://www.cs.uit.no/DOS/Tacoma/Â 
+â
+â
+
+,Â 
+â
+
+[KLO97]Â G.Â Karjoth,Â D.Â B.Â Lange,Â andÂ M.Â Oshima,Â Â AÂ SecurityÂ ModelÂ forÂ Aglets,Â Â 
+Computing
+availabeÂ atÂ 
+
+,Â VolumeÂ 1,Â NoÂ 4(July/August),Â (1997).Â 
+â
+http://dlib.computer.org/ic/books/ic1997/pdf/w4068.pdfÂ 
+â
+â
+
+IEEEÂ InternetÂ 
+â
+
+[KZ97]Â J.Â KiniryÂ andÂ D.Â Zimmerman,Â Â SpecialÂ Feature:Â AÂ HandsÂ­OnÂ LookÂ atÂ JavaÂ MobileÂ Agents,Â 
+IEEEÂ InternetÂ Computing
+availableÂ atÂ 
+
+,Â VolumeÂ 1,Â NoÂ 4(July/August),Â (1997).Â 
+â
+
+http://dlib.computer.org/ic/books/ic1997/pdf/w4021.pdfÂ 
+â
+â
+
+[Kot97]Â D.Â Kotz,Â R.Â Gray,Â S.Â Nog,Â D.Â Rus,Â S.Â ChawlaÂ andÂ G.Â Cybenko,Â AgentÂ TCL:Â TargetingÂ theÂ 
+NeedsÂ ofÂ MobileÂ Computers,Â 
+availableÂ atÂ ftp://ftp.cs.dartmouth.edu/kotz/papers/kotz:jmobile.ps.ZÂ 
+
+,Â VolumeÂ 1,Â NoÂ 4(July/August),Â (1997).Â 
+â
+
+IEEEÂ InternetÂ Computing
+â
+
+[OLW96]Â J.Â K.Â Ousterhout,Â J.Â Y.Â LevyÂ andÂ B.Â B.Â Welch,Â Â TheÂ SafeÂ­TclÂ SecurityÂ Model,Â SunÂ 
+MicrosystemsÂ Laboratories,Â (1996).Â 
+availableÂ atÂ 
+
+http://www.sunlabs.com/people/john.ousterhout/safeTcl.htmlÂ 
+â
+â
+
+[Ous97]Â J.Â K.Â Ousterhout,Â Â Scripting:Â HigherÂ LevelÂ ProgrammingÂ forÂ theÂ 21stÂ Century,Â SunÂ 
+MicrosystemsÂ Laboratories,Â DRAFTÂ #2:Â MayÂ 10,Â (1997)Â 
+availableÂ at
+
+http://www.sunlabs.com/~ouster/scripting.htmlÂ 
+â
+â
+
+[RP97]Â K.Â RothermelÂ andÂ R.Â PopescuÂ­Zeletin,Â Â TheÂ architectureÂ ofÂ theÂ AraÂ platformÂ forÂ mobileÂ 
+ProceedingsÂ ofÂ theÂ FirstÂ InternationalÂ WorkshopÂ onÂ MoblieÂ Agents,Â MA'97
+agents.Â Â InÂ 
+â
+(1997).Â 
+availableÂ at
+
+http://www.uniÂ­kl.de/AGÂ­Nehmer/Ara/ara.htmlÂ 
+â
+â
+
+,Â AprilÂ 
+â
+
+Â 
+Â 
+Â 
+Â 
+Â 
+Â 
+[SBD94]Â A.Â Sah,Â J.Â BlowÂ andÂ B.Â Dennis,Â Â AnÂ introductionÂ toÂ theÂ RunÂ language.Â Â InÂ 
+ofÂ theÂ 1994Â TclÂ Workshop
+
+ProceedingsÂ 
+â
+
+,Â JuneÂ (1994).Â 
+â
+
+[Som97]Â B.Â Sommers,Â Â Agents:Â NotÂ justÂ forÂ BondÂ anymore,Â 
+availableÂ at
+
+http://www.javaworld.com/javaworld/jwÂ­04Â­1997/jwÂ­04Â­agents.htmlÂ 
+â
+â
+
+JavaÂ World
+â
+
+,Â MarchÂ (1997).Â 
+â
+
+[TDB97]Â P.Â Tarau,Â V.Â Dahl,Â K.Â DeÂ Bosschere,Â Â HighÂ levelÂ logicÂ programmingÂ toolsÂ forÂ remoteÂ 
+execution,Â mobileÂ codeÂ andÂ agents,Â (1997).Â 
+availableÂ atÂ 
+
+http://clement.info.umoncton.ca/html/remote/art.htmlÂ 
+â
+â
+
+[Ven96]Â B.Â Venners,Â Â UnderÂ theÂ hood:Â TheÂ lean,Â mean,Â virtualÂ machine,
+(1996).Â 
+availableÂ at
+
+http://www.javaworld.com/javaworld/jwÂ­06Â­1996/jwÂ­06Â­vm.htmlÂ 
+â
+â
+
+Â JavaÂ World
+â
+
+,Â JuneÂ 
+â
+
+[Ven97a]Â B.Â Venners,Â UnderÂ theÂ hood:Â TheÂ architectureÂ ofÂ aglets,Â 
+availableÂ at
+
+JavaÂ World
+â
+http://www.javaworld.com/javaworld/jwÂ­04Â­1997/jwÂ­04Â­hood.htmlÂ 
+â
+â
+
+,Â AprilÂ (1997).Â 
+â
+
+[Ven97b]Â B.Â Venners,Â UnderÂ theÂ hood:Â Java'sÂ securityÂ architecture,Â 
+availableÂ at
+
+http://www.javaworld.com/javaworld/jwÂ­08Â­1997/jwÂ­08Â­hood.htmlÂ 
+â
+â
+
+JavaÂ World
+â
+
+,Â AugustÂ (1997).Â 
+â
+
+[Whi96]Â J.Â E.Â White,Â MobileÂ AgentsÂ WhiteÂ Paper,Â GeneralÂ Magic,Â (1996).Â 
+availableÂ at
+
+http://www.genmagic.com/agents/Whitepaper/whitepaper.htmlÂ 
+â
+â
+
+Â 
+Â 
+Â 
+Â 
+Â 
+Â 
+Â Â 
+Â 
+Â 
+

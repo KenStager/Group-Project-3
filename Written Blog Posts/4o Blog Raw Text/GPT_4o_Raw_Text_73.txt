@@ -1,0 +1,64 @@
+# Order Matters: Agent-by-Agent Policy Optimization
+
+Published as a conference paper at ICLR 2023, the research titled "Order Matters: Agent-by-Agent Policy Optimization" delves into the intricacies and advantages of sequentially updating agent policies in multi-agent reinforcement learning (MARL). This method, referred to as Agent-by-agent Policy Optimization (A2PO), addresses the non-stationarity problem inherent in simultaneous policy updates and offers significant improvements in performance and sample efficiency.
+
+## Introduction
+
+As reinforcement learning (RL) continues to evolve, trust region algorithms have emerged as powerful tools for addressing complex tasks. These algorithms offer theoretical guarantees of monotonic policy improvement, ensuring stable and superior performance. However, the multi-agent reinforcement learning (MARL) domain poses unique challenges, particularly the non-stationarity problem, which arises when agents update their policies simultaneously without observing changes in other agents. This paper introduces a sequential approach, where agents update their policies one at a time, providing a new perspective that mitigates non-stationarity while maintaining sample efficiency and performance.
+
+## Background
+
+Trust region learning methods have successfully tackled single-agent control tasks and extended their efficacy to multi-agent applications. Traditional approaches in MARL involve simultaneous policy updates, where all agents update their policies at the same time. This method, while effective, struggles with non-stationarity, leading to high variance in gradients and the need for more samples to achieve convergence.
+
+In contrast, the research presented by Xihuai Wang et al. at ICLR 2023 proposes a sequential updating scheme. This approach allows agents to perceive changes made by preceding agents, transforming non-stationary MARL problems into stationary single-agent reinforcement learning (SARL) ones. However, sequential updates face challenges such as sample inefficiency and the lack of monotonic improvement guarantees. The A2PO algorithm aims to address these issues by integrating an off-policy correction method, known as Preceding-Agent Off-Policy Correction (PreOPC).
+
+## Key Contributions
+
+1. **Monotonic Improvement Bound**:
+    - The research proves that the guarantees of monotonic improvement on each agent’s policy can be retained under the single rollout scheme with the proposed off-policy correction method, PreOPC.
+    - The monotonic bound on the joint policy achieved with theoretical guarantees for each agent is tighter compared to other single rollout algorithms.
+
+2. **A2PO Algorithm**:
+    - A2PO is the first agent-by-agent sequential update algorithm that ensures monotonic policy improvement for both individual agents and the joint policy without requiring multiple rollouts for policy improvement.
+
+3. **Agent Update Order**:
+    - The study investigates the connections between the sequential policy update scheme, the agent update order, and the non-stationarity problem.
+    - Two novel methods are introduced: a semi-greedy agent selection rule for optimization acceleration and an adaptive clipping parameter method to alleviate non-stationarity.
+
+## Detailed Insights
+
+### Monotonic Improvement and Sample Efficiency
+
+Monotonic improvement is a critical property in RL, ensuring that each update leads to better or at least no worse performance. Traditional simultaneous update algorithms struggle to maintain this property because they cannot account for policy changes of other agents. A2PO overcomes this by sequentially updating each agent and applying PreOPC to adjust for off-policy actions taken by preceding agents. This approach tightens the monotonic improvement bound, leading to more effective policy optimization.
+
+### A2PO Algorithm Mechanics
+
+The A2PO algorithm operates by updating one agent at a time, taking into account the updated policies of preceding agents. This method enhances sample efficiency, as it utilizes the same rollout samples for multiple agents. Furthermore, by applying a joint policy ratio clipping mechanism twice, once on the joint policy ratio of preceding agents and once on the policy ratio of the current agent, A2PO maintains stability and encourages inter-agent coordination.
+
+### Agent Update Order
+
+The order in which agents are updated significantly impacts the performance of the sequential update scheme. A2PO introduces a semi-greedy agent selection rule that prioritizes agents with higher expected advantage values, thus accelerating optimization. Additionally, an adaptive clipping parameter method adjusts the clipping range based on the update order, ensuring balanced and sufficient clipping ranges for all agents.
+
+## Empirical Evaluation
+
+The effectiveness of A2PO is demonstrated through comprehensive empirical studies on various benchmarks, including StarCraftII, Multi-agent MuJoCo, Multi-agent Particle Environment, and Google Research Football full game scenarios. In all tasks, A2PO consistently outperforms strong baselines in both performance and sample efficiency. This superiority is attributed to its ability to encourage inter-agent coordination and overcome the limitations of simultaneous update schemes.
+
+### Performance Highlights
+
+- **StarCraftII**: A2PO achieved nearly 100% win rates in several maps, significantly outperforming other algorithms.
+- **Multi-agent MuJoCo**: A2PO showed increasing advantages over baselines with task complexity, demonstrating its scalability and robustness.
+- **Google Research Football**: A2PO not only achieved high win rates but also exhibited sophisticated coordination behaviors, such as passing and receiving the ball effectively, which were less prevalent in other algorithms.
+
+## Conclusion
+
+The research presented at ICLR 2023 highlights the potential of sequential policy updates in MARL. The A2PO algorithm, with its monotonic improvement guarantees and sample efficiency, sets a new benchmark for coordination tasks in multi-agent environments. By addressing the non-stationarity problem and introducing innovative methods like PreOPC, semi-greedy agent selection, and adaptive clipping parameters, A2PO paves the way for more robust and efficient multi-agent learning systems.
+
+### Call to Action
+
+For practitioners and researchers in the field of multi-agent reinforcement learning, exploring the implementation of A2PO in various domains could yield significant improvements in performance and coordination. Additionally, further theoretical analysis and development of adaptive agent selection and clipping parameter methods could enhance the robustness of sequential update schemes.
+
+The source code of this paper is available at [A2PO GitHub Repository](https://anonymous.4open.science/r/A2PO). We encourage the community to experiment with A2PO and contribute to its development and application in diverse multi-agent settings.
+
+## Engage with Us
+
+What are your thoughts on the potential of sequential updates in MARL? Have you encountered challenges with non-stationarity in your projects? Share your experiences and join the discussion in the comments below!

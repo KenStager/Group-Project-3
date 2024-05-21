@@ -1,0 +1,1284 @@
+High-Level, Collaborative Task Planning Grammar and Execution
+for Heterogeneous Agents
+
+Amy Fang
+Cornell University
+Ithaca, NY, USA
+axf4@cornell.edu
+
+Hadas Kress-Gazit
+Cornell University
+Ithaca, NY, USA
+hadaskg@cornell.edu
+
+4
+2
+0
+2
+
+b
+e
+F
+1
+
+]
+
+O
+R
+.
+s
+c
+[
+
+1
+v
+6
+9
+2
+0
+0
+.
+2
+0
+4
+2
+:
+v
+i
+X
+r
+a
+
+ABSTRACT
+We propose a new multi-agent task grammar to encode collab-
+orative tasks for a team of heterogeneous agents that can have
+overlapping capabilities. The grammar allows users to specify the
+relationship between agents and parts of the task without provid-
+ing explicit assignments or constraints on the number of agents
+required. We develop a method to automatically find a team of
+agents and synthesize correct-by-construction control with syn-
+chronization policies to satisfy the task. We demonstrate the scala-
+bility of our approach through simulation and compare our method
+to existing task grammars that encode multi-agent tasks.
+
+KEYWORDS
+Formal methods, multiagent coordination, task planning, robotics
+
+ACM Reference Format:
+Amy Fang and Hadas Kress-Gazit. 2024. High-Level, Collaborative Task
+Planning Grammar and Execution for Heterogeneous Agents. In Proc. of the
+23rd International Conference on Autonomous Agents and Multiagent Systems
+(AAMAS 2024), Auckland, New Zealand, May 6 â 10, 2024, IFAAMAS, 9 pages.
+
+1 INTRODUCTION
+Agents working together to achieve common goals have a variety
+of applications, such as warehouse automation or disaster response.
+Multi-agent tasks have been defined in different ways in the sched-
+uling and planning literature. For example, in multi-agent task
+allocation [8, 9, 12] and coalition formation [14, 22], each task is
+a single goal with an associated utility. Individual agents or agent
+teams then automatically assign themselves to a task based on some
+optimization metric. Swarm approaches [18, 21] consider emergent
+behavior of an agent collective as the task, for example, aggregation
+or shape formation.
+
+Recently, formal methods, such as temporal logics for task speci-
+fications and correct-by-construction synthesis, have been used to
+solve different types of multi-agent planning tasks [2, 17, 20]. Tasks
+written in temporal logic, such as Linear Temporal Logic (LTL),
+allow users to capture complex tasks with temporal constraints.
+Existing work has extended LTL [15, 16] and Signal Temporal Logic
+[13] to encode tasks that require multiple agents.
+
+In this paper, we consider tasks that a team of heterogeneous
+agents are required to collaboratively satisfy. For instance, consider
+a precision agriculture scenario in which a farm contains agents
+with different on-board sensors to monitor crop health. The user
+
+Proc. of the 23rd International Conference on Autonomous Agents and Multiagent Systems
+(AAMAS 2024), N. Alechina, V. Dignum, M. Dastani, J.S. Sichman (eds.), May 6 â 10, 2024,
+Auckland, New Zealand. Â© 2024 International Foundation for Autonomous Agents
+and Multiagent Systems (www.ifaamas.org). This work is licenced under the Creative
+Commons Attribution 4.0 International (CC-BY 4.0) licence.
+
+may want to take a moisture measurement in one region, and then
+take a soil sample of a different region. Depending on the agentsâ
+sensors and sensing range, the agents may decide to collaborate to
+satisfy the task. For example, one agent may perform the entire task
+on its own if it has both a moisture sensor and an arm mechanism
+to pick up a soil sample and can move between the two regions.
+However, another possible solution is for two agents to team up so
+that one takes a moisture measurement and the other picks up the
+soil. Existing task grammars [13, 15, 16] capture tasks such as the
+above by providing explicit constraints on the types or number of
+agents for each part of the task, i.e. the task must explicitly encode
+whether it should be one agent, two agents, or either of these
+options. In this paper, we create a task grammar and associated
+control synthesis that removes the need to a priori decide on the
+number of agents necessary to accomplish a task, allowing users to
+focus solely on the actions required to achieve the task (e.g. âtake a
+moisture measurement and then pick up a soil sample, irrespective
+of which or how many agents perform which actions").
+
+Our task grammar has several unique aspects. First, this gram-
+mar enables the interleaving of agent actions, alleviating the need
+for explicit task decomposition in order to assign agents to parts
+of the task. Second, rather than providing explicit constraints on
+the types or number of agents for each part of the task, the task
+encodes, using the concept of bindings (inspired by [15]), the overall
+relationship between agent assignments and team behavior; we
+can require certain parts of the task to be satisfied by the same
+agent without assigning the exact agent or type of agent a priori.
+Lastly, the grammar allows users to make the distinction between
+the requirements âfor all agentsâ and âat least one agentâ. Given
+these types of tasks, agents autonomously determine, based on their
+capabilities, which parts of the task they can and should do for the
+team to satisfy the task.
+
+Tasks may require collaboration between different agents. Simi-
+lar to [3, 11, 19], to ensure the actions are performed in the correct
+order, our framework takes the corresponding synchronization con-
+straints into account while synthesizing agent behavior; agents
+must wait to execute the actions together. In our approach, execu-
+tion of the synchronous behavior for each agent is decentralized;
+agents carry out their plan and communicate with one another
+when synchronization is necessary.
+
+Depending on the task and the available agents, there might be
+different teams (i.e., subsets of the agent set) that can carry out the
+task; our algorithm for assigning a team and synthesizing behavior
+for the agents finds the largest team of agents that satisfies the task.
+This means that the team may have redundancies, i.e. agents can
+be removed while still ensuring the overall task is satisfied. This is
+beneficial both for robustness and optimality; the user can choose
+
+ 
+ 
+ 
+ 
+ 
+ 
+a subset of the team (provided that all the required bindings are
+still assigned) to optimize different metrics, such as cost or overall
+number of agents.
+
+Related work: One way to encode tasks is to first decompose
+them into independent sub-tasks and then allocate them to the
+agents. For example, [7, 17] address finite-horizon tasks for multi-
+agent teams. The authors first automatically decompose a global
+automaton representing the task into independent sub-tasks. To
+synthesize control policies, the authors build product automata for
+each heterogeneous agent. Each automaton is then sequentially
+linked using switch transitions to reduce state-space explosion
+in synthesizing parallel plans. In our prior work [6], we address
+infinite-horizon tasks that have already been decomposed into sub-
+tasks. Given a new task, we proposed a decentralized framework
+for agents to automatically update their behavior based on a new
+task and their existing tasks, allowing agents to interleave the tasks.
+The works discussed above make the critical assumption that
+tasks are independent, i.e. agents do not collaborate with one an-
+other. One approach to including collaborative actions is to explic-
+itly encode the agent assignments in the tasks. To synthesize agent
+control for these types of tasks, in [19], the authors construct a
+reduced product automaton in which the agents only synchronize
+when cooperative actions are required. The work in [10] proposes a
+sampling-based method that approximates the product automaton
+of the team by building trees incrementally while maintaining prob-
+abilistic completeness. In this paper, we consider the more general
+setting in which agents may need to collaborate with each other,
+but are not given explicit task assignments a priori.
+
+Rather than providing predetermined task assignments, another
+approach for defining collaborative tasks is to capture information
+about the number and type of agents needed for parts of the speci-
+fication. For example, [16] imposes constraints on the number of
+agents necessary in regions using counting LTL. [13] uses Capa-
+bility Temporal Logic to encode both the number and capabilities
+necessary in certain abstracted locations in the environment and
+then formulates the problem as a MILP to find an optimal team-
+ing strategy. The authors of [15] introduce the concept of induced
+propositions, where each atomic proposition not only encodes in-
+formation about the number, type of agents, and target regions,
+but also has a connector that binds the truth of certain atomic
+propositions together. To synthesize behavior for the agents, they
+propose a hierarchical approach that first constructs the automaton
+representing the task and then decomposes the task into possible
+sub-tasks. The temporal order of these sub-tasks is captured using
+partially ordered sets and are used in the task allocation problem,
+which is formulated as a MILP.
+
+Inspired by [15] and the concept of induced propositions, we
+create a task grammar that includes information about how the
+atomic propositions are related to one another, which represents the
+overall relationship between agents and task requirements. Unlike
+[15], which considers navigation tasks in which the same set of
+agents of a certain type may need to visit different regions, we
+generalize these tasks to any type of abstract action an agent may
+be able to perform. In addition, a key assumption we relax is that we
+do not require each agent to be only categorized as one type. As a
+result, agents can have overlapping capabilities. To our knowledge,
+
+no other grammars have been proposed for these generalized types
+of multi-agent collaborative tasks.
+
+Contributions: We propose a task description and control syn-
+thesis framework for heterogeneous agents to satisfy collaborative
+tasks. Specifically, we present a new, LTL-based task grammar for
+the formulation of collaborative tasks, and provide a framework to
+form a team of agents and synthesize control and synchronization
+policies to guarantee the team satisfies the task. We demonstrate
+our approach in simulated precision agriculture scenarios.
+
+2 PRELIMINARIES
+2.1 Linear Temporal Logic
+LTL formulas are defined over a set of atomic propositions ð´ð,
+where ð â ð´ð are Boolean variables [5]. We abstract agent actions
+as atomic propositions. For example, ðð captures an agent taking
+UV measurement.
+
+Syntax: An LTL formula is defined as:
+
+ð ::= ð | Â¬ð | ð â¨ ð | â ð | ð U ð
+where Â¬ (ânot") and â¨ (âor") are Boolean operators, and â (ânext")
+and U (âuntil") are temporal operators. From these operators, we
+can define: conjunction ð â§ ð, implication ð â ð, eventually
+(cid:94)ð = True U ð, and always â¡ð = Â¬(cid:94)Â¬ð.
+
+Semantics: The semantics of an LTL formula ð are defined over
+an infinite trace ð = ð (0)ð (1)ð (2)..., where ð (ð) is the set of true
+ð´ð at position ð. We denote that ð satisfies LTL formula ð as ð |= ð.
+Intuitively, (cid:94)ð is satisfied if there exists a ð (ð) in which ð is
+true. â¡ð is satisfied if ð is true at every position in ð. To satisfy
+ð1 U ð2, ð1 must remain true until ð2 becomes true. See [5] for
+the full semantics.
+
+2.2 BÃ¼chi Automata
+An LTL formula ð can be translated into a Nondeterministic BÃ¼chi
+Automaton that accepts infinite traces if and only if they satisfy
+ð. A BÃ¼chi automaton is a tuple B = (ð, ð§0, Î£B, ð¿ B, ð¹ ), where ð is
+the set of states, ð§0 â ð is the initial state, Î£B is the input alphabet,
+ð¿ B : ð Ã Î£B Ã ð is the transition relation, and ð¹ â ð is a set of
+accepting states. An infinite run of B over a word ð¤ = ð¤1ð¤2ð¤3...,
+ð¤ð â Î£B is an infinite sequence of states ð§ = ð§0ð§1ð§2... such that
+(ð§ð â1, ð¤ð, ð§ð ) â ð¿ B. A run is accepting if and only if Inf(ð§) â© ð¹ â  â,
+where Inf(ð§) is the set of states that appear in ð§ infinitely often [1].
+
+2.3 Agent Model
+Following [6], we create an abstract model for each agent based on
+its set of capabilities. A capability is a weighted transition system
+ð = (ð, ð 0, ð´ð, Î, ð¿,ð ), where ð is a finite set of states, ð 0 â ð is the
+initial state, ð´ð is the set of atomic propositions, Î â ð Ã ð is a
+transition relation where for all ð  â ð, âð â² â ð such that (ð , ð â²) â Î,
+ð¿ : ð â 2ð´ð is the labeling function such that ð¿(ð ) is the set of
+propositions that are true in state ð , and ð : Î â Râ¥0 is the
+cost function assigning a weight to each transition. Since we are
+considering a group of heterogeneous agents, agent ð has its own
+set of ð capabilities Î ð = {ð1, ..., ðð }.
+
+An agent model ð´ð is the product of its capabilities: ð´ð = ð1 Ã
+... Ã ðð such that ð´ð = (ð, ð 0, ð´ð ð , ð¾, ð¿,ð ), where ð = ð1 Ã ... Ã ðð
+is the set of states, ð 0 â ð is the initial state, ð´ð ð = (cid:208)ð
+ð=1 ð´ðð is
+
+combinations of ð that satisfy ð . For example, ð (cid:0)(1 â¨ 2) â§ 3(cid:1) =
+{{1, 3}, {2, 3}, {1, 2, 3}}.
+
+The semantics of LTLð are:
+
+â¢ (ð (ð), ð) |= ðð iff âð¾ â ð (ð ) s.t. (ð¾ â
+
+â, ð ð (ð) |= ð)
+
+ð
+(cid:208)
+ð=1
+
+ðð ) and (âð s.t. ð¾ â©ð ð â 
+
+â¢ (ð (ð), ð) |= (Â¬ð)ð iff âð¾ â ð (ð ) s.t. (ð¾ â
+
+ð¾ â© ð ð â  â, ð ð (ð) Ì¸|= ð)
+
+â¢ (ð (ð), ð) |= Â¬(ðð ) iff âð¾ â ð (ð ) s.t. (ð¾ â
+
+ð¾ â© ð ð â  â, ð ð (ð) Ì¸|= ð)
+
+ð
+(cid:208)
+ð=1
+
+ð
+(cid:208)
+ð=1
+
+ðð ) and (âð s.t.
+
+ðð ) and (âð s.t.
+
+1 and (ð (ð),ð) |=ðð2
+1 or (ð (ð), ð) |= ðð2
+
+2
+
+2
+
+2
+
+iff (ð (ð),ð)|=ðð1
+1 â§ ðð2
+â¢ (ð (ð),ð)|=ðð1
+iff (ð (ð),ð) |=ðð1
+1 â¨ðð2
+â¢ (ð (ð),ð) |=ðð1
+2
+â¢ (ð (ð), ð) |= âðð iff ð (ð + 1), ð |= ðð
+1 Uðð2
+â¢ (ð (ð), ð) |= ðð1
+
+2
+
+â, (ð (ð), ð) |= ðð1
+1
+
+iff ââ â¥ ð s.t. (ð (â), ð) |= ðð2
+
+2 and âð â¤ ð <
+
+â¢ (ð (ð), ð) |= â¡ðð iff ââ > ð, (ð (â), ð) |= ðð
+
+Intuitively, the behavior of an agent team and their respective
+binding assignments satisfy ðð if there exists a possible binding
+assignment in ð (ð ) in which all the bindings are assigned to (at
+least one) agent, and the behavior of all agents with a relevant
+binding assignment satisfy ð. An agent can be assigned more than
+one binding, and a binding can be assigned to more than one agent.
+Remark 1. For the sake of clarity in notation, Â¬ðð is equivalent to
+(Â¬ð)ð . For example, Â¬ððððð¢ð1 â (Â¬ððððð¢ð)1.
+Remark 2. Note the subtle but important difference between (Â¬ð)ð
+and Â¬(ðð ). Informally, the former requires all agents with binding
+assignments that satisfy ð to satisfy Â¬ð; the latter requires the
+formula ðð to be violated, meaning that at least one agentâs trace
+violates ð, i.e. satisfies Â¬ð.
+Remark 3. Unique to LTLð is the ability to encode both tasks that
+include constraints on all agents or on at least one agent; âFor
+all agentsâ is captured by ðð ; âat least one agentâ is encoded as
+Â¬((Â¬ð)ð ), which captures âat least one agent assigned a binding in
+ð¾ â ð (ð ) satisfies ðâ. This allows for multiple agents to be assigned
+the same binding, but only one of those agents is necessary to satisfy
+ð. This can be particularly useful in tasks with safety constraints;
+for example, we can write Â¬(Â¬ðððððð1
+ð´) â (ððððððð´ â§ ð£ðð ð¢ðð)2,
+which says âif any agent assigned binding 1 is in region A, all
+agents assigned binding 2 must take a picture of the region.â
+
+Example. Let ð´ðð = {1, 2, 3}, ð´ðð = {ððððððð´, ðððððððµ, ððððð¢ð,
+
+ð¡âððððð, ð£ðð ð¢ðð, ðððð ð¡ð¢ðð, ðð }, and ðð = ðð
+
+1 â§ ðð
+
+2 , where
+
+ðð
+1 = (cid:94)((ðððððððµ â§ðððð ð¡ð¢ðð â§ðð )2â§3â§ (ððððððð´ â§ððððð¢ð)1) (4a)
+ðð
+2 = Â¬ððððð¢ð1 U (ððððððð´
+
+â§ ((ð¡âððððð â¨ ð£ðð ð¢ðð) â§ Â¬(ð¡âððððð â§ ð£ðð ð¢ðð)))2
+
+(4b)
+
+ðð
+1 captures âAgent(s) assigned bindings 2 and 3 should take
+a moisture measurement and a UV measurement in the region B
+
+Figure 1: Agent partial model: (a) ðarea (b) ðarm (c) ð´ððððð
+
+1, ..., ð â²
+
+the set of propositions, ð¾ â ð Ã ð is the transition relation such
+that (ð , ð â²) â ð¾, where ð  = (ð 1, ..., ð ð ), ð â² = (ð â²
+ð ), if and only
+ð ) â Îð , ð¿ : ð â 2ð´ð ð is the labeling
+if for all ð = {1, ..., ð }, (ð ð, ð â²
+function where ð¿(ð ) = (cid:208)ð
+ð=1 ð¿ð (ð ð ), and ð : ð¾ â Râ¥0 is the cost
+function that combines the costs of the capabilities. Fig. 1c depicts
+a snippet of an agent model where we treat the cost as additive. Fig.
+1a represents the agentâs sensing area ððððð; the agent can orient its
+sensors to take measurements in different regions of a partitioned
+workspace (in this case, regions A and B). Fig. 1b represents the
+agentâs robot manipulator, which can pick up and drop off soil
+samples, as well as pull weeds.
+
+3 TASK GRAMMAR - LTLð
+We define the task grammar LTLð that includes atomic propositions
+that abstract agent action, logical and temporal operators, as in LTL,
+and bindings that connect actions to specific agents; any action
+labeled with the same binding must be satisfied by the same agent(s)
+(the actual value of the binding is not important). We define a task
+recursively over LTL and binding formulas.
+
+(1)
+
+1 â§ðð2
+
+ð := ð | ð1 â¨ ð2 | ð1 â§ ð2
+ð := ð | Â¬ð | ð â¨ ð | â ð | ð U ð
+1 â¨ðð2
+ðð := ðð | Â¬(ðð ) |ðð1
+
+(2)
+2 | â¡ðð (3)
+where ð , the binding formula, is a Boolean formula excluding nega-
+tion over ð â ð´ðð , and ð is an LTL formula. An LTLð formula
+consists of conjunction, disjunction, and temporal operators; we
+define eventually as (cid:94)ðð = True U ðð . An example of an LTLð
+formula is shown in Eq. 4.
+
+2 | âðð | ðð1
+
+1 Uðð2
+
+2 |ðð1
+
+Semantics: The semantics of an LTLð formula ðð are defined
+over ð and ð; ð = ð1ð2...ðð is the team trace where ð ð is agent ðâs
+trace, and âð, ð (ð) = ð1 (ð)ð2 (ð)...ðð (ð). ð = {ð1, ð2, ..., ðð } is the set
+of binding assignments, where ð ð â ð is the set of ð´ðð that are
+assigned to agent ð. Once a team is established, ð is constant, i.e. an
+agentâs binding assignment does not change throughout the task
+execution. For example, ð1 = {2, 3}, ð2 = {1} denotes that agent 1 is
+assigned bindings 2 and 3, and agent 2 is assigned binding 1.
+
+Given ð agents and a set of binding propositions ð´ðð , we define
+the function ð : ð â 22ð´ðð such that ð (ð ) is the set of all possible
+
+at the same time that agent(s) assigned binding 1 picks up a soil
+sample in region A." ðð
+2 captures âBefore the soil sample can be
+picked up, agent(s) assigned binding 2 needs to either take a thermal
+image or a visual image (but not both) of region A.â
+
+Note that, since multiple bindings can be assigned to the same
+agent, an agent can be assigned both bindings 2 and 3, provided
+that it has the capabilities to satisfy the corresponding parts of the
+formula. In addition, depending on the final assignments, the agents
+may need to synchronize with one another to perform parts of the
+task. For example, agents assigned with any subset of bindings
+{1, 2, 3} need to synchronize their respective actions to satisfy ðð
+1 .
+
+4 CONTROL SYNTHESIS FOR LTLð
+Problem statement: Given ð heterogeneous agents ð´ = {ð´1, ..., ð´ð }
+and a task ðð in LTLð , find a team of agents Ëð´ â ð´, their binding
+assignments ð Ëð´, and synthesize behavior ð ð for each agent such
+that (ð (0), ð Ëð´) |= ðð . This behavior includes synchronization con-
+straints for agents to satisfy the necessary collaborative actions.
+We assume that each agent is able to wait in any state (i.e. every
+state in the agent model has a self-transition).
+
+Example. Consider a group of four agents ð´ = {ð´ððððð, ð´ððð¢ð ,
+ð´ðððððð , ð´ðððð } in a precision agriculture environment composed
+of 5 regions, as illustrated in Fig. 2. ð´ðððððð is a mobile robot manipu-
+lator, such as Harvest Automationâs HV-100, while the other agents
+are stationary with different onboard sensing capabilities. The set
+of all capabilities is Î = {ðarea_j,ðððð¡ððð, ðððð, ðð ð , ððððð ð¡ð¢ðð ,
+ðð£ðð ð¢ðð , ðð¡âððððð }, where âð = {ððððð, ððð¢ð, ðððð }, ðarea_j is agent
+ðâs sensing area model. The green agent can orient its arm to reach
+either region A or B. The blue agent can orient its sensors to see
+one of three regions, B, C, or D; in order to reorient its sensors from
+regions B to D, its sensing range must first pass through region C.
+Similarly, the pink agent can orient its sensors to see either region A,
+B, or C, and its sensing range must pass through region B to get from
+regions A to C. The orange agentâs ability to move between adjacent
+regions is represented by the capability ðððð¡ððð. Its sensing region
+is whichever region it is in. ð´ðððð = {pickup, dropoff, weed} is an
+abstraction of a robot manipulator that represents different actions
+the arm can perform, such as picking up soil samples or pulling
+weeds. ð´ðð ð , ð´ððððð ð¡ð¢ðð , ð´ðð£ðð ð¢ðð , ð´ðð¡âððððð all contain a single
+proposition representing a agentâs ability to take UV measurements,
+soil moisture measurements, visual images, and thermal images, re-
+spectively. ðððð has more states (see Fig. 1b). Each agent may have
+distinct cost functions corresponding to individual capabilities.
+
+The agent capabilities and label on the initial state are:
+
+Îððððð = {ðarea_1, ðarm}, ð¿(ð 0) = {ðððððððµ }
+Îððð¢ð = {ðarea_2, ðmoisture, ðð ð }, ð¿(ð 0) = {ððððððð· }
+Îðððððð = {ðmotion, ðmoisture, ðð ð , ðððð }, ð¿(ð 0) = {ððððððð¸ }
+Îðððð = {ðarea_4, ðthermal, ðvisual, ðmoisture, ðð ð }, ð¿(ð 0) = {ððððððð¶ }
+The team receives the task ðð (Eq. 4) and must determine a teaming
+assignment and behavior to satisfy the task. During execution, the
+agents must also synchronize with each other when necessary.
+
+5 APPROACH
+To find a teaming assignment and synthesize the corresponding syn-
+chronization and control, we first automatically generate a BÃ¼chi
+
+Figure 2: Agriculture environment and initial agent states.
+The green, blue, and pink agents are stationary; the orienta-
+tion of their sensors are indicated by the colored boxes.
+
+automaton B for the task ðð (Sec. 5.1). Each agent ð´ð then con-
+structs a product automaton Gð = ð´ð ÃB (Sec. 5.2). For each binding
+ð â ð´ðð , it checks whether or not it can perform the task associ-
+ated with that binding by finding a path to an accepting cycle in Gð .
+Each agent creates a copy of the BÃ¼chi automaton Bð pruned to
+remove any unreachable transitions and stores information about
+which combinations of binding assignments it can do.
+
+For parts of the task that require collaboration (e.g., when a transi-
+tion calls for actions with bindings {1, 2} and ðððððð = {1, 2}, ðððð¢ð =
+{2}), we need agents to synchronize. Thus, we synthesize behavior
+that allows for parallel execution while also guaranteeing that the
+teamâs overall behavior satisfies the global specification.
+
+To find a team of agents that can satisfy the task and their assign-
+ments, we need to guarantee that 1) every binding is assigned to at
+least one agent and 2) the agents synchronize for the collaborative
+portions of the task. To do so, we first run a depth-first search (DFS)
+to find a path through the B to an accepting cycle in which there
+exists a team of agents such that for every transition in the path,
+every proposition in ð´ðð is assigned to at least one agent (Sec.
+5.4). Each agent then synthesizes behavior to satisfy this path and
+communicates to other agents when synchronization is necessary.
+
+5.1 BÃ¼chi Automaton for an LTLð Formula
+When constructing a BÃ¼chi automaton for an LTLð specification,
+we automatically rewrite the specification such that the binding
+propositions are only over individual atomic proposition ð â ð´ðð
+(i.e. the formula is composed of ð ð ). For instance, the formula
+(Â¬ððððð¢ð U ððððððð´)1â¨2 is rewritten as (Â¬ððððð¢ð1 U ðððððð1
+ð´) â¨
+(Â¬ððððð¢ð2 U ðððððð2
+
+In our running example, we rewrite the formula in Eq. 4a as
+
+ð´).
+
+(cid:94)(ðððððð2
+â§ ðððððð3
+
+ðµ â§ ðððð ð¡ð¢ðð2 â§ ðð 2
+ðµ â§ ðððð ð¡ð¢ðð3 â§ ðð 3 â§ ðððððð1
+Remark 4. In rewriting the specification, negation follows bindings
+in the order of operations. For example, Â¬ððððð¢ð1â§2 = Â¬ððððð¢ð1 â§
+Â¬ððððð¢ð2, and Â¬(ððððð¢ð1â§2) = Â¬(ððððð¢ð1â§ððððð¢ð2) = Â¬(ððððð¢ð1)â¨
+Â¬(ððððð¢ð2).
+
+ð´ â§ ððððð¢ð1)
+
+(5)
+
+From ð´ðð and ð´ðð , we define the set of propositions ð´ðð
+
+ð , where
+âð â ð´ðð and âð â ð´ðð , ð ð â ð´ðð
+ð , we automatically
+translate the specification into a BÃ¼chi automaton using Spot [4].
+
+ð . Given ð´ðð
+
+To facilitate control synthesis, we transform any transitions
+in the BÃ¼chi automaton labeled with disjunctive formulas into
+disjunctive normal form (DNF). We then replace the transition
+labeled with a DNF formula containing â conjunctive clauses with
+â transitions between the same states, each labeled with a different
+conjunction of the original label.
+
+ð Ã 2ð´ðð
+
+In general, when creating a BÃ¼chi automaton from an LTL for-
+mula ð, ð¤ â Î£B are Boolean formulas over ð´ðð , the atomic proposi-
+tions that appear in ð, as seen in Fig. 3. In the following, for creating
+the product automaton, we use an equivalent representation, where
+Î£B = 2ð´ðð
+ð and ð¤ = (ðð , ðð¹ ) â Î£B contains the set of
+propositions that must be true, ðð , and the set of propositions that
+must be false, ðð¹ , for the Boolean formula over a transition to eval-
+uate to True. These sets are unique in our case since each transition
+is labeled with a conjunctive clause (i.e. no disjunction). Note that
+ðð â© ðð¹ = â and ðð âª ðð¹ â ð´ðð ; propositions that do not appear
+in ð¤ can have any truth value.
+
+Given a BÃ¼chi automaton for an LTLð specification B, we define
+
+the following functions:
+Definition 1 (Binding Function). ð : Î£B â 2ð´ðð such that for
+ð= (ðð , ðð¹ ) â Î£B, ð(ð) â ð´ðð is the set {ð â ð´ðð | âð ð â
+ðð âª ðð¹ }. Intuitively, it is the set of bindings that appear in label ð
+of a BÃ¼chi transition.
+Definition 2 (Capability Function). â­ : Î£B Ã ð´ðð â 2ð´ðð Ã 2ð´ðð
+such that for ð = (ðð , ðð¹ ) â Î£B, ð â ð´ðð , â­(ð, ð) = (ð¶ð , ð¶ð¹ ),
+where ð¶ð = {ð â ð´ðð | âð ð â ðð } and ð¶ð¹ = {ð â ð´ðð | âð ð â
+ðð¹ }. Here, ð¶ð and ð¶ð¹ are the sets of action propositions that are
+True/False and appear with binding ð in label ð of a BÃ¼chi transition.
+
+5.2 Agent Behavior for an LTLð Specification
+To synthesize behavior for an agent, we find an accepting trace in its
+product automaton Gð = ð´ð Ã B, where ð´ð = (ð, ð 0, ð´ð ð , ð¾, ð¿,ð ) is
+the agent model, and B = (ð, ð§0, Î£B, ð¿ B, ð¹ ) is the BÃ¼chi automaton.
+Since the set of propositions of ð´ð may not be equivalent to
+the set of propositions of B, we borrow from the definition of the
+product automaton in [6]. We first define the following function:
+Definition 3 (Binding Assignment Function). Let ð = (ð , ð§), ðâ² =
+(ð â², ð§â²), ð = (ðð , ðð¹ ) â Î£B. Then â(ð, ð, ðâ²) = {ð â 2ð´ðð \ â | âð â
+ð, (ð¶ð , ð¶ð¹ ) = â­(ð, ð), (cid:208)ð âð ð¶ð â ð¿(ð â²) and (cid:208)ð âð ð¶ð¹ â© ð¿(ð â²) = â}.
+Intuitively, â outputs all possible combinations of binding propo-
+sitions that the agent can be assigned for a transition (ð, ð, ðâ²). An
+agent can be assigned ð if and only if the agentâs next state ð â² is
+labeled with all the action and motion propositions ð â ð´ðð that
+appear in ðð as ð ð , and all the propositions ð â ð´ðð that appear in
+ðð¹ as ð ð are not part of the state label (i.e. the agent is not perform-
+ing that action). If a proposition ð ð is in ðð¹ and ð is not in ð´ð ð (e.g.
+ð ððð1 â ðð¹ and the agent does not have ðð ððð), the agent may be
+assigned ð. Note that ð may include any binding propositions that
+are not in ð, since there are no actions required by those bindings
+in that transition. For example, if ð = ({ð ððð1}, {ððððð¢ð2}) and
+ð´ðð = {1, 2, 3}, then {3} will be in the set â(ð, ð, ðâ²) for all ð, ðâ².
+
+Given ð´ð and B, we define the product automaton Gð = ð´ð Ã B:
+Definition 4 (Product Automaton). The product automaton Gð =
+(ð, ð0, ð´ð ð , ð¿ G, ð¿G,ðG, ð¹ G), where
+â¢ ð = ð Ã ð is a finite set of states
+â¢ ð0 = (ð 0, ð§0) â ð is the initial state
+
+â¢ ð¿ G â ð Ã ð is the transition relation, where for ð = (ð , ð§) and
+ðâ² = (ð â², ð§â²), (ð, ðâ²) â ð¿ G if and only if (ð , ð â²) â ð¾ and âð â Î£B
+such that (ð§, ð, ð§â²) â ð¿ B and â(ð, ð, ðâ²) â  â
+
+â¢ ð¿G is the labeling function s.t. for ð = (ð , ð§), ð¿G (ð) =ð¿(ð ) â ð´ð ð
+â¢ ðG : ð¿ G â Râ¥0 is the cost function s.t. for (ð, ðâ²) â ð¿ G, ð =
+
+(ð , ð§), ðâ² = (ð â², ð§â²), ðG ((ð, ðâ²)) = ð ((ð , ð â²))
+
+â¢ ð¹ G = ð Ã ð¹ is the set of accepting states
+
+Example. Fig. 4 depicts a small portion of Gððððð; for the self-
+transition in B that is labeled with ð = (â, {ððððð¢ð1, ðððððð2
+ð´})
+(labeled as ð1 in Fig. 3), and for states in ð´ððððð where ð¿(ð 1) =
+{ðððððððµ }, ð¿(ð 2) = {ððððððð´}, ð¿(ð 3) = {ððððððð´, ððððð¢ð}, then the
+possible binding assignments are â((ð 1, 1), ð, (ð 1, 2)) = 2{1,2,3} \ â
+and â((ð 1, 1), ð, (ð 2, 2)) = {{1}, {3}, {1, 3}}. When the agent is in
+ð 3, it cannot be assigned either bindings 1 or 2, but since no propo-
+sitions appear with binding 3 in ð, â((ð 1, 1), ð, (ð 3, 2)) = {{3}}.
+
+5.3 Finding Possible Individual Agent Bindings
+To construct a team, we first reason about each agent and the sets
+of bindings it can perform. For example, for a formula ðððððð1
+ð´ â§
+ðððððð2
+ðµ, an agent may be assigned ð ð = {1} or ð ð = {2} but not
+ð ð = {1, 2}, since it cannot be in two regions at the same time.
+
+To find the set of possible binding assignments ð ð â 2ð´ðð , we
+search for an accepting trace in Gð for every binding assignment
+ð ð â 2ð´ðð . We start from the full set of bindings ð ð = ð´ðð . Given an
+assignment ð ð to check, we find an accepting trace in Gð such that
+for all transitions (ð, ðâ²) in the trace, ð ð â â(ð, ð, ðâ²). This ensures
+that the agent can satisfy its binding assignment for the entirety of
+its execution (i.e. ð ð does not change). Since every subset of a binding
+assignment ð ð is itself a possible binding assignment, if the agent
+can be assigned all ð = |ð´ðð | bindings, then we know it can also
+be assigned every possible subset of ð. If not, we check the (cid:0) ð
+(cid:1)
+ðâ1
+combinations, and continue iterating until we have determined the
+agentâs ability to perform every combination of the ð bindings.
+
+Once an agent determines its possible binding assignments ð ð ,
+it creates the BÃ¼chi automaton Bð by removing any transition in B
+that cannot be traversed by any assignment in ð ð . In our example
+(Fig. 3), each agent can be assigned at least one binding over every
+transition in B. Thus, âð â {ððððð, ððð¢ð, ðððððð, ðððð }, Bð = B.
+
+5.4 Agent Team Assignment
+A team of agents can perform the task if 1) all the bindings are
+assigned, with each agent maintaining the same binding assignment
+for the entirety of the task, and 2) the agents satisfy synchronization
+requirements. For a viable team, the agentsâ control follows the
+same path in the BÃ¼chi automaton B to an accepting cycle. We
+perform DFS over B to find an accepting trace (Alg. 1), where each
+tuple in ð ð¡ððð contains the current edge (ð§, ð, ð§â²), the current team
+of agents ð Ëð´, and the path traversed so far ð½ Ëð´.
+
+We initialize the team with all agents ð´ð and all possible bind-
+ing assignments ð ð , and each path ð½ Ëð´ starts from state ð§0 of B.
+When checking a transition (ð§, ð, ð§â²), we remove any agent ð if
+â((ð , ð§), (ð â², ð§â²)) â ð¿ Gð
+, there are no possible binding assignments
+it can satisfy. This is done by checking each agentâs pruned BÃ¼chi
+automaton Bð in update_team (line 8). We want the agentâs behav-
+ior to satisfy not only the current transition, but also the entire path
+
+Figure 3: B for ðð (Eq. 4). The purple transitions illustrate a possible accepting trace.
+
+with a consistent binding assignment. Thus, we update possible
+bindings (update_bindings, lines 9-14).
+
+To guarantee the overall team behavior, we need to ensure agents
+are able to âwait in a state" before they synchronize, as they may
+reach states at different times. This means that each state in the
+trace must have a corresponding self-transition. Thus, for every
+(ð§, ð, ð§â²) that we add to the path in which ð§ â  ð§â², the next edge
+to traverse must be a self-transition from ð§â² to itself; the same
+holds vice-versa. In line 21, we check if the current transition is
+self-looping or not, and add subsequent transitions into the stack
+accordingly. If there is no self-transition on ð§â² (i.e. (ð§â², ð, ð§â²) â ð¿ B),
+then we do not consider ð§â² to be valid and do not add it to the path.
+Once we find a valid path to an accepting cycle, we parse it into
+ð½, the path without self-transitions, and ð¿ð ðð ð , which contains the
+corresponding self-transition for each state in the path. Fig. 3 shows
+
+Figure 4: A small portion of Gððððð
+
+a valid path in B for the example in Sec. 4 and the corresponding
+team assignment Ëð´ = {ð´ððððð, ð´ððð¢ð, ð´ðððððð, ð´ðððð } and bindings
+ðððððð = {1}, ðððð¢ð = {3}, ððððððð = {1}, ððððð = {2, 3}. Note that
+we find a valid path rather than a globally optimal one. However,
+the algorithm is complete; it will find a feasible path if one exists.
+
+5.5 Synthesis and Execution of Control and
+
+Synchronization Policies
+
+Given an accepting trace ð½ through B and the corresponding self-
+transitions ð¿ð ðð ð that are valid for all agents in ð Ëð´, we synthesize
+control and synchronization for each agent such that the overall
+team execution satisfies ð½ (Alg. 2). For each transition (ð§, ð, ð§â²) in
+ð½, we find ð, which contains the binding assignments of all agents
+that require synchronization at state ð§â². Agent ð participates in the
+synchronization step if ð ð contains a binding ð that is required by
+ð and is not the only agent assigned bindings from ð (line 3).
+
+Subsequently, agent ð finds an accepting trace in Gð that reaches
+ð§â² with minimum cost, following self-transitions stored in ð¿ð ðð ð
+if necessary. As it executes this behavior, it communicates with
+other agents the tuple ð, which contains 1) its ID, 2) the state ð§â² it
+is currently going to, and 3) if it is ready for synchronization (line
+8). If no synchronization is required (line 3), the agent can simply
+execute the behavior. Otherwise, to guarantee that the behavior
+does not violate the requirements of the task, the agent executes
+the synthesized behavior up until the penultimate state, ð§ð¤ððð¡ .
+
+When the agent reaches ð§ð¤ððð¡ , it signals to other agents that
+it is ready for synchronization. Since all agents know the overall
+
+Algorithm 1: Find Accepting Trace for Agent Team
+:ð´ = {ð´1, ð´2, ..., ð´ð }, ð = {ð1, ð2, ..., ðð }, B,
+Input
+{B1, B2..., Bð }
+
+Output : ð½, ð¿ð ðð ð , Ëð´ â ð´, ð Ëð´
+
+1 ð ð¡ððð = â, ð£ðð ðð¡ðð = â
+2 for ð â {(ð§, ð, ð§â²) â ð¿ B | ð§ = ð§0} do
+ð ð¡ððð = ð ð¡ððð âª {(ð, ð, [ð])}
+
+3
+4 while ð ð¡ððð â  â do
+5
+
+((ð§, ð, ð§â²), ð Ëð´, ð½ Ëð´) = ð ð¡ððð.ððð ()
+if (ð§, ð, ð§â²) â ð£ðð ðð¡ðð then
+
+ð£ðð ðð¡ðð = ð£ðð ðð¡ðð âª (ð§, ð, ð§â²)
+ð Ëð´ = update_team((ð§, ð, ð§â²), {B1, ..., Bð })
+for ð ð â ð Ëð´ do
+
+ðâ²
+ð = update_bindings(ð ð , (ð§, ð, ð§â²))
+if ðâ²
+
+ð = â then
+ð Ëð´ = ð Ëð´ \ ð ð
+
+else
+
+ð Ëð´ = (ð Ëð´ \ ð ð ) âª ðâ²
+ð
+if (cid:208)ð (ð ð â ð Ëð´) = ð´ðð then
+
+if ð§â² â ð¹ then
+
+ð½, ð¿ð ðð ð = parse_path(ð½ Ëð´)
+return ð½, ð¿ð ðð ð , ð Ëð´
+ð¸ = {(ð§â², ð â², ð§â²â²) â ð¿ B }
+for (ð§â², ð â², ð§â²â²) â ð¸ do
+
+if (ð§ = ð§â² and ð§â² â  ð§â²â²) or
+(ð§ â  ð§â² and ð§â² = ð§â²â²) then
+
+ð ð¡ððð = ð ð¡ððð âª
+
+(cid:16)
+
+{
+
+(ð§â², ð â², ð§â²â²), ð Ëð´, [ð½ Ëð´ (ð§â², ð â², ð§â²â²)]
+
+(cid:17)
+
+}
+
+Algorithm 2: Synthesize an Agentâs Behavior
+Input
+
+: Gð , ð ð , ð Ëð´, ð½, ð¿ð ðð ð
+
+1 for (ð§, ð, ð§â²) â ð½ do
+2
+
+ð ð = find_behavior(Gð , ð ð , (ð§, ð, ð§â²), ð¿ð ðð ð )
+ð = {ðð â ð Ëð´ | ðð â© ð(ð) â  â} if ð ð â ð or ð = {ð ð }
+
+then
+
+ð = ()
+execute(ð ð , ð)
+
+else
+
+ð = ( ð, ð§â², 0), â = ððððð¡â(ð ð )
+execute(ð ð [1 : â â 1], ð)
+ð§ð¤ððð¡ = ð ð [â â 1], ð = { ð }
+while (cid:208)ð âð (ðð â ð) â  ð(ð) do
+
+ð = ( ð, ð§â², 1)
+execute(ð§ð¤ððð¡ , ð)
+ð = ð âª {ð | (ð, ð§â², 1) â receive()}
+
+execute(ð ð [â])
+
+teaming assignment, the agent continues to wait in state ð§ð¤ððð¡ un-
+til it receives a signal that all other agents in ð are ready (line 13).
+These agents then move to the next state in the behavior simulta-
+neously. Agent ð continues synthesizing behavior through ð½ until
+synchronization is necessary again, and this process is repeated.
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+6 RESULTS AND DISCUSSION
+Fig. 5 shows the final step of the synchronized behavior of the
+agent team for the example in Section 4, where Ëð´ = {ð´ððððð, ð´ððð¢ð ,
+ð´ðððððð , ð´ðððð } with binding assignments ðððððð = {1}, ðððð¢ð =
+{3}, ððððððð = {1}, ððððð = {2, 3}. A simulation of the full behavior
+is shown in the accompanying video.
+Optimizing teams: Our synthesis algorithm can be seen as a great-
+est fixpoint computation, where we start with the full set of agents
+and remove those that cannot contribute to the task. As a result, the
+team may have redundancies, i.e. agents can be removed while still
+ensuring the overall task will be completed; this may be beneficial
+for robustness. Furthermore, we can choose a sub-team to optimize
+different metrics, as long as the agent bindings assignments still
+cover all the required bindings. For example, minimizing the num-
+ber of bindings per agent could result in Ëð´ = {ð´ððððð, ð´ððð¢ð, ð´ðððð },
+ðððððð = {1}, ðððð¢ð = {3}, ððððð = {2}; minimizing the number of
+agents results in Ëð´ = {ð´ððððð, ð´ðððð }, ðððððð = {1}, ððððð = {2, 3}.
+To illustrate other possible metrics, we consider a set of 20 agents
+and create a team for the specification in Eq. 4. Their final binding
+assignments and costs are shown in Table 1. Minimizing cost results
+in a team Ëð´ = {ð´7, ð´11}. Minimizing cost while requiring each bind-
+ing to be assigned to two agents results in Ëð´ = {ð´4, ð´7, ð´11, ð´16}.
+
+Figure 5: The final step in the synchronized behavior of the
+agent team with their corresponding actions.
+
+Computational complexity: The control synthesis algorithm
+(Alg. 2) is agnostic to the number of agents, since each agent de-
+termines its own possible bindings assignments and behavior. For
+the team assignment (Alg. 1), since it is a DFS algorithm, we need
+to store the agent team and their possible binding assignments as
+we build an accepting trace. Thus, it has both a space and time
+complexity of ð (|ð¸| â 2ð â ð), where |ð¸| is the number of edges in
+B, ð is the number of bindings, and ð is the number of agents.
+
+Fig. 6a shows the computation time of the synthesis framework
+(Sec. 5.2 â 5.4) for simulated agent teams in which we vary the
+number of agents from 3 to 20, running 30 simulations for each
+set of agents and randomizing their capabilities. The task for each
+simulation is the example in Eq. 4. We also ran simulations in which
+we increase the number of bindings from 3 to 10 and randomized
+the capabilities of 4 agents (Fig. 6b). The variance in computation
+time is a result of the randomized agent capabilities, which affects
+the computation time of possible binding assignments (Sec. 5.3).
+All simulations ran on a 2.5 GHz quad-core Intel Core i7 CPU.
+
+Agent
+1
+2
+3
+4
+
+ð ð
+1
+3
+1
+2,3
+
+ððð ð¡ Agent
+1.2
+1.0
+1.2
+1.3
+
+5
+6
+7
+8
+
+ð ð
+3
+1
+1
+1
+
+ððð ð¡ Agent
+2.75
+0.95
+0.65
+1.0
+
+9
+10
+11
+12
+
+ð ð
+3
+1
+2,3
+2,3
+
+ððð ð¡
+2.6
+2.8
+0.9
+1.825
+
+Agent
+13
+14
+15
+16
+
+ð ð
+3
+1
+3
+1
+
+ððð ð¡
+2.0
+1.2
+1.1
+0.775
+
+Agent
+17
+18
+19
+20
+
+ð ð
+2,3
+3
+1
+2,3
+
+ððð ð¡
+3.275
+2.55
+1.9
+2.35
+
+Table 1: Example teaming assignment with 20 robots
+
+â§ððððððððµ,3
+1,ðððð 
+
+â§ðððððððð´,1
+1,ððð
+
+â§ððððððððµ,3
+1,ð ð
+
+). The truth value of
+
+ððððððððµ,2
+1,ð ð
+ðð,ð
+is not dependent on any particular action an agent might take.
+ð,ð
+LTLð can be extended to action propositions, but since an agent can
+only be categorized as one type, each type of agent must have non-
+overlapping capabilities (here, we have written the LTLð formula
+such that each type of agent only has one capability). In addition,
+ðð
+2 (Eq. 4b) cannot be written in LTLð because the negation defined
+in our grammar cannot be expressed in LTLð . On the other hand,
+the negative proposition Â¬ðð,ð
+from [15] is equivalent to âless than
+ð,ð
+ð agents of type ð are in region ð", which our logic cannot encode.
+Capability Temporal Logic (CaTL): Tasks in CaTL [13] are con-
+structed over tasks ð = (ð, ð, ððð ), where ð is a duration of time, ð
+is a region in AP, (ðð, ðð ) â ððð denotes that at least ðð agents with
+capability ðð are required. Similar to our grammar, CaTL allows
+agents to have multiple capabilities, but each task must specify
+the number of agents required. Since it is an extension of Signal
+Temporal Logic, tasks provide timing requirements, which our
+logic cannot encode. However, it does not include the concept of
+binding assignments; in our example ðð
+1 (Eq. 4a), CaTL cannot ex-
+press that we require the same agent that took a UV measurement
+to also take a thermal image. Ignoring binding assignments and
+adding timing constraints, ðð
+1 (Eq. 4a) can be rewritten in CaTL as
+(cid:94)[0,10) (ð (0.1, ðððððððµ, {(ðððð ð¡ð¢ðð, 2), (ðð , 2)})â§ ð (0.5, ððððððð´,
+{(ððð, 1)}). Each capability in CaTL is represented as a sensor and
+therefore cannot include more complex capabilities, such as a robot
+arm that can perform several different actions. In addition, because
+CaTL requires the formula to be in positive normal form (i.e. no
+negation), we cannot express ðð
+
+2 (Eq. 4b) in this grammar.
+
+7 CONCLUSION
+We define a new task grammar for heterogeneous teams of agents
+and develop a framework to automatically assign the task to a
+(sub)team of agents and synthesize correct-by-construction control
+policies to satisfy the task. We include synchronization constraints
+to guarantee that the agents perform the necessary collaborations.
+In future work, we plan to demonstrate the approach on physical
+systems where we need to ensure that the continuous execution
+satisfies all the collaboration and safety constraints. In addition, we
+will explore different notions of optimality when finding a teaming
+plan, as well as increase the expressivity of the grammar by allowing
+reactive tasks where agents modify their behavior at runtime in
+response to environment events.
+
+ACKNOWLEDGMENTS
+This work is supported by the National Defense Science & Engi-
+neering Graduate Fellowship (NDSEG) Fellowship Program.
+
+(a)
+
+(b)
+
+Figure 6: Computation time when increasing the number
+of agents (a) and the number of bindings (b). The error bars
+represent min/max values.
+Task expressivity with respect to other approaches: We com-
+pare LTLð to other approaches that encode collaborative heteroge-
+neous multi-agent tasks using temporal logic.
+
+Standard LTL: One approach is to use LTL to express the task by
+enumerating all possible assignments in the specification. In our
+example, Eq. 4a would be rewritten as:
+1 =((cid:94)((ððððððððððð
+ðð
+â§(ððððððððð¢ð
+â¨((cid:94)((ððððððððððð
+ðµ
+â§(ðððððððððððð
+
+â§ ðððð ð¡ð¢ððððððð â§ ðð ððððð)
+
+â§ ðððð ð¡ð¢ððððððð â§ ðð ððððð)
+
+ð´ â§ ððððð¢ðððð¢ð )))
+
+â§ ððððð¢ððððððð ))) â¨ ...
+
+ðµ
+
+ð´
+
+where each agent has its own unique set of ð´ð, denoted here by
+each propositionâs superscript. As a result, the number of proposi-
+tions increases exponentially with the number of agents. The task
+complexity also increases, as the specification must include all pos-
+sible agent assignments. Another drawback of using LTL for such
+tasks is that the specification is not generalizable to any number of
+agents; it must be rewritten when the set of agents change.
+
+LTLð : In [15], tasks are written in LTLð , where proposition ðð,ð
+ð,ð
+is true if at least ð agents of type ð are in region ð with binding
+ð. We can express ðð
+
+1 (Eq. 4a) of our example as (cid:94)(ððððððððµ,2
+
+1,ðððð 
+
+â§
+
+International Conference on Robotics and Automation (2012), 4693â4698.
+[21] Hanlin Wang and Michael Rubenstein. 2020. Shape Formation in Homogeneous
+Swarms Using Local Task Swapping. IEEE Transactions on Robotics 36, 3 (2020),
+597â612. https://doi.org/10.1109/TRO.2020.2967656
+
+[22] Bo Xu, Zhaofeng Yang, Yu Ge, and Zhiping Peng. 2015. Coalition Formation in
+Multi-agent Systems Based on Improved Particle Swarm Optimization Algorithm.
+International Journal of Hybrid Information Technology 8 (03 2015), 1â8. https:
+//doi.org/10.14257/ijhit.2015.8.3.01
+
+REFERENCES
+[1] Christel Baier and Joost-Pieter Katoen. 2008. Principles of Model Checking. The
+
+MIT Press.
+
+[2] Ji Chen, Ruojia Sun, and Hadas Kress-Gazit. 2021. Distributed Control of Robotic
+Swarms from Reactive High-Level Specifications. In 2021 IEEE 17th International
+Conference on Automation Science and Engineering (CASE). 1247â1254. https:
+//doi.org/10.1109/CASE49439.2021.9551578
+
+[3] Yushan Chen, Xu Chu Ding, and Calin Belta. 2011. Synthesis of distributed
+control and communication schemes from global LTL specifications. In 2011
+50th IEEE Conference on Decision and Control and European Control Conference.
+2718â2723. https://doi.org/10.1109/CDC.2011.6160740
+
+[4] Alexandre Duret-Lutz, Alexandre Lewkowicz, Amaury Fauchille, Thibaud
+Michaud, Etienne Renault, and Laurent Xu. 2016. Spot 2.0 â a framework for LTL
+and ð-automata manipulation. In Proceedings of the 14th International Symposium
+on Automated Technology for Verification and Analysis (ATVAâ16) (Lecture Notes
+in Computer Science, Vol. 9938). Springer, 122â129. https://doi.org/10.1007/978-3-
+319-46520-3_8
+
+[5] E. Allen Emerson. 1990. Temporal and Modal Logic.
+
+In Formal Models and
+Semantics, JAN Van Leeuwen (Ed.). Elsevier, Amsterdam, 995â1072. https://doi.
+org/10.1016/B978-0-444-88074-1.50021-4
+
+[6] Amy Fang and Hadas Kress-Gazit. 2022. Automated Task Updates of Temporal
+Logic Specifications for Heterogeneous Robots. In 2022 International Conference on
+Robotics and Automation (ICRA). 4363â4369. https://doi.org/10.1109/ICRA46639.
+2022.9812045
+
+[7] Fatma Faruq, David Parker, Bruno Laccrda, and Nick Hawes. 2018. Simultaneous
+Task Allocation and Planning Under Uncertainty. In 2018 IEEE/RSJ International
+Conference on Intelligent Robots and Systems (IROS). 3559â3564. https://doi.org/
+10.1109/IROS.2018.8594404
+
+[8] Brian P. Gerkey and Maja J. MatariÄ. 2004. A Formal Analysis and Taxonomy
+of Task Allocation in Multi-Robot Systems. The International Journal of Robot-
+ics Research 23, 9 (2004), 939â954. https://doi.org/10.1177/0278364904045564
+arXiv:https://doi.org/10.1177/0278364904045564
+
+[9] Xiao Jia and Max Q.-H. Meng. 2013. A survey and analysis of task allocation
+algorithms in multi-robot systems. In 2013 IEEE International Conference on
+Robotics and Biomimetics (ROBIO). 2280â2285. https://doi.org/10.1109/ROBIO.
+2013.6739809
+
+[10] Yiannis Kantaros and Michael M Zavlanos. 2020. STyLuS*: A Temporal Logic
+Optimal Control Synthesis Algorithm for Large-Scale Multi-Robot Systems. The
+International Journal of Robotics Research 39, 7 (2020), 812â836. https://doi.org/
+10.1177/0278364920913922 arXiv:https://doi.org/10.1177/0278364920913922
+[11] Marius Kloetzer and Calin Belta. 2010. Automatic Deployment of Distributed
+Teams of Robots From Temporal Logic Motion Specifications. IEEE Transactions
+on Robotics 26, 1 (2010), 48â61. https://doi.org/10.1109/TRO.2009.2035776
+[12] G. Ayorkor Korsah, Anthony Stentz, and M. Bernardine Dias. 2013. A comprehen-
+sive taxonomy for multi-robot task allocation. The International Journal of Robot-
+ics Research 32, 12 (2013), 1495â1512. https://doi.org/10.1177/0278364913496484
+arXiv:https://doi.org/10.1177/0278364913496484
+
+[13] Kevin Leahy, Zachary Serlin, Cristian-Ioan Vasile, Andrew Schoer, Austin M.
+Jones, Roberto Tron, and Calin Belta. 2022. Scalable and Robust Algorithms for
+Task-Based Coordination From High-Level Specifications (ScRATCHeS). IEEE
+Transactions on Robotics 38, 4 (2022), 2516â2535. https://doi.org/10.1109/TRO.
+2021.3130794
+
+[14] Zhiyong Li, Bo Xu, Lei Yang, Jun Chen, and Kenli Li. 2009. Quantum Evolu-
+tionary Algorithm for Multi-Robot Coalition Formation. In Proceedings of the
+First ACM/SIGEVO Summit on Genetic and Evolutionary Computation (Shanghai,
+China) (GEC â09). Association for Computing Machinery, New York, NY, USA,
+295â302. https://doi.org/10.1145/1543834.1543874
+
+[15] Xusheng Luo and Michael M. Zavlanos. 2022. Temporal Logic Task Allocation in
+Heterogeneous Multirobot Systems. IEEE Transactions on Robotics (2022), 1â20.
+https://doi.org/10.1109/TRO.2022.3181948
+
+[16] Yunus Emre Sahin, Petter Nilsson, and Necmiye Ozay. 2017. Synchronous and
+asynchronous multi-agent coordination with cLTL+ constraints. In 2017 IEEE
+56th Annual Conference on Decision and Control (CDC). 335â342. https://doi.org/
+10.1109/CDC.2017.8263687
+
+[17] Philipp Schillinger, Mathias BÃ¼rger, and Dimos V. Dimarogonas. 2018. Si-
+multaneous task allocation and planning for temporal logic goals in het-
+erogeneous multi-robot systems. The International Journal of Robotics Re-
+search 37, 7 (2018), 818â838.
+https://doi.org/10.1177/0278364918774135
+arXiv:https://doi.org/10.1177/0278364918774135
+
+[18] Thomas Schmickl, Christoph MÃ¶slinger, and Karl Crailsheim. 2006. Collective
+Perception in a Robot Swarm. 144â157. https://doi.org/10.1007/978-3-540-71541-
+2_10
+
+[19] Jana Tumova and Dimos V. Dimarogonas. 2016. Multi-agent planning under
+local LTL specifications and event-based synchronization. Automatica 70 (2016),
+239â248. https://doi.org/10.1016/j.automatica.2016.04.006
+
+[20] Alphan Ulusoy, Stephen L. Smith, Xu Chu Ding, and Calin A. Belta. 2012. Robust
+multi-robot optimal path planning with temporal logic constraints. 2012 IEEE
+
+

@@ -1,0 +1,2881 @@
+Guidance of Agents in Cyclic Pursuitâ
+
+Ilana Segall and Alfred Bruckstein
+
+Center for Intelligent Systems
+MultiAgent Robotic Systems (MARS) Lab
+Computer Science Department
+Technion, Haifa 32000, Israel
+July 3, 2020
+
+0
+2
+0
+2
+
+l
+u
+J
+
+2
+
+]
+
+O
+R
+.
+s
+c
+[
+
+1
+v
+9
+4
+9
+0
+0
+.
+7
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+âThis research was partly supported by Technion Autonomous Systems Program
+
+(TASP)
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+Contents
+
+1 Introduction
+
+1.1 Literature survey and our contribution . . . . . . . . . . . . . .
+1.1.1 Linear cyclic pursuit
+. . . . . . . . . . . . . . . . . . . .
+1.1.2 Cyclic pursuit with non-linear local control . . . . . . .
+1.2 Paper outline and main results . . . . . . . . . . . . . . . . . . .
+
+2 Linear cyclic pursuit with broadcast control
+
+2.1 Homogeneous linear cyclic pursuit . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . .
+2.2 The eï¬ect of the exogenous control
+2.2.1 Movement in the agreement space . . . . . . . . . . . .
+2.2.2 Deviation from the agreement space . . . . . . . . . . .
+2.3 Asymptotic trajectories of n agents with an exogenous velocity
+control detected by nl agents . . . . . . . . . . . . . . . . . . . .
+Illustration of linear cyclic pursuit - single interval . . . . . . .
+Illustration of linear cyclic pursuit - multiple intervals . . . . .
+
+2.4
+2.5
+
+3 Non-linear cyclic pursuit
+
+3.1
+3.2
+
+âBugsâ model . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+âBugsâ model with external input . . . . . . . . . . . . . . . . .
+Single di behaviour . . . . . . . . . . . . . . . . . . . . .
+3.2.1
+3.2.2 Gathering in ï¬nite time . . . . . . . . . . . . . . . . . .
+
+4 Illustration by simulation of emergent behaviour in bearing-
+
+only cyclic pursuit
+4.1 Simulation parameters . . . . . . . . . . . . . . . . . . . . . . . .
+4.2 Examples of simulations results . . . . . . . . . . . . . . . . . .
+4.2.1 Example1-bugs: Gathering property of the homoge-
+neous âbugsâ model . . . . . . . . . . . . . . . . . . . . .
+4.2.2 Example2-bugs: Impact of external input and incom-
+. . . . . . . . . . . . . . . .
+. . .
+
+4.2.3 Example3-bugs: Broadcast signal received by all
+
+plete sets of ad-hoc leaders
+
+Appendices
+
+A About matrices
+
+A.1 Algebraic and geometric multiplicity of eigenvalues
+. . . . . .
+A.2 Diagonizable matrices . . . . . . . . . . . . . . . . . . . . . . . .
+
+2
+
+6
+8
+8
+11
+12
+
+13
+15
+15
+16
+16
+
+17
+18
+25
+
+28
+28
+30
+31
+35
+
+37
+38
+38
+
+38
+
+40
+52
+
+58
+
+58
+58
+59
+
+A.3 Left eigenvectors . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.4 About non-symmetric real matrices . . . . . . . . . . . . . . . .
+A.5 Normal matrices . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.6 Unitary matrices and unitary similarity . . . . . . . . . . . . .
+
+59
+60
+60
+60
+
+B Laplacian representation of Graphs
+
+B.1 Directed graphs - digraphs . . . . . . . . . . . . . . . . . . . . .
+
+61
+62
+B.1.1 Properties of Laplacian matrices associated with digraphs 62
+
+C Properties of circulant matrices
+
+C.1 Cyclic pursuit . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+63
+64
+
+D Proof of mutual capture existence in ï¬nite time, in non-linear
+
+cyclic pursuit without broadcast control - Lemma 1.1 in [25] 64
+
+3
+
+Abstract
+
+This report studies the emergent behavior of systems of agents
+performing cyclic pursuit controlled by an external broadcast signal
+detected by a random set of the agents. Two types of cyclic pursuit are
+analyzed: 1)linear cyclic pursuit, where each agent senses the relative
+position of its target or leading agent 2)non-linear cyclic pursuit, where
+the agents can sense only bearing to their leading agent and colliding
+agents merge and continue on the path of the pursued agent (a so-
+called âbugsâ model). Cyclic pursuit is, in both cases, a gathering
+algorithm, which has been previously analyzed. The novelty of our
+work is the derivation of emergent behaviours, in both linear and non-
+linear cyclic pursuit, in the presence of an exogenous broadcast control
+detected by a random subset of agents. We show that the emergent
+behavior of the swarm depends on the type of cyclic pursuit. In the
+linear case, the agents asymptotically align in the desired direction
+and move with a common speed which is a proportional to the ratio
+of the number of agents detecting the broadcast control to the total
+number of agents in the swarm, for any magnitude of input (velocity)
+In the non-linear case, the agents gather and move with a
+signal.
+shared velocity, which equals the input velocity signal, independently
+of the number of agents detecting the broadcast signal.
+
+Keywords: cyclic pursuit, broadcast control, random leaders, emergent be-
+havior
+
+4
+
+Symbols and Abbreviations
+
+n - Number of agents
+pi - position of agent i, pi â R2
+xi - x coordinate of pi
+yi - y coordinate of pi
+P - vector of stacked positions of all agents, P = (p1, ...., pn)T
+X - vector of x coordinates, X = (x1, . . . , xn)T
+Y - vector of y coordinates, Y = (y1, . . . , yn)T
+ui - local gathering control applied by agent i, ui â R2
+Uc - external broadcast control, Uc â R2
+bi - ï¬ag indicating whether agent i detected the broadcast control, 1/0
+B - vector indicator of agents detecting the broadcast control, B(i) = bi
+N l - the set of agents detecting the broadcast control
+nl - the number of agents detecting the broadcast control, nl = â£N lâ£
+â¥vâ¥ - Euclidean norm of vector v
+â£sâ£ - absolute value of scalar s
+di - distance of agent i from i + 1, di = â¥pi â pi+1â¥
+(.), conjugate of (.), scalar or vector
+vâ - transpose conjugate of vector v, vâ = (v)T
+1n - vector of ones, size n
+0n - vector of zeroes, size n
+
+5
+
+1
+
+Introduction
+
+In this work we consider the behaviour of n agents performing cyclic pursuit,
+when an exogenous velocity control is broadcast by a controller and detected
+by a random set of agents. The cyclic pursuit problem is formulated as n
+agents chasing each other. The agents are ordered from 1 to n, and agent i
+acquires information about its leading agent (prey) i+1. The agent indices are
+(modulo n) throughout this paper. The agents start from arbitrary positions
+on a plane.
+
+In graph theoretic terms, cyclic pursuit can be represented by a directed
+cycle graph, whose nodes are the agents and the directed edges depict the
+information ï¬ow, as shown in Fig. 1.
+
+Figure 1: Information ï¬ow in cyclic pursuit
+
+In this work we consider two types of information possibly acquired by
+
+the agents
+
+1. Relative position to the chased âtargetâ agent
+
+2. Bearing only information, i.e. direction to the target
+
+Let pi(t) be the position of agent i at time t; pi(t) â R2. We assume the
+agents to be identical, memory-less particles, modeled as single integrators.
+
+6
+
+1. In case of relative position information, the autonomous kinematics of
+
+agent i can be expressed as
+
+Ëpi(t) = k(pi+1(t) â pi(t); k > 0 i = (1, ...n)
+
+(1)
+
+In the sequel we assume, without loss of generality, k = 1. Itâs easy to
+see that in this case (1) can be decoupled into
+
+Ëxi(t) = xi+1(t) â xi(t)
+Ëyi(t) = yi+1(t) â yi(t)
+
+(2)
+(3)
+
+Thus, we can consider only the x coordinates and obtain results for
+the y coordinates by similarity. Let X(t) = (x1(t), . . . , xn(t))T . Then,
+from (2), we have
+
+ËX(t) = M X(0)
+
+Eq. (4) is a linear system, where M is the circulant matrix (5).
+
+M = circ[â1, 1, 0, 0, â¯, 0] =
+
+â¡
+â1
+0
+1
+â¢
+â¢
+0 â1 1
+â¢
+â¢
+â¢
+â®
+â¢
+â¢
+â£
+
+1
+
+0
+
+0 â¯ 0
+0 â¯ 0
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¯ 0 â1
+â¦
+
+(4)
+
+(5)
+
+This system shall be referred to in the sequel as linear cyclic pursuit.
+
+2. Bearing only information ï¬ow generates a non-linear cyclic pursuit. Let
+
+di(t) be the distance between agents i and i + 1 at time t:
+
+di(t) = â¥pi+1(t) â pi(t)â¥
+
+(6)
+
+where â¥.â¥ represents the Euclidean norm. Then, if di(t) â  0 the law of
+bearing-only autonomous motion can be written as
+
+Ëpi(t) = pi+1(t) â pi(t)
+
+di(t)
+
+where we assumed the speed of all agents to be 1. Moreover, we assume
+that if di(Ët) = 0 at some time Ët, then pi(t) = pi+1(t) for all t â¥ Ët, i.e.
+when agents i and i + 1 collide they merge and continue as one agent
+in the direction of i + 1. This model is known in the literature as the
+âbugsâ model, see e.g. [25], [14] and references therein .
+
+7
+
+The novelty of our work is the derivation of emergent behaviours, in
+both linear and non-linear cyclic pursuit, in the presence of an exogenous
+broadcast velocity signal detected by a random subset of agents. The impact
+of the external velocity signal on the movement of agents in the linear case
+is shown in section 2 and for the non-linear case in section 3.
+
+1.1 Literature survey and our contribution
+
+1.1.1 Linear cyclic pursuit
+
+Autonomous linear cyclic pursuit, belongs to the larger class of networks
+with directed, ï¬xed topology graphs, denoted by G, where each node applies
+protocol (8)
+
+Ëxi(t) = ui(t)
+ui(t) = â
+jâNi
+
+aij(xj(t) â xi(t));
+
+i â {1, . . . , n}
+
+(7)
+(8)
+
+where Ni is the neighborhood of i, deï¬ned as Ni = {j â {1, . . . , n}: aij > 0}.
+In our case Ni = {i + 1 mod(n)}, aij = 1âi and G is as depicted by Fig. 1.
+Olfati-Saber, Fax and Murray show in [20], [21] that a network of integrators
+with directed information ï¬ow, G, that is strongly connected, using Protocol
+(8), yields the following results:
+
+â¢ It globally asymptotically solves an agreement problem, i.e. xi(t â
+
+â) = xj(t â â) = Î±; âi, j, [see Proposition 2 in [20])
+
+â¢ A suï¬cient condition for Î± = Avg(x(0)), i.e. the agreement to be the
+
+i=1 ui = 0.
+
+average agreement, is ân
+Note that if G is undirected and symmetric, i.e. aij = aji, then the
+i=1 ui = 0 automatically holds and Avg(x(t)) is an invariant
+condition ân
+quantity, see [22]
+
+â¢ G globally asymptotically solves the average-consensus problem using
+
+Protocol (8) if and only if G is balanced.
+
+Recalling that
+
+â¢ A digraph is called strongly connected if for every pair of vertices there
+
+is a directed path between them.
+
+8
+
+â¢ A node is called balanced if the total weight of edges entering the node
+
+and leaving the same node are equal
+
+â¢ If all nodes in the digraph are balanced then the digraph is called
+
+balanced
+
+We observe that the circular ï¬ow graph, depicted in Fig. 1, is strongly
+i=1 ui = 0,
+
+connected, balanced and, using ui(t) = xi+1(t) â xi(t), satisï¬es ân
+the system described by 2, 3 solves the average consensus problem.
+
+Addressing speciï¬cally the problem of linear cyclic pursuit, other re-
+searchers derived similar results. Bruckstein et al., in [4], see Section âLinear
+Insectsâ, showed that for every initial condition, the agents exponentially
+converge to a single point, computable from the initial conditions of the
+agents. Marshal, in [16] Section 2.2.6, oï¬ers an alternate proof for the same.
+If the agents apply heterogeneous gains to the ui, i.e. ui(t) = ki(pi+1(t) â
+pi(t)); ki > 0 âi, then the point of convergence of the agents can be controlled
+by selecting these gains, as shown in [27]. Moreover, if convergence to a point
+is achievable, then other formations are achievable by a simple modiï¬cation,
+where each agent pursues a displaced version of the next agent, as discussed
+in [15].
+
+All of the above studies consider zero input or autonomous systems in
+cyclic pursuit. Our main contribution is in the addition of an external broad-
+cast control, detected by a random set of agents, and the derivation of the
+asymptotic behaviour of the system in this case. Ren, Beard, and McLain,
+in [24], consider the problem of dynamic consensus, which at ï¬rst glance is
+similar to ours but is only a simple, special case, of our paradigm and results.
+Applying their general graph case to the cyclic pursuit case, the update law
+they apply is
+
+Ëxi(t) = (xi+1(t) â xi(t)) + U (t)
+i.e. a common input U (t) is applied at time t to all agents. They show
+(Theorem 3) that in this case â¥x(t)âÎ¶(t)â¥ tâââââ 0, where Î¶(t) is the integral of
+U (t) starting at the equilibrium point of the autonomous, zero input system.
+Moore and Lucarelli, [19] consider the case where a separate input enters
+each agent. However, they limit their analysis speciï¬cally the case where an
+input enters only one node (or agent), say k. Moreover, the input is not a
+general velocity control, as in our paradigm, but attraction of agent k to a
+
+9
+
+goal position, say xsp, i.e.
+
+Ui(t) =
+
+â§âªâª
+â¨
+âªâªâ©
+
+(xsp â xi(t))
+0 otherwise
+
+if i = k
+
+(9)
+
+Dimarogonas, Gustavi et al. in [7], [9] also consider the global mission of con-
+verging to a known destination point, but allow for multiple leaders. Leaders
+are predesignated agents holding the information of the goal destination, thus
+the external input in this case becomes
+
+Ui(t) =
+
+â§âªâª
+â¨
+âªâªâ©
+
+(xsp â xi(t))
+0 otherwise
+
+if i â K
+
+(10)
+
+where K is the predesignated set of leaders. In [23], W. Ren extends the
+problem of reaching a goal position to that of consensus to a time varying
+reference state, and shows necessary and suï¬cient conditions under which
+consensus is reached on the time-varying reference state. This is the problem
+of tracking a time dependent state and not of steering by an external velocity
+signal received by a random set of agents, as in our case.
+
+In other works, the model is even further from our paradigm. Some
+assume that the (predesignated) leaders have a ï¬xed state value and do not
+in [12]
+abide by the agreement protocol. For example, Jadbabaie et al.
+consider Vicsekâs discrete model [28], and introduce a leader that moves
+with a ï¬xed heading. Yet others add special agents to the swarm with
+the purpose of controlling the collective behavior. In [10], [11] these special
+agents are referred to as âshillsâ 1. The basic local rules of motion of the
+existing agents in the system are not changed, however the shill does not
+obey the same local rules but has a local control of its own, depending on
+the states of the ordinary agents and a secret goal function.
+
+We recall that in our paradigm the position of the agents is not known
+to themselves and the leaders are are not special agents but regular agents,
+randomly selected from the swarm, obeying the same gathering rule of motion
+as the remaining agents. The external input is a velocity signal aimed at
+steering the swarm in a desired direction and not a goal position for the
+swarm. Thus our problem, as well as solution and results, is diï¬erent from
+the above discussed cases, covered in the literature.
+
+1Shill is a decoy who acts as an enthusiastic, internally driven agent, that looks like an
+
+ordinary agent, having the goal to stimulate the participation of others
+
+10
+
+1.1.2 Cyclic pursuit with non-linear local control
+
+Our paradigm for non-linear cyclic pursuit discussed herein, comprising sens-
+ing direction to prey, chasing along the line of sight with unit speed and cap-
+ture (merge) upon collision, is commonly referred to in the existing literature
+as the bugs problem, also known as âantsâ, see e.g. [4], [3]. In [3] the conver-
+gence of n ants in cyclic pursuit to an encounter point is proved. Richardson
+In [4], Bruckstein
+shows in [25] that the encounter occurs in ï¬nite time.
+et. al extend the model allowing each bug (ant) to move at diï¬erent, time
+dependent speed, vi(t). They show that integrability of the speed plays a
+central role in the emerging behaviour of the swarm. Speed vi(t) is integrable
+iï¬ the cumulative distance travelled by ant i at time t, Vi(t) = â«
+vi(s)ds
+holds Vi(â) < â. Constant speeds are not integrable, hence, according to
+Theorem 1.ii in [4], the time of the last ant collision, i.e. termination time,
+is ï¬nite.
+
+0
+
+t
+
+The question of simultaneous mutual capture, i.e. the existence of a time
+tc such that the distances di(tc) â â¥pi+1(tc) â pi(tc)â¥ = 0 and di(t) > 0 ât â
+[t0, tc) for all i, was also investigated. In 1971 Klamkin and Newman, [14],
+showed that if n = 3, the 3 bugs travel at the same speed and the initial po-
+sitions of the bugs are not collinear, then the meeting of the three bugs must
+be mutual, i.e. all bugs capture their prey simultaneously. Klamkin and
+Newman speculate that this result generalizes to more bugs. In [2], Behroozi
+and Gagnon prove that it does indeed generalize to n = 4 if the bugs initial
+positions form a convex polygon. Only non-convex conï¬gurations can give
+rise to a premature capture but a non-convex conï¬guration cannot evolve
+from a convex conï¬guration. Behroozi and Gagnon in [2] generalize some
+aspects of the proof for the n-bug systems but leave some open questions.
+Thus, conditions for mutual capture for n-bug systems, n > 4, remain con-
+jectures supported by simulations, see e.g.
+[1]. Richardson shows in [25],
+that, in the general case of n bugs in k dimensions, it is possible for bugs
+to capture their prey without all bugs simultaneously doing so even for non-
+collinear initial positions, however the probability of a non-mutual capture
+occurrence is zero.
+
+We note that the simple bugs model is not the only commonly used model
+for non-linear cyclic pursuit. Another frequently used model for systems in
+cyclic pursuit is based on higher order agent behaviour, like the unicycle
+model, describing wheeled vehicles, subject to a single non-holonomic con-
+
+11
+
+straint, see e.g. [17], [8], [18], [6].
+
+Our contribution is in deriving the emergent behaviour of the âbugsâ,
+when an external controller broadcasts a velocity signal which is detected by
+a random set of âbugsâ in the group. This problem has not been previously
+investigated. [5] analyzes the problem of agents, modeled by single integrator
+dynamic, in bearing-only cyclic pursuit with a moving target. The moving
+target can be seen as a leader broadcasting velocity, but this leader is a special
+purpose agent which does not participate in the cyclic pursuit. Moreover,
+there is a basic assumption that all agents in cyclic pursuit detect targetâs
+velocity and can sense the bearing to target. This model is entirely diï¬erent
+from our paradigm where each agent can sense the bearing only to its leading
+agent and the desired velocity is available only to a (random) subset of agents.
+
+1.2 Paper outline and main results
+
+The paper is organized as follows:
+
+â¢ In section 2 we derive the emergent behaviour in case of linear cyclic
+pursuit, with a broadcast steering control, using properties of linear
+systems, and show that in this case the agents will asymptotically align
+in the direction of Uc and move asymptotically as a time-independent
+Uc, where nl is the number of agents
+linear formation with velocity
+detecting the steering control. In this case there is no restriction on
+the size of â¥Ucâ¥.
+
+nl
+n
+
+â¢ In section 3 we derive the emergent behaviour for the assumed non-
+linear model (the bugs model with external input detected by a ran-
+dom set of agents) and show that â¥Ucâ¥ within an upper bound ensures
+convergence to a moving point. In this case, if at least one agent de-
+tected the broadcast control, the agents will all move, after the mutual
+capture time, as a single point with velocity Uc.
+
+All the analytically derived results are illustrated by simulations.
+
+12
+
+2 Linear cyclic pursuit with broadcast con-
+
+trol
+
+In our paradigm, the equation of motion of agents performing linear cyclic
+pursuit, i.e. sensing relative position to the chased agent, in the presence of
+a broadcast velocity control, Uc, can be written as
+
+Ëpi(t) = pi+1(t) â pi(t) + bi(t)Uc(t)
+
+where
+
+bi(t) =
+
+â§âªâª
+â¨
+âªâªâ©
+
+1 if agent i detected the external control
+0 otherwise
+
+(11)
+
+(12)
+
+Since pi = (xi, yi)T , and Uc(t) = (Ux(t), Uy(t))T , eq. (11) evolves indepen-
+dently in the x and y directions, thus we can consider only one component,
+say x. If we aggregate the x position component of all the agents we can
+write
+
+ËX(t) = M X(t) + B(t)Ux(t)
+
+(13)
+
+where
+
+â¢ X = (x1, x2, ...., xn)T
+
+â¢ M is the circulant matrix (14) representing the interactions graph of
+
+agents in linear cyclic pursuit
+
+M = circ[â1, 1, 0, 0, â¯, 0] =
+
+â¡
+â1
+0
+1
+â¢
+â¢
+0 â1 1
+â¢
+â¢
+â¢
+â®
+â¢
+â¢
+â£
+
+0
+
+1
+
+0 â¯ 0
+0 â¯ 0
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¯ 0 â1
+â¦
+
+(14)
+
+â¢ B(t) is the leaders indicator vector at time t, i.e. the iâth entry in the
+
+vector B(t) is bi(t) and bi(t) is deï¬ned by (12)
+
+In eq. (13), M is time independent and if we assume B(t) and Ux(t)
+to be piecewise constant, i.e. we assume that the time-line can be divided
+into intervals, t â [tk, tk+1), where B(t) â= B(tk), and Ux(t) â= Ux(tk), tk is the
+time of change of leaders or of the broadcast control. In the sequel we treat
+each time interval, [tk, tk+1), separately. Thus, it is convenient to suppress
+the subscript k. Moreover, it is convenient to denote by t the relative time
+
+13
+
+since the beginning of the interval (t = 0) and by x(0) the state of the system
+at this time, by B the leaders indicator during the interval and by Ux the
+exogenous control during the interval. In each time interval eq. (13) evolves
+as a linear time independent system, which has the well known solution (cf.
+[13])
+
+x(t) = eM tx(0) + â«
+
+eM (tâÏ )BUxdÏ
+
+t
+
+(15)
+
+0
+We note that M deï¬ned by (14) is a normal matrix, (Appendix A.5),
+therefore it is unitarily diagonizable, i.e. M = V ÎV â, where V is a unitary
+matrix of eigenvectors, V â denotes the transpose of the complex conjugate
+of V and Î is a diagonal matrix of eigenvalues.
+
+Remark: Due to the circulant structure of M , V is the DFT matrix
+In particular, since M is the circulant matrix with c0 = â1, c1 = 1 and
+
+ck = 0;
+
+k = 2, 3, ..., n â 1 , we have (from Appendix C)
+
+â¢ the eigenvalues of M can be written as
+
+Î»k = Ïk â 1;
+
+k = 0, ...., n â 1
+
+(16)
+
+where Ï â= eâ2Ïj/n
+
+â¢ with corresponding eigenvectors
+
+vk = 1â
+n
+
+(1, Ïk, Ï2k, â¯, Ïk(nâ1))T
+
+;
+
+k â {0, 1, â¯, n â 1}
+
+(17)
+
+while the remaining eigenvalues, Î»k;
+
+It is easily seen that Î»0 = 0, with a corresponding eigenvector v0 = 1â
+
+n1n,
+k = 1, ...., nâ1, have negative real part.
+These features of M constitute the basis for the derivation of the emergent
+
+behaviour of swarms in linear cyclic pursuit with broadcast control.
+
+Following the methodology in [26], we write eq. (15) as
+
+X(t) = x(h)(t) + x(u)(t)
+
+(18)
+
+where
+
+â¢ x(h)(t) = eM tX(0) represents the zero input, homogeneous, solution
+
+â¢ x(u)(t) = â« t
+
+0 eM (tâÏ )BUxdÏ represents the contribution of the exogenous
+
+input (broadcast control) to the group dynamics
+
+14
+
+2.1 Homogeneous linear cyclic pursuit
+
+x(h)(t) = eM tx(0) = V eÎtV âx(0) = v0vT
+
+0 X(0) +
+
+Since R(Î»k) < 0 for k = 1, ...., n â 1, we have
+
+nâ1
+â
+k=1
+
+vkeÎ»ktvâ
+
+k X(0)
+
+(19)
+
+nâ1
+â
+k=1
+
+vkeÎ»ktvâ
+
+k X(0) âââ
+tââ
+
+0n
+
+x(h)(t) âââ
+tââ
+
+v0vT
+
+0 X(0) = 1
+n
+
+n
+â
+i=1
+
+xi(0)1n
+
+Thus, a homogeneous system of n agents performing linear cyclic pursuit
+will asymptotically converge to a point, the centroid, determined by the
+initial conditions, which is a well known result, see e.g.
+[4]. However, the
+derivation in this section introduces a methodology which will be useful in
+the sequel.
+
+2.2 The eï¬ect of the exogenous control
+
+Recalling that we consider a time interval where B, Ux are constant, we obtain
+
+t
+
+x(u)(t) = â«
+0
+
+eM (tâÏ )BUxdÏ = â«
+
+t
+
+0
+
+eM Î½BUxdÎ½ = [â«
+0
+
+t
+
+eM Î½dÎ½] BUx
+
+(20)
+
+Using the diagonalization of M , as in subsection 2.1, we have
+
+â¢ M = V ÎV â, where V is a unitary matrix formed by the eigenvectors
+of M , given by (17), and Î is a diagonal matrix of the corresponding
+eigenvalues of M , given by (16)
+
+â¢ eM Î½ = V eÎÎ½V â = ânâ1
+
+k=0 eÎ»kÎ½[vkvâ
+
+k
+
+]
+
+Since M has a single zero eigenvalue and the remaining eigenvalues have
+
+negative real part, we can decompose x(u)(t) in two parts:
+
+x(u)(t) = x(a)(t) + x(b)(t)
+
+(21)
+
+where
+
+â¢ x(a)(t) is the zero eigenvalue dependent term, representing the move-
+
+ment in the agreement space
+
+â¢ x(b)(t) is the remainder, representing the deviation from the agreement
+
+space
+
+15
+
+2.2.1 Movement in the agreement space
+
+x(a)(t) = â«
+
+t
+
+0
+
+eÎ»0Î½v0vâ
+
+0 BUxdÎ½ = v0vâ
+
+0 BUxt = nl
+n
+
+Uxt1n
+
+(22)
+
+where Î»0 = 0, nl is the number of leaders in the considered time interval and
+v0 = 1â
+n B = nl. Recalling that eq. (22) holds also for
+n
+the y axis, with the corresponding component of Uc, i.e.
+
+1T
+n and 1T
+
+= 1â
+n
+
+1n, vâ
+0
+
+we have
+
+y(a)(t) = nl
+n
+
+Uyt1n
+
+(23)
+
+Lemma 2.1. A group of n agents performing linear cyclic pursuit, with nl
+agents receiving an exogenous velocity vector control Uc, will asymptotically
+align in the direction of the vector Uc and move with a common speed that
+is proportional to the ratio of nl to n, i.e.
+
+Uc.
+
+nl
+n
+
+2.2.2 Deviation from the agreement space
+
+Consider now the remainder x(b)(t) of the input-related part, i.e. the part
+of x(u)(t) containing all eigenvalues of M other than the zero eigenvalue and
+representing the agentsâ state deviation from the agreement subspace.
+
+We have
+
+x(b)(t) = [
+
+nâ1
+â
+i=1
+nâ1
+â
+i=1
+
+t
+
+(eÎ»iÎ½) vivâ
+
+i dÎ½] BUx
+
+(1 â eÎ»it)vivâ
+i
+
+] BUx
+
+â«
+
+0
+
+1
+Î»i
+
+(24)
+
+(25)
+
+= [
+
+Since all eigenvalues Î»i for i = 1, . . . , n â 1 have strictly negative real parts,
+x(b)(t) converges asymptotically to a time independent vector, denoted by
+Î¾x, given by:
+
+Î¾x â x(b)(t â â) = [
+
+Similarly, for the y axis,
+
+Î¾y â y(b)(t â â) = [
+
+nâ1
+â
+i=1
+
+16
+
+nâ1
+â
+i=1
+
+1
+Î»i
+
+1
+Î»i
+
+vivâ
+i
+
+] BUx
+
+vivâ
+i
+
+] BUy
+
+(26)
+
+(27)
+
+and all the following properties of Î¾x hold also for Î¾y. Note that M depends
+only on the number of agents, thus for a given number of agents and a
+constant broadcast control, Uc, the deviations depend only on B, i.e. on the
+agents detecting the broadcast control. Moreover, if all the agents receive
+the broadcast control then there are no deviations, i.e. the agents converge
+and move as a single point.
+
+Lemma 2.2. A group of n agents performing linear cyclic pursuit, with all
+agents receiving an exogenous velocity control Uc, will asymptotically move
+as a single point with velocity Uc.
+
+Proof. If all the agents receive the broadcast control then nl = n and B =
+1n. According to Lemma 2.1, all the agents will move with a velocity Uc.
+It remains to show that there is no deviation. Recalling that vâ
+is a left
+i
+eigenvector of M with eigenvalue Î»i and B = 1n we can rewrite eq. (26) as
+
+Î¾x = [
+
+nâ1
+â
+i=1
+
+1
+Î»i
+
+vi
+
+1
+Î»i
+
+i M ] 1nUx = 0n
+vâ
+
+and similarly Î¾y = 0n
+
+(28)
+
+QED
+
+2.3 Asymptotic trajectories of n agents with an exoge-
+nous velocity control detected by nl agents
+
+This section summarizes the results derived in sections 2.1 - 2.2.2.
+The asymptotic position of agent i, chasing agent i + 1,
+
+in the two-
+dimensional space, when an external control Uc = (Ux Uy)T is detected
+by nl agents, will be
+
+pi(t â â) = [Î± + Î²Uct + Î³iUc]
+
+(29)
+
+where
+
+â¢ Î± = (Î±x Î±y)T = 1
+n
+
+ân
+
+i=1 pi(0) is the agreement, or gathering, point when
+
+there is no external input
+
+â¢ Î² = nl
+n
+
+and Î²Uc is the collective velocity.
+
+â¢ Î± + Î²Uct is the position of the moving agreement point at time t
+
+17
+
+â¢ Î³iUc is the deviation of agent i from the moving agreement point, where
+
+Î³ = [
+
+nâ1
+â
+i=1
+
+1
+Î»i
+
+vivâ
+i
+
+] B
+
+and Î³i is the iâ²th element of Î³
+
+2.4
+
+Illustration of linear cyclic pursuit - single interval
+
+We illustrate the derived analytical results by 2 simulated examples. Both
+examples assume six agents, starting from the same random positions, shown
+in Fig. 2, but diï¬ering in the broadcast control and the set of agents detecting
+it. Example1 and Example2 were run for 50 secs (500000 points, dt=0.0001).
+This simulation time was long enough to obtain the analytically derived
+asymptotic behaviour.
+
+Figure 2: Initial positions
+
+1. Example1
+
+â¢ broadcast control, Uc = (5, 1) (Slope=0.2)
+â¢ set of ad-hoc leaders {0, 1, 0, 0, 0, 0}, thus nl = 1 (out of 6)
+
+18
+
+Simulated results for Example1:
+
+Figure 3: Emergent trajectories
+
+A solid line represents the leader while the trajectories of followers are
+shown by dotted lines.
+
+19
+
+Figure 4: Agents velocities in a long time interval
+
+In this ï¬gure a solid red line represents a leader while dotted lines
+represent followers. The velocities converge to uxT max, uxT max which
+Uc, where nl = 1, n = 6.
+agree with the derived asymptotic velocities of
+
+nl
+n
+
+20
+
+Figure 5: âAsymptoticâ agents alignment
+
+This ï¬gure shows the position of the agents at the end of the time
+interval. A star represents a leader while o represents followers. The
+slope of the line equals the slope of Uc, i.e. the agents align in the
+direction of Uc.
+
+2. Example2
+
+â¢ broadcast control, Uc = (6, 3) (Slope=0.5)
+â¢ set of ad-hoc leaders {1, 1, 0, 1, 1, 1}, thus nl = 5 (out of 6)
+
+Simulated results for Example2:
+
+21
+
+Figure 6: Emergent trajectories
+
+Figure 7: Agents velocities converge to asymptotic values
+
+Displayed uxT max, uxT max agree with the derived asymptotic velocities
+of
+
+Uc, where nl = 5, n = 6
+
+nl
+n
+
+22
+
+Figure 8: Agents asymptotically align along the direction of Uc
+
+We observe that in both examples the agents asymptotically align in
+Uc, as
+
+the direction of Uc and move as a linear formation with velocity
+expected.
+
+nl
+n
+
+We emphasize that this behaviour is indeed asymptotic, not obtained in
+
+a short time interval, as shown in ï¬gures 9 and 10, next.
+
+23
+
+Figure 9: Agents velocities in a short time interval (5sec)
+
+Figure 10: Agents positions (âalignmentâ) at the end of a short interval
+(5sec)
+
+24
+
+2.5
+
+Illustration of linear cyclic pursuit - multiple in-
+tervals
+
+We recall that we assumed B(t) and Uc(t) to be piecewise constant, i.e.
+B(t) â= B(tk), and Uc(t) â= Uc(tk), where tk is the time of change of the set
+of ad-hoc leaders or of the broadcast control, and we treated separately each
+time interval, [tk, tk+1). In the above sections we considered a single time
+interval, where Uc and B are constant.
+
+In this section we show, by simulation, the emergent behaviour over multi-
+ple time intervals. We consider as before 6 agents, starting at initial positions
+as illustrated in Fig. 2 but, starting with Uc(0) = (6, 3)T , we allow for dis-
+crete changes in Uc every 10 secs. Uc(t) is shown in Fig. 11. In this example
+the set of ad-hoc leaders is randomly selected at t = 0 and remains constant
+afterwards, i.e. B(t) = B(0)ât.
+
+The emergent trajectories are illustrated in Fig. 12.
+
+Figure 11: Uc(t) proï¬le
+
+25
+
+Figure 12: Emerging trajectories with Uc(t) as in Fig. 11
+
+Fig. 13 shows the agents velocities vs. analytically computed asymptotic
+velocity of the linear formation emerging from a broadcast velocity signal as
+shown in Fig. 11.
+
+Figure 13: Emerging velocities vs computed formation velocity
+
+26
+
+We note that changes in the random set of ad-hoc leaders, within an
+interval where Uc is constant, will aï¬ect the speed of the agents (if the number
+of ad-hoc leaders changes) and also the arrangement of the agents within the
+linear formation.
+
+27
+
+3 Non-linear cyclic pursuit
+
+We assume the model for non-linear cyclic pursuit to be the âbugsâ model,
+where agent i chases agent i + 1 (agent n chases agent 1) with constant,
+common, speed along the line of sight, merges with it upon capture and the
+two agents continue with velocity Ëpi+1. Upon capture, the number of agents
+is reduced. Agent i is said to capture agent i + 1 if the distance between
+them, di, is zero
+
+di(t) = â¥pi+1(t) â pi(t)â¥
+(30)
+where pi(t) is the position of agent at time t and â¥.â¥ represents the Euclidean
+norm.
+
+In case of an external broadcast velocity control, upon capture, the merged
+agent will be assumed to detect the broadcast velocity signal, if either one
+or both of the merged agents detected the broadcast velocity signal.
+
+We ï¬rst analyze the properties of the âbugsâ model, without external
+broadcast velocity signal, and then derive the impact of the broadcast velocity
+which is detected by a random set of agents.
+
+3.1 âBugsâ model
+Let di(t) be deï¬ned by eq. (30) and assume, without loss of generality, the
+speed of all agents to be 1. Then, the pursuit is formally deï¬ned as follows:
+
+if di(t) â  0
+
+Ëpi(t) = pi+1(t) â pi(t)
+
+di(t)
+
+if di(Ët) = 0 pi(t) = pi+1(t) for all t â¥ Ët
+
+(31)
+
+(32)
+
+Lemma 3.1. If di(t) â  0 for all i and the motion of each agent is represented
+by (31), then
+
+(a) di(t) is monotonically non-increasing for all i.
+
+(b) There exists a ï¬nite time Tm such that di(Tm) = 0 for all i
+
+Proof. In the sequel, for simplicity of notation, we omit explicit reference to
+time t, whenever it is not confusing.
+
+28
+
+(a) : di(t) is non-increasing iï¬ Ëdi(t) â¤ 0 for all t.
+
+From (30) we have
+
+= â¨pi+1 â pi, pi+1 â piâ©
+
+â¨ Ëpi+1 â Ëpi, pi+1 â piâ©
+
+d2
+i
+Ëdi =
+
+1
+di
+
+= â¨ Ëpi+1 â Ëpi, Ëpiâ©
+= cos(Î¸) â 1 â¤ 0
+
+for any Î¸
+
+(33)
+
+(34)
+
+(35)
+(36)
+
+where we used â¥ Ëpiâ¥ = â¥ Ëpi+1â¥ = 1 and Î¸ is deï¬ned as in Fig. 14.
+
+Figure 14: Î¸ is the angle between vectors Ëpi and Ëpi+1
+
+(b) : Richardson shows in [25], Lemma 1.1, that Tm exists and satisï¬es
+i=1 di(t0). The proof is repeated in Appendix D, for
+
+Tm â¤ t0 + 2n ân
+completeness.
+
+QED
+
+29
+
+3.2 âBugsâ model with external input
+Let Ki denote the set of k indices of Ki = {i â k, i â k + 1, . . . , i â 1}.
+If
+dj = 0 âj â Ki and di â  0 we say that the k agents in Ki collapsed into
+agent i.
+
+In order to analyze the motion of agent i performing bearing-only cyclic
+pursuit when a velocity signal, Uc, is broadcast by an external controller
+and detected by a random set of agents, we have to consider three diï¬erent
+scenarios :
+
+1. i is a free agent, i.e. di â  0 and Ki = {}
+
+2. k agents labeled (i â k, i â k + 1, . . . , i â 1) have merged into i, i.e. di â  0
+
+and dj = 0 âj â Ki
+
+3. Agent i collapsed into agent j, i.e. dj â  0,
+
+di = 0 and i â Kj
+
+These cases are formalized by eqs. (37) - (38):
+
+Ëpi =
+
+â§âªâª
+â¨
+âªâªâ©
+
+pi+1âpi
+di
+pi+1âpi
+di
+
++ biUc
++ (âjâKi bj)Uc
+
+if di â  0 and Ki = {}
+
+if di â  0 âj â Ki
+
+where â stands for logical âorâ,
+
+pi = pj âi â Kj
+
+bi =
+
+â§âªâª
+â¨
+âªâªâ©
+
+1; if i â N l
+0; otherwise
+
+(37)
+
+(38)
+
+(39)
+
+and N l is the set of agents that detected the broadcast control.
+
+If di = 0 âi then
+
+Ëpi = (â
+âi
+
+bi)Uc âi
+
+Thus, once gathered, the agents will move as a single agent with velocity Uc,
+if at least one of the agents detected the external control Uc.
+
+In section 3.2.1, we show the impact of the exogenous velocity signal, Uc
+on a single distance, di(t), deï¬ned by (30), when either i or i + 1, or both,
+detect Uc. We derive the behaviour of di, in each case, as a function of â¥Ucâ¥
+and the instantaneous geometry. Since the agents are mobile, the geometry
+is time dependent. Therefore, we cannot deduce from di(t) instantaneously
+
+30
+
+decreasing that it will decrease for all t or that it will reach zero. In section
+3.2.2 we derive an upper bound on â¥Ucâ¥ that ensures convergence to a point
+i=1 di(Tm) = 0, independently of the instantaneous
+in ï¬nite time, Tm, i.e. ân
+geometries.
+
+3.2.1 Single di behaviour
+Let di > 0 âi. This is a valid assumption since subsequent to a collision
+(capture) the system evolves as a cyclic pursuit with fewer agents. Thus,
+
+â¨ Ëpi+1 â Ëpi, pi+1 â piâ©
+
+1
+Ëdi =
+di
+Ëpi = pi+1 â pi
+
++ biUc
+
+(40)
+
+(41)
+
+di
+The impact of Uc on any distance di > 0 can be separated into four cases:
+
+1. Neither i nor i + 1 detected the signal Uc â bi = 0,
+
+bi+1 = 0
+
+2. Both i and i + 1 detected the signal Uc â bi = 1,
+
+bi+1 = 1
+
+3. i detected the signal Uc, but i + 1 did not â bi = 1,
+
+4. i + 1 detected the signal Uc, but i did not â bi = 0,
+
+bi+1 = 0
+
+bi+1 = 1
+
+Case 1: bi = 0,
+
+bi+1 = 0 .
+
+This case is identical to Lemma 3.1(a), Fig. 14, and therefore Ëdi = cos(Î¸)â
+
+1 â¤ 0, independently of the broadcast Uc.
+
+Case 2: bi = 1,
+
+bi+1 = 1 .
+
+In this case
+
+= Ëpi â Uc and (40) can be rewritten as
+
+pi+1 â pi
+di
+Ëdi = â¨ Ëpi+1 â Ëpi, Ëpi â Ucâ©
+
+= â¨( Ëpi+1 â Uc) â ( Ëpi â Uc), Ëpi â Ucâ©
+
+Recalling that ( Ëpj â Uc) = pj+1 â pj
+i, i + 1 and thus
+
+dj
+
+;
+
+j = i, i + 1 we have â¥ Ëpj â Ucâ¥ = 1;
+
+j =
+
+(42)
+
+Ëdi = cos(Î¸) â 1
+
+31
+
+where Î¸ is now the angle between Ëpi â Uc and Ëpi+1 â Uc, see Fig. 15. Thus, in
+this case Ëdi â¤ 0 , for any Uc, same as case 1.
+
+Figure 15: Uc detected by both i and i + 1
+
+Case 3: bi = 1,
+
+bi+1 = 0 .
+
+In this case Ëpi+1 is not aï¬ected by Uc, as shown in Fig. 16, where we have
+
+â¥ Ëpi â Ucâ¥ = 1, and â¥ Ëpi+1â¥ = 1.
+
+32
+
+Figure 16: Uc detected by i but not by i + 1.
+
+In this case
+
+Ëdi = â¨ Ëpi+1 â Ëpi, Ëpi â Ucâ©
+
+= â¨( Ëpi+1 â Uc) â ( Ëpi â Uc), Ëpi â Ucâ©
+= â¨( Ëpi+1 â Uc), ( Ëpi â Uc)â© â 1
+= â¨( Ëpi+1), ( Ëpi â Uc)â© â â¨Uc, ( Ëpi â Uc)â© â 1
+= cos(Î¸) â â¥Ucâ¥ cos(Î±) â 1
+
+where the angles Î¸, Î± are deï¬ned as in Fig. 16. In order to have Ëdi â¤ 0 we
+must have ââ¥Ucâ¥ cos(Î±) â¤ 1 â cos(Î¸). Therefore, di will be non-increasing
+
+â¢ for any â¥Ucâ¥ if cos(Î±) â¥ 0, i.e. Î± is an acute angle
+
+33
+
+â¢ for â¥Ucâ¥ < 1 â cos(Î¸)
+
+â cos(Î±) if cos(Î±) < 0, i.e. Î± is an obtuse angle
+
+Case 4: bi = 0,
+
+bi+1 = 1 .
+
+In this case Ëpi is not aï¬ected by Uc, as shown in Fig. 17, where we have
+
+â¥ Ëpiâ¥ = 1, and â¥ Ëpi+1 â Ucâ¥ = 1.
+
+Figure 17: Uc detected by i + 1 but not by i.
+
+Ëdi = â¨ Ëpi+1 â Ëpi, Ëpiâ©
+= â¨ Ëpi+1, Ëpiâ© â 1
+= â¨( Ëpi+1 â Uc), Ëpiâ© + â¨Uc, Ëpiâ© â 1
+= cos(Î¸) + â¥Ucâ¥ cos(Î±) â 1
+
+34
+
+Therefore, in this case, di will be non-increasing
+
+â¢ for any â¥Ucâ¥ if cos(Î±) < 0, i.e. Î± is an obtuse angle
+â¢ for â¥Ucâ¥ < 1 â cos(Î¸)
+cos(Î±)
+
+if cos(Î±) > 0, i.e. Î± is an acute angle
+
+3.2.2 Gathering in ï¬nite time
+
+In section 3.2.1 we derived the instantaneous behaviour of a single inter-
+agents distance when none or both or one of the limiting agents detected the
+broadcast control. Since the geometry of the agents is time dependent we
+cannot deduce the emergent behaviour of the system from the instantaneous
+behaviour. Given that the agents behave according to the âbugsâ model with
+broadcast control, see (37), we want to show that there exist conditions that
+ensure the gathering of the agents to a moving point in ï¬nite time. These
+conditions are derived in Theorem 3.2 as an upper bound on the magnitude
+of Uc.
+
+Theorem 3.2. If di is deï¬ned by (30) and di(t) â  0; i = 1, ..., n, then
+(a) if â¥Ucâ¥ â¤ 1
+2n2
+
+, there exists a ï¬nite time Tm such that ân
+
+i=1 di(t â¥ Tm) = 0
+
+(b) (a) holds for all times when â di(t) â  0 even if di(t) = 0 for some i, i.e.
+
+the capture is non-mutual
+
+(c) Tm â¤ t0 + 2n â di(t0)
+
+1 â 2n2â¥Ucâ¥, where t0 is the initial time.
+
+Proof. (a):
+
+Following the methodology in [25], we prove that for â¥Ucâ¥ < 1
+2n2
+Ëdi â¤ âc, where c = 1
+2n
+i=1 di(Tm) = 0.
+For di(t) â  0 we have
+
+â nâ¥Ucâ¥ > 0, therefore there exists a time Tm such
+
+we have
+
+ân
+i=1
+that ân
+
+Ëpi = ui + biUc
+ui = pi+1 â pi
+
+di
+
+35
+
+(43)
+
+(44)
+
+Using d2
+i
+
+= â¥pi+1 â piâ¥2, (44) and (43), we have
+
+Ëdi = uT
+i
+= uT
+i
+= uT
+
+( Ëpi+1 â Ëpi)
+(ui+1 + bi+1Uc â ui â biUc)
+i ui+1 â 1 + (bi+1 â bi)uT
+i Uc
+
+where we used â¥uiâ¥ = 1. But
+
+i ui+1 â 1 = â 1
+uT
+2
+= â 1
+2
+
+(ui+1 â ui)T (ui+1 â ui)
+
+â¥ui+1 â uiâ¥2
+
+Thus
+
+Let V c
+i
+
+Ëdi = â 1
+2
+
+â¥ui+1 â uiâ¥2 + (bi+1 â bi)uT
+
+i Uc
+
+(45)
+
+= (bi+1 â bi)Uc
+Ëdi â¤ â 1
+2
+
+â¥ui+1 â uiâ¥2 + â¥V c
+i
+
+â¥ = â 1
+2
+
+â¥ui+1 â uiâ¥2 + â£bi+1 â biâ£â¥Ucâ¥
+
+(46)
+
+n
+â
+i=1
+
+Ëdi â¤ â 1
+2
+â¤ â 1
+2n
+
+n
+â
+i=1
+
+â¥ui+1 â uiâ¥2 + â¥Ucâ¥
+
+n
+â
+i=1
+
+â£bi+1 â biâ£
+
+(
+
+n
+â
+i=1
+
+â¥ui+1 â uiâ¥)2 + nbâ¥Ucâ¥
+
+(47)
+
+(48)
+
+where nb is the number of pairs of agents {i, i + 1} such that â£bi+1 â biâ£ = 1 and
+we used the Cauchy-Schwartz inequality, (69) in Appendix D. Since nb â¤ n
+we can write
+
+n
+(
+â
+i=1
+Repeating the reasoning in [25] and Appendix D we can show that ân
+i=1
+uiâ¥ > 1 and therefore
+
+â¥ui+1 â uiâ¥)2 + nâ¥Ucâ¥
+
+Ëdi â¤ â 1
+2n
+
+n
+â
+i=1
+
+(49)
+
+â¥ui+1â
+
+n
+â
+i=1
+
+Ëdi â¤ â 1
+2n
+
++ nâ¥Ucâ¥
+
+Thus, if â¥Ucâ¥ < 1
+2n2
+(b): After any capture, say i captures i + 1, the two agents merge and
+thus n is reduced. Let Ën be the number of remaining agents at time t and
+
+then ân
+i=1
+
+Ëdi < 0
+
+36
+
+Ëdi; i = 1, ...., Ën the new distances. Then, by the same reasoning as for the
+proof of Lemma 3.2 we have
+
+Ën
+â
+i=1
+
+ËËdi â¤ â 1
+2Ën
+
++ Ënâ¥Ucâ¥
+
+But, by deï¬nition, ân
+
+i=1 di = âËn
+i=1
+
+Ëdi and Ën â¤ n , thus
+
+n
+â
+i=1
+
+Ëdi =
+
+ËËdi
+
+Ën
+â
+i=1
+
+â¤ â 1
+2Ën
+â¤ â 1
+2n
+
++ Ënâ¥Ucâ¥
+
++ nâ¥Ucâ¥
+
+(50)
+
+(51)
+
+(52)
+
+(53)
+
+(c): The distances di(t) are continuous and there can be only a ï¬nite
+
+number of captures, thus by integrating (53) we obtain
+
+â di(Tm) = 0 â¤ â di(t0) + (â 1
+2n
+
++ nâ¥Ucâ¥)(Tm â t0)
+
+Tm â¤ t0 + 2n â di(t0)
+1 â 2n2â¥Ucâ¥
+
+(54)
+
+QED
+
+Remark 3.1. The condition â¥Ucâ¥ < 1
+2n2 is a very stringent bound for gathering
+and moving as a single point, since in general nb < n and we do not require
+mutual capture, i.e n can decrease with time.
+Remark 3.2. The bound (54) for gathering time holds only for â¥Ucâ¥ < 1
+
+2n2 .
+
+4
+
+Illustration by simulation of emergent be-
+haviour in bearing-only cyclic pursuit
+
+We simulated the cyclic pursuit with broadcast control to test the theory
+developed above.
+
+37
+
+4.1 Simulation parameters
+
+â¢ User deï¬ned number of agents, n, and external velocity control, Uc.
+Since in our âbugsâ model the speed of agents is one we limited Uc, to
+â¥Ucâ¥ â¤ 1.
+
+â¢ Randomly selected initial positions and agents detecting the external
+
+control
+
+â¢ Bearing-only simulation description
+
+â i captures i + 1 (and merges with it) at time tc, if di(tc) â¤ (cid:15) or i
+overtakes i + 1. In the presented simulations we used (cid:15) = 0.001
+
+â For t â¥ tc
+
+â pi(t) = pi+1(t)
+â Ëbi+1 = Ëbi â bi+1
+â Ëpi+1(t) = pi+2(t) â pi+1(t)
+
+di+1
+
++ Ëbi+1Uc
+
+4.2 Examples of simulations results
+
+In this section we show sample simulation results for various initial topolo-
+gies, various external inputs and sets of ad-hoc leaders. All the presented
+simulation results used n = 6.
+
+4.2.1 Example1-bugs: Gathering property of the homogeneous
+
+âbugsâ model
+
+We show an example of gathering of the âbugsâ model, without external
+input Let Example1-bugs denote the case of initial topology as in Fig. 18
+and Uc = (0, 0).
+
+38
+
+Figure 18: Initial agents topology for Example1-bugs
+
+Figure 19: Example1-bugs: Agents gathering in case of bearing-only cyclic
+pursuit without external input
+
+In Fig. 19, (xT max, yT max) denote the position of each agent, at the end
+of the time interval. We see that the agents indeed converged to a point, but
+this diï¬ers from the (displayed) initial centroid.
+
+39
+
+For comparison, we show the behaviour of the agents, starting from the
+same initial conditions, but performing linear cyclic pursuit. The gathering
+point in this case is the initial centroid.
+
+Figure 20: Agents gathering in case of linear cyclic pursuit without external
+input
+
+4.2.2 Example2-bugs: Impact of external input and incomplete
+
+sets of ad-hoc leaders
+
+Next we show the impact of an external input, Uc, on the emergent behaviour,
+for various values of Uc, such that â¥Ucâ¥ â¤ 1, and various incomplete sets of
+agents detecting it. We show for each example the behaviour of di(t), the
+distance of agent i to i + 1, âi, as well as agentsâ trajectories and velocities.
+We observe that in all considered cases
+
+â¢ There exists a time tc of mutual capture where di = 0 âi
+
+â¢ For t â¥ tc all agents move as a single point with velocity Uc
+
+â¢ The value of tc and the behaviour of distances to prey, di(t) for t < tc,
+as well as of agentsâ velocities for t < tc depend on the value of the
+external input and on the set of agents detecting the broadcast signal
+
+40
+
+All cases of Example2-bugs were run starting from the positions shown
+
+in Fig. 21.
+
+Figure 21: Initial agents positions for Example2-bugs
+
+Cases considered were
+
+â¢ Example2.1-bugs: Same broadcast signal, diï¬erent ad-hoc leaders
+
+â Example2.1.1-bugs: Uc = (0.5, 0.3)T , B = (111011)T
+â Example2.1.2-bugs: Uc = (0.5, 0.3)T , B = (001000)T
+
+â¢ Example2.2-bugs: Same set of ad-hoc leaders, increasing magnitude
+
+of broadcast signal
+
+â Example2.2.1-bugs: B = (010010)T , Uc = (0.013, 0)T
+â Example2.2.2-bugs: B = (010010)T , Uc = (0.5, 0.3)T
+â Example2.2.3-bugs: B = (010010)T , Uc = (â1, 0)T
+
+where B is a vector of pointers to the agents detecting the exogenous control.
+
+41
+
+Example2.1-bugs: Same broadcast signal, diï¬erent ad-hoc leaders
+
+Chaser to prey distances - di(t)
+
+Figure 22: Example2.1.1-bugs: Distances behaviour
+
+42
+
+Figure 23: Example2.1.2-bugs: Distances behaviour
+
+43
+
+Velocities of agents
+
+Figure 24: Example2.1.1-bugs: Agentsâ velocities
+
+Figure 25: Example2.1.2-bugs: Agentsâ velocities
+
+44
+
+Agentsâ Trajectories
+
+Figure 26: Example2.1.1-bugs: Agentsâ trajectories
+
+Figure 27: Example2.1.2-bugs: Agentsâ trajectories
+
+45
+
+Example2.2-bugs: Same set of ad-hoc leaders, increasing magni-
+tude of broadcast signals
+
+Chaser to prey distances -di(t)
+
+Figure 28: Example2.2.1-bugs: Distances behaviour
+
+46
+
+Figure 29: Example2.2.2-bugs: Distances behaviour
+
+Figure 30: Example2.2.3-bugs: Distances behaviour
+
+47
+
+Agentsâ velocities
+
+Figure 31: Example2.2.1-bugs: Velocities behaviour
+
+Figure 32: Example2.2.2-bugs: Velocities behaviour
+
+48
+
+Figure 33: Example2.2.3-bugs: Velocities behaviour
+
+49
+
+Agentsâ trajectories
+
+Figure 34: Example2.2.1-bugs: Trajectories behaviour
+
+Figure 35: Example2.2.2-bugs: Trajectories behaviour
+
+50
+
+Figure 36: Example2.2.3-bugs: Trajectories behaviour
+
+51
+
+4.2.3 Example3-bugs: Broadcast signal received by all
+
+In this section we show that if the broadcast control is received by all then
+the gathering property of the cyclic pursuit is independent of the value of
+â¥U câ¥. We show simulation results for
+
+â¢ Example3.1-bugs:Uc = (5, 3)T
+
+â¢ Example3.2-bugs:Uc = (â3, 2)T
+
+â¢ Example3.3-bugs: Uc = (0, 0)T
+
+From the presented results we observe that the time to convergence is identi-
+cal in all cases, i.e. identical to the case Uc = (0, 0)T . These results correspond
+to the theory in section 3.2.1, case 2, where we show that if bi = bi+1 = 1 then
+Ëdi is independent of Uc.
+
+Distances behaviour -di(t)
+
+Figure 37: Example3.1-bugs: Distances behaviour
+
+52
+
+Figure 38: Example3.2-bugs: Distances behaviour
+
+Figure 39: Example3.3-bugs: Distances behaviour in âbugsâ cyclic pursuit,
+without external control
+
+53
+
+In all the examples shown above, we obtained
+
+â¢ Identical distances behaviour, i.e. independent of Uc
+
+â¢ The time to convergence was 64.5979
+
+.
+
+54
+
+Agentsâ velocities
+
+Figure 40: Example3.1-bugs: Velocities behaviour
+
+Figure 41: Example3.2-bugs: Velocities behaviour
+
+55
+
+Agentsâ trajectories
+
+Figure 42: Example3.1-bugs: Trajectories behaviour
+
+Figure 43: Example3.2-bugs: Trajectories behaviour
+
+56
+
+Figure 44: Example3.3-bugs: Trajectories behaviour in âbugsâ cyclic pursuit,
+when Uc = (0, 0)T
+
+Remark 4.1. The broadcast signal being received by all is a particular case of
+the broadcast signal being received by a random set of agents. Since we do
+not enforce it, in order to enable the general case of a random, not complete,
+set of agents receiving the broadcast signal we need to enforce â¥U câ¥ â¤ 1
+
+57
+
+A About matrices
+
+Following [?], let Mn denote the class of all n Ã n matrices. Two matrices
+A, B â Mn are similar, denoted by A â¼ B, if there exists an invertible (non-
+singular) matrix S â Mn s.t. A = SBSâ1. Similar matrices are just diï¬erent
+basis representation of a single linear transformation.Similar matrices have
+the same characteristic polynomial, c.f. Theorem 1.3.3 in [?] and therefore
+the same eigenvalues
+
+A.1 Algebraic and geometric multiplicity of eigenval-
+
+ues
+
+Let Î» be an eigenvalue of an arbitrary matrix A â Mn with an associated
+eigenvector v â Cn.
+Deï¬nitions:
+
+â¢ The spectrum of A â Mn is the set of all the eigenvalues of A, denoted
+
+by Ï(A).
+
+â¢ The spectral radius of A is Ï(A) = maxâ£Î»â£ â¶ Î» â Ï(A).
+
+â¢ For a given Î» â Ï(A) , the set of all vectors v â Cn satisfying Av = Î»v
+is called the eigenspace of A associated with the eigenvalue Î» . Every
+nonzero element of this eigenspace is an eigenvector of A associated
+with Î»
+
+â¢ The algebraic multiplicity of Î» is its multiplicity as a root of the char-
+
+acteristic polynomial det(Î»I â A)
+
+â¢ The geometric multiplicity of Î» is the dimension of the eigenspace as-
+sociated with Î», i.e. the number of linearly independent eigenvectors
+associated with that eigenvalue.
+
+â¢ We say that Î» is simple if its algebraic multiplicity is 1; it is semisimple
+
+if its algebraic and geometric multiplicities are equal.
+
+â¢ The algebraic multiplicity of an eigenvalue is larger than or equal to its
+
+geometric multiplicity.
+
+â¢ We say that A is defective if the geometric multiplicity of some eigen-
+
+value is less than its algebraic multiplicity
+
+58
+
+A.2 Diagonizable matrices
+Deï¬nition: If A â Mn is similar to a diagonal matrix, then A is said to be
+diagonizable
+Theorem 1. See Theorem 1.3.7 in [?].
+
+The matrix A â Mn is diagonizable iï¬ there are n linearly indepen-
+If
+
+dent vectors, v(1), v(2), ...., v(n), each of which is an eigenvector of A.
+v(1), v(2), ...., v(n) are linearly independent eigenvectors of A and S = [v(1), v(2), ...., v(n)]
+then Sâ1AS is a diagonal matrix Î and the diagonal entries of Î are the
+eigenvalues of A
+Lemma 1. Let Î»1, ..., Î»k;
+pose v(i) is an eigenvector associated with Î»i;
+[v(1), v(2), ...., v(k)] are linearly independent.
+
+k â¥ 2 be distinct eigenvalues of A â Mn and sup-
+i = 1, ...., n. Then the vectors
+
+Proof of Lemma 1.3.8 in [?]
+
+Theorem 2. If A â Mn has n distinct eigenvalues, then A is diagonizable
+
+Proof. Since all eigenvalues are distinct Lemma 1 ensures that the associated
+eigenvectors are linearly independent and thus, according to Theorem 1, A
+QED
+is diagonizable
+
+Notes:
+
+1. Having distinct eigenvalues is suï¬cient for diagonizability, but not nec-
+
+essary.
+
+2. A matrix is diagonizable iï¬ it is non-defective, i.e. it has no eigenvalue
+with geometric multiplicity strictly less than its algebraic multiplicity
+
+A.3 Left eigenvectors
+Deï¬nition: A non-zero vector y â Cn is a left eigenvector of A â Mn asso-
+ciated with eigenvalue Î» of A if yâA = Î»yâ. From [?], Theorem 1.4.12, we
+have the following relationship between left and right eigenvectors and the
+multiplicities of the corresponding eigenvalue:
+Theorem 3. Let Î» â C be an eigenvalue of A â Mn associated with right
+eigenvector x and left eigenvector yâ. Then the following hold:
+
+(a) If Î» has algebraic multiplicity 1, then yâx â  0
+
+(b) If Î» has geometric multiplicity 1, then it has algebraic multiplicity 1 iï¬
+
+yâx â  0
+
+59
+
+A.4 About non-symmetric real matrices
+
+â¢ the eigenvalues of non-symmetric real n Ã n matrix are real or come in
+
+complex conjugate pairs
+
+â¢ the eigenvectors are not orthonormal in general and may not even span
+
+an n-dimensional space
+
+â Incomplete eigenvectors can occur only when there are degenerate
+eigenvalues with algebraic multiplicity greater
+
+eigenvalues, i.e.
+than 1, but do not always occur in such cases
+
+â Incomplete eigenvectors never occur for the class of normal ma-
+
+trices
+
+â¢ Diagonalization theorem: an n Ã n matrix A is diagonizable iï¬ A has n
+
+linearly independent eigenvectors
+
+A.5 Normal matrices
+Deï¬nition 1. A matrix A â Mn is called normal if AâA = AAâ
+Deï¬nition 2. A matrix A â Mn is called Hermitian if Aâ = A
+Theorem 4. If A â Mn has eigenvalues Î»1, Î»2, ....., Î»n the following statements
+are equivalent:
+
+(a) A is normal
+
+(b) A is unitarily diagonizable
+
+(c) ân
+
+i=1 ân
+j=1
+
+â£aijâ£2 = ân
+j=1
+
+â£Î»jâ£2
+
+(d) There is an orthonormal set of n eigenvectors of A
+
+Remark A.1. All normal matrices are diagonizable but not all diagonizable
+matrices are normal.
+
+A.6 Unitary matrices and unitary similarity
+Unitary matrices, U â Mn, are non-singular matrices such that U â1 = U â, i.e
+U âU = U U â = I. A real matrix U â Mn(R) is real orthogonal if U T U = I.
+The following are equivalent:
+
+60
+
+(a) U is unitary
+
+(b) U is non-singular and U â1 = U â
+
+(c) U U â = I
+
+(d) U â is unitary
+
+(e) The columns of U are orthonormal
+
+(f) The rows of U are orthonormal
+
+(g) For all x â Cn,
+
+â¥xâ¥2 = â¥U xâ¥2
+
+Deï¬nition A.1. :
+
+â¢ A is unitarily similar to B if there is a unitary matrix U s.t. A = U BU â
+
+â¢ A is unitarily diagonizable if it is unitarily similar to a diagonal matrix
+
+B Laplacian representation of Graphs
+
+Graphs provide natural abstraction for how information is shared between
+agents in a network. Algebraic graph theory associate matrices, such as Adja-
+cency and Laplacian, with graphs, cf. [?]. In this appendix some useful facts
+from algebraic graph theory are presented. Given a multi-agent system, the
+network can be represented by a directed or an undirected graph G = (V, E),
+i = 1, ..., n representing the
+where V is a ï¬nite set of vertices, labeled by i;
+agents, and E is the set of edges, E â [V Ã V ], representing inter-agent infor-
+mation exchange links.2 A simple graph contains no self-loops, namely there
+is no edge from a node to itself. If the graph is undirected then the edge
+set E contains unordered pairs of vertices. In directed graphs (digraphs) the
+edges are ordered pairs of vertices. We say that the graph is connected if
+for every pair of vertices in V there is a path with those vertices as its end
+vertices. If this is not the case, the graph is called disconnected. We refer
+to a connected graph as having one connected component. A disconnected
+graph has more than one component.
+
+2Vertices are also referred to as nodes and the two terms will be used interchangeably
+
+61
+
+B.1 Directed graphs - digraphs
+
+A directed graph (or digraph), denoted by D = (V, E), is a graph whose edges
+are ordered pairs of vertices. For the ordered pair (i, j) â E, when vertices
+vi, vj are labelled i, j, i is said to be the tail of the edge, while j is its head.
+
+Deï¬nitions:
+
+1. A digraph is called strongly connected if for every pair of vertices there
+
+is a directed path between them.
+
+2. The digraph is called weakly connected if it is connected when viewed
+
+as a graph, that is, a disoriented digraph.
+
+3. A digraph has a rooted out-branching, or spanning tree, if there exists
+a vertex r (the root) such that for every other vertex i â  r â N there is
+a directed path from r to i. In this case, every i â  r â N is said to be
+reachable from r. In strongly connected digraphs each node is a root.
+
+4. A node is called balanced if the total weight of edges entering the node
+
+and leaving the same node are equal
+
+5. If all nodes in the digraph are balanced then the digraph is called
+
+balanced
+
+B.1.1 Properties of Laplacian matrices associated with digraphs
+
+â¢ The non-symmetric Laplacian, L, associated with a digraph G of order
+
+n has the following properties:
+
+(a) L has at least one zero eigenvalue and all remaining eigenvalues
+
+have positive real part
+
+(b) L has a simple zero eigenvalue and all other eigenvalues have pos-
+itive real part if and only if G has a directed spanning tree
+
+(c) L is real, therefore any complex eigenvalues must occur in conju-
+
+gate pairs3
+
+3the eigenvalues of a real non-symmetric matrix may include real values, but may also
+
+include pairs of complex conjugate values
+
+62
+
+(d) There is a right eigenvector of ones, 1n, associated with the zero
+
+eigenvalue, i.e. L1n = 0n
+
+(e) The left eigenvector of L corresponding to Î» = 0, denoted by wl is
+
+positive and ân
+
+i=1 wl(i) = 1,
+
+(f) wl = 1T
+
+n if and only if the digraph is balanced
+
+â¢ If the Laplacian L of the digraph is a normal, i.e. LLT = LT L, then
+
+1. There exists an orthonormal set of n eigenvectors of L
+2. L is unitarily diagonizable, i.e. L = U ÎU â, where U is a unitary
+matrix of eigenvectors and Î is a diagonal matrix of eigenvalues.
+
+3. The digraph must be balanced and thus wl = 1T
+n
+
+C Properties of circulant matrices
+
+A circulant matrix is an n Ã n matrix having the form
+
+C =
+
+â¡
+c0
+â¢
+â¢
+â¢
+cnâ1
+â¢
+â¢
+â¢
+â¢
+â£
+
+c1
+
+c1
+c0
+
+c2
+
+c2 â¯ cnâ1
+c1 â¯ cnâ2
+â®
+
+â¯ c0
+
+â¤
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¥
+â¦
+
+(55)
+
+which can also be characterized as an n Ã n matrix C with entry (k, j)
+
+given by
+
+Ck,l = c(lâk)mod(n)
+
+Every n Ã n circulant matrix C has eigenvectors (cf. [?], [?])
+
+(1, eâ2Ïjk/n, eâ4Ïjk/n, â¯, eâ2Ïjk(nâ1)/n)T
+
+;
+
+k â {0, 1, â¯, n â 1}
+
+(56)
+
+vk = 1â
+n
+â
+
+where j =
+
+â1, with corresponding eigenvalues
+
+Î»k =
+
+nâ1
+â
+l=0
+
+cleâ2Ïjlk/n
+
+(57)
+
+From the deï¬nition of eigenvalues and eigenvectors we have
+
+Cvk = Î»kvk;
+
+k = 0, 1, â¯, n â 1
+
+63
+
+which can be written as a single matrix equation
+
+where Î = diag(Î»k);
+
+k = 0, â¯, n â 1 and
+
+CU = U Î
+
+U = [v0, v1, â¯, vnâ1]
+
+=
+
+1â
+n
+
+[eâ2Ïjmk; m, k = 0, â¯, n â 1]
+
+U is a unitary matrix, i.e. U U â = U âU = I (cf. [?], proof by direct computa-
+tion) and
+
+Note that Fn =
+
+nU â is the known Fourier matrix.
+
+â
+
+C = U ÎU â
+
+(58)
+
+C.1 Cyclic pursuit
+
+The Laplacian representing cyclic pursuit is a special case of circulant matrix
+
+L =
+
+0
+
+â¡
+1 â1
+â¢
+â¢
+â¢
+0
+â¢
+â¢
+â®
+â¢
+â¢
+â1
+â£
+
+â¤
+0 â¯ 0
+â¥
+â¥
+1 â1 0 â¯ 0
+â¥
+â¥
+â¥
+â®
+â¥
+â¥
+â¯ 1
+â¦
+
+0
+
+Thus the eigenvalues of the cyclic pursuit Laplacian are
+
+Î»k = 1 â eâ2Ïjk/n;
+
+k = 0, ..., n â 1
+
+and the eigenvectors are given by eq. (56).
+
+(59)
+
+(60)
+
+D Proof of mutual capture existence in ï¬nite
+time, in non-linear cyclic pursuit without
+broadcast control - Lemma 1.1 in [25]
+
+This proof, sketched in [25], is brought here for completeness. Let pi(t)
+be the position of agent i at time t and let agent i chase i + 1, where i is
+mod n. Denote by di(t) is the distance between i to i + 1 at time t, i.e.
+di(t) = â¥pi+1(t) â pi(t)â¥.
+
+64
+
+The dynamics of the agents are modeled by
+
+â§âªâª
+â¨
+âªâªâ©
+
+Ëpi = pi+1(t)âpi(t)
+pi(t) = pi+1(t) ât â¥ Ët
+
+di(t)
+
+if di(t) > 0
+
+s.t. di(Ët) = 0
+
+(61)
+
+In the sequel, for simplicity, we shall omit speciï¬c mention of t, whenever
+
+self explanatory.
+
+Lemma D.1. n agents in cyclic pursuit, modelled by (61), will collide
+i=1 di(t0), where di(t0)
+(gather) within a ï¬nite time given by Tm â¤ t0 + 2n ân
+are the initial distances between agents and Tm is the time of mutual capture
+(termination time).
+
+Proof. We show that there exists a time Tm such that di(Tm) = 0 for all i or,
+since di > 0 for all i
+
+n
+â
+i=1
+
+di(Tm) = 0
+
+(62)
+
+To show (62) we will show that there exists a positive real number c > 0 such
+that ân
+i=1
+
+Ëdi(t â¤ Tm) â¤ âc.
+
+We assume that no agents have collided at time t < Tm. Note that upon
+our model, when two agents collide they become one and n is reduced, there-
+fore this assumption holds. Given eq. (61) we have
+
+n
+â
+i=1
+
+di Ëpi = 0
+
+Thus
+
+ËpT
+1
+
+n
+â
+i=1
+
+di Ëpi =
+
+n
+â
+i=1
+
+di ËpT
+
+1 Ëpi = 0
+
+(63)
+
+In order for (63) to hold, there must exist an agent j such that ËpT
+
+1 Ëpj < 0.
+
+1 Ëpj = â¥ Ëp1â¥â¥ Ëpjâ¥ cos(Î±) < 0
+ËpT
+
+(64)
+
+where Î± is the angle between Ëp1 and Ëpj. For eq. (64) to hold we must have
+Ï/2 < Î± < 3Ï/2 and since â¥ Ëpiâ¥ = 1; i = 1, ...., n, we have â¥ Ëpj â Ëp1â¥ > 1
+
+65
+
+Figure 45: â¥ Ëpj â Ëp1â¥ for ËpT
+
+1 Ëpj < 0
+
+From the deï¬nition of di and Ëpi we have
+
+= â¥pi+1 â piâ¥2
+
+d2
+i
+Ëdi = ËpT
+i
+= ËpT
+= â 1
+2
+
+( Ëpi+1 â Ëpi)
+i Ëpi+1 â 1
+
+â¥ Ëpi+1 â Ëpiâ¥2
+
+n
+â
+i=1
+
+n
+â
+i=1
+
+Ëdi = â1
+2
+â¤ â 1
+2n
+
+â¥ Ëpi+1 â Ëpiâ¥2
+
+n
+(
+â
+i=1
+
+â¥ Ëpi+1 â Ëpiâ¥)2
+
+where we used the Cauchy-Schwartz inequality
+
+n
+â
+i=1
+
+a2
+i
+
+n
+â
+i=1
+
+â¥ (
+
+b2
+i
+
+n
+â
+i=1
+
+aibi)2
+
+with ai = â¥ Ëpi+1 â Ëpiâ¥ and bi = 1 for i = 1, ...., n.
+
+Applying to ân
+i=1
+
+â¥ Ëpi+1 â Ëpiâ¥ the triangle inequality we have
+
+jâ1
+â
+i=1
+
+â¥ Ëpi+1 â Ëpiâ¥ â¥ â¥ Ëpj â Ëp1â¥
+
+66
+
+(65)
+(66)
+(67)
+
+(68)
+
+(69)
+
+(70)
+
+where j is some index such that â¥ Ëpj â Ëp1â¥ > 1, which according to (63) must
+â¥ Ëpi+1 â Ëpiâ¥ > 1 and therefore
+exist. Since all summands are â¥ 0 we, have ân
+i=1
+
+n
+â
+i=1
+
+Ëdi < â 1
+2n
+
+(71)
+
+Integrating both sides of (71) from t0 to Tm and recalling that at termination
+i=1 di(Tm) = 0, we obtain
+(mutual capture) time ân
+
+Tm < t0 + 2n
+
+n
+â
+i=1
+
+di(t0)
+
+QED
+
+67
+
+References
+
+Miscellaneous
+
+[1] F. Behroozi and R. Gagnon. A computer-assisted study of pursuit in a
+
+plane. Amer. Math. Monthly, 82(8):804812, 1975.
+
+[2] F. Behroozi and R. Gagnon. Cyclic pursuit in a plane. J.Math. Phys.,
+
+20:22122216, 1979.
+
+[3] A. Bruckstein. Why the ant trails look so straight and nice. The
+
+Mathematical Intelligencer, 15(2):59â70, 1993.
+
+[4] A. Bruckstein, N. Cohen, and A. Efrat. Ants, crickets and frogs in cyclic
+pursuit. Technical report, Technion, CS, Center for Intelligent Systems
+TR, CIS-9105, 1991.
+
+[5] S. Daingade and A. Sinha. Target centric cyclic pursuit using bearing
+
+angle measurements only. IFAC Proceedings Volumes, 2014.
+
+[6] D. Dimarogonas and K. Kyriakopoulos. On the rendezvous problem
+IEEE Transactions on Automatic
+
+for multiple nonholonomic agents.
+Control, 52(5):916 â 922, 2007.
+
+[7] D. V. Dimarogonas, T. Gustavi, M. Egerstedt, and X. Hui. On the
+number of leaders needed to ensure connectivity. In Proceedings of the
+47th IEEE Conference on Decision and Control, 2008.
+
+[8] D. Dovrat and A. Bruckstein. Gathering and collective movement of
+unicycle a(ge)nts with crude sensing capabilities. Technical report,
+Technion, CS, Center for Intelligent Systems TR, CIS-2017-02, 2017.
+
+[9] T. Gustavi, D. V. Dimarogonas, M. Egerstedt, and X. Hui. On the
+number of leaders needed to ensure connectivity in arbitrary dimensions.
+In 17th Mediteranean Conference on Control and Automation, 2009.
+
+[10] J. Han, M. Li, and L. Guo. Soft control on collective behavior of a group
+of autonomous agents by a shill agent. Journal of Systems Science and
+Compexity, 19:54â62, 2006.
+
+68
+
+[11] J. Han and L. Wang. Nondestructive intervention to multiagent systems
+
+through an inteligent agent. PLoS ONE, 2013.
+
+[12] A. Jadbabaie, J. Lin, and A. S. Morse. Coordination of groups of mobile
+autonomous agents using nearest neighbor rules. IEEE Transactions on
+automatic Control, 48:988â1001, 2002.
+
+[13] T. Kailath. Linear Systems. Prentice Hall, 1980.
+
+[14] M. Klamkin and D. Newman. Cyclic pursuits or the three bugs problem.
+
+Amer. Math. Monthly, 78(5):631â639, 1971.
+
+[15] Z. Lin, M. Broucke, and B. Francis. Local control strategies for groups
+of mobile autonomous agents. In Proc. 42nd IEEE Conf. Decision and
+Control, pages 1006 â 1011, 2003.
+
+[16] J. Marshall.
+
+COORDINATED AUTONOMY: PURSUIT FORMA-
+TIONS OF MULTIVEHICLE SYSTEMS. PhD thesis, University of
+Toronto., 2005.
+
+[17] J. Marshall, M. Broucke, and B. Francis. Formations of vehicles in cylic
+pursuit. IEEE Transactions in Automatic Control, 49(11), 2004.
+
+[18] J. Marshall, M. Broucke, and B. Francis. Unicycles in cylic pursuit.
+In Proceedings of the 2004 American Control Conference, pages 5344 â
+5349, 2004.
+
+[19] K. Moore and D. Lucarelli. Forced and constrained consensus among
+cooperating agents. In IEEE Conf. on Neworking, Sensing and Control,
+pages 449â454, 2005.
+
+[20] R. Olfati-Saber, A. Fax, and R. Murray. Agreement problems in net-
+In Proceedings of
+
+works with directed graphs and switching topology.
+the 42nd IEEE Conference on Decision and Control, 2003.
+
+[21] R. Olfati-Saber, A. Fax, and R. Murray. Agreement problems in net-
+works with directed graphs and switching topology. Technical report,
+California Institute of Technology, Technical Report CIT-CDS 03005,
+2003.
+
+69
+
+[22] R. Olfati-Saber, A. Fax, and R. Murray. Consensus protocols for net-
+works of dynamic agents. In Proceedings of the 2003 Americal Control
+Conference, 2003.
+
+[23] W. Ren. Multi-vehicle consensus with a time-varying reference state.
+
+Systems and Control Letters, 56(3):474483, 2007.
+
+[24] W. Ren, R. Beard, and T. McLain. Coordination variables and con-
+sensus building in multiple vehicle systems. In Proceedings of the Block
+Island Workshop on Cooperative Control, Springer-Verlag, 2003.
+
+[25] T. Richardson. Non-mutual captures in cyclic pursuit. Annals of
+
+Mathematics and Artiï¬cial Intelligence, 31:127146, 2001.
+
+[26] I. Segall and A. Bruckstein. Stochastic broadcast control of multi-agent
+
+swarms. arXiv:1607.04881, 2016.
+
+[27] A. Sinha and D. Ghose. Generalization of linear cyclic pursuit with
+application to rendezvous of multiple autonomous agents. Technical
+report, Indian Institute of Science Bangalore560012, 2005.
+
+[28] T. Vicsek, A. Czirok, E. B. Jacob, I. Cohen, and O. Schochet. Novel
+type of phase transitions in a system with self-driven particles. Physical
+Review Letters, 75:1226â1229, 1995.
+
+70
+
+

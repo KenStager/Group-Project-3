@@ -1,0 +1,71 @@
+# Affordable Generative Agents: Revolutionizing Cost-Efficient Simulation of Interactive Agents
+
+The rapid advancements in large language models (LLMs) have brought us closer to creating believable interactive agents capable of simulating human behaviors. Such agents hold immense potential across diverse applications, from simulating policy impacts to creating sophisticated non-player characters (NPCs) in video games. However, the significant costs associated with maintaining prolonged interactions have posed substantial challenges. In this blog, we delve into a revolutionary framework called **Affordable Generative Agents (AGA)**, designed to enable cost-effective, believable interactions in both agent-environment and inter-agent scenarios.
+
+## Introduction
+
+The integration of large language models into interactive agents has opened new horizons in the simulation of human-like behaviors. Believable LLM agents can interact seamlessly with humans and other agents, adapt to environmental changes, and generate responses that align with human expectations. This makes them invaluable in numerous fields such as policy simulation, gaming, and robotics. Yet, the high costs incurred from continuous LLM invocations for interaction pose a significant barrier to their widespread adoption.
+
+This is where Affordable Generative Agents (AGA) come into play. By leveraging learned policies for repeated actions and compressing dialogue information in multi-round interactions, AGA significantly reduces the cost while maintaining the plausibility of agent behaviors.
+
+## The Challenge of High Costs in LLM Agents
+
+The promise of LLM-based agents comes with a hefty price tag. For instance, in the creation of virtual environments like the "Stanford Town" for social behavior simulation, costs can soar into the thousands of dollars. Simulations involving embodied agents, which address emotional and rational needs, also incur high expenses, with costs escalating to several dollars per hour per agent.
+
+These costs become untenable for long-term, large-scale simulations, especially when aiming to use LLM agents as NPCs in open-world environments. Current methods, which typically focus on single-round QA sessions, lack the infrastructure to support continuous, low-cost interactions.
+
+## Affordable Generative Agents: Innovations and Mechanisms
+
+To address these challenges, AGA introduces two main strategies:
+
+### 1. Lifestyle Policy for Agent-Environment Interactions
+
+The interaction between an agent and its environment can be a repetitive process. For example, an agent might frequently need to brush its teeth or navigate a room. By substituting repetitive LLM inferences with learned policies, Lifestyle Policy minimizes the cost of generating repeated responses. This involves two key stages:
+
+#### a. Plan Decomposition
+
+When an agent encounters a novel situation, the LLM generates an initial plan, which is then decomposed into sub-plans and specific actions. This approach ensures high-quality, believable, and self-consistent actions.
+
+#### b. Policy Reuse
+
+For familiar situations, the agent retrieves and reuses previous plans that closely resemble the current scenario. This retrieval is based on the cosine similarity of embedding features, ensuring that minimal differences in descriptions do not necessitate new inferences.
+
+### 2. Social Memory for Inter-Agent Interactions
+
+Inter-agent interactions, primarily through dialogue, require substantial auxiliary information to generate contextual, appropriate responses. Social Memory compresses this information into three components: Relationship, Feeling, and Summary Events. This module ensures that agents can recall relevant social data without extending the prompt length excessively, thereby reducing costs.
+
+#### a. Relationship and Feeling
+
+These components record social connections and personal impressions, influencing the agent's behavior and approach during interactions. They are updated after each interaction to reflect changes in relationships and emotions.
+
+#### b. Summary Events
+
+This component summarizes events related to the interlocutors and discussion topics, allowing agents to access necessary information efficiently.
+
+## Experiments and Results
+
+### Generative Agents
+
+In the simulated environment "Stanford Town," AGA demonstrated impressive cost reductions. Token consumption studies show that the cost of using only the Lifestyle Policy was 40.2% of the original, while using only Social Memory was 58.6%. Implementing the full AGA framework reduced costs to 31.1%.
+
+### VirtualHome
+
+In the VirtualHome environment, agents were evaluated based on their ability to perform household tasks. AGA's cost was only 3.4% of the baseline, while maintaining comparable task success rates as evaluated by both LLM and human evaluators.
+
+## Engaging the Audience
+
+Have you ever wondered how AI can simulate human-like interactions at a reduced cost? What applications can you envision for Affordable Generative Agents in your industry? Share your thoughts and join the discussion in the comments below!
+
+## Conclusion
+
+Affordable Generative Agents represent a significant leap forward in the simulation of believable, cost-efficient interactive agents. By optimizing both agent-environment and inter-agent interactions, AGA paves the way for more extensive and practical applications of LLM-based agents. Moving forward, integrating AGA with existing cost-effective methods and addressing latency issues will further enhance the feasibility and performance of these agents.
+
+## Final Thoughts
+
+The potential of believable LLM agents extends far beyond gaming and policy simulation. As we continue to refine these technologies, we open doors to new possibilities in education, customer service, healthcare, and beyond. Affordable Generative Agents are just the beginning of this exciting journey.
+
+Stay tuned for more insights and updates on the future of interactive AI!
+
+---
+
+By incorporating questions and calls-to-action, such as "What applications can you envision for Affordable Generative Agents in your industry?" readers are encouraged to engage and share their perspectives, fostering a sense of community and interaction around the topic. This comprehensive approach not only educates but also invites readers to be part of the conversation, making the content more engaging and impactful.

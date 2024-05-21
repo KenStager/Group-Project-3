@@ -1,0 +1,1488 @@
+The Design and Realization of Multi-agent Obstacle Avoidance 
+based on Reinforcement Learning 
+
+Enyu Zhaoa,b, Chanjuan Liua*, Houfu Sua, and Yang Liua 
+
+a Department of Computer Science and Technology, Dalian University of Technology, Dalian 
+116024, China  
+
+b University of Southern California Viterbi Department of Computer Science, 941 Bloom Walk, Los 
+
+Angeles, CA 90089 
+
+Abstractâ  Intelligence  agents  and  multi-agent  systems  play 
+important  roles  in  scenes  like  the  control  system  of  grouped 
+drones,  and  multi-agent  navigation  and  obstacle  avoidance 
+which is the foundational function of advanced application has 
+great  importance.  In  multi-agent  navigation  and  obstacle 
+avoidance tasks, the decision-making interactions and dynamic 
+changes  of  agents  are  difficult  for  traditional  route  planning 
+algorithms  or  reinforcement  learning  algorithms  with  the 
+increased complexity of the environment. 
+
+The  classical  multi-agent  reinforcement  learning  algorithm, 
+Multi-agent  deep  deterministic  policy  gradient(MADDPG), 
+solved  precedent  algorithmsâ  problems  of  having  unstationary 
+training  process  and  unable  to  deal  with  environment 
+randomness. However, MADDPG ignored the temporal message 
+hidden  beneath  agentsâ  interaction  with  the  environment. 
+Besides, due to its CTDE technique which let each agentâs critic 
+network  to  calculate  over  all  agentsâ  action  and  the  whole 
+environment  information,  it  lacks  ability  to  scale  to  larger 
+amount of agents. 
+
+To  deal  with  MADDPGâs 
+
+ignorance  of  the  temporal 
+information  of  the  data,  this  article  proposes  a  new  algorithm 
+called MADDPG-LSTMactor, which combines MADDPG with 
+Long short term memory (LSTM). By using agentâs observations 
+of  continuous  timesteps  as  the  input  of  its  policy  network,  it 
+allows the LSTM layer to process the hidden temporal message. 
+Experimentâs result demonstrated that this algorithm had better 
+performance in scenarios where the amount of agents is small. 
+Besides, to solve MADDPGâs drawback of not being efficient in 
+scenarios where agents are too many, this article puts forward a 
+light-weight  MADDPG 
+(MADDPG-L)  algorithm,  which 
+simplifies the input of critic network. The result of experiments 
+showed  that  this  algorithm  had  better  performance  than 
+MADDPG when the amount of agents was large. 
+
+I.  INTRODUCTION 
+
+Intelligent agents have played important roles in daily life 
+such as robots in factories or drones used in warfare. With the 
+increased  complexity  of 
+the  environment,  single-agent 
+systemâs performance become unsatisfying. Thus multi-agent 
+system drew peopleâs attention with its multi-agent structure 
+which  enables  it  to  finish  complicated  tasks  in  challenging 
+environment by letting agents to communicate and cooperate 
+with each other. Multi-agent system was applied in a range of 
+
+to  navigation  and  obstacle  avoidance 
+
+regions  like  traffic  regulation,  computer  games  and  robotic. 
+The  ability 
+is 
+undoubtedly  the  essential  feature  of  agents  in  multi-agent 
+system as the wide utilization of mobile multi-agent system in 
+areas  like  autonomous  driving  cars  and  robots  in  the 
+storehouse. 
+
+At  present,  the  development  of  autonomous  navigation 
+technology of agent system can be roughly divided into three 
+directions according to the knowability of map data: method 
+based on static path planning, method based on real-time map 
+creation and positioning, and method based on reinforcement 
+learning algorithm. 
+
+The  navigation  algorithm  based  on  static  path  planning 
+firstly models the mobile robotâs activity scene, establishes the 
+global map of the scene, and stores the map data of the scene 
+in the robotâs hardware device. The mainly used algorithms [4-
+7]  are  probabilistic  roadmap  method  [1],  rapid-exploration 
+random  tree  method [2] and artificial  potential field  method 
+[3].  However,  the  navigation  algorithm  based  on  static  path 
+planning can only be applied to  the  scene  where  the map is 
+known. 
+
+The technology of simultaneous localization and mapping 
+(SLAM)  was  proposed  by  Smith  [8-9]  in  1986.  Many 
+researchers  [10-11]  have  made  a  variety  of  optimization 
+attempts  on  map  creation,  positioning  and  path  planning. 
+However,  due  to  the  dynamic  changes  of  environment  and 
+agents,  the  acquisition  of  sensor  data  that  slam  relies  on  is 
+faced with uncertainty and complexity. 
+
+As  the  obstacle  avoidance  ability  is  in  the  subset  of 
+autonomous  navigation,  the  researches  done  in  autonomous 
+navigation  also  included  exploration  in  obstacle  avoidance. 
+However, the traditional route planning algorithms like A* [12] 
+exhibited  problems  such  as  unable  to  adapt  to  dynamic 
+environments  efficiently,  surging  time  complexity  with  the 
+increase  of  agents.  With  the  development  made  in  deep 
+learning, deep reinforcement learning was introduced in to the 
+multi-agent  system.  Multi-agent  reinforcement 
+learning 
+became  a  solution  to  the  obstacle  avoidance  and  navigation 
+problem. 
+
+ 
+ 
+ 
+  
+ 
+ 
+Preliminary  design of multi-agent reinforcement learning 
+directly makes each agent run a single reinforcement learning 
+algorithm. IQL [13] is an example, each agent in this algorithm 
+executes  an  individual  Q-learning  [14]  algorithm.  Another 
+example is IDDPG with each agent run an individual DDPG 
+[15]  algorithm.  Because  agent  canât  have  access  to  other 
+agentsâ action or observation, it canât tell whether the change 
+in environment is due to the action of other agents or just the 
+environmentâs 
+the 
+environment  ,  from  the  agentâs  perspective,  will  cause  the 
+agent fail to  converge [15].  
+
+stochasticity.  The 
+
+instability 
+
+in 
+
+Multi-Agent  Deep  Deterministic  Policy  Gradient 
+(MADDPG)  [16]  brought  forward  the  Centralised  Training 
+and  Decentralized  Execution  (CTDE)  training  method  as 
+agents can access other agentsâ action and observation during 
+training  phase,  even  the  global  observation  of  the  whole 
+environment. The CTDE training fashion can enable agent to 
+comprehend 
+the  environment  even  with  other  agentsâ 
+exploration to ensure the stability of the training process and 
+leads to a higher performance. However, itâs still not perfect 
+as centralized training requires each agent to consider othersâ 
+action  and  observation  in  the  training  period,  so  when  the 
+number of agents  increased  the  joint  action  space will grow 
+exponentially.  To solve this problem, Value Decomposition 
+Network (VDN) [17] adds all agentsâ local criticâs output to 
+gain the global action-value and QMIX [18] passes all agentsâ 
+local action-value to the mixer network to estimate the value 
+of  the  joint  action  of  all  agents.  As  Q-learning,  the  basic 
+reinforcement learning algorithm of QMIX is only for discrete 
+Factorized  Multi-agent  Actor-
+action 
+Critic(FACMAC)  [19]  was  put  forward  as  a  subsidy  for 
+continuous action space.  
+
+space, 
+
+and 
+
+As  in  the  agent  navigation  and  obstacle  avoidance  task, 
+each agentâs observation and action follows a continuous time 
+series  pattern,  Long  Short-Term  Memory(LSTM)  [20]  and 
+transformer [21] can be utilized in the reinforcement learning 
+process  to increase performance  and  stability.   However,  its 
+application  in  Multi-agent  reinforcement  learning  area  still 
+await exploration.  
+
+In this work, we propose two algorithms, viz., MADDPG-
+LSTMactor and MADDPG-L to solve the obstacle avoidance 
+and  navigation  problem  for  multi-agent  systems,  especially 
+focusing  on  whether  the  process  of  time  series  can  improve 
+algorithmâs performance and how to enable the algorithm to 
+scale to larger amount of agents. The training and execution of 
+the  algorithms  and  the  underlying  algorithms:  IDDPG, 
+MADDPG, FACMAC, were together tested in several virtual 
+environments.  The  results  suggest  that  the  MADDPG-
+LSTMactor  algorithm  performs  better  than  the  underlying 
+MADDPG  as  well  as  other  baseline  algorithms.  When  the 
+number  of  agents  increases,  the  MADDPG-L  algorithm 
+demonstrates the best performance. Therefore,  the proposed 
+algorithms  can  be  used  as  a  basic  algorithm  for  multi-agent 
+obstacle avoidance navigation tasks in the future.  
+
+The paper is organized as follows: Section 2 introduces the 
+preliminaries for later use; In Section 3, we introduce the idea 
+of 
+the  algorithms  LSTM-MADDPG  and  MADDPG-L; 
+Section  4  discusses  the  experimental  environment  and  the 
+comparative  analysis  of  the  experimental  results;  Section  5 
+
+summarizes the paper with possible research directions in the 
+future. 
+
+II.  BACKGROUND 
+
+A.  DDPG 
+
+In Deterministic Policy Gradient (DPG), the deterministic 
+policy ð will  output  a  certain  action ð¢ in  given  state ð , ð¢ =
+ðð(ð ) in  contrary  to  the  Stochastic  policy  which  gives  the 
+probability of different actions. This simplifies the calculation 
+of policy gradient by only executing integration on state rather 
+than both on state and action. The policy gradient is calculated 
+in the way shown in Equation (1). 
+
+âðð½(ð) = ð¼ð ~ð[âððð(ð¢|ð )âð¢ðð(ð , ð¢)|ð¢=ðð(ð )] 
+Deep Deterministic Policy Gradient (DDPG) [11] adapts 
+neural  network  to  serve  as  the  policy  network  ð  and 
+evaluation function ðð. And IDDPG is the simple extension 
+of  the  DDPG  in  the  multi-agent  field  by  executing  an 
+independent DDPG algorithm on each agent. 
+
+(1) 
+
+B.  MADDPG 
+
+MADDPG is one of the classic algorithms for multi-agent 
+reinforcement  learning.  It  adopts  the  training  method  of 
+Centralized  Training  Distribution  Execution  (CTDE)  and 
+extends the Deep Deterministic Policy Gradient (DDPG) [22] 
+algorithm to the multi-agent domain. It uses offline learning to 
+train  agents  that  perform  actions  within  a  continuous  action 
+space. In the MADDPG algorithm, each agent will be trained 
+the 
+with 
+deterministic  policy  network  ðð  and  the  action  evaluation 
+function ððð exclusive to the agent ð, respectively. Since each 
+agent's  policy  and action evaluation  function  belong  only to 
+the agent itself, this makes it applicable to totally competitive, 
+totally-cooperative or mixed-setting environments. 
+
+the  basic  structure  of  actor-critic, 
+
+learning 
+
+ð
+
+In  this  article,  agent  aâs  policy  network  ðð  will  be 
+parameterized by ðð,that is ðð(ðð; ðð).The joint policy of all 
+  ã Each 
+agents  will  be  noted  as  ð ï¼ ð = {ðð(ðð; ðð)}ð=1
+agentâs  critic  network  is  noted  as  ððð  ï¼ with  ðð  as  its 
+parameters. The critic network will evaluate agent aâs action 
+by the state s of the environment and the joint action u  of all 
+agents, which is ððð(ð , ð¢1, ð¢2 â¦ ð¢ð; ðð)ãThe critic network 
+of  agents  ððð  will  be  trained  in  time  differential  fashion, 
+aiming to minimize loss  â(ðð)ï¼as in Equation (2)ï¼ 
+2
+
+ð¿(Ïa) = ð¸ð· [(ð¦ð â ððð(ð , ð¢1, ð¢2 â¦ ð¢ð; ðð))
+
+(2) 
+
+] 
+
+Where   ð¦ð = ðð + ð¾ððð(ð â², ð¢1
+
+â² , ð¢2
+
+â² â¦ ð¢ð
+
+â² |ð¢ð
+
+â² =ðð(ðð;ðð
+
+â); ðð
+
+â)ã 
+
+â² , ð¢2
+
+ðð is  the  reward  gained  by  agent  ð âs  interaction  with  the 
+â is the parameter of target critic networkï¼
+environmentï¼ðð
+â² ) represent the target action of all agents chosen 
+â² , â¦ ð¢ð
+(ð¢1
+â ã The 
+by  their  target  policy  network  with  parameter  ðð
+experience 
+is 
+in 
+stored 
+tuple 
+(ð , ð â², ð¢1, ð¢2, â¦ ð¢ð, ð1, ð2, â¦ ðð)ã 
+
+buffer  ð 
+
+replay 
+
+The  policy  gradient  J(Î¼a)  of  agent  ð  is  calculated  in 
+
+Equation (3). 
+
+âððð½(ðð) = ð¼ð[âðððð(ðð)âð¢ðððð(ð , ð¢1, ð¢2, â¦ ð¢ð )|ð¢ð=ðð(ðð)]  (3) 
+
+ 
+ 
+ 
+ 
+ 
+ 
+It needs to be mentioned that except the action of agent a 
+trained  currently,  which  is  computed  by  agent  aâs  policy 
+network, other agentsâ action is just the corresponding action 
+stored in replay buffer. 
+
+C.  VDN and QMIX 
+
+Both  Value  Decomposition  Network 
+
+(VDN)  and 
+Monotonic  Q-Value  Decomposition  Network  (QMIX)  are 
+multi-agent reinforcement learning algorithms that are trained 
+using  centralized 
+training  distribution  execution.  Both 
+algorithm  tasks  are  to  train  a  centralized  critic.  Unlike  the 
+MADDPG  algorithm,  the  environment  action  evaluation 
+function they train will have only one output that evaluates the 
+ð .  This  environmental 
+global  action-state  value,  which  is ðð¡ðð¡
+action evaluation function, which evaluates the global action-
+state value, will be calculated in a decomposed fashion. The 
+practice of the value decomposition network (VDN) is to add 
+the environmental action evaluation functions of each agent, 
+as shown in Equation (4): 
+
+ð (ð, ð; ð) = â
+
+ðð¡ðð¡
+
+ð
+ð=1
+
+ðð(ðð, ð¢ð; ðð)
+
+ðð
+
+(4) 
+
+It should be noted that the environmental action evaluation 
+ðð   of each agent is only evaluated according to the 
+function ðð
+local observation record and the action of the agent ð, unlike 
+the  counterparts  in  MADDPG  which  consider  the  overall 
+environment state and the actions of all other agents. 
+
+The monotonic Q-value decomposition network (QMIX) 
+uses a monotonic continuous mixing function to calculate the 
+ð ,  as  shown  in 
+global  action-state  evaluation  function  ðð¡ðð¡
+Equation (5): 
+
+ðð¡ðð¡
+
+ð (ð, ð, ð; ð, ð) = ðð (ð , ð1
+
+ð1(ð1, ð¢1; ð1), ð2
+
+ð2(ð2, ð¢2; ð2) â¦ ðð
+
+ðð(ðð, ð¢ð; ðð))  (5) 
+
+The  requirement  for  the  monotonicity  of  the  mixing 
+function  is  to  ensure  that  when  the  global  action-state 
+ð   is the largest, the actions selected by 
+evaluation function ðð¡ðð¡
+ðð 
+each agent are the same as those selected when the agent ðð
+is maximized to facilitate distribution. In practical tasks, the 
+mixing  function  in  QMIX  is  a  neural  network,  which 
+guarantees monotonicity by using non-negative weights. The 
+monotonic  QMIX  algorithm  still  uses  the  time  differential 
+algorithm  for  training  with  the  target  network,  and  find  the 
+optimal  solution  by  reducing  the  loss  function  ð¿(ð, ð),  as 
+shown in Equation (6): 
+
+ð¿(ð, ð) = ð¸ð· [(ð¦ð¡ðð¡ â ðð¡ðð¡
+
+ð (ð, ð, ð ; ð, ð))
+
+2
+
+] 
+
+(6) 
+
+As  MADDPG  trains  the  centralized  action  evaluation 
+ð  in CTDE method, that is, to learn a centralized 
+network ðð¡ðð¡
+critic for each agent a to evaluate the overall environment and 
+ðð becomes 
+all agent actions. The action evaluation network ðð
+more  difficult to optimize  as  the number of agents increase 
+and  action  space  surge.  Because  with  the  increase  of  the 
+number  of  agents  and  the  action  space  of  each  agent  in  the 
+multi-agent  system,  the  dimension  of  the  input  vector 
+(ð , ð¢1, ð¢2. . . ð¢ð)  of  the  environmental  action  evaluation 
+ðð    of  each  agent  will  increase  exponentially. 
+network  ðð
+Therefore,  the  Factorized  Multi-Agent  Centralized  Policy 
+Gradient  Algorithm  (FACMAC)  proposes  the  use  of  value 
+factorisation 
+centralized 
+ð  that is easier to 
+environmental action evaluation function ðð¡ðð¡
+cope  with  the  increase  in  the  number  of  agents  and  the 
+increase in the action space.  
+
+construct 
+
+train 
+
+and 
+
+to 
+
+a 
+
+Since FACMAC adopts the Actor-Critic structure as the 
+basic algorithm framework, each agent ð relys on the unique 
+action ð¢ð calculated by its policy network ðð according to the 
+local  action  observation  history  ðð  when  making  action 
+selection. Unlike  VDN and QMIX, agent only depends on the 
+ð  to 
+action  value  given by  the  action  evaluation  function ðð¡ðð¡
+choose action. This means when constructing the factored and 
+ð
+centralized  critic  ðð¡ðð¡
+impose 
+there 
+monotonicity  restrictions  on  the  mixing  function.  This 
+enables  the  FACMAC  to  more  freely  decompose  the 
+ð    
+centralized  environmental  action  evaluation  function  ðð¡ðð¡
+without  considering  its  possible  performance  loss,  so  as  to 
+better deal with more complex surroundings. 
+
+is  no  need 
+
+to 
+
+, 
+
+The  centralized  action-value  evaluation  function  of 
+
+FACMAC is shown in Equation (7): 
+
+ð (ð, ð, ð ; ð, ð) = ðð (ð , ð1
+ðð¡ðð¡
+
+ð1(ð1, ð¢1; ð1), ð2
+
+ð2(ð2, ð¢2; ð2) â¦ ðð
+
+ðð(ðð, ð¢ð; ðð))  (7) 
+
+ð  and  ðð    represent  the  parameters  of  the  centralized 
+ð   and the local environmental 
+action evaluation function ðð¡ðð¡
+ðð of each agent a, respectively. 
+action evaluation function ðð
+ðð is a nonlinear mixing function, which is not restricted by 
+monotonicity, and the parameter is ð. The learning method is 
+the same as the QMIX, the target network is used to learn the 
+centralized  action  evaluation  function.  The  loss  function  is 
+expressed in Equation (8): 
+
+ð¿(ð, ð) = ð¸ð· [(ð¦ð¡ðð¡ â ðð¡ðð¡
+
+ð (ð, ð, ð ; ð, ð))
+
+2
+
+] 
+
+(8) 
+
+Where ð¦ð¡ðð¡ is: 
+
+Where ð¦ð¡ðð¡ is: 
+
+ð¦ð¡ðð¡ = ð + ð¾ max
+ð¢â²
+
+ð (ðâ², ðâ², ð â²; ðâ, ðâ)  
+
+ðð¡ðð¡
+
+ðâ   is  the  set  of network parameters for the  target critic 
+network of  each agent,  and ðâ is  the  target mixing network 
+parameter. 
+
+D.  FACMAC 
+
+Since VDN and QMIX adopt the basic idea of Q-learning, 
+these  two  algorithms  are  only  suitable  for  discrete  action 
+spaces. The factored multi-agent centralized policy gradient 
+algorithm (FACtored Multi-Agent centralized policy gradient, 
+FACMAC)  can  be  used 
+to  deal  with  multi-agent 
+reinforcement learning tasks in continuous action spaces. 
+
+ð¦ð¡ðð¡ = ð + ð¾ðð¡ðð¡
+
+ð (ðâ², ð(ðâ²; ð½â), ð â²; ðâ, ðâ) 
+
+In  the  calculation  of  the  policy  gradient,  FACMAC 
+proposes a calculation method that computes the centralised 
+policy gradient as in Equation (9). 
+
+âðð½(ð) = ð¼ð[âððâðð¸ð¡ðð¡
+
+ð (ð, ð1(ð1), ð2(ð2) â¦ ðð(ðð), ð )] (9) 
+
+Different  from  the  gradient  calculation  method  of 
+MADDPG shown in Equation (2), in FACMAC, all agentsâ 
+actions ð¢ð  are  calculated  by  the  policy  network ðð  of  each 
+agent ð according to its local action observation history ðð . 
+While in MADDPG, only the action of the currently trained 
+agent is calculated in the above way, other agentsâ action are 
+sampled from the replay buffer. 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+III.  THE DESIGN OF ALGORITHMS 
+
+A.  MADDPG-LSTMactor 
+
+In  multi-agent  reinforcement  learning  tasks,  agents 
+interact with the environment using their own policies. Then 
+they gain rewards resulting from their actionsâ influence on 
+the environment. In this learning process, each agentâs actions 
+and observations as well as the states of the environment all 
+demonstrate  the  features  like  time  series.  Due  to  LSTMâs 
+capability of dealing with time series data, we introduce this  
+
+structure  into  MADDPG  (which  has  been  proved  to  be  a 
+successful  algorithm  in  multi-agent  reinforcement  learning 
+field) to see whether the performance in multi-agent obstacle 
+avoidance and navigation tasks can be further enhanced. 
+
+As  MADDPG  algorithm  adopts  the  CTDE  (centralized 
+training and Decentralized execution) training method, each 
+agentâs critic network estimates the action ð¢ð made by actor 
+network based on the environmentâs state ð  to guide the actor 
+in training phase, whereas the actor network generates action 
+both  in  training  and  execution  phase  using  its  observation 
+history  as  input.  So ï¼it  is  obvious  that  comparing  to  the 
+centralized critic network, the actor network deals with time 
+series  data  more  frequently  and  directly.  Thus,  we  tried  to 
+introduce LSTM in the actor network directly first. 
+
+ð
+
+Normally, agents in MADDPG algorithm interact with the 
+environment  without  training  until  thereâs  enough  data  in 
+replay buffer ð. Then, at each time step, a batch of experience 
+tuples  containing  environment  state    ,  action ð â¡ {ð¢ð}ð=1
+, 
+reward ð â¡ {ðð}ð=ð
+ will be sampled from the replay buffer ð 
+to  train  the  critic  network  and  the  actor  network.  After  the 
+training  phase,  the  updated  actor  network  will  continue  to 
+interact  with  the  environment  to  generate  new  data.  The 
+environment  will  be  reset  periodically  when  the  timestep 
+becomes  an  integral  multiple  of  preset  hyper-parameter 
+ðððð ððð â ððððð¡â. However, such training process is unable 
+to exploit the information hidden in the time series. 
+
+ð
+
+In  this  article,  agentsâ  policy  network  equipped  with 
+LSTM takes action ð¢ð on timestep ð¡ based on a sequence of 
+its  local  observation  ðð â¡ {ðð
+ rather  than  simply  the 
+ð¡  of timestep ð¡. We set the sequence length as a 
+observation ðð
+hyper-parameter ð ðð¢ðððð â ððððð¡â = ð .  The  action-taking 
+process of agent ð can be defined as Equation (10). 
+
+ð
+ð¡âð}ð=0
+
+ð¢ð = ðð({ðð
+
+ð
+ð¡âð}ð=0
+
+, âð¡â1, ðð¡â1; ðð) 
+
+ (10) 
+
+Figure 1.   The illustration of MADDPG-LSTMactor 
+
+and execution phase. The queue stores experience tuples and 
+is  named  as  sequence  buffer â¬.  At  each  timestep,  the  actor 
+network  takes  action ð¢ð based  on  the  observation  sequence 
+stored  in  sequence  buffer  â¬  and  gains  reward  ðð .  The 
+experience  tuple  including  environment  state ð ,  all  agentsâ 
+observation ð, all agentsâ action ð and reward ð will be stored 
+into the sequence buffer. If the sequence buffer is full, the first 
+experience tuple will be deleted and the newest one will be 
+stored at the end of the queue. Meantime, the whole sequence 
+buffer will be stored into the replay buffer ð as an element. 
+The sequence buffer will be emptied when the environment is 
+reset. During training, instead of sampling experience tuples, 
+the previously stored sequence buffer, which is a continuous 
+sequence  of  experience  tuples,  will  be  sampled.  The 
+illustration figure is shown below. 
+
+In  MADDPG-LSTMactor  algorithm,  the  structure  of 
+critic  network  and  how  it  works  are  same  to  the  one  in 
+MADDPG. Thus, the way to optimize critic network and actor 
+network remains unchanged. 
+
+B.  MADDPG-L 
+
+As  a  typical  MARL  algorithm  adopts  CTDE  training 
+method,  MADDPG  requires  agentsâ  critic  network  to 
+consider  every  agentâs  observation  and  action  in  training 
+phase to stabilize training as well as improve the algorithmâs 
+performance.  However,  such  demand  for  extra  information 
+can  be  a  problem  when  the  amount  of  agents  in  the  multi-
+agent system is too large, as it will lead to the explosion of 
+action  space.  FACMAC  can  be  a  great  solution  to  this 
+question.  By  learning  a  single  centralized  but  factor  critic, 
+which  factors  the  joint  action-value  function ðð¡ðð¡  into  per-
+agent utilities ðð that are combined via a non-linear function. 
+Each  factored  action-value  utility,  i.e.,  each  agentâs  local 
+critic network estimates the value of its action, which can be 
+written as ðð(ðð, ð¢ð; ðð) . ðð is the local observation of agent 
+ð , ð¢ð is  its  action  and ðð stands  for  the  parameters  of  the 
+critic  network.  Then  the  mixing  function  ðð  will  take  all 
+agentsâ critic networkâs output and the environmentâs state ð  
+to give the final joint action-value estimation for all agents. In 
+this way, agentâs local critic network only needs to calculate 
+its own action and observation, regardless of the number of 
+agents in the system. The mixing function helps to ensure that 
+during  training  phase,  all  agents  can  get  information  about 
+other agents and the environment.  
+
+However,  algorithms  factoring  the  centralized  critic  are 
+not perfect. In the baseline test of MPE (Multi-agent Particle 
+Environment)  [23],  the  QMIX  algorithm  demonstrated  the 
+problem that itâs hard to get away from the initial state. The 
+result is shown in Fig. 2. 
+
+The horizontal axis is the timestep of training, while the 
+vertical axis is the average return of the algorithm. It can be 
+witnessed  that  the  performance,  which  is  indicated  by  its 
+average return, doesnât make any practical improvement until 
+the training timestep is more than 3 million. In this articleâs 
+experiment,  the  FACMAC  algorithm  showed  the  same 
+problem  because  the  structure  design  and  the  idea  of 
+FACMAC are similar to QMIX. The result can be found in 
+chapter 4. 
+
+We realized this mechanism by creating and maintaining 
+a queue with the length of ð ðð â ððððð¡â during both training 
+
+We suggest that this problem could happen because there 
+are too many networks to optimize in the training procedure. 
+
+ 
+ 
+ 
+ 
+ 
+Figure 2.   The performance of QMIX in MPE 
+
+to  MADDPG, 
+
+As the centralized and final critic of FACMAC is created by 
+the  mixing function which mix the combination of all local 
+critics, we  need to optimize  all of them while training each 
+it  only  requires 
+agent.  In  comparison 
+optimizing the agentâs own critic when itâs the agentâs turn to 
+be trained. So, itâs harder for the FACMAC algorithm to make 
+solid  progress  and  this  could lead  to  the  cold  start  problem 
+which worsen the situation. Because the algorithm is still in 
+the  primitive  stage,  most  of  its  attempts  canât  bring  any 
+positive  rewards,  so  its  replay  buffer  is  flooded  with  ânot 
+successfulâ experience tuples for the training phase to sample. 
+The  reason  why  we  made  such  suggestion  comes  from  the 
+way to calculate centralized critic in the experiment. When we 
+are  training  an  agent,  we  need  to  calculate  the  centralized 
+critic, as the actor network need it to carry out gradient ascend. 
+As  the  centralized  critic  requires  other  agentsâ  critic  result 
+besides the agent ð which is currently trained, we can directly 
+use  other  agentsâ  critic  to  estimate  the  action-value  of  their 
+own actions or use the critic network of agent ð to simulate 
+other agentsâ critic network to produce the action-value. As in 
+our  experiment,  all  agentsâ  critic  networks  share  the  same 
+structure, which makes the simulation method possible. The 
+advantage of using only the critic network of agent ð is it can 
+reduce the amount of networks to improve, which presumably 
+makes  training  easier.  In  our  experiment,  such  method  did 
+improve  the  performance.  However,  the  progress  is  still  far 
+from satisfaction. 
+
+In this article, we bring forward a light-weight MADDPG 
+algorithm, which can better scale to larger amount of agents, 
+we named it as MADDPG-L. The actor network remains the 
+same  as  MADDPG,  we  set  the  policy  of  agent  ð  to  be 
+ðð(ðð; ðð), and the action of agent ð to be ð¢ð = ðð(ðð, ðð). 
+ðð is the parameter of ðð. What distinguish it from MADDPG 
+is  the  critic  network  of  each  agent.  The  notation  of  it  is 
+ð(ð , ð¢ð; ðð),  implying  that  the  critic  of  each  agent  only 
+ðð
+considers that action of its own instead of all agentsâ action, 
+ð. Meanwhile, the environment state 
+ðð is the parameter of ðð
+ð  helps the agent to get the global information it needs. This 
+change helps to solve the problem of action space explosion 
+as each agent only needs to calculate its own action regardless 
+of  the  amount  of  agents  in  the  multi-agent  system.  The 
+illustration is shown in Fig. 3. The critic network is trained in 
+temporal difference style, the loss function of it is shown in 
+Equation (11). 
+
+2
+â(ðð) = ð¼ð [(ð¦ð â ððð(ð , ð¢ð; ðð))
+
+] 
+
+(11) 
+
+Figure 3.   Illustration of MADDPG-L 
+
+where ð¦ð isï¼ 
+
+ð¦ð = ðð + ð¾ððð(ð â², ð¢ð
+
+â² |ð¢ð
+
+â² =ðð(ðð;ðð
+
+â); ðð
+
+â) 
+
+ðð  is  the  reward  of  agent  ð âs  interaction  with  the 
+â indicates the parameter of target networkï¼
+â²  is the action implemented by the target actor network with 
+â. The experience tuples stored in 
+as 
+
+environment, ðð
+ð¢ð
+its parameter notified as ðð
+the 
+(ð , ð â², ð¢1, ð¢2, â¦ ð¢ð, ð1, ð2, â¦ ðð). 
+
+buffer  ð  has 
+
+structure 
+
+replay 
+
+the 
+
+The  policy  gradient  of  agent ðâs  actor  network ð½(ðð) is 
+
+shown in Equation (12)ï¼ 
+
+  âððð½(ðð) = ð¼ð[âðððð(ðð)âð¢ðððð(ð , ð¢ð )|ð¢ð=ðð(ðð)] (12) 
+
+IV.  EXPERIMENT 
+
+A.  Simulation environment 
+
+The 
+
+simulation  environment 
+
+is  based  on  MPE 
+environment, and the environmental parameters are listed in 
+the Table 1. 
+
+B.  The experiment scenarios and results 
+
+The  experiment  scenarios  are  Obstacle  predator-prey, 
+Spread,  Tunnel  and  Simple  Tunnel.  The  Obstacle 
+Predator-Prey  acts  as  the  initial  test  environment  for  all 
+algorithms  to  find  out  their  performance  in  obstacle-
+avoidance  and  dynamic  target  pursuing  task.  The  Spread 
+environment  aims  to  test  all  algorithmsâ  performance  in 
+avoiding  obstacles  that  are  relatively  small  and  arriving  at 
+designated  destinations.  Whatâs  more, 
+the  Spread 
+environment will have multiple versions including different 
+number of agents to discover the algorithmâs ability to scale. 
+The  Tunnel  environment  is  meant  for  testing  algorithmâs 
+ability  in  navigating  through  environments  where  obstacles 
+are so huge that they form the contour. In other words, there 
+will  be  some  specific  routes  for  the  agents  to  take  and 
+algorithms  should  learn  to  find  them.  The  Simple  Tunnel 
+environment  is  merely  the  Tunnel  environment  with  some 
+modifications to make it more realistic. Apart from the Simple 
+Tunnel environment, the algorithms to be tested are IDDPG, 
+MADDPG, 
+MADDPG-L, 
+MADDPG-LSTMactor, 
+FACMAC.  In  the  Simple  Tunnel  environment,  agentsâ 
+rewards are not equal and thus FACMAC is not tested  as it 
+requires such a condition.  
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+TABLE I.     EXPERIMENTAL ENVIRONMENT PARAMETERS 
+
+Term 
+
+CPU 
+
+Memory Size 
+
+GPU 
+
+Version 
+
+Intel i9 9900k 
+
+64GB 
+
+Colorful NVIDIA 
+GTX1080(VRAM 8GB) 
+
+Operation System 
+
+Ubuntu 18.04 LTS 
+
+GPU Driver version 
+
+Python version 
+
+Pytorch version 
+
+CUDA version 
+
+495.46 
+
+3.8.13 
+
+1.11.0 
+
+11.5 
+
+TABLE II.  HYPERPARAMETERS OF THE EXPERIMENT 
+
+Figure 4.   Illustration of Obstacle Predator Prey environment 
+
+Hyperparamters 
+
+max-episode-len 
+
+time-steps 
+
+Num-adversaries 
+
+Lr-actor 
+
+Lr-critic 
+
+Epsilon 
+
+Noise-rate 
+
+Gamma 
+
+Batch-size 
+
+seq-length 
+
+Value 
+
+100 
+
+2000000 
+1
+ï¼defaul
+tï¼ 
+0.001
+ï¼defaul
+tï¼ 
+0.01
+ï¼defaul
+tï¼ 
+
+0.1 
+
+0.1 
+
+0.95 
+256
+ï¼defaul
+tï¼ 
+5
+ï¼defaul
+tï¼ 
+
+Meaning 
+
+The length of each episode 
+
+Total interaction steps 
+
+Other agents besides those get 
+trained 
+
+The learning rate of policy 
+network 
+
+The learning rate of critic 
+network 
+
+Parameter for ð-ðððððð¦ action 
+choosing policy 
+The rate of noise added to 
+action during training phase 
+Time elapse coefficient 
+
+Batch-size for experience tuples 
+sampled for training 
+
+Figure 5.   Algorithmsâ performance in Obstacle Predator Prey environment 
+
+The length of continuous steps 
+for LSTM training 
+
+environment  state,  demonstrated  better  performance  than 
+MADDPG in the final stage. 
+
+The hyper-parameters used in the Experiment are listed in 
+table  2,  some of  them  remain  the  same  in  all  environments 
+and  algorithms,  others  which  vary  from  experiment  to 
+experiment will have their default value listed here and exact 
+value shown in appendix. 
+
+Obstacle  Predator Prey: In the Obstacle Predator-Prey 
+environment,  a  team  of  agents  will  be  trained  to  pursuit  an 
+adversarial agent with higher speed. The agents trained need 
+to learn how to chase the target(prey) while avoiding crashing 
+into  obstacles  and  each  other.  The  illustration  of  the 
+environment is Fig. 4. 
+
+The result of the experiment is shown in Fig. 5. The result 
+shows  that  algorithms  using  the  CTDE  training  paradigm 
+generally have better performance than IDDPG, which adopts 
+the decentralized training method. FACMAC is the exception, 
+the  explanation  can  be  found  in  chapter  3.2.  In  this 
+environment, with the help of LSTM, MADDPG-LSTMactor 
+has better performance than MADDPG. MADDPG-L, which 
+only feeds agentsâ critics with the agentâs own action and the  
+
+To  find  out  the  reason  why  FACMAC  performed  far 
+worse than other algorithms, we did more experiments in this 
+environment. 
+
+The  first  additional  experiment  is  to  test  two  different 
+ways of getting the final centralized critic. As the calculation 
+of  it  requires  other  agentsâ  critic  result  besides  the  agent ð 
+which is currently trained, we can directly use other agentsâ 
+critic to estimate the action-value of their own actions, or use 
+the critic network of agent a to simulate other agentsâ critic 
+network to produce the action-value. As in our experiment, all 
+agentsâ  critic  networks  share  the  same  structure,  the 
+simulation  method  is  possible.  The  result  of  these  two 
+different  calculation  methods  of  the  centralized  critic  in 
+FACMAC is shown in Fig. 6. 
+
+It  can  be  witnessed  that  using  agentâs  critic  network  to 
+simulate other agentsâ critic networks can reach a better result 
+than  directly  using  other  agentsâ  critic  network,  though  the 
+performance is still not comparable to other algorithms. The 
+mixing network could be the reason. As in the FACMACâs  
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+positive  data  for  training.  The  result  of  this  experiment  is 
+shown in Fig. 7. 
+
+Figure 8.   The illustration of Spread environment 
+
+local  critic  network 
+
+We set 1 million timestep to be the end of the first stage. 
+The algorithmâs performance simply plunged to the level of 
+random policy after reaching the watershed. We altered each 
+ð(ðð, ð¢ð; ðð)  to 
+agentâs 
+ð(ð , ð¢ð; ðð) and get rid of the mixing network. By doing this, 
+ðð
+we created MADDPG-L. The input of the algorithmâs critic 
+network doesnât have the problem of the explosion of action 
+space  as  it  only  requires  the  agentâs  own  action,  and  still 
+provides global information.  
+
+from  ðð
+
+Figure 6.   Performance of FACMAC with different parameter sharing 
+policy 
+
+Figure 7.   FACMACâs performance by optimizing the critic networks and 
+policy networks at the first stage, then training the mixer network 
+
+design that the mixing network should be considered as a part 
+of the critic network, the parameters of the mixing network 
+will  also  be  updated  while  optimizing  the  critic  network, 
+which brings uncertainty to the gradientâs direction. This can 
+be proved in our second additional experiment. 
+
+In  our  second  additional  experiment,  we  froze  the 
+parameters of the mixing network and only optimized agentsâ 
+local critics in the first stage of training, thus the centralized 
+critic was ablated. In the later stage, we started to update the 
+mixing networkâs parameters and switched back to the normal 
+training  process  of  FACMAC.  The  way  to  determine  the 
+policy  gradient  also  varied  in  two  stages,  Equation  (13) 
+demonstrates how itâs done in the first stage and Equation (14) 
+for the later stage. 
+
+âðð½(ðð) = ð¼ð[âðððâðððð
+âðð½(ð) = ð¼ð[âððâðð¸ð¡ðð¡
+
+ð(ðð, ðð(ðð); ðð)] 
+ð (ð, ð1(ð1), ð2(ð2) â¦ ðð(ðð), ð )] 
+
+(13) 
+
+(14) 
+
+By training agentsâ local critic networks in advance, we 
+aim  to  reduce  the  complexity  of  centralized  training. 
+Meanwhile,  the  successful  experience  tuples  stored  in  the 
+replay  buffer  assures  that  the  algorithm  can  have  enough 
+
+Spread: In the Spread environment, target locations will 
+be randomly generated after each environment reset, a team 
+with  the  same  amount  of  the  target  locations  are  trained  to 
+occupy  all  target  locations.  Obstacles  with  random  location 
+will also be generated in the space. Agents learn to occupy all 
+target locations while avoid collision with the obstacle or each 
+other. The illustration of this environment is Fig. 8. 
+
+Due to the different goal of training, the reward function 
+in this environment is changed from the one in the Obstacle 
+Predator-Prey. The reward function is set to be the negative 
+distance sum of all target locations to their nearest agent. In 
+other words, with each agent getting closer to the itâs target, 
+the  reward  will  get  higher.  We  also  give  agents  negative 
+rewards for having collisions with other agents or obstacles.  
+
+In order to examine algorithmsâ ability to scale to larger 
+amount of agents, the Spread environment will have different 
+versions  with  different  amount  of  agents,  Spread-3a  with  3 
+agents, Spread-6a with 6 agents and Spread-9a with 9 agents. 
+The 
+these  3  environmentsâ 
+in 
+result  of  algorithms 
+performance are shown in Fig. 9. 
+
+From the result of experiments in those 3 environments, it 
+can  be  seen  that  MADDPG-LSTMactor  will  perform better 
+than MADDPG when the agents are relatively few. However, 
+with  the  increase  of  agents,  MADDPG-LSTMactor  has  no 
+advantage over MADDPG. This could because the increased 
+complexity  brought  by  LSTM.  Although  MADDPG-L 
+doesnât perform any better than MADDPG when the amount 
+of  agents  are  small,  it  demonstrates  significant  better 
+performance than MADDPG as agents become more. It can 
+be concluded that in this environment, MADDPG-L can scale 
+to more agents better. 
+
+Tunnel and Simple Tunnel: In the Tunnel environment, 
+two massive obstacles will form a narrow tunnel which forces  
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 9.   Algorithmsâ performance in Spread environment with different amount of agents.
+
+the  agents  to  plan  path  to  go  through.  ð  target  locations 
+spread  at  one  end  of  the  tunnel  with  fixed  positions.  After 
+every  environment  reset,  ð  agents  will  emerge  at  fixed 
+positions at the other end of tunnel. They need to go through 
+tunnel  and  occupy  every  target  location  while  avoid  any 
+contact with each other or the obstacle. The illustration of the 
+environment is shown in Fig. 10(left). 
+
+Similar to the Spread environment, the reward function of 
+the Tunnel environment is also set to be the negative sum of 
+each  target  location  to  its  nearest  agent.  Agents  will  get 
+penalized for collide with other agents or the obstacle. 
+
+In order to simplify the environment as well as to be closer 
+to  the  reality,  some  modifications  are  made  to  the  Tunnel 
+environment.  We  set  walls  around  the  obstacle  to  limit  the 
+agentsâ mobility range. The same amount of agents and target 
+locations  still  emerge  at  two  end  of  the  tunnel.  Whatâs 
+different is that each agent is designated one target location of 
+its own to occupy. Agents also need to avoid collisions while 
+moving to the target locations. The modified environment is 
+named as the Simple Tunnel environment with its illustration 
+shown in Fig. 10 
+
+The reward function is changed since agents in the Simple 
+Tunnel environment have different goal. Their rewards are no 
+longer collaborative and shared. The reward function of agent 
+ð  is  determined  by  its  distance  to  its  designated  target 
+location.Penalties for collisions will also be given. Since each 
+agentâs  reward  function  are  not  the  same,  FACMAC  is  not 
+applicable in this environment.  
+
+The experiment results are shown in Fig. 11. From the test 
+result,  MADDPG-LSTMactor  maintains  its  advantage  over 
+MADDPG when the number of agents is small. In the Simple 
+Tunnel environment where is closer to reality, MADDPG- 
+
+Figure 10.  The illustration of Tunnel environment (left) and Simple Tunnel 
+environment (right) 
+
+LSTMactor  does  not  only  demonstrate  better  performance, 
+but  also  shows  faster  learning  speed.  While  MADDPG-Lâs 
+performance  has  no  edge  over  MADDPGâs,  MADDPG-L 
+also has a faster convergence speed than MADDPG. 
+
+After  the  experiment  done 
+
+in  the  Simple  Tunnel 
+environment, we increase the number of agents in the Simple 
+Tunnel  environment  from  3  to  6  and  name  the  new 
+environment  as  Simple  Tunnel  6a.  The  test  result  of 
+algorithms in this environment is shown in Fig. 11(two on the 
+right). The experiment demonstrated that MADDPG-L has a 
+better  performance  than  MADDPG  with  the  increase  of 
+agents  while  MADDPG-LSTMactor  lost  its  advantage  over 
+MADDPG in term of performance.  
+
+V.  CONCLUSION 
+
+In 
+
+this  paper,  we  proposed 
+
+two  algorithms,  viz., 
+two 
+MADDPG-LSTMactor  and  MADDPG-L.  These 
+IDDPG, 
+algorithms  and 
+MADDPG,    FACMAC  were  together  tested  in  several 
+virtualenvironments to examine their ability to avoid obstacle 
+and to cope with the increase in the number of agents. 
+
+the  underlying  algorithms: 
+
+Figure 11.  Algorithmsâ performance in Tunnel environmen(first on the left))  and Algorithmsâ performance in Simple Tunnel environment with 
+
+different number of agents(two on the right) 
+
+ 
+ 
+ 
+After  experiments,  this  paper  can  draw  a  preliminary 
+conclusion:  when  the  number  of  agents  is  small,  the 
+MADDPG-LSTMactor  algorithm  is  a  better  multi-agent 
+obstacle  avoidance  navigation  algorithm  than  MADDPG. 
+When  the  number  of  agents  increases,  the  MADDPG-L 
+algorithm demonstrates better performance. 
+
+The  algorithms  proposed  in  this  paper  exhibits  certain 
+capabilities in virtual environments, and can be used as a basic 
+in  the  future.  Of  course,  a  realistic  obstacle  avoidance 
+algorithm  is  by  no  means  limited  to  using  reinforcement 
+learning  as  the  only  solution  to  a  problem.  There  are  also 
+promising solutions of multi-agent navigation based on other 
+frameworks,  such  as  meta  learning  [24].  By  combining 
+geolocation, computer vision, etc., better performance may be 
+achieved.      Multi-agent  navigation  in  case  of  more  difficult 
+scenarios, e.g., with limited communication power [25], is also 
+well worth exploration. 
+
+APPENDIX 
+
+TABLE III.  
+
+HYPERPARAMETERS IN OBSTACLE PREDATOR PREY 
+
+ENVIRONMENT 
+
+Hyperparameter 
+
+Num-adversaries 
+
+Lr-actor 
+
+Lr-critic 
+
+Batch-size 
+
+seq-length 
+
+Value 
+
+1 
+
+0.001 
+
+0.01 
+
+256 
+
+3 
+
+TABLE IV.   HYPERPARAMETERS IN SPREAD-3A ENVIRONMENT 
+
+Hyperparameter 
+
+Num-adversaries 
+
+Lr-actor 
+
+Lr-critic 
+
+Batch-size 
+
+seq-length 
+
+Value 
+
+0 
+
+0.001 
+
+0.01 
+
+128 
+
+5 
+
+TABLE V.  
+
+HYPERPARAMETERS IN SPREAD-6A AND SPREAD-9A 
+
+ENVIRONMENT 
+
+Hyperparameter 
+Num-adversaries 
+Lr-actor 
+Lr-critic 
+Batch-size 
+seq-length 
+
+Value 
+0 
+0.001 
+0.01 
+32 
+3 
+
+TABLE VII.   HYPERPARAMETERS IN SIMPLE TUNNEL-6A ENVIRONMENT 
+
+Hyperparameter 
+
+Num-adversaries 
+
+Lr-actor 
+
+Lr-critic 
+
+Batch-size 
+
+seq-length 
+
+Value 
+
+0 
+
+0.001 
+
+0.001 
+
+32 
+
+3 
+
+ACKNOWLEDGMENT 
+
+This work was supported by the National Natural Science 
+Foundation  of  China  under  grants  62172072,  61872101, 
+61872055,  U1908214,  U21A20491, 
+the  Fundamental 
+Research  Funds  for  the  Central  Universities  under  grant 
+DUT21JC18,  Natural  Science  Foundation  of  Liaoning 
+Province of China under Grant 2021-MS-114. 
+
+REFERENCES 
+[1]  Lavalle  S  M.  Rapidly-exploring  random  trees:  A  new  tool  for  path 
+
+planning. Computer Science, 1998: 98. 
+
+[2]  Kavraki L E, Svestka P, Latombe J C, et al. Probabilistic roadmaps for 
+path  planning  in  high-dimensional  configuration  spaces.  IEEE 
+Transactions on Robotics and Automation, 1996, 12(4): 566-580. 
+
+[3]  Fakoor  M,  Kosari  A,  Jafarzadeh  M.  Revision  on  fuzzy  artificial 
+potential  field  for  humanoid  robot  path  planning  in  unknown 
+environment. International Journal of Advanced Mechatronic Systems, 
+2015, 6(4): 174-183. 
+
+[4]  Liu X, Wang Q, Xu S. Path planning based on improved  probabilistic 
+roadmap  method.  Fire  Control  &  Command  Control,  2012, 
+037(004):121-124. 
+
+[5]  Yang  S,  Liu  Y,  Yang  W.  A  local  dynamic  probabilistic  roadmap 
+method for unknown environment. Aeronautical Science & Technology, 
+2016, 27(04):69-73. 
+
+[6]  Liu C, Han J, An K. Dynamic path planning based on an improved RRT 
+
+algorithm for roboCup robot. Robot, 2017, 39(01):8-15. 
+
+[7]  Zhou F, Zhu Q, Zhao G. Path optimization of manipulator based on the 
+tree  algorithm.  Journal  of 
+
+improved  rapidly-exploring  random 
+Mechanical Engineering, 2011, 47(11):30-35. 
+
+[8]  Smith  R,  Self  M,  Cheeseman  P.  Estimating  uncertain  spatial 
+relationships  in  robotics[M].  Autonomous  robot  vehicles.  Springer, 
+New York, NY, 1990: 167-193. 
+
+[9]  Smith  R  C,  Cheeseman  P.  On  the  representation  and  estimation  of 
+spatial  uncertainty.  The  International  Journal  of  Robotics  Research, 
+1986, 5(4): 56-68. 
+
+[10] Zhang  M.  RGB-D  SLAM  algorithm  of  indoor  mobile  robot.  Harbin 
+
+Institute of Technology, 2018. 
+
+TABLE VI.   HYPERPARAMETERS IN TUNNEL AND SIMPLE TUNNEL 
+ENVIRONMENT 
+
+[11] Li X. Research on navigation technology of indoor mobile robot based 
+
+on SLAM. Harbin Institute of Technology, 2018. 
+
+Hyperparameter 
+
+Num-adversaries 
+
+Lr-actor 
+
+Lr-critic 
+
+Batch-size 
+
+seq-length 
+
+Value 
+
+0 
+
+0.001 
+
+0.01 
+
+128 
+
+5 
+
+[12] Dechter  R,  Pearl  J.  Generalized  best-first  search  strategies  and  the 
+
+optimality of A. Journal of the ACM (JACM), 1985, 32(3): 505-536. 
+
+[13] Tan  M.  Multi-Agent  Reinforcement  Learning:  Independent  vs. 
+
+Cooperative Agents. Machine Learning Proceedings, 1993:330-337. 
+
+[14] Watkins C J C H, Dayan P. Q-learning[J]. Machine learning, 1992, 8(3): 
+
+279-292. 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+[15] de Witt C S, Gupta T, Makoviichuk D, et al. Is independent learning all 
+you  need  in  the  starcraft  multi-agent  challenge?.  arXiv  preprint 
+arXiv:2011.09533, 2020. 
+
+[16] Lowe  R,  Wu  Y,  Tamar  A,  et  al.  Multi-agent  actor-critic  for  mixed 
+cooperative-competitive  environments.International  Conference  on 
+Neural Information Processing Systems, Long Beach, 2017: 6382-6393. 
+
+[17] Sunehag P, Lever G, Gruslys A, et al. Value-decomposition networks 
+for cooperative multi-agent learning. arXiv preprint arXiv:1706.05296, 
+2017. 
+
+[18] Rashid T, Samvelyan M, Schroeder C, et al. Qmix: Monotonic value 
+function 
+reinforcement 
+learning.International  Conference  on  Machine  Learning,  Stockholm, 
+2018: 4295-4304. 
+
+deep  multi-agent 
+
+factorisation 
+
+for 
+
+[19] Peng  B, Rashid  T, de  Witt C  A  S, et  al.  FACMAC:  Factored Multi-
+Agent  Centralised  Policy  Gradients.Neural  Information  Processing 
+Systems, Online, 2021: 12208-12221. 
+
+[20] Naveed K B, Qiao Z, Dolan J M. Trajectory Planning for Autonomous 
+Vehicles  Using  Hierarchical  Reinforcement  Learning[C].2021  IEEE 
+International  Intelligent  Transportation  Systems  Conference  (ITSC), 
+Indianapolis, 2021: 601-606. 
+
+[21] Parisotto  E,  Song  F,  Rae  J,  et  al.  Stabilizing  transformers  for 
+learning[C].International  Conference  on  Machine 
+
+reinforcement 
+Learning, Online, 2020: 7487-7498. 
+
+[22] Sutton R S, McAllester D, Singh S, et al. Policy gradient methods for 
+reinforcement  learning  with  function  approximation[J].  Advances  in 
+neural information processing systems, 1999, 12:1-7. 
+
+[23] Opendilab,Dl-engine-docs[OL].https://di-engine- 
+
+docs.readthedocs.io/zh_CN/latest/env_tutorial/multiagent_particle_zh.
+html 
+
+[24] Salar  A,  Mo  C,  Mehran  M,  et  al.  Toward  Observation  Based  Least 
+Restrictive  Collision  Avoidance  Using  Deep  Meta  Reinforcement 
+Learning. IEEE Robotics Autom. Lett. 2021, 6(4): 7445-7452. 
+
+[25] Yuanzhao Z, Bo D, Xuan L, et al. Decentralized Multi-Robot Collision 
+Avoidance  in  Complex  Scenarios  With  Selective  Communication. 
+IEEE Robotics Autom. Lett. 2021, 6(4): 8379-8386. 
+
+ 
+ 
+ 
+ 
+

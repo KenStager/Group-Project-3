@@ -1,0 +1,65 @@
+# Achieving Consensus in Hierarchical Multi-Agent Systems with Time-Varying Active Agents
+
+In the ever-evolving field of control systems, the challenge of achieving consensus in hierarchical multi-agent systems (H-MAS) with a time-varying set of active agents is gaining significant attention. This topic is not only academically intriguing but also commercially vital, given its applications in areas like modular multilevel converters (MMCs) and water pumping systems. In this blog post, we will delve into the intricacies of such systems, explore the proposed solutions, and illustrate their effectiveness through specific examples.
+
+## Introduction
+
+Imagine a complex system where multiple agents need to work in harmony to achieve a common goal, like a fleet of drones delivering packages or a network of water pumps maintaining a city's water supply. In these scenarios, achieving a consensus among all agents is crucial for optimal performance. This task becomes even more complex when the number of active agents varies over time. In this post, we'll explore how a switching algorithm can help achieve consensus in hierarchical multi-agent systems with a time-varying set of active agents. We'll discuss the theoretical underpinnings and provide practical examples to illustrate the effectiveness of this approach.
+
+## Understanding Hierarchical Multi-Agent Systems
+
+Hierarchical Multi-Agent Systems (H-MAS) are networks of agents structured in a hierarchy, typically comprising a leader and several followers. The leader coordinates the actions of the followers to achieve a common goal. In applications like MMCs and water pumping systems, the leader could be a control unit that directs follower agents (e.g., converter modules or pumps) to maintain specific output levels. However, these systems often face challenges like time-varying topologies or limited active agents at any given time.
+
+### The Classic Consensus Problem
+
+In multi-agent systems with fixed or time-varying communication topologies, consensus is typically achieved using state feedback controllers based on the adjacency matrix of the network. The existence of a spanning tree in the communication network is a necessary condition for reaching consensus. However, these conventional methods assume a fixed set of active agents, which is not always practical.
+
+### Time-Varying Hierarchical Multi-Agent Systems (TH-MAS)
+
+In real-world applications like MMCs and water pumping systems, the set of active agents often changes over time. Thus, there's a need for an algorithm that can handle such dynamics while still achieving consensus. This led to the development of a switching algorithm that dynamically selects active agents and ensures they reach a consensus state defined by the leader.
+
+## The Proposed Solution: A Switching Algorithm
+
+The key innovation in handling TH-MAS is the switching algorithm that periodically selects which agents should be active. This algorithm, combined with a classic consensus protocol, ensures that all follower agents reach a consensus state despite the time-varying set of active agents.
+
+### How the Switching Algorithm Works
+
+1. **Graph Generation**: The leader agent generates a set of graphs that represent different possible configurations of active agents.
+2. **Periodic Switching**: The leader periodically switches the active configuration based on predefined rules.
+3. **Consensus Protocol**: The classic consensus protocol is applied to the chosen set of active agents, ensuring they converge to the desired state.
+
+### Theoretical Validation
+
+The effectiveness of the switching algorithm is rooted in established theoretical results. Research has shown that if the union of a set of directed graphs has a spanning tree, the system can achieve consensus. This principle applies to both fixed and time-varying communication networks, and it forms the backbone of the proposed solution.
+
+## Practical Applications
+
+To demonstrate the algorithm's effectiveness, let's consider two real-world examples: a modular multilevel converter and a water pumping system.
+
+### Modular Multilevel Converter (MMC)
+
+In an MMC, multiple converter modules must store a specific amount of voltage to match a reference value. The switching algorithm ensures that only a subset of modules is active at any given time, balancing the load and achieving consensus on the stored voltage.
+
+#### Simulation Results
+
+In simulations, the switching algorithm successfully balanced the capacitor voltages across modules, even when the number of active modules changed over time. The system reached a consensus state, demonstrating the algorithm's robustness and effectiveness.
+
+### Water Pumping System
+
+In a water pumping system, the goal is to supply a specific flow rate while keeping the number of active pumps limited to extend their lifespans. The switching algorithm dynamically adjusts the active pumps, ensuring they collectively meet the desired flow rate.
+
+#### Simulation Results
+
+Simulations showed that the pumps effectively reached a consensus on the flow rate despite changes in the number of active pumps. The system maintained performance and stability, highlighting the practicality of the algorithm.
+
+## Conclusion
+
+Achieving consensus in hierarchical multi-agent systems with a time-varying set of active agents is a complex yet essential task. The proposed switching algorithm, combined with a classic consensus protocol, offers a robust solution. Whether in MMCs or water pumping systems, this approach ensures all agents work harmoniously towards a common goal, adapting to changes in real-time.
+
+### Final Thoughts
+
+The journey to achieving consensus in time-varying hierarchical multi-agent systems is ongoing, with exciting possibilities for future research. Enhancing the transient dynamics and achieving finite-time consensus are areas ripe for exploration. If you're interested in the cutting-edge of control systems, this is a field worth keeping an eye on.
+
+### Call to Action
+
+Have you encountered challenges in achieving consensus in multi-agent systems? Share your experiences and insights in the comments below. Let's discuss how we can further improve and innovate in this fascinating field!

@@ -1,0 +1,5227 @@
+5
+1
+0
+2
+
+g
+u
+A
+7
+1
+
+]
+F
+M
+.
+n
+i
+f
+-
+q
+[
+
+2
+v
+3
+3
+3
+8
+0
+.
+7
+0
+5
+1
+:
+v
+i
+X
+r
+a
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A
+CENTRAL AGENT
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Abstract. We formulate and analyze a multi-agent model for the evolution
+of individual and systemic risk in which the local agents interact with each
+other through a central agent who, in turn, is inï¬uenced by the mean ï¬eld of
+the local agents. The central agent is stabilized by a bistable potential, the
+only stabilizing force in the system. The local agents derive their stability
+only from the central agent.
+In the mean ï¬eld limit of a large number of
+local agents we show that the systemic risk decreases when the strength of the
+interaction of the local agents with the central agent increases. This means
+that the probability of transition from one of the two stable quasi-equilibria to
+the other one decreases. We also show that the systemic risk increases when
+the strength of the interaction of the central agent with the mean ï¬eld of the
+local agents increases. Following the ï¬nancial interpretation of such models
+and their behavior given in our previous paper (Garnier, Papanicolaou and
+Yang, SIAM J. Fin. Math. 4, 2013, 151-184), we may interpret the results of
+this paper in the following way. From the point of view of systemic risk, and
+while keeping the perceived risk of the local agents approximately constant,
+it is better to strengthen the interaction of the local agents with the central
+agent than the other way around.
+
+Mean Field Models, Dynamic Phase Transitions, Systemic Risk
+
+1. Introduction
+
+In recent years, interacting particle systems have been extensively used to model
+ï¬nancial systemic risk for complex, inter-connected systems. An interacting particle
+system with binary risk variables is considered in [4] and the law of large numbers,
+central limit theorem and large deviation principle are derived for this model. An
+interacting particle system of diï¬usion processes is used in [9] to model the interbank
+lending system. In [3], a model simpliï¬ed from the one in [9] is considered, in which
+each agent can control the lending ï¬ow rate and optimizes the individual objective
+function, and thus the system can be put in the framework of mean ï¬eld games. In
+[15], the authors use interacting Bessel-like diï¬usion processes to model systemic
+risk and establish a large deviation principle. In [10, 11], we consider an interacting
+particle system with a bistable potential and we use the large deviation principle
+to explain that the overall systemic risk may increase while individual risks are
+decreased. The large deviation principle in [10, 11] is solved numerically in [17]. In
+[1], the authors consider interacting jump-diï¬usion processes modeling interbank
+lending and borrowing and prove the weak law of large numbers (LLN) of the
+empirical measure as the number of individuals goes to inï¬nity, and deï¬ne systemic
+indicators based on the LLN result. In [13, 20, 14, 21], the authors model large
+portfolios and default clustering and derive the law of large numbers, ï¬uctuation
+analysis and large deviations.
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+In our previous work [10], we used an interacting agent-based, mean-ï¬eld model
+to show that individual risk may not aï¬ect systemic risk in an obvious way. That is,
+each agent may have relatively low individual risk by diversiï¬cation through risk-
+sharing while the overall, systemic risk is increased as a result of diversiï¬cation. We
+considered the following model that was studied extensively before by [5, 6, 12, 7]:
+
+(1)
+
+dxj(t) = âhV (cid:48)(xj(t))dt â Î¸(xj(t) â Â¯xN (t))dt + ÏdW j
+t ,
+
+j = 1, . . . , N,
+
+4 x4 â 1
+
+where xj(t) represents a risk variable for agent j at time t and N is the number of
+agents. The potential V (x) = 1
+2 x2 is taken to be bistable with two stable
+states Â±1, and the constant h > 0 quantiï¬es intrinsic stability for each agent. We
+deï¬ne â1 as the normal state of an agent and +1 as the failed state. The empirical
+mean Â¯xN (t) := 1
+j=1 xj(t) is the mean risk, and the constant Î¸ is positive so
+N
+that xj tends to stay close to Â¯xN . The standard Brownian motions {W j
+j=1 are
+independent and model external risk factors, with Ï > 0 their strength.
+(cid:80)N
+
+It was shown in [5] that the empirical measure UN (t, dx) := 1
+N
+
+j=1 Î´xj (t)(dx)
+converges weakly in probability to u(t, dx) = u(t, x)dx, the weak solution of the
+nonlinear Fokker-Planck equation:
+
+t }N
+
+(cid:80)N
+
+â
+ât
+
+u = h
+
+â
+âx
+
+[V (cid:48)(x)u] â Î¸
+
+â
+âx
+
+(cid:26)(cid:20)(cid:90) â
+
+ââ
+
+(cid:21)
+
+(cid:27)
+
+yu(t, dy) â x
+
+u
+
++
+
+1
+2
+
+Ï2 â2
+
+âx2 u,
+
+ââ
+
+ââ
+
+Î¾b (x) := limt
+
+starting from u(0, dx) = limN
+UN (0, dx) (provided the weak limit exists). Given
+h and Î¸, for suï¬ciently small Ï, u(t, x) has two equilibria ue
+u(t, x),
+Â±
+where Â¯xN (t) converges to either Î¾b > 0 or âÎ¾b as t â â, depending on the initial
+Î¾b as the normal state of the system and ue
+condition. Thus we deï¬ne ue
++Î¾b as the
+â
+failed state of the system.
+Given that N is large but ï¬nite, and UN (0, dx) â ue
+â
+
+Î¾b (x)dx, we showed [10,
+Theorem 6.2 and Corollary 6.4] that by using the large deviation principle in [6]
+and assuming that h is small, the systemic risk, deï¬ned as the probability of the
+transition of UN (t, dx) from ue
++Î¾b (x)dx at some time t â¤
+â
+T < â has the following exponentially small but nonzero value:
+(2)
+P (cid:0)UN (0, dx) â ue
+
+Î¾b (x)dx at time 0 to ue
+
++Î¾b (x)dx t â¤ T < â(cid:1)
+
+Î¾b (x)dx, UN (t, dx) â ue
+
+1
+N
+(cid:29)
+1
+h
+â exp
+(cid:28)
+
+âN
+
+(cid:18)
+
+â
+
+(cid:19)
+
+,
+
+2Î¾2
+b
+Ï2T
+
+where
+
+(cid:114)
+
+Î¾b =
+
+1 â 3
+
+(cid:32)
+
+Ï2
+2Î¸
+
+1 + h
+
+6
+Ï2
+
+(cid:18) Ï2
+2Î¸
+
+(cid:19)2 1 â 2(Ï2/2Î¸)
+1 â 3(Ï2/2Î¸)
+
+(cid:33)
+
++ O(h2).
+
+Fluctuation analysis on (1) [10, Lemma 6.5], shows that the risk of each agent has
+the form xj(t) = â1 + zj(t) and limt
+2Î¸ can
+be considered as the individual risk for each agent.
+
+2Î¸ . Thus, the quantity Ï2
+
+Varzj(t) (cid:46) Ï2
+
+ââ
+
+We then see that if the strength of the external risk Ï2 is increased, either
+because the agents are more risk-prone or because the economic environment is
+more uncertain, then the agents can increase Î¸, the risk-diversiï¬cation parameter,
+so that that their individual risk is still low. However, from the analysis of the
+systemic risk (2) we see that the systemic risk is increased when Ï2 increases even
+if the individual risk Ï2/(2Î¸) is very low: there is a systemic level eï¬ect of Ï2 that
+cannot be observed by the agents and it tends to destabilize the system.
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+3
+
+In this paper, we extend the previous model (1) by introducing a central agent
+
+with the risk variable x(N )
+
+0
+
+(t). The model we study in this paper is given by
+
+(3)
+
+dx(N )
+
+0 = âh0V (cid:48)0 (x(N )
+
+0
+
+)dt â Î¸0(x(N )
+
+0 â Â¯xN )dt +
+
+Ï0â
+N
+
+dW 0
+t ,
+
+Â¯xN =
+
+1
+N
+
+N
+(cid:88)
+
+j=1
+
+xj,
+
+(4)
+
+dxj = âhV (cid:48)(xj)dt â Î¸(cid:0)xj â x(N )
+
+0
+
+(cid:1)dt + ÏdW j
+t ,
+
+j = 1, . . . , N.
+
+Here V0(x) and V (x) are potentials with two stable states and in this paper we
+4 x4 â 1
+again assume that V0(x) = V (x) = 1
+2 x2 with the stable states Â±1. The
+parameters h0, h â¥ 0 are the strengths of intrinsic stability of the central and local
+agents, respectively. The parameters Î¸0, Î¸ â¥ 0 determine the strength of the mean-
+ï¬eld interactions. The central agent x(N )
+is intrinsically stable when h0 > 0 and
+may be destabilized through a mean ï¬eld interaction with the local agents where
+Î¸0 > 0. Depending on whether h > 0 or h = 0, the local agents {xj}N
+j=1 are or are
+not intrinsically stable. They may be stabilized through their interaction with the
+central agent x(N )
+j=0 model
+the external risk for the central and local agents. We note that the normalization
+â
+and Â¯xN have external risks of comparable size for
+factor 1/
+N large, and we will assume that Ï0 < Ï or Ï0 = 0 since we want the central agent
+to operate with less risk than the local agents.
+
+. The independent, standard Brownian motions {W j
+
+N in (3) makes x(N )
+
+t }N
+
+0
+
+0
+
+0
+
+In the regime of no cooperation, Î¸0 = Î¸ = 0, the central agent and the local
+agents are independent of each other and Kramersâ large deviation law states that
+when Ï0 and Ï are small, the probabilities of transition from one stable state to
+the other within the time interval [0, T ] are proportional to T exp(â2h0V0(0)/Ï2
+0)
+and T exp(â2hV (0)/Ï2), for the central and local agents, respectively. We want to
+analyze stabilization eï¬ects in the cooperative regime Î¸0, Î¸ > 0.
+
+0
+
+0
+
+(cid:80)N
+
+(t), 1
+N
+
+In this paper, we will assume that the intrinsic stability of the local agents,
+h, is exactly zero, while we only assume that h is small in [10]. Because of this
+simplifying assumption, instead of considering the pair (x(N )
+j=1 Î´xj (t)(dx))
+as a scalar and a measure-valued process, we can simply consider (x(N )
+(t), Â¯xN (t))
+as a two-dimensional process and get results that are more detailed than it was
+possible in the setup of [10]. First, we compute numerically the minimizing path
+for the associated large deviation problem, and we are able to explore how the
+various parameters aï¬ect the agentsâ ï¬uctuations and the systemic risk. We also
+recover the main result in [10], that is, that the systemic risk is increased, with the
+local risks kept ï¬xed, if we increase Ï2 and Î¸ with the ratio Ï2/Î¸ ï¬xed. Another
+result is that because we assume that 0 = h < h0 and Ï0 < Ï, the central agent is
+more stable than the empirical mean of the local agents. In this setting, we ï¬nd
+that Î¸0 and Î¸ tend to play opposite roles: higher Î¸0 increases the systemic risk as
+we force the stable term x(N )
+to be close to the relatively unstable term Â¯x, but
+on the other hand, increasing Î¸ lowers the systemic risk as Â¯x tends to be close to
+x(N )
+. This is the main result of this paper. The third result here, for a case not
+0
+considered in the previous paper, concerns the introduction of optimal controls for
+the local agents. We use optimal control theory and ï¬nd that the use of controls
+amounts to replacing Î¸ by an eï¬ective one that is larger, and thus it reduces the
+systemic risk.
+
+0
+
+4
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+0
+
+(cid:80)N
+
+(t), 1
+N
+
+This paper is organized as follows. In Section 2 we state the mean ï¬eld limit of
+the pair (x(N )
+j=1 Î´xj (t)(dx)) as N â â. We then discuss the equilibria of
+the limit Fokker-Planck equation. In Section 3 we analyze the special case where
+h is exactly zero. In this case, explicit solutions of the ï¬uctuation analysis can be
+obtained, and we have a large deviations principle for (x(N )
+(t), Â¯xN (t)) using the
+Freidlin-Wentzell theory. In Section 4 we give the formal large deviation principle
+for the empirical measure (x(N )
+j=1 Î´xj (t)(dx)) that is necessary when h > 0.
+We do not use this general formulation but we do show that the large deviation
+problems for (x(N )
+(t), 1
+j=1 Î´xj (t)(dx)) are the same if h = 0.
+N
+In Section 5 we formulate a control problem for the local agents in (4) and use
+optimal control theory to analyze the eï¬ect of the control on the system. Finally,
+in Section 6 we present results of extensive numerical simulations. The technical
+details of the proofs are in the appendices.
+
+(t), Â¯xN (t)) and (x(N )
+
+(t), 1
+N
+
+(cid:80)N
+
+(cid:80)N
+
+0
+
+0
+
+0
+
+0
+
+2. The mean field limit of a large number of local agents
+
+We begin by recalling the main results of mean ï¬eld limit theory as they apply
+to problem (3),(4), in the next section, and then discuss the equilibrium solutions
+of the limit, non-linear Fokker-Planck equation.
+
+2.1. The non-linear Fokker-Planck equation. The stochastic model (3),(4) is
+a simple extension of the model in [5, 12] (see also [23, 22, 18, 16]). We let M1(R)
+denote the space of probability measures endowed with the metric of the weak
+convergence, and C([0, T ], M1(R)) the space of continuous M1(R)-valued processes
+in the time interval [0, T ] endowed with the maximum distance in [0, T ]. In the
+limit N â â, the pair (x(N )
+j=1 Î´xj (t)(dx)) converges in (R, M1(R)) to
+(y0(t), p(t, x)dx) in probability, the weak solution of the nonlinear Fokker-Planck
+equation and ordinary diï¬erential equation
+
+(t), 1
+N
+
+(cid:80)N
+
+0
+
+(5)
+
+(6)
+
+d
+dt
+â
+ât
+
+y0 = âh0V (cid:48)0 (y0) â Î¸0
+
+(cid:90)
+
+(cid:16)
+
+y0 â
+
+xp(t, x)dx
+
+(cid:17)
+,
+
+p(t, x) = h
+
+â
+âx
+
+[V (cid:48)(x)p(t, x)] + Î¸
+
+[(x â y0(t))p(t, x)] +
+
+â
+âx
+x(N )
+0
+
+Ï2
+2
+
+â2
+âx2 p(t, x),
+(cid:80)N
+
+with the initial condition y0(0) = limN
+given that the limits exist. Equivalently, we can characterize the pair (y0(t), p(t, x)dx)
+by noting that p(t, x) is the transition probability density of the process Xt, the
+solution of
+
+(0) and p(0, dx) = limN
+
+ââ
+
+ââ
+
+1
+N
+
+j=1 Î´xj (0)(dx),
+
+y0 = âh0V (cid:48)0 (y0) â Î¸0(y0 â EXt),
+
+d
+dt
+dXt = âhV (cid:48)(Xt)dt â Î¸(Xt â y0)dt + ÏdWt,
+where Wt is a standard Brownian motion. In addition, if h = 0 and Â¯y(t) := E(Xt),
+then (y0(t), Â¯y(t)) satisï¬es
+
+(7)
+
+(8)
+
+d
+dt
+d
+dt
+
+y0 = âh0V (cid:48)0 (y0) â Î¸0(y0 â Â¯y),
+
+Â¯y = âÎ¸(Â¯y â y0).
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+5
+
+2.2. Equilibrium states. Given the existence of a stationary state (ye
+(limt
+
+p(t, x)), it satisï¬es
+
+y0(t), limt
+
+0, pe(x; ye
+
+0)) :=
+
+ââ
+
+ââ
+
+(9)
+
+1
+Z(ye
+0)
+which is obtained from (6), and satisï¬es the consistency equation
+
+2hV (x) + Î¸(x â ye
+Ï2
+
+pe(x; ye
+
+0) =
+
+0)2
+
+exp
+
+â
+
+(cid:16)
+
+(cid:17)
+
+,
+
+(10)
+
+(cid:90)
+
+xpe(x; ye
+
+0)dx = ye
+
+0 +
+
+h0
+Î¸0
+
+V (cid:48)0 (ye
+
+0),
+
+obtained from (5). If h = 0, then pe(x; ye
+0) is a Gaussian density function, given by
+(9), with mean ye
+0) = 0. Therefore ye
+0 and (10) implies V (cid:48)0 (ye
+0 = Â±1. The equilibrium
+states for the system are determined by the equilibrium states of the central agent.
+Indeed, if the central agent takes the equilibrium value ye
+0 = â1, then the individual
+agents take a Gaussian distribution with mean â1 and variance Ï2/(2Î¸):
+
+(11)
+
+pe(x) =
+
+(cid:113)
+
+1
+Ï Ï2
+Î¸
+
+(cid:16)
+
+â
+
+exp
+
+Î¸(x + 1)2
+Ï2
+
+(cid:17)
+
+.
+
+When h is positive but small, we let ye0
+
+0 = Â±1 and therefore V (cid:48)0 (ye0
+
+V (cid:48)(cid:48)0 (ye0
+to ye0
+
+0 ) > 0. It is then possible to ï¬nd an equilibrium state ye
+0 = â1, resp. ye0
+
+â0 , resp. ye+
+
+0 ) = 0 with
+0 , close
+
+0 = 1, and we have
+0 = ye0
+ye
+
+0 + hye1
+
+0 + o(h),
+
+with
+
+ye1
+0 = â
+
+(cid:82) eâ
+
+Î¸0
+h0Î¸V (cid:48)(cid:48)0 (ye1
+0 )
+0 = Â±1 and ye1
+2 x2 then ye0
+
+Î¸x2/Ï2
+(cid:82) eâ
+
+V (cid:48)(ye0
+Î¸x2/Ï2dx
+
+0 + x)dx
+
+.
+
+4 x4 â 1
+
+If V0(x) = V (x) = 1
+4h0Î¸2 . This result shows
+that the positions of the equilibrium states of the central agent will be shifted when
+â0 and ye+
+the individual agents have their own stabilization potential. The states ye
+0
+are the two equilibrium states of the central agent, and ye
+â0 ) and
+0 + (h0/Î¸0)V (cid:48)0 (ye+
+ye+
+0 ) are the two associated equilibrium means of the individual
+agents.
+
+â0 + (h0/Î¸0)V (cid:48)0 (ye
+
+0 = â 3Î¸0Ï2
+
+3. The case of no intrinsic stabilization for the local agents (h = 0)
+
+In this section we consider the special case where the individual agents have no
+intrinsic stability, i.e., h = 0. In this case, (4) is linear so instead of considering
+the empirical distribution 1
+j=1 Î´xj (t)(dx), we can focus on the empirical mean
+N
+(cid:80)N
+Â¯xN (t) = 1
+(t), Â¯xN (t)) satisï¬es the joint SDEs:
+N
+
+(cid:80)N
+
+0
+
+j=1 xj(t). The pair (x(N )
+0 = âh0V (cid:48)0 (x(N )
+dx(N )
+
+0
+
+(12)
+
+)dt â Î¸0(x(N )
+
+0 â Â¯xN )dt +
+
+Ï0â
+N
+
+dW 0
+t ,
+
+dÂ¯xN = âÎ¸(Â¯xN â x(N )
+
+0
+
+)dt +
+
+Ï
+â
+N
+
+d Â¯W (N )
+t
+
+,
+
+where Â¯W (N )
+
+t
+
+= 1
+âN
+
+(cid:80)N
+
+j=1 W j
+
+t
+
+The mean-ï¬eld limit, (y0(t), Â¯y(t)) := limN
+equilibria ye
+0 := limt
+initial condition (y0(0), Â¯y(0)).
+
+ââ
+
+is a standard Brownian motion independent of W 0
+t .
+(t), Â¯xN (t)), satisï¬es (7) with the
+Â¯y(t) = Â±1 depending on the
+
+(x(N )
+0
+y0(t) = Â±1 and Â¯ye := limt
+
+ââ
+
+ââ
+
+6
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+3.1. Fluctuation analysis in the case h = 0. Here we analyse the ï¬uctuations
+of (x(N )
+(t), Â¯xN (t)) centred at (y0(t), Â¯y(t)) when N is large. To simplify, we assume
+0
+that y0(0) = ye
+0 = â1 and
+Â¯y(0) â¡ Â¯ye = â1. Deï¬ne z(N )
+N (Â¯xN â Â¯ye). As
+N â â, (z(N )
+
+0 = â1 and Â¯y(0) = Â¯ye = â1, and thus y0(t) â¡ ye
+
+, Â¯zN ) converges in distribution to the process (z0, Â¯z) where
+
+0) and Â¯zN =
+
+0 â ye
+
+N (x(N )
+
+0 =
+
+â
+
+â
+
+0
+
+(13)
+
+(t) â ye
+
+0)z0dt â Î¸0(z0 â Â¯z)dt + Ï0dW 0
+t ,
+
+dz0 = âh0V (cid:48)(cid:48)0 (ye
+dÂ¯z = âÎ¸(Â¯z â z0)dt + Ïd Â¯Wt,
+where Â¯Wt is a standard Brownian motion independent of W 0
+t . This means that,
+when N is large, x(N )
+0 + 1
+Â¯z in distribution. Because
+âN
+ye
+0 = Â¯ye = â1 is the normal state, z0 and Â¯z are regarded as the central risks (as
+opposed to the large deviations that will be discussed in the next section) of x(N )
+and Â¯xN , respectively. We note that (13) is a system of linear diï¬erential equations
+and thus the explicit solution is:
+(cid:19)
+(cid:18)z0(t)
+Â¯z(t)
+
+z0 and Â¯x(t) â Â¯ye + 1
+âN
+
+(cid:18)âh0V (cid:48)(cid:48)0 (ye
+Î¸
+
+(cid:19)
+(cid:18)z0(0)
+Â¯z(0)
+
+(cid:18)Ï0dW 0
+s
+Ïd Â¯Ws
+
+0) â Î¸0
+
+, A =
+
+= etA
+
+Î¸0
+âÎ¸
+
+(cid:90) t
+
+e(t
+
+s)A
+
++
+
+(cid:19)
+
+(cid:19)
+
+â
+
+0
+
+0
+
+.
+
+0
+
+Therefore (z0(t), Â¯z(t)) is a Gaussian process with
+
+(14)
+
+(15)
+
+E
+
+(cid:19)
+
+(cid:18)z0(t)
+Â¯z(t)
+
+= etA
+
+(cid:18)z0(0)
+(cid:19)
+Â¯z(0)
+
+,
+
+(cid:18) Varz0(t)
+Cov(z0(t), Â¯z(t))
+
+Cov(z0(t), Â¯z(t))
+VarÂ¯z(t)
+
+(cid:19)
+
+(cid:90) t
+
+=
+
+0
+
+e(t
+
+s)A
+
+â
+
+(cid:18)Ï2
+0
+0
+
+(cid:19)
+
+0
+Ï2
+
+s)AT
+
+e(t
+
+â
+
+ds.
+
+We want to analyse the impact of the various parameters on (z0(t), Â¯z(t)), in
+particular, for the case that t â â and Ï, Î¸ â â with a ï¬xed ratio Î± := Ï2/Î¸ < â.
+To do this, we use the eigen-decomposition of A to compute (15) and obtain the
+following.
+
+EÂ¯z(t) =
+Proposition 1. If h0, Î¸0 and Î¸ are positive, then limt
+0. In addition, the variances and covariance of the ï¬uctuations z0(t) and Â¯z(t) have
+the following limits as t â â and Ï, Î¸ â â with a ï¬xed ratio Î± = Ï2/Î¸ < â:
+
+Ez0(t) = limt
+
+ââ
+
+ââ
+
+(16)
+
+(17)
+
+(18)
+
+lim
+Ï,Î¸
+ââ
+Ï2/Î¸=Î±
+
+lim
+t
+ââ
+
+Varz0(t) =
+
+Ï2
+0
+2h0V (cid:48)(cid:48)0 (ye
+0)
+
+,
+
+lim
+Ï,Î¸
+ââ
+Ï2/Î¸=Î±
+
+lim
+t
+ââ
+
+VarÂ¯z(t) =
+
+Ï2
+0
+2h0V (cid:48)(cid:48)0 (ye
+0)
+
++
+
+Ï2
+2Î¸
+
+,
+
+lim
+Ï,Î¸
+ââ
+Ï2/Î¸=Î±
+
+lim
+t
+ââ
+
+Cov(z0(t), Â¯z(t)) =
+
+Ï2
+0
+2h0V (cid:48)(cid:48)0 (ye
+0)
+
+.
+
+This means that after the limits are applied, z0 = Z1 and Â¯z = Z1 + Z2, where Z1
+and Z2 are two independent Gaussian random variables with mean 0 and variances
+
+Ï2
+0
+0 (ye
+2h0V (cid:48)(cid:48)
+
+0 ) and Ï2
+
+2Î¸ , respectively.
+
+Proof. This involves basic computations given in Appendix A.1.
+
+(cid:3)
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+7
+
+We see that the variances and the covariance of the limits of z0 and Â¯z increase
+with increasing Ï0 or decreasing h0. We also note that these three statistics blow
+up as Ï0 â â even if Ï2
+0/Î¸0 is ï¬nite and small. This is because when h is exactly
+zero, Â¯xN cannot serve as a stabilizing term and x(N )
+cannot diversify its risk to Â¯xN
+by increasing Î¸0.
+
+0
+
+3.2. Large deviations.
+
+0
+
+0
+(t), Â¯xN (t)) â (ye
+
+3.2.1. A general large deviation principle. From the mean ï¬eld and ï¬uctuation
+analysis we see that if N is large and x(N )
+(0) = xj(0) = â1 for all j = 1, . . . , N ,
+then one can expect that (x(N )
+0, Â¯ye) = (â1, â1) for all t. However,
+0
+as long as N is ï¬nite, x(N )
+(t) and Â¯xN (t) are stochastic processes and therefore
+the event that the overall system has a transition in a ï¬nite time interval has a
+small but nonzero probability. Mathematically speaking, we consider the event of
+the continuous paths (x(N )
+â) :=
+(â1, â1) at time 0 to ending around (ye+
+(19) AÎ´ = (cid:8)(x0(t), Â¯x(t))t
+
+(t), Â¯xN (t)) â C([0, T ], R2) starting from (ye
+
+0 , Â¯ye+) := (1, 1) at time T :
+
+[0,T ] â C([0, T ], R2) :
+(x0(0), Â¯x(0)) = (â1, â1), (cid:107)(x0(T ), Â¯x(T )) â (1, 1)(cid:107) â¤ Î´(cid:9),
+
+â0 , Â¯ye
+
+â
+
+0
+
+where (cid:107) Â· (cid:107) is the standard Euclidean norm in R2.
+
+The Freidlin-Wentzell theory [8, Section 5.6] says that, for N large, P((x(N )
+
+, Â¯xN ) â
+
+0
+
+AÎ´) satisï¬es the following large deviation principle:
+
+â inf
+Ë
+x
+Î´
+A
+
+â
+
+I(x) â¤ lim inf
+ââ
+
+N
+
+1
+N
+1
+N
+
+log P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1)
+
+log P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1) â¤ â inf
+
+x
+
+Â¯
+Î´
+A
+
+â
+
+I(x),
+
+â¤ lim sup
+N
+
+ââ
+
+where ËAÎ´ and Â¯AÎ´ are the interior and closure of AÎ´ under the standard C([0, T ], R2)-
+topology, respectively, and I(x) is the rate function for the exponential decay of
+the probability that will be speciï¬ed later. By using a similar argument as in [10,
+Lemma 5.2], we can show that for any (cid:15) > 0, there exists suï¬ciently small Î´ > 0
+such that
+
+â inf
+x
+âA
+
+N
+
+I(x) â¤ lim inf
+ââ
+â¤ lim sup
+N
+
+ââ
+
+1
+N
+1
+N
+
+log P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1)
+
+log P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1) â¤ â inf
+
+x
+
+âA
+
+I(x) + (cid:15),
+
+where
+(20) A = (cid:8)(x0(t), Â¯x(t))t
+
+â
+
+[0,T ] â C([0, T ], R2) :
+
+(x0(0), Â¯x(0)) = (â1, â1), (x0(T ), Â¯x(T )) = (1, 1)(cid:9).
+
+In other words, for large N and small Î´,
+
+(21)
+
+P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1) â exp
+
+(cid:18)
+
+âN inf
+x
+âA
+
+(cid:19)
+
+I(x)
+
+,
+
+and we deï¬ne this probability as the systemic risk of the overall system. We will
+discuss the rate function I(x) separately for the cases that Ï0 = 0 and Ï0 > 0 in
+
+8
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+the following sections. We will next compute the minimum of the rate function
+inf x
+
+I(x) to obtain the systemic risk in (21).
+
+âA
+The minimizer xâ = arg minx
+
+Î´ I(x) is the most probable path for the
+rare event AÎ´ in the sense that the mass of the conditional probability P(Â·|AÎ´) is
+concentrated around xâ exponentially fast as N â â . Indeed, if xâ exists and is
+unique, then for any open neighbourhood N(xâ) containing xâ,
+
+âA
+
+(22) P((x(N )
+
+0
+
+, Â¯xN ) â N(xâ)|(x(N )
+0
+= 1 â P((x(N )
+
+, Â¯xN ) â AÎ´)
+, Â¯xN ) /â N(xâ)|(x(N )
+
+0
+
+, Â¯xN ) â AÎ´)
+
+= 1 â
+
+0
+P((x(N )
+0
+P((x(N )
+0
+
+, Â¯xN ) â NC(xâ) â© AÎ´)
+, Â¯xN ) â AÎ´)
+exp(âN inf x
+
+(cid:38) 1 â
+
+exp(âN inf x
+
+Î´ I(x))
+
+NC (xâ)
+
+â
+
+â©A
+Î´ I(x))
+
+âA
+
+N
+
+âââ 1,
+
+by using the fact that xâ is unique and AÎ´ is closed.
+
+3.2.2. Degenerate case. We ï¬rst consider the degenerate case where Ï0 = 0 and
+Ï > 0. Then (12) becomes
+
+d
+0 = âh0V (cid:48)0 (x(N )
+x(N )
+dt
+dÂ¯xN = âÎ¸(Â¯xN â x(N )
+
+0
+
+0
+
+) â Î¸0(x(N )
+
+0 â Â¯xN ),
+
+)dt +
+
+Ï
+â
+N
+
+d Â¯W (N )
+t
+
+.
+
+The rate function I(x) in (21) is of the form
+
+(23)
+
+I(x) = I(x0, Â¯x) =
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+( ËÂ¯x(t) + Î¸(Â¯x(t) â x0(t))2 dt,
+
+[0,T ] is absolutely continuous in time and Ëx0 = âh0V (cid:48)0 (x0) â Î¸0(x0 â Â¯x)
+if (Â¯x(t))t
+â
+and I(x0, Â¯x) = +â otherwise. Here the dot stands for a time derivative. By (21),
+in order to compute the systemic risk, we need to solve the optimization problem:
+
+(24)
+
+1
+2Ï2
+
+inf
+Â¯x(t)
+
+(cid:90) T
+
+0
+
+( ËÂ¯x(t) + Î¸(Â¯x(t) â x0(t))2 dt,
+
+with the constraints that (Â¯x(t))t
+â
+Î¸0(x0 â Â¯x), x0(0) = Â¯x(0) = â1 and x0(T ) = Â¯x(T ) = 1. By using Â¯x = 1
+Î¸0
+h0
+Î¸0
+
+V (cid:48)(x0) + x0, the constrained optimization problem is equivalent to
+
+[0,T ] is absolutely continuous in time, Ëx0 = âh0V (cid:48)0 (x0)â
+
+Ëx0 +
+
+(25)
+
+1
+2Ï2
+
+inf
+x0
+
+(cid:90) T
+
+0
+
+(cid:20) 1
+Î¸0
+
+Â¨x0 +
+
+h0
+Î¸0
+
+V (cid:48)(cid:48)0 (x0) Ëx0 + (1 +
+
+Î¸
+Î¸0
+
+) Ëx0 +
+
+Î¸h0
+Î¸0
+
+(cid:21)2
+
+V (cid:48)0 (x0)
+
+dt,
+
+with the boundary conditions x0(0) = â1, x0(T ) = 1 and Ëx0(0) = Ëx0(T ) = 0. From
+basic calculus of variations, the minimizer x0 satisï¬es a fourth-order boundary value
+problem that we describe in the ï¬lowing proposition.
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+9
+
+Proposition 2. The minimizer (x0, Â¯x) of inf (x0,Â¯x)
+(23) satisï¬es the following boundary value problem
+
+âA
+
+I(x0, Â¯x) of the rate function
+
+(26)
+d4
+
+dt4 x0 â (Î¸0 + Î¸)2 d2
+(cid:18) d
+dt
+
+â Î¸0V (cid:48)(cid:48)(cid:48)0 (x0)
+
+dt2 x0 + h0
+(cid:19)2
+
+x0
+
+â 2Î¸0V (cid:48)(cid:48)0 (x0)
+
+dt2 x0
+
+(cid:34)
+V (cid:48)(cid:48)(cid:48)(cid:48)0 (x0)
+
+(cid:18) d
+dt
+(cid:18) d2
+
+(cid:19)3
+
+x0
+
++ 3V (cid:48)(cid:48)(cid:48)0 (x0)
+
+(cid:18) d
+dt
+
+x0
+
+(cid:19) (cid:18) d2
+
+dt2 x0
+
+(cid:19)
+
+(cid:19) (cid:35)
+
+(cid:34)
+
++ h2
+
+0V (cid:48)(cid:48)0 (x0)
+
+âV (cid:48)(cid:48)(cid:48)0 (x0)
+
+(cid:18) d
+dt
+
+(cid:19)2
+
+x0
+
+â V (cid:48)(cid:48)0 (x0)
+
+(cid:19)
+
+(cid:18) d2
+
+dt2 x0
+
+(cid:35)
+
++ Î¸2V (cid:48)0 (x0)
+
+= 0,
+
+dt x0(0) = d
+with x0(0) = â1, x0(T ) = 1, d
+1
+Î¸0
+
+x0(t) +
+
+Â¯x(t) =
+
+d
+dt
+
+dt x0(T ) = 0, and
+h0
+Î¸0
+
+V (cid:48)(x0(t)) + x0(t).
+
+Proof. See Appendix A.2.
+
+(cid:3)
+
+If h0 = 0, we can solve x0 and Â¯x explicitly. The boundary value problem (26) is
+
+then
+
+(27)
+
+d4
+
+dt4 x0 â (Î¸0 + Î¸)2 d2
+
+dt2 x0 = 0,
+
+dt x0(0) = 0, x0(T ) = 1 and d
+
+dt x0(T ) = 0.
+
+with the boundary conditions x0(0) = â1, d
+The associated minimizer Â¯x is Â¯x(t) = x0(t) + 1
+Î¸0
+(Î¸0+Î¸) eâ
+(Î¸0+Î¸)T ) + 2
+
+(Î¸0+Î¸)T )(2t â T ) + 2
+
+x0(t) =
+
+(1 + eâ
+
+(28)
+
+T (1 + eâ
+
+(29)
+
+Â¯x(t) = x0(t) +
+
+2
+Î¸0
+
+(1 + eâ
+T (1 + eâ
+
+(Î¸0+Î¸)T ) â eâ
+
+(Î¸0+Î¸)T ) + 2
+
+d
+dt x0(t). The solution of (27) is
+t)
+(Î¸0+Î¸) eâ
+(Î¸0+Î¸)T â 1)
+
+(Î¸0+Î¸)t â 2
+
+(Î¸0+Î¸)(T
+
+â
+
+,
+
+(Î¸0+Î¸) (eâ
+(Î¸0+Î¸)t â eâ
+(Î¸0+Î¸) (eâ
+
+t)
+
+(Î¸0+Î¸)(T
+
+â
+(Î¸0+Î¸)T â 1)
+
+.
+
+These are the most probable paths followed by the two processes to realize the
+rare event asociated with the systemic risk. Note that Â¯x(t) is ahead of x0(t), which
+means that the individual agents drive the transition. We also obtain the following
+proposition.
+
+Proposition 3. If h0 = h = 0, then the probability of transition is
+(30)
+P(cid:0)(x(N )
+
+(cid:1) â exp
+
+, Â¯xN ) â AÎ´
+
+(cid:32)
+
+â
+
+(Î¸0+Î¸)T
+
+0
+
+1 + eâ
+(Î¸0+Î¸)T ) â 2
+
+2N (Î¸0 + Î¸)2
+Ï2Î¸2
+0
+
+T (1 + eâ
+
+Î¸0+Î¸ (1 â eâ
+
+(Î¸0+Î¸)T )
+
+(cid:33)
+
+.
+
+For large T (i.e. (Î¸0 + Î¸)T (cid:29) 1), the most probable paths are
+
+(31)
+
+x0(t) â Â¯x(t) â â1 +
+
+2t
+T
+
+,
+
+and the probability of transition is
+
+(32)
+
+P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1) â exp
+
+(cid:18)
+
+â
+
+2N
+Ï2T
+
+(Î¸0 + Î¸)2
+Î¸2
+0
+
+(cid:19)
+
+.
+
+This shows that stability increases with Î¸ and decreases with Î¸0. This is because
+when Ï0 = 0 and Ï > 0, x0 is a stabilizing term while Â¯x is a destabilizing term.
+
+10
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+When Î¸ increases, Â¯x (unstable) is forced to be close to x0 (stable), and therefore
+the systemic risk is reduced. On the other hand, the systemic risk is higher if Î¸0
+increases, as we make x0 stay close to Â¯x.
+
+3.2.3. Non-degenerate case. We next consider the non-degenerate case where Ï0
+and Ï are positive. In this case, the rate function I(x) in (21) has the form
+(33)
+
+I(x) = I(x0, Â¯x) =
+
+1
+2Ï2
+0
+
+(cid:90) T
+
+0
+
+( Ëx0+h0V (cid:48)0 (x0)+Î¸0(x0âÂ¯x))2dt+
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+( ËÂ¯x+Î¸(Â¯xâx0))2dt,
+
+[0,T ] and (Â¯x(t))t
+â
+
+if (x0(t))t
+[0,T ] are absolutely continuous in time and I(x0, Â¯x) =
+â
++â otherwise. Again by the calculus of variations, the minimizer (x0, Â¯x) of inf (x0,Â¯x)
+satisï¬es a system of second-order ordinary diï¬erential equations.
+
+âA
+
+I(x0, Â¯x)
+
+Proposition 4. The minimizer (x0, Â¯x) of inf (x0,Â¯x)
+(33) satisï¬es the following system of second order boundary value problems
+
+I(x0, Â¯x) of the rate function
+
+âA
+
+(34)
+
+d2
+dt2 x0 =
+
+d2
+dt2 Â¯x =
+
+Â¯x +
+
+d
+dt
+
+0 + Ï2
+
+1
+Ï2 (Ï2Î¸2
+
+1
+Ï2 (Ï2Î¸0 â Ï2
+0Î¸)
++ h0Î¸0 [V (cid:48)0 (x0) + V (cid:48)(cid:48)0 (x0)(x0 â Â¯x)] + h2
+1
+Ï2
+0
+
+0Î¸ â Ï2Î¸0)
+
+0Î¸2 + Ï2Î¸2
+
+1
+Ï2
+0
+
+x0 +
+
+d
+dt
+
+(Ï2
+
+(Ï2
+
+0Î¸2)(x0 â Â¯x)
+
+0V (cid:48)0 (x0)V (cid:48)(cid:48)0 (x0)
+
+0)(Â¯x â x0) â h0
+
+Ï2Î¸0
+Ï2
+0
+
+V (cid:48)0 (x0),
+
+with x0(0) = Â¯x(0) = â1 and x0(T ) = Â¯x(T ) = 1.
+
+Proof. The proof is essentially the same as the proof of Proposition 2 in Appendix
+(cid:3)
+A.2 and thus is omitted.
+
+Although (34) is solvable when h0 = 0, the explicit solution is very complicated
+even for zero h0. Therefore we compute the transition probability by using the fact
+that (x0(T ), Â¯x(T )) are jointly Gaussian random variables and obtain the exponential
+rate of the decay of the probability.
+
+Proposition 5. If h0 = h = 0 and x0(0) = Â¯x(0) = â1, then the probability of
+transition has the following exponential rate of decay:
+
+(35)
+
+P(cid:0)(x(N )
+
+0
+
+, Â¯xN ) â AÎ´
+
+(cid:1) â exp
+
+(cid:16)
+
+â N
+
+for large T .
+
+Proof. See Appendix A.3.
+
+2(Î¸0 + Î¸)2
+0 + Î¸2
+
+T (Î¸2Ï2
+
+0Ï2)
+
+(cid:17)
+
+,
+
+(cid:3)
+
+3.2.4. The case that h0 > 0. Most of the large deviation analysis in this section is
+about the case h0 = 0 in order to have explicit results. Although it is also possible
+to consider the case that 0 < h0 (cid:28) 1 and use the small h0 analysis, we will solve the
+large deviation problems numerically as the associated boundary value problems (2)
+and (34) can be solved easily by standard numerical methods. The details of the
+numerical analysis are presented in Section 6.
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+11
+
+4. Formal large deviations for the empirical measures
+
+0
+
+0
+
+(t), Â¯xN (t))t
+
+(t), UN (t, dx))t
+
+In this section, we extend the large deviations formulation from the space of real-
+valued processes (x(N )
+[0,T ] to the space of probability-measure-valued
+processes (x(N )
+j=1 Î´xj (t)(dx). The
+reason we consider a more general and complicated space is that there is no closed
+equation for Â¯xN when h > 0, because (4) is not linear for non-zero h. In addition, we
+obtain more information by considering the more general space even for h = 0 and
+we show that when h = 0 the generalized problem is (at least formally) equivalent
+to the problem we considered in the previous section.
+
+[0,T ], where UN (t, dx) := 1
+N
+â
+
+(cid:80)N
+
+â
+
+We also note that there are no existing large deviation results for (x(N )
+
+0
+
+satisfying (3) and (4) even if h = 0; the current most general large deviation princi-
+ple for weakly interacting particle systems is [2], but unfortunately our model still
+cannot be covered. Thus the results in this section are formal.
+
+Motivated by [6], the (formal) rate function for (x(N )
+
+0
+
+(t), UN (t, dx))t
+
+[0,T ] satis-
+â
+
+(t), UN (t, dx))t
+â
+
+[0,T ]
+
+(cid:90) T
+
+(cid:1) =
+
+1
+2Ï2
+0
+(cid:104)Ït â h â
+
+0
+
+( Ëx0 + h0V (cid:48)0 (x0) + Î¸0(x0 â Â¯x))2dt
+
+âx [V (cid:48)(x)Ï] â 1
+
+2 Ï2Ïxx â Î¸ â
+(cid:104)Ï, (f (cid:48)(x))2(cid:105)
+
+âx [(x â x0(t))Ï], f (x)(cid:105)2
+
+dt,
+
+fying (3) and (4) is
+
+J (cid:0)(x0(t), Ï(t, dx))t
+
+â
+
+[0,T ]
+
++
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+f (x):
+
+(cid:104)
+
+sup
+Ï,(f (cid:48)(x))2
+
+=0
+
+(cid:105)(cid:54)
+
+for Ï0 > 0 and for Ï0 = 0,
+J (cid:0)(x0(t), Ï(t, dx))t
+
+[0,T ]
+
+(cid:1)
+
+â
+
+=
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+f (x):
+
+sup
+Ï,(f (cid:48)(x))2
+
+(cid:104)
+
+=0
+
+(cid:105)(cid:54)
+
+(cid:104)Ït â h â
+
+âx [V (cid:48)(x)Ï] â 1
+
+2 Ï2Ïxx â Î¸ â
+(cid:104)Ï, (f (cid:48)(x))2(cid:105)
+
+âx [(x â x0(t))Ï], f (x)(cid:105)2
+
+dt,
+
+âx , â2
+
+âx2 ) are deï¬ned in the weak sense.
+
+(cid:1) = â otherwise. Here
+if Ëx0 + h0V (cid:48)0 (x0) + Î¸0(x0 â Â¯x) = 0 or J (cid:0)(x0(t), Ï(t, dx))t
+f is in the Schwartz space, (cid:104)Ï, f (x)(cid:105) = (cid:82) f (x)Ï(t, dx), and the partial derivatives
+( â
+ât , â
+By the contraction principle [8, Theorem 4.2.1], if the large deviation princi-
+(t) (cid:55)â
+(t) and UN (t, dx) (cid:55)â Â¯xN (t) = (cid:104)UN (t, dx), x(cid:105), the large deviation principle for
+(t), Â¯xN (t))t
+
+[0,T ] exists, then by using the projection x(N )
+
+[0,T ] also exists with rate function
+
+(t), UN (t, dx))t
+â
+
+[0,T ]
+
+â
+
+0
+
+0
+
+ple for (x(N )
+x(N )
+0
+(x(N )
+0
+(36)
+
+(cid:1) =
+
+I(cid:0)(x0(t), Â¯x(t))t
+
+â
+
+[0,T ]
+
+Ï(t,dx):
+
+inf
+Ï(t,dx),x
+(cid:105)
+The following result shows that when h = 0, for either Ï0 = 0 or Ï0 > 0,
+I(cid:0)(x0(t), Â¯x(t))t
+[0,T ]
+Proposition 6. If h = 0, then the inï¬mum in (36) is reached for and only for the
+path of Gaussian density functions
+
+(cid:1) in (23) or (33), respectively.
+
+(cid:1) = I(cid:0)(x0(t), Â¯x(t))t
+
+=Â¯x(t)
+
+[0,T ]
+
+[0,T ]
+
+[0,T ]
+
+t
+â
+
+â
+
+â
+
+â
+
+â
+
+(cid:104)
+
+J (cid:0)(x0(t), Ï(t, dx))t
+
+(cid:1).
+
+â
+
+(37)
+
+Â¯p(t, x) =
+
+In addition, I(cid:0)(x0(t), Â¯x(t))t
+in (33) for Ï0 > 0.
+
+[0,T ]
+
+â
+
+(cid:32)
+
+(cid:113)
+
+(x â Â¯x(t))2
+2 Ï2
+2Î¸
+
+â
+
+exp
+
+1
+2Ï Ï2
+2Î¸
+(cid:1) = I(cid:0)(x0(t), Â¯x(t))t
+
+â
+
+(cid:33)
+
+.
+
+(cid:1) in (23) for Ï0 = 0 and
+
+[0,T ]
+
+12
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Proof. See Appendix B.
+
+(cid:3)
+
+However, if h > 0, then it is necessary to consider (x(N )
+
+In other words, when h = 0, we can simply consider the large deviation problem
+for (x0(t), Â¯xN (t)) in Section 3 instead of (x0(t), XN (t, dx)) in a complicated space.
+[0,T ] with
+â
+(t), Â¯xN (t, dx))t
+â
+
+rate function J (cid:0)(x0(t), Ï(t, dx))t
+cannot be obtained by the Freidlin-Wentzell theory. Motivated from Proposition
+6 and [10, Section 7], we know that because for h = 0, the most probable path
+for the empirical measure UN (t, dx) is the Gaussian probability measure Â¯p(t, x)dx,
+it is reasonable to assume that for 0 < h (cid:28) 1, the most probable UN (t, dx) is a
+Gaussian probability measure plus higher order corrections in h. In addition, as
+the base case (h = 0) is Gaussian, we parametrize the most probable path of the
+density Ï(t, x) by the Hermite expansion: Ï = p + hq(1) + h2q(2) + Â· Â· Â· , where
+
+(cid:1) as now the large deviations for (x(N )
+
+(t), UN (t, dx))t
+
+[0,T ]
+
+â
+
+0
+
+0
+
+[0,T ]
+
+p(t, x) =
+
+(cid:113)
+
+1
+2Ï Ï2
+2Î¸
+
+(cid:32)
+
+exp
+
+â
+
+(cid:33)
+
+(x â Âµ(t))2
+2 Ï2
+2Î¸
+
+, Âµ(t) = (cid:104)Ï(t, x)dx, x(cid:105),
+
+q(1)(t, x) =
+
+Î²n(t)
+
+ân
+âxn p(t, x),
+
+â(cid:88)
+
+n=2
+
+q(2)(t, x) =
+
+Î³n(t)
+
+ân
+âxn p(t, x).
+
+â(cid:88)
+
+n=2
+
+Then
+
+min
+x0,Ï
+
+J (cid:0)(x0(t), Ï(t, dx))t
+
+(cid:1) = min
+
+x0,Âµ,Î²n,Î³n
+
+[0,T ]
+
+â
+
+J (cid:0)(x0(t), Âµ(t), Î²n(t), Î³n(t))t
+
+â
+
+(cid:1)+o(h2),
+
+[0,T ]
+
+and we can solve the associated variational problems for x0(t), Âµ(t), Î²n(t) and Î³n(t)
+as in [10, Section 7]. This task is not carried out in this paper.
+
+5. Optimal control of the central agent
+
+In this section, we consider an optimal control problem by introducing a control
+term Î±j(t) into (4). In order to be able to address the problem in a manageable
+way and to discuss the role of the parameters, we will write it as a linear-quadratic-
+Gaussian control problem as in [3]. We let h = 0 and deï¬ne X (N )
+(t)âye
+0 =
+x(N )
+(t) is small
+0
+so that h0V (cid:48)0 (x(N )
+
+0
+(t) + 1 and Xj(t) = xj(t) â Â¯ye = xj(t) + 1. By assuming that X (N )
+
+0
+(t) with H0 â¥ 0, we have
+
+(t)) â H0X (N )
+
+(t)) = h0V (cid:48)0 (ye
+
+0 + X (N )
+
+(t) = x(N )
+
+0
+
+0
+
+0
+
+0
+
+(38)
+
+dX (N )
+
+0 = âH0X (N )
+
+0
+
+dt â Î¸0(X (N )
+
+0 â Â¯XN )dt +
+
+Ï0â
+N
+
+dW 0
+t ,
+
+Â¯XN =
+
+1
+N
+
+N
+(cid:88)
+
+j=1
+
+Xj,
+
+(39)
+
+dXj = âÎ¸(Xj â X (N )
+
+0
+
+)dt + ÏdW j
+
+t + Î±jdt,
+
+j = 1, . . . , N.
+
+The optimal controls Î±j are adapted to the past {(Xj(s))j=0,...,N , 0 â¤ s â¤ t} and
+such that the following cost function is minimized:
+
+(40)
+
+J(Î±1, . . . , Î±N ) =
+
+1
+2
+
+N
+(cid:88)
+
+E
+
+j=1
+
+(cid:34)(cid:90) T
+
+0
+
+j (t) + Î¸2
+Î±2
+
+c (X (N )
+
+0
+
+(cid:35)
+(t) â Xj(t))2dt
+
+.
+
+This cost function means that the optimal controls try to make Xj close to X (N )
+with a quadratic cost. We can regard the term âÎ¸(Xj âX (N )
+) as a passive feedback
+while Î±j is the active feedback from the central agent. A possible control (but not
+optimal as we will see) is to take the active feedback Î±j = âËÎ¸c(Xj â X (N )
+) for
+
+0
+
+0
+
+0
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+13
+
+some well chosen ËÎ¸c. The goal of this section is to study the form of feedback that
+the optimal control produces and whether it is diï¬erent from the passive feedback
+âÎ¸(Xj â X (N )
+). By using standard theory, we have the following optimal control
+Î±j(t) for (X (N )
+(t), Â¯XN (t)).
+Proposition 7. The optimal control Î±j(t) that minimizes J in (40) where (X (N )
+satisï¬es (38) and (39) is
+
+0
+
+0
+
+0
+
+(t), Â¯XN (t))t
+â
+
+[0,T ]
+
+(41)
+
+Î±j(t) = âÎ¸c
+
+(cid:16)
+
+b(t)X (N )
+
+0
+
+(cid:17)
+(t) + d(t)Xj(t) + e(t) Â¯XN (t)
+
+,
+
+j = 1, . . . , N,
+
+where (a(t), b(t), d(t), e(t))t
+â
+(42)
+
+[0,T ] is the solution of the following Riccati equations:
+
+Ëa(t) = 2(Î¸0 + H0)a(t) â 2Î¸b(t) + Î¸cb2(t) â Î¸c,
+Ëb(t) = (Î¸0 + H0 + Î¸)b(t) â Î¸d(t) â Î¸0a(t) + Î¸cb(t)d(t) + Î¸c â Î¸e(t) + Î¸cb(t)e(t),
+Ëd(t) = 2Î¸d(t) + Î¸cd2(t) â Î¸c,
+Ëe(t) = â2Î¸0b(t) + 2Î¸e(t) + Î¸c(2d(t)e(t) + e2(t)),
+
+with the terminal conditions (a(T ), b(T ), d(T ), e(T )) = (0, 0, 0, 0).
+
+Proof. See Appendix C.
+
+When T â â we have
+
+(43)
+
+Î±j(t) = âÎ¸c
+
+(cid:16)
+
+(cid:3)
+
+X (N )
+0
+
+(t) + d
+
+â
+
+Xj(t) + e
+
+â
+
+(cid:17)
+Â¯XN (t)
+
+,
+
+where the parameters (a
+
+, b
+
+) satisfy the algebraic Riccati equations:
+
+b
+
+â
+, d
+
++ Î¸cb
+
+â
+
+d
+
+â
+
++ Î¸c â Î¸e + Î¸cb
+
+â
+
+e
+
+,
+
+â
+
+â
+
+(44)
+
+, e
+â
++ Î¸cb2
+â
+â Î¸0a
+
+â
+
+â Î¸c,
+
+â
+0 = 2(Î¸0 + H0)a
+â
+0 = (Î¸0 + H0 + Î¸)b
+
+â
+â
+â 2Î¸b
+
+â
+â Î¸d
+
+â
+â Î¸c,
+
+0 = Î¸d
+
+â
+
+0 = â2Î¸0b
+
++ Î¸cd2
+â
++ 2Î¸e
+
+â
+
+In these conditions (X (N )
+0 = âH0X (N )
+
+dX (N )
+
+0
+
+d Â¯XN = âÎ¸( Â¯XN â X (N )
+
+0
+
+)dt +
+
+e
+
+â
+
+â
+
+).
+
++ Î¸c(2d
+
++ e2
+â
+â
+, Â¯XN ) satisï¬es the SDE:
+Ï0â
+N
+
+0
+dt â Î¸0(X (N )
+
+0 â Â¯XN )dt +
+Ï
+â
+N
+
+d Â¯W (N )
+
+t â Î¸c
+
+(cid:16)
+
+dW 0
+t ,
+
+b
+
+â
+
+X (N )
+
+0 + (d
+
+â
+
++ e
+
+â
+
+) Â¯XN
+
+(cid:17)
+
+dt,
+
+(cid:80)N
+
+where Â¯W (N )
+
+t = 1
+âN
+
+j=1 W j(t) is a standard Brownian motion.
+In order to obtain the optimal control (43), we need to have the coeï¬cients
+) that cannot be obtained analytically, in general, and must be com-
+, d
+(b
+puted numerically. However, we are able to ï¬nd approximate solutions in certain
+regimes. We note that from (44), d
+c )/Î¸c, and we consider the
+following cases:
+
+= (âÎ¸ +
+
+Î¸2 + Î¸2
+
+(cid:112)
+
+, e
+
+â
+
+â
+
+â
+
+â
+
+(1) If Î¸0 = 0 and H0 = 0, then we ï¬nd b
+
+= âd
+
+â
+
+and e
+
+â
+
+= 0, so that we
+
+â
+
+obtain the system
+
+dX (N )
+
+0
+
+0 = âH0X (N )
+Ï
+â
+N
+
+d Â¯W (N )
+
+d Â¯XN =
+
+dt +
+
+Ï0â
+N
+
+dW 0
+t ,
+
+t â (cid:112)
+
+Î¸2 + Î¸2
+
+c ( Â¯XN â X (N )
+
+0
+
+)dt,
+
+14
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+which shows that the passive control âÎ¸(Xj âX (N )
+Î±j combine in a quadratic way to form the feedback â(cid:112)
+X (N )
+0
+
+).
+
+) and the optimal control
+c ( Â¯XN â
+
+Î¸2 + Î¸2
+
+0
+
+(2) If 0 < Î¸0 (cid:28) 1 and H0 = 0, then we ï¬nd b
+(cid:112)
+/
+
+Î¸2 + Î¸2
+c + o(Î¸0), so that we obtain the system
+
+= âÎ¸0d
+
+Î¸2 + Î¸2
+
+= âd
+
++Î¸0d
+
+â
+
+â
+
+â
+
+c +o(Î¸0)
+
+(cid:112)
+/
+
+and e
+0 = âÎ¸0(X (N )
+
+dX (N )
+
+â
+
+â
+
+d Â¯XN =
+
+Ï
+â
+N
+
+0 â Â¯XN )dt +
+(cid:32)
+
+Ï0â
+N
+
+dW 0
+t ,
+
+d Â¯W (N )
+
+t â
+
+(cid:112)
+
+Î¸2 + Î¸2
+
+c â Î¸0
+
+(cid:112)
+
+c â Î¸
+
+Î¸2 + Î¸2
+(cid:112)
+
+Î¸2 + Î¸2
+c
+
+(cid:33)
+
+( Â¯XN â X (N )
+
+0
+
+)dt,
+
+which shows that the optimal control chooses to reduce the feedback, prob-
+ably because X (N )
+
+is destabilized by Î¸0.
+
+0
+
+(3) If 0 < Î¸0 (cid:28) 1 and 0 < H0 (cid:28) 1, then we ï¬nd b
+c + o(Î¸0, H0) and e
+
+= âÎ¸0d
+
+(cid:112)
+/
+
+(cid:112)
+/
+
+â
+Î¸2 + Î¸2
+
+= âd
++ (H0 +
+c + o(Î¸0, H0), so
+
+â
+
+â
+
+â
+
+â
+
+Î¸2 + Î¸2
+Î¸0)d
+that we obtain the system
+dt â Î¸0(X (N )
+(cid:32)
+
+0 = âH0X (N )
+
+0
+
+dX (N )
+
+0 â Â¯XN )dt +
+
+dW 0
+t ,
+
+Ï0â
+N
+(cid:112)
+
+d Â¯XN =
+
+Ï
+â
+N
+
+d Â¯W (N )
+
+t â
+
+(cid:112)
+
+Î¸2 + Î¸2
+
+c â (Î¸0 + H0)
+
+c â Î¸
+
+Î¸2 + Î¸2
+(cid:112)
+
+Î¸2 + Î¸2
+c
+
+(cid:33)
+
+( Â¯XN â X (N )
+
+0
+
+)dt
+
+â H0
+
+(cid:112)
+
+c â Î¸
+
+Î¸2 + Î¸2
+(cid:112)
+
+Î¸2 + Î¸2
+c
+
+Â¯XN dt,
+
+which shows that the optimal control chooses to reduce the feedback but it
+also controls Â¯XN directly.
+
+6. Numerical results
+
+6.1. Numerical results of ï¬uctuations. In this subsection we compare the ana-
+lytical ï¬uctuation results (16-18) with the ï¬uctuations obtained from the numerical
+simulations of (x(N )
+(t), Â¯xN (t)) in (12). We use the Euler scheme to discretize (12):
+Ï0â
+N
+â Â¯Wn+1 â Î¸(Â¯xN (n) â x(N )
+
+n+1 â h0V (cid:48)0 (x(N )
+
+(n))ât â Î¸0(x(N )
+
+(n) â Â¯xN (n))ât,
+
+Â¯xN (n + 1) =
+
+(n + 1) =
+
+(n))ât,
+
+x(N )
+0
+
+âW 0
+
+(45)
+
+0
+
+0
+
+0
+
+0
+
+Ï
+â
+N
+
+0
+
+(0) = Â¯xN (0) = â1 and {âW 0
+
+with x(N )
+n+1}n, {â Â¯Wn+1}n i.i.d. Gaussian random
+variables with mean 0 and variance ât. We simulate (45) up to time T and we
+take T large enough so that (x(N )
+(t), Â¯xN (t)) is in equilibrium after T /10. Therefore,
+x(N )
+Â¯xN (t))
+Var(limt
+0
+are approximately the sample variances and sample covariance of {x(N )
+(n) : T /10 â¤
+nât â¤ T } and {Â¯xN (n) : T /10 â¤ nât â¤ T }, respectively.
+
+0
+(t)), Var(limt
+
+Â¯xN (t)) and Cov(limt
+
+(t), limt
+
+x(N )
+0
+
+ââ
+
+ââ
+
+ââ
+
+ââ
+
+0
+
+For each simulation, we vary one parameter for 100 diï¬erent values equally dis-
+tributed in the region of interest, and use the values in Table 1 for the other pa-
+rameters. The results are shown in Figures 1 and 2. In Figure 1 we compare the
+analytical formulas (16-18) with the sample variances and sample covariances from
+the direct numerical simulations for 100 diï¬erent h0 and Ï0 uniformly distributed in
+the region of interest. In Figure 2 we compare the analytical formulas (16-18) with
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+15
+
+T
+103
+
+N
+100
+
+ât
+3
+10â
+
+h0
+0.5
+Table 1. The typical values of parameters used in Sec 6.1. For
+each simulation, we vary one parameter and the other parameters
+are ï¬xed at the values in the table.
+
+Ï0
+0.1
+
+Î¸0
+0.1
+
+Ï
+1.0
+
+Î¸
+10
+
+Figure 1. We compare the analytical formulas for variances and
+covariances with direct numerical simulations. On the left the hor-
+izontal axis is h0 and on the right Ï0.
+
+Figure 2. Same and in Figure 1 except that the horizontal axis
+on the left is Ï and on the right Î¸.
+
+the sample variances and sample covariances from the direct numerical simulations
+for 100 diï¬erent Ï and Î¸ uniformly distributed in the region of interest. We see that
+there is good agreement between the analytical formulas and the simulations and
+thus (16-18) indeed capture the ï¬uctuations of the equilibrium of (x(N )
+(t), Â¯xN (t)).
+
+0
+
+6.2. Numerical results of large deviations. In this subsection, we compute
+the most probable paths (x0, Â¯x), deï¬ned in Section 3.2, by numerically solving
+the associated boundary value problems (26) and (34) for Ï0 = 0 and Ï0 > 0,
+respectively. We use the boundary value problem solver bvp4c in MATLAB to
+solve these problems. The details of the algorithm can be found in [19].
+
+0.050.10.150.20.250.30.350.40.450.50123x 10â3VarianceofFluctuationsofx0  numericalanalytical0.050.10.150.20.250.30.350.40.450.50123x 10â3VarianceofFluctuationsofÂ¯xN0.050.10.150.20.250.30.350.40.450.50123x 10â3CovarianceofFluctuationsofx0andÂ¯xNh000.10.20.30.40.50.60.70.80.91024x 10â3VarianceofFluctuationsofx0  00.10.20.30.40.50.60.70.80.91024x 10â3VarianceofFluctuationsofÂ¯xN00.10.20.30.40.50.60.70.80.91024x 10â3CovarianceofFluctuationsofx0andÂ¯xNÏ0numericalanalytical00.10.20.30.40.50.60.70.80.91012x 10â4VarianceofFluctuationsofx0  00.10.20.30.40.50.60.70.80.9100.51x 10â3VarianceofFluctuationsofÂ¯xN00.10.20.30.40.50.60.70.80.91012x 10â4CovarianceofFluctuationsofx0andÂ¯xNÏnumericalanalytical1234567891000.010.02VarianceofFluctuationsofx0  numericalanalytical1234567891000.010.02VarianceofFluctuationsofÂ¯xN1234567891000.010.02CovarianceofFluctuationsofx0andÂ¯xNÎ¸16
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+For the non-singular cases, for h0 small, we use x0(t) â¡ â1 or x0(t) = (2t/T ) â 1
+for (26), and x0(t) = Â¯x(t) â¡ â1 or x0(t) = Â¯x(t) = (2t/T ) â 1 for (34), depending
+on which one gives better results. We found that bvp4c sometimes did not give an
+accurate solution even for the non-singular cases. The numerical solutions failed
+to pass their internal accuracy check of the MATLAB routine. The reason for this
+is not clear. However, this issue can be bypassed by iterating bvp4c several times.
+More precisely, we use the inaccurate solution as a new initial guess and use bvp4c
+to solve the same boundary value problem again to obtain a new solution and so on.
+After several iterations, bvp4c ï¬nds the correct solution that passes its accuracy
+check.
+
+For the nearly-singular case, when h0 is large, the method just described fails
+to ï¬nd the correct solutions even with several iterations. To get past this issue,
+we use as initial guesses solutions of the less singular cases obtained by the above
+technique. For example, we use the solution of the problem with h0 = 1 as an
+initial guess to solve the problem with h0 = 2, and so on. Eventually we can solve
+some quite singular problems, for example, with h0 = 10.
+
+6.2.1. Impact of h0. In Figure 3 we plot the most probable paths (x0, Â¯x) as functions
+of time, for h0 from 0 to 10. On the left all the plots are with Ï0 = 0 and on the
+right Ï0 = 0.5. We note that when h0 = 0, (x0, Â¯x) is smooth and in fact it is
+approximately linear, while (x0, Â¯x) is quite curved for h0 = 10. We see that when
+x0(t) â¤ 0, the destabilization of the system is driven by Â¯x(t). Indeed, Â¯x has higher
+external risk (Ï = 1) than x0(t) does (Ï0 = 0 or Ï0 = 0.5) and has no intrinsic
+stability (h = 0), and therefore in the most probable path Â¯x(t) destabilizes x0(t).
+Nevertheless, once x0(t) > 0, the system transition is driven by x0(t) because the
+double-well potential forces x0 to go to the failed state 1, and Â¯x(t) is driven by x0(t).
+This eï¬ect is strengthened when h0 is large because the double-well potential plays
+a more important role in that case.
+
+âA
+
+In Figure 4 we plot the values of inf x
+
+I(x) for diï¬erent h0. We see that
+âA
+I(x) is an increasing function of h0. This is expected because the system
+inf x
+is more stable if it has more intrinsic stability (h0). We also see in Figure 4 that
+I(x) has quadratic behavior with respect to h0 for small h0 and linear be-
+inf x
+havior for large h0.
+
+âA
+
+0
+
+ââ
+
+6.2.2. Comparison between small ï¬uctuations and large deviations. Here we com-
+pare the small ï¬uctuations of (x(N )
+, Â¯xN ) described by the processes z0 and Â¯z in (13)
+0
+and the large deviations of (x(N )
+, Â¯xN ) described by the inï¬mum of the rate func-
+I(x). For the characterization of the small ï¬uctuations, we compute
+tion inf x
+limt
+VarÂ¯z(t) in (50). For the characterization of
+the large deviations, we compute I(x0, Â¯x) in (23) for Ï0 = 0 where (x0, Â¯x) is the
+solution of (26) and compute I(x0, Â¯x) in (33) for Ï0 = 0.5 where (x0, Â¯x) is the solu-
+tion of (34). The goal is to visualize the fact that the systemic risk characterized
+I(x) may vary signiï¬cantly even though the individual risk measured by
+by inf x
+limt
+
+âA
+VarÂ¯z(t) is kept at a ï¬xed level.
+
+âA
+Varz0(t) in (49) and limt
+
+ââ
+Motivated by (16) and (17), we know that limt
+
+VarÂ¯z(t)
+are not signiï¬cantly aï¬ected if we increase Ï and Î¸ but keep the ratio Ï2/Î¸ the
+I(x)
+same. In Figure 5 we conï¬rm this expectation and we also observe that inf x
+increases as Ï increases, which means that systemic risk decreases. This also means
+
+Varz0(t) and limt
+
+ââ
+
+ââ
+
+ââ
+
+âA
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+17
+
+Figure 3. The most probable paths (x0, Â¯x) = arg min
+I for h0 =
+0, 1, 5, 10. We let T = 10, Î¸0 = 1, Î¸ = 1 and Ï = 1. The left column
+is the case Ï0 = 0 and the right column is the case Ï0 = 0.5.
+
+A
+
+012345678910â1â0.500.511.5tI=0.88899,T=10,h0=0,Î¸0=1,Î¸=1,Ï0=0,Ï=1  x0Â¯x012345678910â1â0.500.511.5tI=0.66393,T=10,h0=0,Î¸0=1,Î¸=1,Ï0=0.5,Ï=1  x0Â¯x012345678910â1â0.500.511.5tI=1.2943,T=10,h0=1,Î¸0=1,Î¸=1,Ï0=0,Ï=1  x0Â¯x012345678910â1â0.8â0.6â0.4â0.200.20.40.60.81tI=0.98633,T=10,h0=1,Î¸0=1,Î¸=1,Ï0=0.5,Ï=1  x0Â¯x012345678910â1â0.500.511.52tI=8.1267,T=10,h0=5,Î¸0=1,Î¸=1,Ï0=0,Ï=1  x0Â¯x012345678910â1â0.8â0.6â0.4â0.200.20.40.60.81tI=5.3547,T=10,h0=5,Î¸0=1,Î¸=1,Ï0=0.5,Ï=1  x0Â¯x012345678910â1â0.500.511.522.533.54tI=24.2897,T=10,h0=10,Î¸0=1,Î¸=1,Ï0=0,Ï=1  x0Â¯x012345678910â1â0.500.511.52tI=13.0566,T=10,h0=10,Î¸0=1,Î¸=1,Ï0=0.5,Ï=1  x0Â¯x18
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Figure 4. The inï¬mum of I over A:
+I for h0 =
+0, 0.1, 0.2, . . . , 1 and for h0 = 0, 1, 2, . . . , 10. We let T = 10, Î¸0 = 1,
+Î¸ = 1 and Ï = 1. The left column is the case Ï0 = 0 and the right
+column is the case Ï0 = 0.5.
+
+inf
+
+A
+
+that, for a ï¬xed level Ï2/Î¸ of individual risk, the reduction of Î¸, ie the interaction
+of the local agent with the central agent, reduces the systemic risk.
+
+One may also expect that Î¸0 does not greatly aï¬ect limt
+
+Varz0(t) and limt
+
+VarÂ¯z(t);
+
+however, in Figure 6 we see that the eï¬ect of Î¸0 on limt
+ââ
+is not negligible. In other words, the independence of limt
+with respect to Î¸0 only holds in the limits (16) and (17).
+
+ââ
+
+ââ
+Varz0(t) and limt
+
+ââ
+Varz0(t) and limt
+
+ââ
+VarÂ¯z(t)
+
+VarÂ¯z(t)
+
+ââ
+
+6.3. Numerical results for optimal controls. In this subsection, we use the
+Euler scheme to simulate (12) with optimal controls:
+
+(46)
+
+x(N )
+0
+
+(n + 1) =
+
+Â¯xN (n + 1) =
+
+âW 0
+
+n+1 â h0V (cid:48)0 (x(N )
+
+Ï0â
+N
+â Â¯Wn+1 â Î¸(Â¯xN (n) â x(N )
+
+0
+
+0
+
+Ï
+â
+N
+
+0
+
+(0) = Â¯xN (0) = â1 and {âW 0
+
+with x(N )
+variables with mean 0 and variance ât, where
+(cid:16)
+
+(47)
+
+Î±âj (t) = âÎ¸c
+
+(n))ât â Î¸0(x(N )
+
+0
+
+(n) â Â¯xN (n))ât,
+
+(n))ât + Î±âj (n)ât
+
+n+1}n, {â Â¯Wn+1}n i.i.d. Gaussian random
+
+(x(N )
+0
+
+b
+â
+
+(n) + 1) + d
+
+(xj(n) + 1) + e
+
+(Â¯xN (n) + 1)
+
+â
+
+(cid:17)
+
+â
+
+and (a
+
+â
+
+, b
+
+â
+
+, d
+
+â
+
+, e
+
+â
+
+) satisï¬es the algebraic Riccati equations (44).
+
+00.10.20.30.40.50.60.70.80.910.850.90.9511.051.11.151.21.251.3h0IT=10,Î¸0=1,Î¸=1,Ï0=0,Ï=100.10.20.30.40.50.60.70.80.910.650.70.750.80.850.90.951h0IT=10,Î¸0=1,Î¸=1,Ï0=0.5,Ï=10123456789100510152025h0IT=10,Î¸0=1,Î¸=1,Ï0=0,Ï=101234567891002468101214h0IT=10,Î¸0=1,Î¸=1,Ï0=0.5,Ï=1A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+19
+
+of
+
+5. Plots
+
+Figure
+I(x),
+and
+VarÂ¯z(t) for Ï2 from 1 to 10 with Ï2/Î¸ = 1. We let
+limt
+T = 10, Î¸0 = 1. The left column is the case Ï0 = 0 and the right
+column is the case Ï0 = 0.5.
+
+Varz0(t)
+
+limt
+
+inf x
+
+ââ
+
+ââ
+
+âA
+
+To obtain (a
+
+, b
+(a(0), b(0), d(0), e(0)) is essentially (a
+used in (46) are listed in Table 2.
+
+, d
+
+, e
+
+â
+
+â
+
+â
+
+â
+
+), we numerically solve (42) for large enough T so that
+). The values of the parameters
+
+, d
+
+, e
+
+, b
+
+â
+
+â
+
+â
+
+â
+
+We see from Figure 7 that the uncontrolled problem is very unstable in the sense
+and Â¯xN jump frequently between â1 and +1. On the other hand, under
+and Â¯xN are much more stable
+
+that x(N )
+the same values of the parameters, the controlled x(N )
+with no transition from â1 to +1.
+
+0
+
+0
+
+11.522.533.50.811.21.41.61.822.22.42.6Ï2,Ï2/Î¸=1T=10,h0=0,Î¸0=1,Ï0=0,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y11.522.533.50.610.620.630.640.650.660.670.680.690.7Ï2,Ï2/Î¸=1T=10,h0=0,Î¸0=1,Ï0=0.5,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y11.522.533.50123456Ï2,Ï2/Î¸=1T=10,h0=1,Î¸0=1,Ï0=0,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y11.522.533.500.20.40.60.811.21.41.6Ï2,Ï2/Î¸=1T=10,h0=1,Î¸0=1,Ï0=0.5,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y11.522.533.5024681012Ï2,Ï2/Î¸=1T=10,h0=2,Î¸0=1,Ï0=0,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y11.522.533.500.511.522.533.5Ï2,Ï2/Î¸=1T=10,h0=2,Î¸0=1,Ï0=0.5,Ï2/Î¸=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y20
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+of
+
+6. Plots
+
+Figure
+I(x),
+and
+limt
+VarÂ¯z(t) for Î¸0 from 1 to 50. We let T = 10, Î¸ = 10, Ï = 1.
+The left column is the case Ï0 = 0 and the right column is the
+case Ï0 = 0.5.
+
+Varz0(t)
+
+limt
+
+inf x
+
+ââ
+
+ââ
+
+âA
+
+T
+103
+
+N
+100
+
+h0
+0.7
+Table 2. The values of the parameters used in Sec. 6.3 for the
+controlled problem (46) and the uncontrolled problem (45).
+
+ât
+2
+10â
+
+Î¸0
+1.0
+
+Ï
+5.0
+
+Î¸
+1.0
+
+Ï0
+0.5
+
+0510152025303540455000.511.522.533.544.55Î¸0T=10,h0=0,Î¸=10,Ï0=0,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y051015202530354045500.20.30.40.50.60.70.80.91Î¸0T=10,h0=0,Î¸=10,Ï0=0.5,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y0510152025303540455000.511.522.533.544.55Î¸0T=10,h0=1,Î¸=10,Ï0=0,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y0510152025303540455000.511.522.5Î¸0T=10,h0=1,Î¸=10,Ï0=0.5,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y0510152025303540455000.511.522.533.544.55Î¸0T=10,h0=2,Î¸=10,Ï0=0,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯y0510152025303540455000.511.522.533.544.5Î¸0T=10,h0=2,Î¸=10,Ï0=0.5,Ï=1  IlimtââVarÎ´y0limtââVarÎ´Â¯yA RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+21
+
+Figure 7. Sample paths of x(N )
+the optimal control. With the optimal control, x(N )
+0
+are much more stable than the uncontrolled ones.
+
+(t) and Â¯xN (t) with and without
+(t) and Â¯xN (t)
+
+0
+
+7. Summary and Conclusions
+
+We have formulated and analyzed a multi-agent model for the evolution of indi-
+vidual and systemic risk when there is a central agent acting as a stabilizer in the
+system. The local agents do not have an intrisinc stabilizing mechanism. The main
+result of this paper can be visualized in Figures 5 and 6 and is brieï¬y described
+as follows. The systemic risk decreases when the rate of adherence of the local
+agents to the central agent increases, but it increases when the rate of adherence
+of the central agent to the mean of the local agents increases. This is under the
+condition that the observed individual risk is kept approximately constant. We also
+show that the eï¬ect of drift controls on the local agents is to always stabilize the
+systemic risk.
+
+Acknowledgment
+
+This work is partly supported by the Department of Energy [National Nuclear
+Security Administration] under Award Number NA28614, and partly by AFOSR
+grant FA9550-11-1-0266. The authors thank the Institut des Hautes Etudes Scien-
+tiï¬ques (IHES) for its hospitality while part of this work was carried out.
+
+Appendix A. Proofs in Section 3
+
+1, where
+
+A.1. Proof of Proposition 1. We ï¬rst consider the eigen-decomposition of A:
+A = QÎQâ
+(cid:18)Î»1
+0
+(cid:26)
+
+(cid:18) 1 â(1 + Î»2
+Î¸ )
+1 + Î»1
+Î¸
+(cid:27)
+
+(cid:18)1 + Î»1
+1
+
+Î¸
+Î»1 â Î»2
+
+1 + Î»2
+Î¸
+1
+
+, Q =
+
+, Qâ
+
+0
+Î»2
+
+Î =
+
+1 =
+
+â1
+
+(cid:19)
+
+(cid:19)
+
+(cid:19)
+
+,
+
+Î¸
+
+(cid:113)
+
+â[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸] +
+
+[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸]2 â 4Î¸h0V (cid:48)(cid:48)0 (ye
+0)
+
+(cid:26)
+
+â[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸] â
+
+(cid:113)
+
+[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸]2 â 4Î¸h0V (cid:48)(cid:48)0 (ye
+0)
+
+,
+
+.
+
+(cid:27)
+
+Î»1 =
+
+Î»2 =
+
+1
+2
+1
+2
+
+We note that Î»1 and Î»2 are real and negative if h0, Î¸0 and Î¸ are positive. Then from
+Â¯z(t) = 0. In addition, from the eigen-decomposition
+(14), limt
+
+z0(t) = limt
+
+ââ
+
+ââ
+
+01002003004005006007008009001000â1.5â1â0.500.511.5N=100,h0=0.7,Ï0=0.5,Î¸0=1,Ï=5,Î¸=1Time  x0withoutcontrolx0withtheoptimalcontrol01002003004005006007008009001000â2.5â2â1.5â1â0.500.511.522.5N=100,h0=0.7,Ï0=0.5,Î¸0=1,Ï=5,Î¸=1Time  Â¯xwithoutcontrolÂ¯xwiththeoptimalcontrol22
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+(cid:19)
+
+Cov(z0(t), Â¯z(t))
+VarÂ¯z(t)
+(cid:90) t
+
+= Q
+
+0
+
+e(t
+
+s)ÎQâ
+
+â
+
+1
+
+(cid:18)Ï2
+0
+0
+
+(cid:19)
+
+0
+Ï2
+
+(Qâ
+
+1)Te(t
+
+s)ÎdsQT.
+
+â
+
+we have
+
+(48)
+
+(cid:18) Varz0(t)
+Cov(z0(t), Â¯z(t))
+
+We observe that
+(cid:18)Ï2
+0
+0
+
+1
+Qâ
+
+0
+Ï2
+
+(cid:19)
+
+(Qâ
+
+1)T
+
+(cid:18)
+
+=
+
+0 + Ï2(1 + Î»2
+Ï2
+0 â Ï2(1 + Î»1
+
+Î¸ )2
+Î¸ )(1 + Î»2
+Î¸ )
+
+âÏ2
+
+âÏ2
+
+0 â Ï2(1 + Î»1
+0 + Ï2(1 + Î»1
+Ï2
+
+Î¸ )(1 + Î»2
+Î¸ )
+Î¸ )2
+
+(cid:19)
+
+Then
+
+(cid:90) t
+
+lim
+t
+ââ
+
+0
+(cid:32)
+
+e(t
+
+s)ÎQâ
+
+â
+
+1
+
+(cid:18)Ï2
+0
+0
+
+(cid:19)
+
+0
+Ï2
+
+(Qâ
+
+1)Te(t
+
+â
+
+s)Îds
+
+=
+
+â 1
+2Î»1
+[âÏ2
+
+0 + Ï2(1 + Î»2
+
+[Ï2
+0 â Ï2(1 + Î»1
+
+Î¸ )2]
+Î¸ )(1 + Î»2
+
+Î¸ )]
+
+1
+Î»1+Î»2
+
+1
+Î»1+Î»2
+
+[âÏ2
+â 1
+2Î»2
+
+0 â Ï2(1 + Î»1
+[Ï2
+
+0 + Ï2(1 + Î»1
+
+Î¸ )(1 + Î»2
+Î¸ )2]
+
+Î¸ )]
+
+(cid:33)
+
+.
+
+.
+
+So we obtain
+
+(49)
+
+Varz0(t) =
+
+lim
+t
+ââ
+
+Î¸2
+(Î»1 â Î»2)2
+
+(cid:40)
+
+â
+
+(cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+(cid:19)2 (cid:34)
+
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
+(cid:19)2(cid:35)
+
+Î»2
+Î¸
+(cid:19)(cid:21)
+
+1
+2Î»1
+(cid:19) (cid:20)
+
+(cid:19) (cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+Î»2
+Î¸
+
++
+
+â
+
+(cid:18)
+
+1 +
+
+2
+Î»1 + Î»2
+(cid:18)
+
+1
+2Î»2
+
+1 +
+
+Î»2
+Î¸
+
+Î»1
+Î¸
+(cid:19)2 (cid:34)
+
+(cid:19) (cid:18)
+
+1 +
+
+0 + Ï2
+Ï2
+
+Î»2
+Î¸
+(cid:18)
+
+0 + Ï2
+Ï2
+(cid:19)2(cid:35)(cid:41)
+
+(cid:18)
+
+1 +
+
+,
+
+1 +
+
+Î»1
+Î¸
+
+(50)
+
+VarÂ¯z(t) =
+
+lim
+t
+ââ
+
+Î¸2
+(Î»1 â Î»2)2
+
+(cid:40)
+
+â
+
+1
+2Î»1
+
+(cid:34)
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
++
+
+2
+Î»1 + Î»2
+
+(cid:20)
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
+(cid:19) (cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+(cid:19)(cid:21)
+
+â
+
+Î»2
+Î¸
+
+1
+2Î»2
+
+(cid:19)2(cid:35)
+
+Î»2
+Î¸
+(cid:34)
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+(cid:19)2(cid:35)(cid:41)
+
+,
+
+(cid:40)
+
+â
+
+1
+2Î»1
+
+(cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+(cid:19) (cid:34)
+
+0 + Ï2
+Ï2
+
+(cid:19)2(cid:35)
+
+(cid:18)
+
+1 +
+
+Î»2
+Î¸
+
+(51)
+
+Cov(z0(t), Â¯z(t)) =
+
+lim
+t
+ââ
+
+Î¸2
+(Î»1 â Î»2)2
+(cid:18)
+
+0 + Ï2
+Ï2
+
+(cid:19) (cid:20)
+
+(cid:19) (cid:20)
+
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
+0 + Ï2
+Ï2
+
+(cid:18)
+
+1 +
+
+Î»1
+Î¸
+
+(cid:19)(cid:21)
+
+(cid:19)(cid:21)
+
+Î»2
+Î¸
+Î»2
+Î¸
+
+1 +
+
+1 +
+
+(cid:19) (cid:18)
+
+(cid:19) (cid:18)
+
+Î»1
+Î¸
+Î»1
+Î¸
+(cid:19)2(cid:35)(cid:41)
+
+1 +
+
+.
+
++
+
++
+
+â
+
+1
+Î»1 + Î»2
+1
+Î»1 + Î»2
+(cid:18)
+
+(cid:18)
+
+(cid:18)
+
+1 +
+
+1 +
+
+Î»1
+Î¸
+Î»2
+Î¸
+(cid:19) (cid:34)
+
+1
+2Î»2
+
+1 +
+
+Î»2
+Î¸
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+23
+
+We are interested in the case that Ï and Î¸ go to inï¬nity while the ratio Î± = Ï2/Î¸
+2 x + O(x2), we
+
+is ï¬xed. For Î¸ large and using the approximation
+have the following expansions:
+
+1 + x = 1 + 1
+
+â
+
+(cid:40)
+
+Î»1
+Î¸
+
+=
+
+1
+2Î¸
+
+â[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸] + [h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸]
+
+(cid:115)
+
+1 â
+
+4Î¸h0V (cid:48)(cid:48)0 (ye
+0)
+0) + Î¸0 + Î¸]2
+
+[h0V (cid:48)(cid:48)0 (ye
+
+(cid:41)
+
+= â
+
+h0V (cid:48)(cid:48)0 (ye
+0)
+0) + Î¸0 + Î¸
+
+h0V (cid:48)(cid:48)0 (ye
+
++ O
+
+(cid:19)
+
+,
+
+(cid:18) 1
+Î¸2
+
+(cid:40)
+
+1 +
+
+Î»2
+Î¸
+
+=
+
+1
+2Î¸
+
+2Î¸ â [h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸] â [h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0 + Î¸]
+
+(cid:115)
+
+1 â
+
+4Î¸h0V (cid:48)(cid:48)0 (ye
+0)
+0) + Î¸0 + Î¸]2
+
+[h0V (cid:48)(cid:48)0 (ye
+
+(cid:41)
+
+= â
+
+1
+Î¸
+
+[h0V (cid:48)(cid:48)0 (ye
+
+0) + Î¸0] +
+
+h0V (cid:48)(cid:48)0 (ye
+
+h0V (cid:48)(cid:48)0 (ye
+0)
+0) + Î¸0 + Î¸
+Î¸ = O( 1
+
++ O
+
+(cid:19)
+
+.
+
+(cid:18) 1
+Î¸2
+
+Thus Î»1 â h0V (cid:48)(cid:48)0 (ye
+(16), (17) and (18).
+
+0) as Î¸ â â and 1 + Î»2
+
+Î¸ ) and ï¬nally we have the limits
+
+A.2. Proof of Proposition 2. If x0 is the minimizer, then for any perturbation Ï
+with Ï(0) = Ï(T ) = ËÏ(0) = ËÏ(T ) = 0, the directional derivative of I must be zero:
+
+d
+d(cid:15)
+
+Ã
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)(cid:15)=0
+(cid:20) 1
+Î¸0
+
+I(x0+(cid:15)Ï) =
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+(cid:20) 1
+Î¸0
+
+2
+
+Â¨x0 +
+
+h0
+Î¸0
+
+(cid:18)
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+
+1 +
+
+(cid:19)
+
+Î¸
+Î¸0
+
+Ëx0 +
+
+Â¨Ï +
+
+h0
+Î¸0
+
+V (cid:48)(cid:48)(cid:48)0 (x0)Ï Ëx0 +
+
+h0
+Î¸0
+
+V (cid:48)(cid:48)0 (x0) ËÏ +
+
+(cid:18)
+
+1 +
+
+(cid:19)
+
+Î¸
+Î¸0
+
+ËÏ +
+
+Î¸h0
+Î¸0
+
+(cid:21)
+V (cid:48)0 (x0)
+
+Î¸h0
+Î¸0
+
+(cid:21)
+
+V (cid:48)(cid:48)0 (x0)Ï
+
+dt = 0.
+
+After integration by parts and using the fact that Ï is arbitrary, the minimizer x0
+must satisfy the following equation:
+
+1
+Î¸0
+
+d2
+dt2
+
++
+
+V (cid:48)(cid:48)(cid:48)0 (x0) Ëx0
+
+h0
+Î¸0
+(cid:26) h0
+Î¸0
+
+(cid:18)
+
+â
+
+1 +
+
+â
+
+d
+dt
+
+V (cid:48)(cid:48)0 (x0)
+(cid:19) d
+dt
+
+Î¸
+Î¸0
+
++
+
+Î¸h0
+Î¸0
+
+V (cid:48)(cid:48)0 (x0)
+
+(cid:20) 1
+Î¸0
+(cid:20) 1
+Î¸0
+
+Â¨x0 +
+
+Â¨x0 +
+
+h0
+Î¸0
+h0
+Î¸0
+
+(cid:20) 1
+Î¸0
+(cid:20) 1
+Î¸0
+(cid:20) 1
+Î¸0
+
+h0
+Î¸0
+
+Â¨x0 +
+
+Â¨x0 +
+
+h0
+Î¸0
+h0
+Î¸0
+
+(cid:18)
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+
+1 +
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+(cid:18)
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+
+1 +
+
+(cid:18)
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+
+1 +
+
+(cid:18)
+
+1 +
+
+Î¸
+Î¸0
+
+(cid:18)
+
+(cid:19)
+
+(cid:19)
+
+Î¸
+Î¸0
+Î¸
+Î¸0
+(cid:19)
+
+(cid:19)
+
+(cid:19)
+
+Î¸
+Î¸0
+Î¸
+Î¸0
+
+Ëx0 +
+
+Ëx0 +
+
+Ëx0 +
+
+Ëx0 +
+
+Î¸h0
+Î¸0
+Î¸h0
+Î¸0
+Î¸h0
+Î¸0
+Î¸h0
+Î¸0
+Î¸h0
+Î¸0
+
+Â¨x0 +
+
+V (cid:48)(cid:48)0 (x0) Ëx0 +
+
+1 +
+
+Ëx0 +
+
+V (cid:48)0 (x0)
+
+V (cid:48)0 (x0)
+
+(cid:21)
+
+(cid:21)
+
+V (cid:48)0 (x0)
+(cid:21)(cid:27)
+
+V (cid:48)0 (x0)
+
+(cid:21)
+
+(cid:21)
+
+V (cid:48)0 (x0)
+
+= 0.
+
+with the boundary conditions x0 (0) = â1, x0(t) = 1 and d
+We then obtain (26) after rearranging the above equation.
+
+dt x0 (0) = d
+
+dt x0(t) = 0.
+
+A.3. Proof of Proposition 5. If h0 = 0, (12) is a system of linear SDEs, and the
+explicit solution can be found:
+(cid:18) x0(T )
+Â¯xN (T )
+
+(cid:18)Ï0dW 0
+s
+Ïd Â¯Ws
+
+(cid:18)âÎ¸0
+Î¸
+
+(cid:18)â1
+â1
+
+= eT A0
+
+Î¸0
+âÎ¸
+
+A0 =
+
+e(T
+
+(cid:90) T
+
+s)A0
+
++
+
+(cid:19)
+
+(cid:19)
+
+(cid:19)
+
+(cid:19)
+
+â
+
+.
+
+,
+
+1
+â
+N
+
+0
+
+24
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Since (12) is linear, (x0(T ), Â¯xN (T )) is jointly Gaussian and can be completely char-
+acterized by its mean and covariance matrix. We note that (â1, â1)T is in the null
+space of A0 and thus
+
+E
+
+(cid:19)
+
+(cid:18) x0(T )
+Â¯xN (T )
+
+= eT A0
+
+(cid:19)
+
+(cid:18)â1
+â1
+
+(cid:19)
+
+(cid:18)â1
+â1
+
+.
+
+=
+
+In addition, A0 has the following eigen-decomposition: A0 = Q0Î0Qâ
+(cid:18) 1
+â1
+
+(cid:18)1 â Î¸0
+Î¸
+1
+1
+
+1
+0 =
+, Qâ
+
+0 â(Î¸0 + Î¸)
+
+, Q0 =
+
+Î¸
+Î¸0 + Î¸
+
+Î0 =
+
+(cid:18)0
+
+(cid:19)
+
+(cid:19)
+
+0
+
+1
+
+0 , where
+(cid:19)
+
+Î¸0
+Î¸
+1
+
+.
+
+Then the covariance matrix is
+
+(cid:18)
+
+(52)
+
+(cid:19)
+
+Cov(x0(T ), Â¯x(T ))
+VarÂ¯x(T )
+(cid:18)Ï2
+0
+0
+
+0
+Ï2
+
+(cid:19)
+
+Varx0(T )
+Cov(x0(T ), Â¯x(T ))
+(cid:90) T
+
+=
+
+=
+
+1
+N
+1
+N
+
+Q0
+
+0
+
+Q0Î£QT
+0 ,
+
+e(T
+
+1
+s)Î0Qâ
+0
+
+â
+
+1
+0 )Te(T
+(Qâ
+
+s)Î0dsQT
+0
+
+â
+
+with
+
+Î£ =
+
+(cid:32)
+
+0 + Î¸2
+
+T (Ï2
+0 + Î¸0Ï2/Î¸)[1 â eâ
+
+0Ï2/Î¸2)
+
+T (Î¸0+Î¸)]
+
+1
+
+Î¸0+Î¸ (âÏ2
+
+1
+
+Î¸0+Î¸ (âÏ2
+2(Î¸0+Î¸) (Ï2
+
+0 + Î¸0Ï2/Î¸)[1 â eâ
+0 + Ï2)[1 â eâ
+
+1
+
+2T (Î¸0+Î¸)]
+
+(cid:33)
+
+T (Î¸0+Î¸)]
+
+.
+
+When the terminal time T is large, we can separate the middle matrix in (52) into
+the principle term and the correction term:
+
+Î£ =
+
+(cid:32)
+
++
+
+(cid:18)T (Ï2
+
+0Ï2/Î¸2) 0
+0 + Î¸2
+0
+0
+
+(cid:19)
+
+0
+0 + Î¸0Ï2/Î¸)[1 â eâ
+
+1
+
+Î¸0+Î¸ (âÏ2
+
+T (Î¸0+Î¸)]
+
+1
+
+Î¸0+Î¸ (âÏ2
+2(Î¸0+Î¸) (Ï2
+
+0 + Î¸0Ï2/Î¸)[1 â eâ
+0 + Ï2)[1 â eâ
+
+1
+
+T (Î¸0+Î¸)]
+
+2T (Î¸0+Î¸)]
+
+(cid:33)
+
+.
+
+Then we have the approximation of the covariance matrix:
+
+(53)
+(cid:18)
+
+Varx0(T )
+Cov(x0(T ), Â¯x(T ))
+
+Cov(x0(T ), Â¯x(T ))
+VarÂ¯x(T )
+
+(cid:19)
+
+â
+
+=
+
+1
+N
+T
+N
+
+(cid:18)T (Ï2
+
+Q0
+
+Î¸2Ï2
+
+0 + Î¸2
+(Î¸0 + Î¸)2
+
+0Ï2/Î¸2)
+0 + Î¸2
+0
+(cid:18)1
+1
+
+(cid:19)
+1
+1
+
+0Ï2
+
+.
+
+(cid:19)
+0
+0
+
+QT
+0
+
+From (53) we conclude that x0(T ) and Â¯x(T ) are approximately equal as T becomes
+large and the probability in (35) is approximately P(x0(T ) â (1, 1 + dx)), which
+gives the desired rate of decay by using the fact that x0(T ) is Gaussian with mean
+â1 and approximate variance Varx0(T ) in (53) for large T .
+
+Appendix B. Proof of Proposition 6
+
+We prove it in three steps. The ï¬rst step is to show that there exists a uniform
+
+lower bound for J over all feasible Ï.
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+25
+
+Lemma 8. If h = 0, then for all Ï(t, dx) such that (cid:104)Ï(t, dx), x(cid:105) = Â¯x(t),
+
+J (cid:0)(x0(t), Ï(t, dx))t
+
+(cid:1) â¥
+
+[0,T ]
+
+â
+
+( Ëx0 + h0V (cid:48)0 (x0) + Î¸0(x0 â Â¯x))2dt
+
+(cid:90) T
+
+1
+2Ï2
+0
+1
+2Ï2
+
++
+
+0
+(cid:90) T
+
+0
+
+( ËÂ¯x + Î¸(Â¯x â x0))2dt,
+
+for Ï0 > 0 and for Ï0 = 0,
+
+J (cid:0)(x0(t), Ï(t, dx))t
+
+(cid:1) â¥
+
+1
+2Ï2
+
+(cid:90) T
+
+0
+
+[0,T ]
+
+â
+
+( ËÂ¯x + Î¸(Â¯x â x0))2dt,
+
+if Ëx0 + h0V (cid:48)0 (x0) + Î¸0(x0 â Â¯x) = 0 or J (cid:0)(x0(t), Ï(t, dx))t
+Proof. By taking f (x) = x, we have
+
+[0,T ]
+
+â
+
+(cid:1) = â otherwise.
+
+(cid:90) T
+
+0
+
+f (x):
+
+sup
+Ï,(f (cid:48)(x))2
+
+=0
+(cid:105)(cid:54)
+(cid:104)Ït â 1
+
+(cid:104)
+(cid:90) T
+
+f (x)=x
+â¥
+
+0
+
+(cid:104)Ït â 1
+
+2 Ï2Ïxx â Î¸ â
+
+âx [(x â x0(t))Ï], f (x)(cid:105)2
+
+(cid:104)Ï, (f (cid:48)(x))2(cid:105)
+
+dt
+
+2 Ï2Ïxx â Î¸ â
+
+âx [(x â x0(t))Ï], x(cid:105)2
+(cid:104)Ï, 1(cid:105)
+
+dt =
+
+(cid:90) T
+
+0
+
+( ËÂ¯x + Î¸(Â¯x â x0))2dt.
+
+Then we have the desired results.
+
+We then prove that J (cid:0)(x0(t), Â¯p(t, dx))t
+
+(cid:1) = I(cid:0)(x0(t), Â¯x(t))
+
+[0,T ]
+
+â
+
+quently I(x0, Â¯x) = I(x0, Â¯x).
+(cid:1) =
+Lemma 9. Let Â¯p deï¬ned in (37) and h = 0. Then J (cid:0)(x0(t), Â¯p(t, dx))t
+(cid:1) = I(x0, Â¯x) in (33) for
+I(x0, Â¯x) in (23) for Ï0 = 0 and J (cid:0)(x0(t), Â¯p(t, dx))t
+Ï0 > 0. Consequently, Â¯p(t, dx) is a minimizer and I(x0, Â¯x) = I(x0, Â¯x) for either
+Ï0 = 0 or Ï0 > 0.
+
+[0,T ]
+
+[0,T ]
+
+â
+
+â
+
+(cid:3)
+(cid:1) and conse-
+
+[0,T ]
+
+â
+
+Proof. By using the same argument in [10, Proposition 5.3], if Ï(t, dx) is absolutely
+continuous with respect to the Lebesgue measure with the smooth density function
+Ï(t, x), then
+(cid:90) T
+
+(cid:90) T
+
+2 Ï2Ïxx â Î¸ â
+
+âx [(x â x0(t))Ï], f (x)(cid:105)2
+
+(cid:104)Ït â 1
+
+(cid:104)Ï, (f (cid:48)(x))2(cid:105)
+
+dt =
+
+0
+
+(cid:104)Ï, (g(t, x))2(cid:105)dt,
+
+0
+
+f (x):
+
+(cid:104)
+
+sup
+Ï,(f (cid:48)(x))2
+
+=0
+
+(cid:105)(cid:54)
+
+where g(t, x) satisï¬es
+
+Ït(t, x) â
+
+1
+2
+
+Ï2Ïxx(t, x) â Î¸
+
+â
+âx
+
+[(x â x0(t))Ï(t, x)] =
+
+â
+âx
+
+(Ï(t, x)g(t, x)).
+
+If Ï(t, x) = Â¯p(t, x), then by using the fact that Â¯pt = â ËÂ¯x(t)Â¯px and 1
+x0(t))Â¯p] = Î¸[(Â¯x(t) â x0(t))Â¯px], the corresponding g(t, x) satisï¬es
+
+2 Ï2 Â¯pxx + Î¸ â
+
+âx [(x â
+
+â ËÂ¯x(t)Â¯px â Î¸[(Â¯x(t) â x0(t))Â¯px] =
+
+â
+âx
+
+(g(t, x)Â¯p).
+
+Then g(t, x) = â ËÂ¯x(t) â Î¸(Â¯x(t) â x0(t)) and (cid:82) T
+x0(t)))2dt. We therefore obtain the desired results.
+
+0 (cid:104)Ï, (g(t, x))2(cid:105)dt = (cid:82) T
+
+0 ( ËÂ¯x(t) + Î¸(Â¯x(t) â
+(cid:3)
+
+Finally we show that the minimizer (Â¯p(t, dx))t
+
+[0,T ] is unique.
+[0,T ] of inf Ï(t,dx) J (cid:0)(x0(t), Ï(t, dx))t
+
+â
+
+(cid:1)
+
+[0,T ]
+[0,T ] such that (cid:104)Ï(t, dx), x(cid:105) = Â¯x(t) for all t â [0, T ] and
+
+â
+
+â
+
+Lemma 10. The minimizer (Â¯p(t, dx))t
+is unique for all (Ï(t, dx))t
+â
+Ï(0, dx) = Â¯p(0, dx).
+
+26
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Proof. From the previous lemmas we conclude that if (Ï(t, dx))t
+then
+
+[0,T ] is a minimizer,
+
+â
+
+x =
+
+arg sup
+Ï,(f (cid:48)(x))2
+
+=0
+
+f (x):
+
+(cid:104)Ït â 1
+
+2 Ï2Ïxx â Î¸ â
+
+âx [(x â x0(t))Ï], f (x)(cid:105)2
+
+.
+
+(cid:104)Ï, (f (cid:48)(x))2(cid:105)
+
+(cid:104)
+Therefore for any perturbation Ëf (x),
+
+(cid:105)(cid:54)
+
+d
+d(cid:15)
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)(cid:15)=0
+
+(cid:104)Ït â 1
+
+2 Ï2Ïxx â Î¸ â
+
+âx [(x â x0(t))Ï], x + (cid:15) Ëf (x)(cid:105)2
+
+(cid:104)Ï, (1 + (cid:15) Ëf (cid:48)(x))2(cid:105)
+
+= 0,
+
+which leads to
+
+Ït â
+
+1
+2
+
+Ï2Ïxx â Î¸
+
+â
+âx
+
+[(x â x0(t))Ï] = (cid:104)Ït â
+
+1
+2
+
+Ï2Ïxx â Î¸
+
+â
+âx
+
+[(x â x0(t))Ï], x(cid:105)Ï
+
+= [ ËÂ¯x(t) + Î¸(Â¯x(t) â x0(t))]Ï.
+
+In other words, a minimizer (Ï(t, dx))t
+[0,T ] must satisfy the above linear parabolic
+â
+PDE that has a unique solution with the given initial condition Ï(0, dx) = Â¯p(0, dx).
+(cid:3)
+
+Appendix C. Proof of Proposition 7
+
+We can rewrite the problem in the matrix form:
+(cid:35)
+Î±(t)TRÎ±(t) + X(t)TQX(t)dt
+
+(cid:34)(cid:90) T
+
+E
+
+min
+(Î±(t))tâ[0,T ]
+
+1
+2
+
+0
+
+,
+
+dX = Î£dW +AX +BÎ±dt,
+
+where
+
+Î£ =
+
+, A =
+
+(cid:19)
+
+(cid:18) Ï0
+0uT
+âN
+0u
+ÏI
+(cid:18) N âuT
+
+(cid:19)
+
+âu
+
+I
+
+(cid:18)âÎ¸0 â H0
+Î¸u
+(cid:18) 1
+0u
+
+1
+Î¸c
+
+Î¸0
+N uT
+âÎ¸I
+(cid:19)
+
+0uT
+I
+
+Q = Î¸c
+
+, R =
+
+(cid:19)
+
+, B =
+
+(cid:18) 0
+0u
+
+(cid:19)
+
+,
+
+0uT
+I
+
+, u = (1, . . . , 1)T.
+
+We apply the standard theory [24, Theorem 6.1] and we ï¬nd that the optimal
+
+control is
+
+where S(t) is solution of the matrix Riccati equation
+
+Î±(t) = âRâ
+
+1BTS(t)X(t)
+
+â
+
+d
+dt
+
+S = ATS + SA â STBRâ
+
+1BTS + Q,
+
+with the terminal condition S(T ) = 0. We ï¬nd that
+
+S(t) =
+
+(cid:18)N a(t)
+
+b(t)uT
+b(t)u d(t)I + e(t)
+
+N J
+
+(cid:19)
+
+,
+
+where J is the N Ã N matrix full of ones and (a(t), b(t), d(t), e(t))t
+solution of
+
+[0,T ] is the
+â
+
+Ëa(t) = 2(Î¸0 + H0)a(t) â 2Î¸b(t) + Î¸cb2(t) â Î¸c,
+Ëb(t) = (Î¸0 + H0 + Î¸)b(t) â Î¸d(t) â Î¸0a(t) + Î¸cb(t)d(t) + Î¸c â Î¸e(t) + Î¸cb(t)e(t),
+Ëd(t) = 2Î¸d(t) + Î¸cd2(t) â Î¸c,
+Ëe(t) = â2Î¸0b(t) + 2Î¸e(t) + Î¸c(2d(t)e(t) + e2(t)),
+
+A RISK ANALYSIS FOR A SYSTEM STABILIZED BY A CENTRAL AGENT
+
+27
+
+with (a(T ), b(T ), d(T ), e(T )) = (0, 0, 0, 0). Therefore the optimal control is
+
+Î±j(t) = âÎ¸c(b(t)X0(t) + d(t)Xj(t) + e(t) Â¯XN (t)),
+
+j = 1, . . . , N.
+
+References
+
+[1] Lijun Bo and Agostino Capponi. Systemic risk in interbanking networks. SIAM Journal on
+
+Financial Mathematics, 6(1):386â424, 2015.
+
+[2] A. Budhiraja, P. Dupuis, and M. Fischer. Large deviation properties of weakly interacting
+
+processes via weak convergence methods. Ann. Probab., 40(1):74â102, 2012.
+
+[3] Rene Carmona, Jean-Pierre Fouque, and Li-Hsien Sun. Mean ï¬eld games and systemic risk.
+
+Communications in Mathematical Sciences, to appear, 2013.
+
+[4] Paolo Dai Pra, Wolfgang J. Runggaldier, Elena Sartori, and Marco Tolotti. Large portfolio
+losses: A dynamic contagion model. The Annals of Applied Probability, 19(1):pp. 347â394,
+2009.
+
+[5] D. A. Dawson. Critical dynamics and ï¬uctuations for a mean-ï¬eld model of cooperative
+
+behavior. J. Statist. Phys., 31(1):29â85, 1983.
+
+[6] D. A. Dawson and J. GÂ¨artner. Large deviations from the McKean-Vlasov limit for weakly
+
+interacting diï¬usions. Stochastics, 20(4):247â308, 1987.
+
+[7] D. A. Dawson and J. GÂ¨artner. Large deviations, free energy functional and quasi-potential for
+a mean ï¬eld model of interacting diï¬usions. Mem. Amer. Math. Soc., 78(398):iv+94, 1989.
+[8] A. Dembo and O. Zeitouni. Large deviations techniques and applications, volume 38 of Sto-
+chastic Modelling and Applied Probability. Springer-Verlag, Berlin, 2010. Corrected reprint
+of the second (1998) edition.
+
+[9] Jean-Pierre Fouque and Tomoyuki Ichiba. Stability in a model of interbank lending. SIAM
+
+Journal on Financial Mathematics, 4(1):784â803, 2013.
+
+[10] J. Garnier, G. Papanicolaou, and T. Yang. Large deviations for a mean ï¬eld model of systemic
+
+risk. SIAM Journal on Financial Mathematics, 4(1):151â184, 2013.
+
+[11] Josselin Garnier, George Papanicolaou, and Tzu-Wei Yang. Diversiï¬cation in ï¬nancial net-
+
+works may increase systemic risk. Handbook on Systemic Risk, page 432, 2013.
+
+[12] J. GÂ¨artner. On the McKean-Vlasov limit for interacting diï¬usions. Math. Nachr., 137:197â
+
+248, 1988.
+
+[13] Kay Giesecke, Konstantinos Spiliopoulos, and Richard B. Sowers. Default clustering in large
+
+portfolios: Typical events. Ann. Appl. Probab., 23(1):348â385, 02 2013.
+
+[14] Kay Giesecke, Konstantinos Spiliopoulos, Richard B. Sowers, and Justin A. Sirignano. Large
+portfolio asymptotics for loss from default. Mathematical Finance, 25(1):77â114, 2015.
+[15] Tomoyuki Ichiba and Mykhaylo Shkolnikov. Large deviations for interacting bessel-like pro-
+
+cesses and applications to systemic risk. arXiv preprint arXiv:1303.3061, 2013.
+
+[16] Thomas G. Kurtz and Jie Xiong. Particle representations for a class of nonlinear {SPDEs}.
+
+Stochastic Processes and their Applications, 83(1):103 â 126, 1999.
+
+[17] Mathieu Lauriere and Olivier Pironneau. Dynamic programming for mean-ï¬eld type control.
+
+Comptes Rendus Mathematique, 352(9):707â713, 2014.
+
+[18] S. MÂ´elÂ´eard. Asymptotic behaviour of some interacting particle systems; McKean-Vlasov and
+Boltzmann models. In Probabilistic models for nonlinear partial diï¬erential equations (Mon-
+tecatini Terme, 1995), volume 1627 of Lecture Notes in Math., pages 42â95. Springer, Berlin,
+1996.
+
+[19] L. F. Shampine, I. Gladwell, and S. Thompson. Solving ODEs with MATLAB. Cambridge
+
+University Press, 2003.
+
+[20] Konstantinos Spiliopoulos, Justin A. Sirignano, and Kay Giesecke. Fluctuation analysis for
+the loss from default. Stochastic Processes and their Applications, 124(7):2322 â 2362, 2014.
+[21] Konstantinos Spiliopoulos and Richard B. Sowers. Default clustering in large pools: Large
+
+deviations. SIAM Journal on Financial Mathematics, 6(1):86â116, 2015.
+
+[22] Alain-Sol Sznitman. Topics in propagation of chaos. volume 1464 of Lecture Notes in Math-
+
+ematics, pages 165â251. Springer Berlin Heidelberg, 1991.
+
+[23] H. Tanaka. Limit theorems for certain diï¬usion processes with interaction. In Stochastic
+analysis (Katata/Kyoto, 1982), volume 32 of North-Holland Math. Library, pages 469â488.
+North-Holland, Amsterdam, 1984.
+
+[24] J. Yong and X. Y. Zhou. Stochastic Controls: Hamiltonian Systems and HJB Equations.
+
+Springer-Verlag, New York, 1999.
+
+28
+
+JOSSELIN GARNIER, GEORGE PAPANICOLAOU, AND TZU-WEI YANG
+
+Laboratoire de ProbabilitÂ´es et Mod`eles AlÂ´eatoires & Laboratoire Jacques-Louis
+
+Lions, UniversitÂ´e Paris Diderot
+
+E-mail address: garnier@math.univ-paris-diderot.fr
+
+Department of Mathematics, Stanford University
+E-mail address: papanicolaou@stanford.edu
+
+School of Mathematics, University of Minnesota
+E-mail address: yangx953@umn.edu
+
+

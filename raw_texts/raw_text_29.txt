@@ -1,0 +1,3498 @@
+Agent-Specific Effects:
+A Causal Effect Propagation Analysis in Multi-Agent MDPs
+
+Stelios Triantafyllou 1 Aleksa Sukovic 1 2 Debmalya Mandal
+
+â  3 Goran Radanovic 1
+
+4
+2
+0
+2
+
+b
+e
+F
+4
+
+]
+I
+
+A
+.
+s
+c
+[
+
+2
+v
+4
+3
+3
+1
+1
+.
+0
+1
+3
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+Establishing causal relationships between actions
+and outcomes is fundamental for accountable
+multi-agent decision-making. However, interpret-
+ing and quantifying agentsâ contributions to such
+relationships pose significant challenges. These
+challenges are particularly prominent in the con-
+text of multi-agent sequential decision-making,
+where the causal effect of an agentâs action on the
+outcome depends on how other agents respond
+to that action. In this paper, our objective is to
+present a systematic approach for attributing the
+causal effects of agentsâ actions to the influence
+they exert on other agents. Focusing on multi-
+agent Markov decision processes, we introduce
+agent-specific effects (ASE), a novel causal quan-
+tity that measures the effect of an agentâs action on
+the outcome that propagates through other agents.
+We then turn to the counterfactual counterpart of
+ASE (cf-ASE), provide a sufficient set of condi-
+tions for identifying cf-ASE, and propose a practi-
+cal sampling-based algorithm for estimating it. Fi-
+nally, we experimentally evaluate the utility of cf-
+ASE through a simulation-based testbed, which
+includes a sepsis management environment.
+
+1. Introduction
+
+Conducting post-hoc analysis on decisions and identifying
+their causal contributions to the realized outcome represents
+a cornerstone of accountable decision making. Such analy-
+sis can be particularly crucial in safety-critical applications,
+where accountability is paramount. Often, these applications
+involve multiple decision makers or agents, who interact
+over a period of time, and make decisions or actions that are
+interdependent. This, in turn, implies that the impact of an
+
+â 
+
+Work done while at Max Planck Institute for Software Systems.
+1Max Planck Institute for Software Systems, SaarbrÂ¨ucken, Ger-
+many 2Saarland University, SaarbrÂ¨ucken, Germany 3University of
+Warwick, Department of Computer Science, UK. Correspondence
+to: Stelios Triantafyllou <strianta@mpi-sws.org>.
+
+Preprint under review.
+
+1
+
+agentâs action on the outcome depends on how other agents
+respond to that action in subsequent periods. Thus, the inter-
+dependence between the agentsâ actions poses challenges in
+quantifying their causal contributions to the outcome, since
+their effects are interleaved rather than isolated.
+
+To illustrate these challenges, consider a canonical problem
+setting where accountability is paramount: the sepsis treat-
+ment problem (Komorowski et al., 2018). In a multi-agent
+variant of this problem, a clinician and an AI agent decide
+on a series of treatments for an ICU patient over a period of
+time. For example, the AI can function as the primary deci-
+sion maker, suggesting treatments that can be overridden by
+the clinician, who assumes a supervisory role. A simplified,
+one-shot decision making instance of this problem setting is
+depicted in Fig. 1 (left) through a causal graph.
+
+Treatment E
+
+A0
+
+H0
+
+A0
+
+H0
+
+S0
+
+SA
+0
+
+Y
+
+S0
+
+SA
+0
+
+Y
+
+Figure 1. The figure illustrates the sepsis treatment problem setting
+over 1 time-step. Squares denote agentsâ actions, A for AI and H
+for clinician. Circles S are patient states, while SA include both
+S and A, i.e., SA = (S, A). Y is the outcome. Edges that are
+striked through represent deactivated edges. Exogenous arrows
+(magenta) represent interventions on A0 that fix its value to the
+action indicated. The graph on the right depicts a path-specific
+effect of treatment E on Y .
+
+Given the causal graph, we can utilize standard causal con-
+cepts to quantify the impact of the agentsâ actions on the
+outcome Y . Arguably, the most straightforward way of do-
+ing so would be through the notion of total counterfactual
+effects. Given, for example, a scenario where the AI sug-
+gests treatment C and an undesirable outcome is realized,
+the total counterfactual effect can be used to measure the
+impact that an alternative treatment E would have on the
+outcome. Evaluating this effect involves intervening on the
+AIâs action, setting it to treatment E, and measuring the
+probability that the undesirable outcome would have been
+avoided. However, this analysis may be misleading for as-
+sessing the accountability of the AI, as it is unclear to which
+
+ 
+ 
+ 
+ 
+ 
+ 
+Agent-Specific Effects
+
+degree its action affects the outcome through the clinician.
+
+To quantify the effect of the AIâs action that propagates
+through the clinician, we can utilize the concept of path-
+specific effects (Pearl, 2001). In particular, we can measure
+the total counterfactual effect of treatment E on outcome Y
+in a modified model where the edge between SA
+0 and Y in
+Fig. 1 (right) is deactivated. The latter can be interpreted as
+if the outcome will be realized based on the factual action
+of the AI, i.e., treatment C, and the action taken by the
+clinician, who sees the alternative action, i.e., treatment E.
+
+A natural generalization to multiple time steps is depicted
+in Fig. 2. To ensure that action A1 of the AI is the same as
+the factual one, and hence that the AIâs response in the next
+time-step does not affect the counterfactual outcome, we
+could also deactivate the edge between S1 and A1. While
+intuitively appealing, this effect does not capture higher-
+order dependencies between the agentsâ actions. Namely,
+the clinicianâs policy depends on the AIâs policy, so by fixing
+the AIâs subsequent actions to the ones originally taken, we
+inadvertently remove such a dependency from the analysis.
+
+Treatment E
+
+A0
+
+H0
+
+A1
+
+H1
+
+S0
+
+SA
+0
+
+S1
+
+SA
+1
+
+Y
+
+Figure 2. The causal graph depicts a path-specific effect of treat-
+ment E on outcome Y in the sepsis treatment problem setting over
+2 time-steps. It aims to capture the counterfactual effect of E that
+propagates through the clinician. A cyan colored node signifies
+that the node is set to the action that the agent took in the factual
+scenario, i.e., under treatment C.
+
+Our objective is to capture these dependencies through a
+novel causal notion termed agent-specific effects. At a high
+level, we contend that the clinician should behave as if the
+AIâs actions are not fixed, but rather responsive to the clini-
+cianâs decisions. However, the effect should be measured
+using the factual actions of the AI. We show that analyzing
+this effect necessitates counterfactual reasoning across three
+distinct scenarios, and hence it cannot be expressed through
+path-specific effects. Our contributions are as follows.
+
+Agent-Specific Effects.
+(Section 3) Focusing on multi-
+agent Markov decision processes (MMDPs), we introduce
+(counterfactual) agent-specific effects, a novel causal quan-
+tity that measures the effect of an agentâs action on the
+MMDP outcome through a selected subset of agents. To
+enable counterfactual reasoning we represent MMDPs by
+structural causal models (Section 2).
+
+Identifiability. (Section 4) We delve into the identifiability
+of agent-specific effects, acknowledging their general non-
+identifiability. To overcome this challenge, we consider an
+
+2
+
+existing causal property, which we refer to as noise mono-
+tonicity. We show that assuming noise monotonicity suffices
+for the identification of counterfactual agent-specific effects.
+Notably, compared to closely related identifiability results
+(Lu et al., 2020; Nasr-Esfahany et al., 2023), ours does not
+rely on the assumption of model bijectiveness, and hence
+is more general. Lastly, we show that noise monotonicity
+does not reduce the expressivity of distributions, and that it
+strictly implies monotonicity (Pearl, 1999) in binary models.
+
+Algorithm. (Section 5) We propose a practical sampling-
+based algorithm for the estimation of counterfactual agent-
+specific effects. We show that this algorithm outputs unbi-
+ased estimates provided that noise monotonicity holds.
+
+Connections to PSE. (Section 3 and 6) We discuss in detail
+the importance of agent-specific effects and their conceptual
+benefits relative to path-specific effects. We introduce a gen-
+eralized notion of the latter, which allows us to establish a
+formal connection between agent- and path-specific effects.
+
+Experiments. (Section 7) We conduct extensive experi-
+ments on two test-beds, Graph and Sepsis, evaluating the
+robustness and practicality of our approach.1 Our results in-
+dicate that the effect of an agentâs action on the outcome can
+be frequently and to a great extent attributed to the behavior
+of other agents in the system. This deduction is supported
+by our analysis of agent-specific effects. Remarkably, our
+analysis yields valuable insights, even in scenarios where
+our theoretical assumptions do not hold, such as revealing
+aspects of the clinicianâs trust in the AI.
+
+1.1. Related Work
+
+This paper is related to works on mediation or path analysis
+with a single (Pearl, 2001; Zhang & Bareinboim, 2018b;a)
+or multiple (Daniel et al., 2015; Steen et al., 2017; Avin
+et al., 2005; Singal et al., 2021; Chiappa, 2019) mediators.
+Unlike this line of work, we do not study the effect of an
+exposure variable (in our case action) on a response variable
+(in our case outcome) that propagates through some variable
+or path in a general causal model. Instead, we focus on
+MMDPs, and aim to quantify and reason about effects that
+propagate through a subset of decision-making agents, who
+control multiple sequentially dependent actions.
+
+Our work also relates to the area of causal contributions,
+which studies the problem of attributing to multiple causes
+a contribution to a target effect (Jung et al., 2022), e.g., to
+explain the effect of different model features on predictions
+(Heskes et al., 2020). Even though we do not develop here
+such attribution methods, we view this as a natural next step.
+
+Close to our work are also papers that look into the problem
+
+1Code to reproduce our experiments
+
+is available at
+
+https://github.com/stelios30/agent-specific-effects.git.
+
+Agent-Specific Effects
+
+of measuring the influence between actions in multi-agent
+decision making systems (Jaques et al., 2019; Pieroth et al.,
+2022). The main distinction between this type of works and
+ours is that we care about the influence of an action on the
+outcome through the actions of other agents, rather than
+merely the influence of one action on an other.
+
++ (G) or Ei
+
+the sets of vertices and edges in G. With EV i
++(G)
+for short, we denote the set of outgoing edges of node V i
+in G. Furthermore, we use P ai(G) to denote the parent
+set of V i in G. We call graph g an edge-subgraph of G if
+V(g) = V(G) and E(g) â E(G). We also denote with g
+the edge-subgraph of G with E(g) = E(G)\E(g).
+
+From a technical point of view, this paper is close to works
+which combine SCMs with sequential decision making
+frameworks similar to MMDPs, e.g., MDPs (Tsirtsis &
+Gomez-Rodriguez, 2023), POMDPs (Buesing et al., 2018)
+and Dec-POMDPs (Triantafyllou & Radanovic, 2023).
+
+Furthermore, the multi-agent variant of the sepsis treatment
+setting we consider in this paper, presented in Sections 1 and
+7, is aligned with the extensive literature on human-in-the-
+loop (HITL) decision making. HITL calls for human experts
+to monitor the AIâs decisions during training (Saunders et al.,
+2018) and/or execution (Lynn, 2019), in order to ensure
+safety (Xu et al., 2022) and public trust (Beil et al., 2019).
+Within healthcare, clinicians are tasked with overseeing
+the decision-making process and intervene by overriding
+the AIâs decisions, whenever necessary (Liu et al., 2022).
+Support for human oversight has been also recognized by
+the European Union as one of the main requirements for
+trustworthy AI (European Commission, 2019).
+
+Finally, this paper is related to works that utilize causal tools
+to study accountability or related concepts in decision mak-
+ing. We consider works on responsibility in multi-agent one-
+shot (Chockler & Halpern, 2004) or sequential (Triantafyl-
+lou et al., 2022) decision making, as well as works that focus
+on explainability (Madumal et al., 2020), incentives (Everitt
+et al., 2021; Farquhar et al., 2022), harm (Richens et al.,
+2022), manipulation (Carroll et al., 2023) and intention
+(Halpern & Kleiman-Weiner, 2018). Our view is that agent-
+specific effects can be integrated into all aforementioned
+works enhancing their causal reasoning, e.g., by modifying
+current responsibility attribution methods to account for ac-
+tual causes whose effects propagate through other agents, or
+by defining agent-specific counterfactual harm to measure
+the harm caused by an action through a set of agents.
+
+More related work can be found in Appendix E.
+
+2. Framework and Preliminaries
+
+In this section, we introduce and establish a connection
+between the two main parts of our formal framework, Struc-
+tural Causal Models (SCMs) (Pearl, 2009) and Multi-Agent
+Markov Decision Processes (MMDPs) (Boutilier, 1996).
+
+2.1. Graphs
+
+2.2. Structural Causal Models
+
+An SCM M is a tuple â¨U, V, F, P (u)â©, where: U is a set
+of unobservable noise variables with joint probability distri-
+bution P (u); V is a set of observable random variables; F
+is a collection of functions. Each random variable V i â V
+corresponds to one noise variable U i â U and one function
+f i â F. The value of V i is determined by the structural
+equation V i := f i(PAi, U i), where PAi â V\V i. More-
+over, SCM M induces a causal graph G, where V consti-
+tutes the set of nodes V(G), and for every node V i â V(G)
+set PAi constitutes its parent set P ai(G).
+
+Interventions. An intervention on variable X â V in SCM
+M describes the process of modifying the structural equa-
+tion which determines the value of X in M . We consider
+two types of interventions, hard interventions and natural
+interventions. A hard intervention do(X := x) fixes the
+value of X in M to a constant x â dom{X}.2 The new
+SCM that is derived from performing do(X := x) in M is
+denoted by M do(X:=x), and is identical to M except that
+function f X is replaced by the constant function.
+
+Now, let Z â V. We denote with Zdo(X:=x) or Zx for short,
+the random variable which, for some noise u â¼ P (u),
+takes the value that Z would take in M do(X:=x). A natural
+intervention do(Z := Zx) replaces the function f Z of M
+with Zx. The derived SCM is denoted by M do(Z:=Zx).
+
+Hard and natural interventions on a set of variables W â V,
+instead of a singleton, are defined in a similar way.
+
+Distributions. Joint distribution P (V)M is referred to as
+the observational distribution of M . Furthermore, distri-
+butions of the form P (Yx)M and of the form P (Yx|v)M ,
+where v â dom{V} and v(X) Ì¸= x,3 are referred to as
+interventional and counterfactual distributions, respectively.
+Subscript M here implies that the probability distribution is
+defined over SCM M . Note that we may drop this subscript
+when the underlying SCM is assumed or obvious.
+
+Identifiability. Identifying whether or not an interventional
+or counterfactual distribution over SCM M can be uniquely
+estimated from the causal graph and observational distribu-
+tion of M is a fundamental challenge in causality. Formally,
+a distribution P (Â·)M is identifiable if P (Â·)M1 = P (Â·)M2
+for any two SCMs M1 and M2, s.t. (a) the causal graphs
+
+We begin by introducing some necessary graph notation.
+For a directed graph G, we denote with V(G) and E(G)
+
+2dom{X} here denotes the domain of variable X.
+3v(X) here denotes the value of variable X in v.
+
+3
+
+Agent-Specific Effects
+
+induced by M1 and M2 are identical to that of M , and (b)
+the observational distributions of M1 and M2 agree with
+M âs. Otherwise, we say that P (Â·)M is non-identifiable.
+
+Effects. The total causal effect of intervention do(X := x)
+on Y = y, relative to reference value xâ, is defined as
+
+TCEx,xâ (y)M = P (yx)M â P (yxâ )M ,
+
+where P (yx)M is short for P (Yx = y)M .
+
+Given a realization v of V, the total counterfactual effect
+of intervention do(X := x) on Y = y is defined as4
+
+TCFEx(y|v)M = P (yx|v)M â P (y|v)M .
+
+Assumptions. Throughout this paper, we assume SCMs
+to be recursive, i.e., their causal graphs are acyclic. We
+further make the exogeneity assumption: noise variables
+are mutually independent, P (u) = (cid:81)
+uiâu P (ui). We also
+assume that the domains of observable variables are finite
+and discrete, and that noise variables take numerical values.
+
+2.3. Multi-Agent Markov Decision Processes
+
+An MMDP is a tuple â¨S, {1, ..., n}, A, T, h, Ïâ©, where: S is
+the state space; {1, ..., n} is the set of agents; A = Ãn
+i=1Ai
+is the joint action space, with Ai being the action space of
+agent i; T : S Ã A Ã S â [0, 1] is the transitions probability
+function; h is the finite time horizon; Ï is the initial state
+distribution.5 For example, if the agents take joint action a
+in state s, then the environment transitions to state sâ² with
+probability equal to T (sâ²|s, a). We denote with Ïi the policy
+of agent i and with Ï the agentsâ joint policy. As such, the
+probability of agent i taking action ai in state s is given
+by Ïi(ai|s). Furthermore, we call trajectory a realization Ï
+of the MMDP, i.e., Ï consists of a sequence of state-joint
+action pairs {(st, at)}tâ{0,...,hâ1} and a final state sh.
+
+Next, we describe how to model an MMDP coupled with
+a joint policy Ï as an SCM M , henceforth called MMDP-
+SCM. First, we define the set of observable variables V to
+include all state and action variables of the MMDP. To each
+such variable, we assign a noise variable U and a function
+f . We then formulate the structural equations of M as
+
+S0 = f S0(U S0); St = f St(Stâ1, Atâ1, U St);
+Ai,t = f Ai,t(St, U Ai,t).
+
+(1)
+
+The causal graph of M is included in Appendix B. Note that
+(Buesing et al., 2018) shows that such parameterization of
+a partially observable MDP to an SCM is always possible.
+Their result can be directly extended to MMDPs.
+
+4We consider xâ here to be v(X), but it could also be anything.
+5For ease of notation, rewards are considered part of the state.
+
+3. Formalizing Agent-Specific Effects
+
+In this section, we introduce the notion of agent-specific ef-
+fects (ASE) and its counterfactual counterpart (cf-ASE). For
+a given MMDP-SCM M , the purpose of ASE and cf-ASE
+is to quantify the total causal and counterfactual effect, re-
+spectively, of an action Ai,t = ai,t on a response variable Y ,
+only through a selected set of agents, also called the effect
+agents. To that end, our definitions consider three alterna-
+tive worlds. In the first world, action ai,t is fixed. In the
+second world, a reference aâ
+i,t (for ASE) or realized Ï (Ai,t)
+(for cf-ASE) action is fixed instead. In the third world, the
+reference or realized action is fixed, and additionally for
+every time-step tâ² > t the effect agents are forced to take
+the actions that they would naturally take in the first world,
+while all other agents, also called the non-effect agents, are
+forced to take the actions that they would naturally take in
+the second world. Note that response variable Y can be any
+state variable in M that chronologically succeeds Ai,t. We
+formally define ASE and cf-ASE based on the language of
+natural interventions as follows.6
+Definition 3.1 (ASE). Given an MMDP-SCM M and a non-
+empty subset of agents N in M , the N-specific effect of
+intervention do(Ai,t := ai,t) on Y = y, relative to reference
+action aâ
+
+i,t, is defined as
+
+ASEN
+
+ai,t,aâ
+i,t
+
+(y)M = P (yaâ
+
+i,t
+
+)M do(I) â P (yaâ
+
+i,t
+
+)M ,
+
+i,t
+
+|Z â {Aiâ²,tâ²}iâ² /âN,tâ²>t} âª {Z :=
+
+where I = {Z := Zaâ
+Zai,t|Z â {Aiâ²,tâ²}iâ²âN,tâ²>t}.
+Definition 3.2 (cf-ASE). Given an MMDP-SCM M , a non-
+empty subset of agents N in M and a trajectory Ï of M , the
+counterfactual N-specific effect of intervention do(Ai,t :=
+ai,t) on Y = y is defined as
+
+cf-ASEN
+ai,t
+
+(y|Ï )M =P (yÏ (Ai,t)|Ï ; M )M do(I) â P (y|Ï )M ,
+
+where I = {Aiâ²,tâ²
+Zai,t|Z â {Aiâ²,tâ²}iâ²âN,tâ²>t}.
+
+:= Ï (Aiâ²,tâ²)}iâ² /âN,tâ²>t âª {Z :=
+
+Going back to the sepsis problem from Section 1, the clini-
+cian here takes the role of the effect agent (iâ² â N) and the
+AI that of the non-effect agent (iâ² /â N). The (counterfac-
+tual) clinician-specific effect of intervention do(A0 := E)
+on Y is illustrated in Fig. 3. We see that in this model, the
+AI takes the actions that it would naturally take under the in-
+tervention do(A0 := C), i.e., its original actions, while the
+clinician takes the actions that it would naturally take under
+the intervention do(A0 := E). This should be contrasted
+with the path-specific effect in Fig. 2, where the clinician
+behaves as if the AI agent takes its original action in A1.
+
+6We note that our main theoretical and experimental results
+are w.r.t. cf-ASE. However, we also provide the definition of ASE
+for completeness and in order to enable a direct comparison with
+related causal quantities (see Section 6).
+
+4
+
+Agent-Specific Effects
+
+To demonstrate the importance of this distinction, consider
+a clinician who does not account for AIâs actions when de-
+ciding whether or not to override them, but instead bases its
+decisions solely on the patientâs state, e.g., assuming full
+control whenever the patient is in critical condition. Under
+this behavior, the path-specifics effect in Fig. 2 always eval-
+uates to 0. Namely, the intervention on A0 does not impact
+the realization of S1: the clinician does not respond to the
+AIâs action, while the edge between SA
+0 and S1 is deacti-
+vated. Hence, the realized states and actions in later periods
+are also the same. We deem this to be problematic since we
+block the influence that the intervention on A0 may have on
+the clinicianâs actions in later periods (e.g., H1 in Fig. 2)
+through state S1. On the other hand, for the agent-specific
+effect in Fig. 3, the clinician acts according to the states
+that naturally realize under intervention do(A0 := E), so
+this influence is not blocked. For example, if the initial
+state is such that the clinician does not decide to override,
+the realization of state S1 under intervention do(A0 := E)
+could be possibly different than the one in the factual world.
+
+While it suffices to reactivate the edge between SA
+0 and S1
+in Fig. 2 to obtain a path-specific effect that alleviates the
+aforementioned issue, this modified version can lead to a
+different type of counter-intuitive results. Namely, in a sce-
+nario where the clinician never overrides the AIâs actions,
+this measure might have a positive evaluation. Our experi-
+ments in Section 7 demonstrate this tendency. In contrast,
+the agent-specific effect in Fig. 3 does not have this issue
+since we intervene on A0 with do(A0 := C).
+
+Despite these distinctions, we can formalize both ASE and
+PSE using a generalized notion of path-specific effects,
+which we introduce in Section 6.
+
+Treatment C
+
+A0
+
+H0
+
+A1
+
+H1
+
+S0
+
+SA
+0
+
+S1
+
+SA
+1
+
+Y
+
+Figure 3. The figure depicts the agent-specific effect of treatment
+E on outcome Y in the sepsis problem from the introduction. A
+magenta (resp. cyan) colored node signifies that the node is set to
+the action that the agent would naturally take under intervention
+E (resp. the action that the agent took in the factual scenario, i.e.,
+under treatment C).
+
+4. Identifiability Results
+
+Note that P (y|Ï )M from Definition 3.2 is 1 if y = Ï (Y ),
+and 0 otherwise. Thus, P (y|Ï )M is identifiable. In contrast,
+P (yÏ (Ai,t)|Ï ; M )M do(I) is non-identifiable, since evidence
+V = Ï is contradictory to intervention do(I) (Shpitser &
+Pearl, 2008). Subsequently, cf-ASEN
+(y|Ï )M is also non-
+ai,t
+identifiable under our current set of assumptions.
+
+Theorem 4.1 states that ASEN
+(y)M , which is defined
+over interventional probabilities instead of counterfactual
+ones, is also non-identifiable.7 The proof is based on the
+recanting witness criterion (Avin et al., 2005).
+
+ai,t,aâ
+i,t
+
+Theorem 4.1. Let M be an MMDP-SCM, and N be a non-
+empty subset of agents in M . It holds that the N-specific
+effect ASEN
+(y)M is non-identifiable if tY > t + 1,
+where tY denotes the time-step of variable Y .
+
+ai,t,aâ
+i,t
+
+To overcome the aforementioned non-identifiability chal-
+lenges, we consider the following property, which was first
+introduced in (Pearl, 2009) [p. 295] for binary SCMs.
+
+Definition 4.2 (Noise Monotonicity). Given an SCM M
+with causal graph G, we say that variable V i â V is noise-
+monotonic in M w.r.t. a total ordering â¤i on dom{V i},
+2 â¼ P (U i) s.t.
+if for any pai â dom{P ai(G)} and ui
+2, it holds that f i(pai, ui
+1 < ui
+ui
+
+1) â¤i f i(pai, ui
+
+1, ui
+
+2).
+
+Assuming noise monotonicity means that functions f i of the
+underlying SCM, or MMDP-SCM in our case, are mono-
+tonic w.r.t. noise variables U i. The next theorem states that
+noise monotonicity suffices to render cf-ASE identifiable.8
+
+Theorem 4.3. Let M be an MMDP-SCM, N be a non-
+empty subset of agents in M , and Ï be a trajectory of M .
+The counterfactual N-specific effect cf-ASEN
+(y|Ï )M is
+ai,t
+identifiable, if for every variable Z â V there is a total
+ordering â¤Z on dom{Z} w.r.t. which Z is noise-monotonic
+in M .
+
+Theorem 4.3 is closely related to Theorem 1 from (Lu et al.,
+2020), where they show that under noise monotonicity the
+counterfactual effect of an action on its subsequent state is
+identifiable in the class of bijective causal models. Note
+that in contrast to their work, here we do not assume model
+bijectiveness, i.e., functions f i(pai, Â·) are not necessarily
+invertible, which makes our result more general. Moreover,
+our proof leverages a novel identification formula, Eq. (2),
+that allows us to express counterfactual factors (Correa et al.,
+2021) in terms of the observational distribution. As such,
+Lemma 4.4 can be utilized for deriving the identification
+formula of any counterfactual probability (under exogeneity
+and noise monotonicity), and thus is of independent interest.
+Appendix G provides a more thorough explanation.
+
+Lemma 4.4. Let M be an SCM with causal graph G, and
+â¤X be a total ordering on dom{X} for some X â V. If X
+is noise-monotonic in M w.r.t. â¤X , then for any x1, ..., xk â
+
+7Note that the same non-identifiability results would also hold
+
+even if we had access to interventional data.
+
+8Even though we do not explicitly prove it in this paper, it
+
+follows that the same result also holds for ASE.
+
+5
+
+Agent-Specific Effects
+
+dom{X} and pa1, ..., pak â dom{P aX (G)} it holds that
+pai) = max (cid:0)0, min
+
+P (â§iâ{1,...,k}xi
+
+P (X â¤X xi|pai)
+
+iâ{1,...,k}
+
+â max
+
+iâ{1,...,k}
+
+P (X <X xi|pai)(cid:1).
+
+(2)
+
+Next, we present novel findings to enhance the characteriza-
+tion of noise monotonicity. (Buesing et al., 2018) show how
+we can represent any partially observable MDP by an SCM.
+In that direction, we show next how to represent any MMDP
+by an MMDP-SCM that satisfies noise monotonicity.
+Lemma 4.5. Let X = {X 1, ..., X N } represent the set
+of state and action variables of an MMDP, and P (X) be
+the joint distribution induced by the MMDP under a joint
+policy Ï. Additionally, let â¤1, ..., â¤N be total orderings
+on dom{X 1}, ..., dom{X N }, respectively. We can con-
+struct an MMDP-SCM M = â¨U, V, F, P (u)â© with causal
+graph G, where V = {V 1, ..., V N }, U = {U 1, ..., U N },
+P (U i) = Uniform[0, 1], and functions in F are defined as
+
+f i(P ai(G), U i) = inf
+vi
+
+{P (X i â¤i vi|P ai(G))M â¥ U i},
+
+such that P (X) = P (V) and every variable V i â V is
+noise-monotonic in M w.r.t. â¤i.
+
+(Oberst & Sontag, 2019) recently proposed another property
+for categorical SCMs, counterfactual stability. Interestingly,
+they show that their property implies the well-known prop-
+erty of monotonicity (Pearl, 1999) in binary SCMs. Note,
+that counterfactual stability does not suffice for identifia-
+bility. Proposition 4.6 states that noise monotonicity also
+implies monotonicity in binary SCMs.
+
+Proposition 4.6. Let M be an SCM consisting of two bi-
+nary variables X and Y with Y = f Y (X, U Y ). If Y is
+noise-monotonic in M w.r.t. the numerical ordering, then Y
+is monotonic relative to X in M . However, if Y is mono-
+tonic relative to X in M , then Y is not necessarily noise-
+monotonic in M w.r.t. any total ordering on dom{X}.
+
+5. Algorithm
+
+We now present our algorithm for the estimation of cf-ASE,
+which follows a standard methodology for counterfactual in-
+ference (Pearl, 2009). Algorithm 1 samples noise variables
+from the posterior P (u|Ï ) (abduction), in order to compute
+cf-ASE (prediction) under interventions (action) specified
+in Definition 3.2, and finally outputs the average value.
+
+Theorem 5.1. Let MMDP-SCMs M = â¨U, V, F, P (u)â©
+and ËM = â¨U, V, ËF, ËP (u)â©, s.t. P (V)M = P (V) ËM and
+every variable Z â V is noise-monotonic in both M and
+ËM w.r.t. the same total ordering â¤Z on dom{Z}. It holds
+that the output of Algorithm 1, when it takes as input model
+ËM , is an unbiased estimator of cf-ASEN
+ai,t
+
+(y|Ï )M .
+
+(y|Ï )M
+
+Algorithm 1 Estimates cf-ASEN
+ai,t
+Input: MMDP-SCM M , trajectory Ï , effect agents N, ac-
+tion variable Ai,t, action ai,t, outcome variable Y , outcome
+y, number of posterior samples H
+1: h â 0
+2: c â 0
+3: while h < H do
+4:
+5:
+6:
+7:
+
+uh â¼ P (u|Ï ) {Sample noise from the posterior}
+h â h + 1
+Ï h â¼ P (V|uh)M do(Ai,t:=ai,t) {Sample cf trajectory}
+I(uh) â {Aiâ²,tâ² := Ï (Aiâ²,tâ²)}iâ² /âN,tâ²>t âª {Aiâ²,tâ² :=
+Ï h(Aiâ²,tâ²)}iâ²âN,tâ²>t
+yh â¼ P (Y |uh)M do(I(uh )) {Sample cf outcome}
+if yh = y then
+c â c + 1
+
+8:
+9:
+10:
+11:
+12: end while
+13: return c
+
+end if
+
+H â 1(Ï (Y ) = y)
+
+If noise-monotonicity holds, then according to Theorem 5.1,
+access to a model ËM suffices to get an unbiased estimate of
+cf-ASEN
+(y|Ï )M . Based on Lemma 4.5, such an MMDP-
+ai,t
+SCM always exists, and it can be derived solely from the
+observational distribution P (V)M and the total orderings
+w.r.t. which variables in M are noise-monotonic.
+
+6. Connection to Path-Specific Effects
+
+Path-specific effects are a well-known causal concept used
+to quantify the causal effect of one variable on another along
+a specified set of paths in the causal graph (Pearl, 2001).
+
+Definition 6.1 (PSE). Given an SCM M with causal graph
+G, and an edge-subgraph g of G (also called the effect
+subgraph), the g-specific effect of intervention do(X := x)
+on Y = y, relative to reference value xâ, is defined as
+
+PSEg
+
+x,xâ (y)M = TCEx,xâ (y)Mg ,
+
+where Mg = â¨U, V, Fg, P (u)â© is a modified SCM, which
+induces g and is formed as follows. Each function f i
+in F is replaced with a new function f i
+g in Fg, s.t. for
+every pai(g) â dom{P ai(g)} and u â¼ P (u) it holds
+f i
+g(pai(g), ui) = f i(pai(g), pai(g)â, ui). Here, pai(g)â
+denotes the value of P ai(g)xâ in M for noise u.
+
+As argued in Section 1, despite also considering natural
+interventions, path-specific effects cannot be used to express
+agent-specific effects. Intuitively, this is because analyzing
+the latter effects requires reasoning across three alternative
+worlds, while the definition of the former reasons across
+only two. To establish a deeper connection between the two
+concepts, we define the notion of fixed path-specific effects
+(FPSE) utilizing a similar path-deactivation process as in
+
+6
+
+Agent-Specific Effects
+
+Definition 6.1.9 Appendix H includes identifiability results
+for FPSE and its counterfactual counterpart.
+Definition 6.2 (FPSE). Given an SCM M with causal graph
+G, and two edge-subgraphs of G, effect subgraph g and
+reference subgraph gâ such that E(g) â© E(gâ) = â, the
+fixed g-specific effect of intervention do(X := x) on Y = y,
+relative to reference value xâ and gâ, is defined as
+
+FPSEg,gâ
+
+x,xâ (y)M = P (yxâ )Mq â P (yxâ )M ,
+
+where q is the edge-subgraph of G with E(q) =
+E(G)\{E(g), E(gâ)}, and Mq = â¨U, V, Fq, P (u)â© is a
+modified SCM, which induces q and is formed as follows.
+Each function f i in F is replaced with a new function f i
+q
+in Fq, s.t. for every pai(q) â dom{P ai(q)} and u â¼ P (u)
+q(pai(q), ui) = f i(pai(q), pai(g)e, pai(gâ)â, ui).
+it holds f i
+Here, pai(gâ)â (resp.
+pai(g)e) denotes the value of
+P ai(gâ)xâ (resp. P ai(g)x) in M for noise u.
+
+Definitions of PSE and FPSE have two main distinctions:
+FPSE considers one additional edge-subgraph compared to
+PSE, and it computes the counterfactual probability over
+its modified model under intervention do(X := xâ) instead
+of do(X := x). This additional subgraph allows FPSE to
+reason across three alternative words, i.e., one more than
+PSE, which is why it can express agent-specific effects.
+Lemma 6.3. Let M be an MMDP-SCM with causal graph
+G and N be a non-empty subset of agents in M . It holds
+that
+
+ASEN
+
+ai,t,aâ
+i,t
+
+(y)M = FPSEg,gâ
+
+ai,t,aâ
+i,t
+
+(y)M
+
+where g is the edge-subgraph of G with E(g) =
+(cid:83)
+(G) and gâ is the edge-subgraph
+Aiâ² ,tâ²
++
+
+Aiâ²,tâ²
+Aiâ² ,tâ² :iâ²âN,tâ²>t E
++
+of G with E(gâ) = (cid:83)
+
+Aiâ² ,tâ² :iâ² /âN,tâ²>t E
+
+(G).
+
+Furthermore, by ânot usingâ the extra edge-subgraph, FPSE
+can express path-specific effects.
+Proposition 6.4. Given an SCM M with causal graph G,
+and an edge-subgraph g of G, it holds that
+x,xâ (y)M = FPSEg,gâ
+
+xâ,x(y)M + TCEx,xâ (y)M ,
+
+PSEg
+
+where gâ is the edge-subgraph of G with E(gâ) = â.
+
+7. Experiments
+
+In this section, we empirically evaluate our approach using
+two environments from prior work, Graph (Triantafyllou
+et al., 2021) and Sepsis (Oberst & Sontag, 2019), modified to
+align with our objectives. We refer the reader to Appendix C
+for more details on the experimental setup, and to Appendix
+D for additional results related to the Sepsis environment.
+
+9We emphasize here that PSE and FPSE are defined over gen-
+
+eral SCMs, while ASE is defined explicitly over MMDP-SCMs.
+
+7
+
+7.1. Environments and Experimental Setup
+
+Graph. In this environment, 6 agents move in a graph with 1
+initial, 3 terminal and 9 intermediate nodes split into 3 layers.
+All nodes of a column are connected (with directed edges)
+to all the next columnâs nodes. Thus, agents can move on
+the graph going up, straight or down. The agentsâ goal is
+to be equally distributed when reaching the last column.
+The policy of each agent i â {1, ..., 6} is parameterized
+with a pi = 0.05 Â· i, which denotes their probability of
+taking a random action at any node. With 1 â pi probability,
+agent i follows a policy that is common among all agents,
+and depends on their current positions on the graph. We
+implement this environment, such that each action variable
+of the underlying MMDP-SCM is noise-monotonic w.r.t. a
+predefined total ordering, which is up, down, straight.
+
+Sepsis. In our multi-agent version of Sepsis, AI and clini-
+cian have roles similar to those described in Section 1. At
+each round, the AI recommends one of eight possible treat-
+ments, which is then reviewed and potentially overridden by
+the clinician. If the clinician does not override AIâs action,
+i.e., takes a no-op action, then the treatment selected by the
+AI is applied. Otherwise, a new treatment selected by the
+clinician is applied. The agentsâ goal is to keep the patient
+alive for 20 rounds or achieve an earlier discharge. We learn
+the policies of both agents using Policy Iteration (Sutton &
+Barto, 2018), and we train them on slightly different transi-
+tion probabilities. For the clinician, this gives us their policy
+for selecting treatments, so we additionally need to specify
+their probability of overriding an action of the AI agent.
+Across all states, this is specified by a parameter Âµ, which
+intuitively models the level of the clinicianâs trust in the AI:
+greater values of Âµ correspond to higher levels of trust.
+
+Setup. For each environment, we generate a set of trajecto-
+ries in which agents fail to reach their goal, 500 for Graph
+and 100 (per value of Âµ) for Sepsis. For each trajectory Ï ,
+we compute the TCFE of all the potential alternative actions
+that agents could have taken. Among these actions ai,t, we
+retain those that exhibit a TCFE greater than or equal to a
+predefined threshold Î¸ (0.75 for Graph and 0.8 for Sepsis).
+Formally, we require TCFEai,t(Y = success|Ï ) â¥ Î¸. This
+process yields a total of 854 selected alternative actions for
+Graph and 9197 for Sepsis, which serve as the basis for eval-
+uating cf-ASE. Counterfactual effects in our experiments
+are computed for 100 counterfactual samples.
+
+7.2. Results
+
+Robustness. We first assess the robustness of cf-ASE in the
+presence of uncertainty, using the Graph environment, for
+which we know the underlying causal model. Given this
+knowledge, we can compute the correct values of cf-ASE,
+which we refer to as target values, and we do so for all
+854 alternative actions that were selected using the previ-
+
+Agent-Specific Effects
+
+(a) Graph: Distribution Error
+
+(b) Graph: NM Violation
+
+(c) Sepsis: Through Clinician
+
+(d) Sepsis: Through AI
+
+Figure 4. (Graph) Plots 4a and 4b show the average absolute error of cf-ASE when computed for wrongly estimated agentsâ policies and
+under violation of noise monotonicity, respectively. (Sepsis) Plots 4c and 4d show average values of cf-ASE and cf-PSE when computing
+effects that propagate through the clinician and AI, respectively, while varying trust parameter Âµ.
+
+ously outlined process, covering all possible combinations
+of effect-agents (31 combinations in total). With this infor-
+mation, we perform two robustness tests.
+
+First, we test the robustness to uncertainty over the observa-
+tional distribution of the model, specifically the agentsâ poli-
+cies. Uncertainty is incorporated in the underlying model by
+randomly sampling a probability Ëpi â [piâÏµmax, pi+Ïµmax],
+which defines iâs (wrongly) estimated policy. Here, Ïµmax
+is a parameter that we vary. Plot 4a shows the average
+absolute difference between the target values and the coun-
+terfactual agent-specific effects estimated for different levels
+of uncertainty (i.e., Ïµmax). Results are grouped by target
+value range. We observe that for small estimation errors
+(Ïµmax â¤ 0.05) we can still obtain good enough estimates of
+cf-ASE, especially when the target value is low.
+
+Second, we assess the impact of violating the noise mono-
+tonicity assumption on the estimation of cf-ASE, by running
+our estimation algorithm with an incorrect total ordering.
+Plot 4b shows the average absolute difference between the
+target values and the counterfactual agent-specific effects
+estimated for different misspecified total orderings. The
+results indicate that assuming the wrong total ordering can
+have a significant impact on the estimation accuracy of cf-
+ASE. Interestingly, when the reverse of the correct total
+ordering is assumed, the estimation error is relatively low.
+
+Practicality. Next, we assess the conceptual importance
+and practicality of agent-specific effects using the Sepsis en-
+vironment. For all selected actions of the AI (resp. clinician)
+we compute their counterfactual effect which propagates
+through the clinician (resp. AI). In Plots 4c and 4d, we
+present the average clinician- and AI-specific effects, as cap-
+tured by cf-ASE and the counterfactual counterpart of PSE
+(cf-PSE), for different levels of trust. Plots 5a-5d show,
+for different values of trust parameter Âµ, the distribution of
+
+selected alternative actions across value ranges of cf-ASE.
+
+Plots 4c, 4d and 5a-5d suggest that the causal interdependen-
+cies between agentsâ policies can have a significant impact
+on the total counterfactual effect of an action. For instance,
+in Plot 5c we can see that even for a large trust level Âµ = 0.6,
+close to 40% of the AIâs actions that admit TCFE greater
+than 0.8, also admit a clinician-specific effect (as measured
+by cf-ASE) greater than 0.75. This means that the total
+counterfactual effect of an action can rather frequently be
+attributed to the behavior of other agents in the system.
+
+Plot 4c illustrates that our approach uncovers the following
+intuitive pattern: the clinician-specific effect decreases as
+the level of trust increases, ultimately dropping to 0 when
+the human fully trusts the choices of the AI. This is an im-
+portant finding as it implies that given a set of trajectories,
+cf-ASE could provide us with valuable insight about the
+clinicianâs trust towards the AI. A similar conclusion can be
+drawn from Plot 4d, in which cf-ASE demonstrates the fol-
+lowing trend: the AI-specific effect increases with Âµ. This
+is expected as it implies that the effect of the clinicianâs
+actions on the outcome through the AI decreases, as the
+latter assumes less agency. Compared to cf-ASE, we ob-
+serve that cf-PSE suggests a less prominent pattern for the
+clinician-specific effect. Most notably, it can assign posi-
+tive value to the effect in cases where the clinician blindly
+follows AIâs recommendations. A similar counter-intuitive
+result can also be observed for the AI-specific effect when
+Âµ = 0. Given these results, we conclude that cf-ASE is
+a more suitable approach than cf-PSE for measuring the
+clinician- and AI-specific effects in this setting, as it aligns
+better with standard intuition.
+
+Plots 5a-5d showcase the following natural trend for cf-ASE:
+the fraction of actions with clinician-specific effect greater
+than 0.75 decreases with the level of trust, while the frac-
+
+8
+
+0.010.020.050.10.150.2up,straight,downdown,straight,updown,up,straightstraight,up,downstraight,down,upcf-ASEcf-PSE[.0, .25](.25, .5](.5, .75](.75, 1.0]Target Value Ranges0.000.050.100.150.200.250.30Avg. Absolute Error[.0, .25](.25, .5](.5, .75](.75, 1.0]Target Value Ranges0.000.050.100.150.200.250.30Avg. Absolute Error0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect ValuesAgent-Specific Effects
+
+(a) Sepsis: Âµ = 0.2
+
+(b) Sepsis: Âµ = 0.4
+
+(c) Sepsis: Âµ = 0.6
+
+(d) Sepsis: Âµ = 0.8
+
+Figure 5. (Sepsis) Plots in this figure show the distribution of selected alternative actions (of both the AI and the clinician) across different
+ranges of cf-ASE values and for different values of trust parameter Âµ.
+
+tion of actions with clinician-specific effect less than 0.25
+increases. This is expected as the less the clinician trusts the
+AIâs actions, the more often they override them, and hence
+the more they tend to affect the outcome. Similarly, the
+fraction of actions with AI-specific effect greater than 0.75
+increases with the level of trust, while the fraction of actions
+with AI-specific effect less than 0.25 decreases. This is also
+expected as the less the clinician trusts the AIâs actions the
+less agency the AI assumes.
+
+Remark 7.1. In the Sepsis experiments, we do not have
+access to the underlying causal model and instead we only
+have access to the simulatorâs transition probabilities and
+the agentsâ policies. Thus, for our analysis we assume that
+trajectories are generated by an MMDP-SCM with vari-
+ables that are noise-monotonic w.r.t. a chosen total ordering.
+While this assumption is restrictive, we found that the results
+of this section are rather robust to this type of uncertainty,
+which is important in practice, where the assumptions we
+made in this paper are often violated. Plots for 5 additional
+randomly selected total ordering sets, which back up this
+claim, can be found in Appendix D.
+
+8. Conclusion
+
+To summarize, in this paper we introduce agent-specific
+effects, a novel causal quantity that measures the effect of
+an action on the outcome that propagates through a set of
+agents. To the best of our knowledge, this is the first work
+that looks into this problem in the context of multi-agent
+sequential decision making. Our theoretical contributions
+include results on the identifiability of this new concept,
+a practical algorithm to estimate it, and establishing a for-
+mal connection with prior work. In the experiments, we
+demonstrate the practical effectiveness of our approach in a
+scenario where our theoretical assumptions do not hold.
+
+Future work. Looking forward, we recognize three com-
+pelling future directions. First, a natural next step would
+be to derive a causal explanation formula akin to (Zhang &
+
+9
+
+Bareinboim, 2018a), which will decompose the causal effect
+of an agentâs action by attributing to each agent and subse-
+quent environment state a score reflecting its contribution
+to the effect. Second, it would be of practical importance
+to explore the identifiability of ASE in the presence of un-
+observed confounding. Finally, we plan to investigate the
+utility of ASE in other practical settings, where causal effect
+propagation analysis is important, e.g., in multi-agent RL.
+
+Impact Statement
+
+Impact on accountable decision making. We believe that
+our approach can meaningfully extend auditing methods
+for decision-making outcomes. For example, current ap-
+proaches on responsibility attribution, counterfactual harm,
+etc. focus solely on computing the counterfactual effect of
+an agentâs action on the outcome (see Section 1.1 for refer-
+ences). In this work, we aim to further analyze this effect,
+by measuring the extent to which it should be attributed to
+how other agents would respond to this action, providing a
+more granular insight. Thus, modifying existing causal tools
+to reason about agent-specific effects could lead to more
+informed judgements about accountability in multi-agent
+decision making.
+
+Ethical impact. The approach we propose in this paper is
+situated in the post-processing phase of decision-making
+scenarios. While it does not directly impact human subjects,
+we recognize the imperative of conducting more empirical
+studies to validate its functionality and integration into ac-
+countability measures. We advocate for targeted research,
+including a thorough sensitivity analysis of our theoreti-
+cal assumptions, in order to ensure the reliability of our
+approach. Finally, prior to utilizing ASE in practice, it is im-
+portant to ensure that ASE-based explanations or measures
+are aligned with human intuitions and norms, which is espe-
+cially important for high-stake domains, such as healthcare.
+
+[.0, .25](.25, .5](.5, .75](.75, 1.0]cf-ASE Value Ranges020406080% of Alternative ActionsAIClinician[.0, .25](.25, .5](.5, .75](.75, 1.0]cf-ASE Value Ranges020406080% of Alternative ActionsAIClinician[.0, .25](.25, .5](.5, .75](.75, 1.0]cf-ASE Value Ranges020406080% of Alternative ActionsAIClinician[.0, .25](.25, .5](.5, .75](.75, 1.0]cf-ASE Value Ranges020406080% of Alternative ActionsAIClinicianAgent-Specific Effects
+
+Acknowledgements
+
+This research was,
+funded by the Deutsche
+Forschungsgemeinschaft (DFG, German Research Foun-
+dation) â project number 467367360.
+
+in part,
+
+References
+
+Avin, C., Shpitser, I., and Pearl, J. Identifiability of path-
+In International Joint Conference on
+
+specific effects.
+Artificial Intelligence, pp. 357â363, 2005.
+
+Beil, M., Proft, I., van Heerden, D., Sviri, S., and van Heer-
+den, P. V. Ethical considerations about artificial intel-
+ligence for prognostication in intensive care. Intensive
+Care Medicine Experimental, 2019.
+
+Boutilier, C. Planning, learning and coordination in mul-
+tiagent decision processes. In Conference on Theoreti-
+cal Aspects of Rationality and Knowledge, pp. 195â210,
+1996.
+
+Buesing, L., Weber, T., Zwols, Y., Racaniere, S., Guez, A.,
+Lespiau, J.-B., and Heess, N. Woulda, coulda, shoulda:
+Counterfactually-guided policy search. arXiv preprint
+arXiv:1811.06272, 2018.
+
+Carroll, M., Chan, A., Ashton, H., and Krueger, D. Char-
+acterizing manipulation from AI systems. arXiv preprint
+arXiv:2303.09387, 2023.
+
+Chiappa, S. Path-specific counterfactual fairness. In AAAI
+Conference on Artificial Intelligence, pp. 7801â7808,
+2019.
+
+Chockler, H. and Halpern, J. Y. Responsibility and blame:
+A structural-model approach. Journal of Artificial Intelli-
+gence Research, 22:93â115, 2004.
+
+Correa, J., Lee, S., and Bareinboim, E. Nested counterfac-
+tual identification from arbitrary surrogate experiments.
+Advances in Neural Information Processing Systems, 34:
+6856â6867, 2021.
+
+Daniel, R. M., De Stavola, B. L., Cousens, S. N., and
+Vansteelandt, S. Causal mediation analysis with mul-
+tiple mediators. Biometrics, 71:1â14, 2015.
+
+Dimitrakakis, C., Parkes, D. C., Radanovic, G., and Tylkin,
+P. Multi-view decision processes: the helper-ai problem.
+Advances in neural information processing systems, 30,
+2017.
+
+European Commission.
+
+Ethics Guidelines for Trust-
+worthy Artificial Intelligence. URL: https://ec.
+europa.eu/digital-single-market/en/
+news/ethics-guidelines-trustworthy-ai,
+2019. [Online; accessed 30-January-2023].
+
+Everitt, T., Carey, R., Langlois, E. D., Ortega, P. A., and
+Legg, S. Agent incentives: A causal perspective. In AAAI
+Conference on Artificial Intelligence, pp. 11487â11495,
+2021.
+
+Farquhar, S., Carey, R., and Everitt, T. Path-specific objec-
+tives for safer agent incentives. In AAAI Conference on
+Artificial Intelligence, volume 36, pp. 9529â9538, 2022.
+
+Ghosh, A., Tschiatschek, S., Mahdavi, H., and Singla, A.
+Towards deployment of robust cooperative ai agents: An
+algorithmic framework for learning adaptive policies. In
+International Conference on Autonomous Agents and
+MultiAgent Systems, pp. 447â455, 2020.
+
+Halpern, J. Y. and Kleiman-Weiner, M. Towards formal def-
+initions of blameworthiness, intention, and moral respon-
+sibility. In AAAI Conference on Artificial Intelligence, pp.
+1853â1860, 2018.
+
+Heckman, J. J. Randomization and social policy evaluation.
+National Bureau of Economic Research Cambridge, MA,
+1991.
+
+Heskes, T., Sijben, E., Bucur, I. G., and Claassen, T. Causal
+shapley values: Exploiting causal knowledge to explain
+individual predictions of complex models. Advances in
+Neural Information Processing Systems, 33:4778â4789,
+2020.
+
+Jaques, N., Lazaridou, A., Hughes, E., Gulcehre, C., Ortega,
+P., Strouse, D., Leibo, J. Z., and De Freitas, N. Social
+influence as intrinsic motivation for multi-agent deep
+reinforcement learning. In International Conference on
+Machine Learning, pp. 3040â3049, 2019.
+
+Jung, Y., Kasiviswanathan, S., Tian, J., Janzing, D.,
+BlÂ¨obaum, P., and Bareinboim, E. On measuring causal
+contributions via do-interventions. In International Con-
+ference on Machine Learning, pp. 10476â10501, 2022.
+
+KÂ¨ampke, T., Radermacher, F. J., et al. Income modeling and
+balancing. Lecture Notes in Economics and Mathematical
+Systems, 2015.
+
+Komorowski, M., Celi, L. A., Badawi, O., Gordon, A. C.,
+and Faisal, A. A. The artificial intelligence clinician
+learns optimal treatment strategies for sepsis in intensive
+care. Nature Medicine, 24:1716â1720, 2018.
+
+Liu, X., Glocker, B., McCradden, M. M., Ghassemi, M.,
+Denniston, A. K., and Oakden-Rayner, L. The medical
+algorithmic audit. The Lancet Digital Health, 2022.
+
+Lu, C., Huang, B., Wang, K., HernÂ´andez-Lobato, J. M.,
+Zhang, K., and SchÂ¨olkopf, B. Sample-efficient reinforce-
+ment learning via counterfactual-based data augmenta-
+tion. arXiv preprint arXiv:2012.09092, 2020.
+
+10
+
+Agent-Specific Effects
+
+Lynn, L. A. Artificial intelligence systems for complex
+decision-making in acute care medicine: A review. Pa-
+tient safety in Surgery, 2019.
+
+Shpitser, I. and Pearl, J. Effects of treatment on the treated:
+Identification and generalization. In Conference on Un-
+certainty in Artificial Intelligence, pp. 514â521, 2009.
+
+Madumal, P., Miller, T., Sonenberg, L., and Vetere, F. Ex-
+plainable reinforcement learning through a causal lens.
+In AAAI Conference on Artificial Intelligence, pp. 2493â
+2500, 2020.
+
+Shpitser, I. and Sherman, E. Identification of personalized
+effects associated with causal pathways. In Conference
+on Uncertainty in Artificial Intelligence, pp. 530â539,
+2018.
+
+Nasr-Esfahany, A., Alizadeh, M., and Shah, D. Counter-
+factual identifiability of bijective causal models. arXiv
+preprint arXiv:2302.02228, 2023.
+
+Nikolaidis, S., Nath, S., Procaccia, A. D., and Srinivasa, S.
+Game-theoretic modeling of human adaptation in human-
+robot collaboration. In ACM/IEEE international confer-
+ence on human-robot interaction, pp. 323â331, 2017.
+
+Oberst, M. and Sontag, D. Counterfactual off-policy eval-
+In
+uation with gumbel-max structural causal models.
+International Conference on Machine Learning, pp. 4881â
+4890, 2019.
+
+Pearl, J. Probabilities of causation: Three counterfactual
+interpretations and their identification. Synthese, 121:
+93â149, 1999.
+
+Pearl, J. Direct and indirect effects. In Conference on Un-
+certainty and Artificial Intelligence, pp. 411â420, 2001.
+
+Pearl, J. Causality. Cambridge University Press, 2009.
+
+Pieroth, F. R., Fitch, K., and Belzner, L. Detecting influence
+structures in multi-agent reinforcement learning systems.
+AAAI Workshop on Reinforcement Learning in Games,
+2022.
+
+Radanovic, G., Devidze, R., Parkes, D., and Singla, A.
+Learning to collaborate in markov decision processes.
+In International Conference on Machine Learning, pp.
+5261â5270, 2019.
+
+Richens, J., Beard, R., and Thompson, D. H. Counterfac-
+tual harm. Advances in Neural Information Processing
+Systems, 35:36350â36365, 2022.
+
+Saunders, W., Sastry, G., Stuhlmueller, A., and Evans, O.
+Trial without error: Towards safe reinforcement learning
+via human intervention. In International Conference on
+Autonomous Agents and MultiAgent Systems, pp. 2067â
+2069, 2018.
+
+Shpitser, I. and Pearl, J. What counterfactuals can be tested.
+In Conference on Uncertainty in Artificial Intelligence,
+pp. 352â359, 2007.
+
+Shpitser, I. and Pearl, J. Complete identification methods
+for the causal hierarchy. Journal of Machine Learning
+Research, 9:1941â1979, 2008.
+
+11
+
+Singal, R., Michailidis, G., and Ng, H. Flow-based attribu-
+tion in graphical models: A recursive shapley approach.
+In International Conference on Machine Learning, pp.
+9733â9743, 2021.
+
+Steen, J., Loeys, T., Moerkerke, B., and Vansteelandt,
+S. Flexible mediation analysis with multiple mediators.
+American Journal of Epidemiology, 186:184â193, 2017.
+
+Sutton, R. S. and Barto, A. G. Reinforcement Learning: An
+
+Introduction. A Bradford Book, 2018.
+
+Triantafyllou, S. and Radanovic, G. Towards computation-
+ally efficient responsibility attribution in decentralized
+partially observable mdps. In International Conference
+on Autonomous Agents and Multiagent Systems, pp. 131â
+139, 2023.
+
+Triantafyllou, S., Singla, A., and Radanovic, G. On blame
+attribution for accountable multi-agent sequential deci-
+sion making. Advances in Neural Information Processing
+Systems, 34:15774â15786, 2021.
+
+Triantafyllou, S., Singla, A., and Radanovic, G. Ac-
+tual causality and responsibility attribution in decentral-
+ized partially observable markov decision processes. In
+AAAI/ACM Conference on AI, Ethics, and Society, pp.
+739â752, 2022.
+
+Tsirtsis, S. and Gomez-Rodriguez, M. Finding counterfactu-
+ally optimal action sequences in continuous state spaces.
+arXiv preprint arXiv:2306.03929, 2023.
+
+Xu, Y., Liu, Z., Duan, G., Zhu, J., Bai, X., and Tan, J. Look
+before you leap: Safe model-based reinforcement learn-
+ing with human intervention. In Conference on Robot
+Learning, pp. 332â341, 2022.
+
+Zhang, J. and Bareinboim, E.
+
+Fairness in decision-
+makingâthe causal explanation formula. In AAAI Con-
+ference on Artificial Intelligence, 2018a.
+
+Zhang, J. and Bareinboim, E. Non-parametric path analysis
+in structural causal models. In Conference on Uncertainty
+in Artificial Intelligence, 2018b.
+
+Agent-Specific Effects
+
+A1,0
+
+. . .
+
+An,0
+
+A1,1
+
+. . .
+
+An,1
+
+A1,hâ1
+
+. . .
+
+An,hâ1
+
+S0
+
+S1
+
+S2
+
+. . .
+
+Shâ1
+
+Sh
+
+Figure 6. The causal graph of an MMDP-SCM with n agents and horizon h. Exogenous variables are omitted.
+
+A. List of Appendices
+
+In this section, we provide a brief description of the content provided in the appendices of the paper.
+
+â¢ Appendix B provides the causal graph of the MMDP-SCM from Section 2.3.
+
+â¢ Appendix C provides additional details on the experimental setup and implementation.
+
+â¢ Appendix D provides additional experimental results for the Sepsis environment.
+
+â¢ Appendix E provides additional related work.
+
+â¢ Appendix F provides additional background needed for the proofs of our theoretical results.
+
+â¢ Appendix G contains a remark about Lemma 4.4 and counterfactual identification.
+
+â¢ Appendix H provides additional details and theoretical results related to fixed path-specific effects.
+
+â Appendix H.1 contains the proof of Lemma 4.4.
+
+â¢ Appendix I contains the proofs of Theorems 4.1 and 4.3.
+
+â¢ Appendix J contains the proof of Lemma 4.5.
+
+â¢ Appendix K contains the proof of Proposition 4.6.
+
+â¢ Appendix L contains the proof of Theorem 5.1.
+
+â¢ Appendix M contains the proof of Lemma 6.3.
+
+â¢ Appendix N contains the proof of Proposition 6.4.
+
+B. Causal Graph of MMDP-SCM
+
+This section includes the causal graph of the MMDP-SCM described in Section 2.3. The causal graph is shown in Fig. 6.
+
+C. Additional Information on Experimental Setup and Implementation
+
+In this section, we provide additional information on the experimental setup and implementation details.
+
+C.1. Experimental Setup
+
+We first provide a more detailed description of the environments and the agentsâ policies used in the experiments.
+
+Graph. We consider the graph environment depicted in Fig. 7, in which 6 agents take simultaneous actions. All agents
+begin at the left most node, and at each time-step move to nodes of the next column following the directed edges. Thus, each
+agent can select to either move up, straight or down, with out-of-bounds moves leading to moving straight. The agentsâ goal
+in this environment is to be equally distributed when reaching the last column of the graph, i.e., have 2 agents per node.
+Agents reach the last column of the graph in 4 time-steps, when also the environment terminates.
+
+12
+
+Agent-Specific Effects
+
+Figure 7. Graph environment. The cyan node is the initial node and magenta nodes are the terminal nodes of the graph.
+
+(a) Sepsis: Policy Discrepancy
+
+(b) Sepsis: Policy Evaluation
+
+Figure 8. (a) Probabilities that AI and clinician policies assign to different actions. (b) Observed outcomes across 1000 trajectories
+sampled from the simulator for AI, clinician and random policies.
+
+At the initial node, all agents take a random action. At all other nodes (except the terminal ones), each agent i â
+{1, 2, 3, 4, 5, 6} takes a random action with an agent-specific probability pi = 0.05 Â· i. At a node k that is occupied by a
+total number of agents Nk â¤ 2, agent i moves straight with probability 1 â pi. Otherwise, i moves straight with probability
+(1 â pi) Â· 2
+Nk
+
+, and towards a row that has less than 2 agents with probability (1 â pi) Â· Nkâ2
+Nk
+
+.10
+
+Sepsis. The patientâs state in this environment can be described by 4 vital signs (heart rate, systolic blood pressure, percent
+of oxygen saturation and glucose level) as well as an additional diabetes variable present with 20% probability, influencing
+the fluctuations of the glucose level. Both agents can select among 8 distinct actions, each of which represents a combination
+of applying antibiotics (A), vasopressors (V) and mechanical ventilation (E) treatment options. As mentioned in Section 7,
+the clinician can additionally take a no-op action, which means that they do not override the AIâs action at that step. For
+more details regarding the simulator we consider in these experiments, we refer the reader to (Oberst & Sontag, 2019).
+
+The clinicianâs policy is trained using the simulatorâs true transition probabilities. To introduce grounds for action overriding
+by the clinician, the AIâs policy is trained using slightly modified transition probabilities. Namely, we increase the probability
+of antibiotics effectiveness and decrease the probability of vasopressors effectiveness (compared to the original simulator).
+This results in a policy for the AI which recommends treatments with vasopressors more scarcely and those with antibiotics
+more abundantly (compared to the clinicianâs policy), visualized in Plot 7a. To qualitatively evaluate learned policies, we
+sample 1000 trajectories from the simulator and depict the observed rewards in Plot 7b. For both policies we observe similar
+levels of undesirable outcomes, but note that treatments prescribed by the clinician tend to lead to an earlier patient discharge,
+compared to those prescribed by the AI, which tend to keep the patient alive, but do not completely cure them until the end
+of trajectory.
+
+We note that for a trajectory in which an undesirable outcome is realized, i.e., the patient dies at a time-step t before the
+completion of 20 rounds, the outcome Y is the final state of this trajectory. In other words, in our analysis we focus on the
+counterfactual probability that the patient would not have died at time t.
+
+C.2. Algorithms for TCFE and cf-PSE
+
+We now present the algorithms we use in our experiments to estimate total counterfactual effects (TCFE) and the coun-
+terfactual counterpart of path-specific effects (cf-PSE). Similar to Algorithm 1, Algorithms 2 and 3 follow the standard
+abduction-action-prediction methodology for causal inference (Pearl, 2009). Furthermore, similar results to Theorem 5.1
+
+10If there are two rows with less than 2 agents where i could move to, then each of these moves has probability (1 â pi) Â· Nkâ2
+2Â·Nk
+
+.
+
+13
+
+-VEEVAAVAEAEVAction0.000.100.200.300.400.50ProbabilityAIClinicianAIClinicianRandomPolicy0.000.200.400.600.80Fraction of Outcomesdeathno changedischargecan be derived for the unbiasedness of the two algorithms.
+
+Agent-Specific Effects
+
+Algorithm 2 Estimates TCFEai,t(y|Ï )M
+Input: MMDP-SCM M , trajectory Ï , action variable Ai,t, action ai,t, outcome variable Y , outcome y, number of posterior
+samples H
+1: h â 0
+2: c â 0
+3: while h < H do
+4:
+5:
+6:
+7:
+8:
+9:
+10: end while
+11: return c
+
+uh â¼ P (u|Ï ) {Sample noise from the posterior}
+h â h + 1
+yh â¼ P (Y |uh)M do(Ai,t:=ai,t) {Sample cf outcome}
+if yh = y then
+c â c + 1
+
+end if
+
+H â 1(Ï (Y ) = y)
+
+ai,t
+
+(y|Ï )M
+
+Algorithm 3 Estimates cf-PSEg
+Input: MMDP-SCM M , trajectory Ï , effect agents N, action variable Ai,t, action ai,t, outcome variable Y , outcome y,
+number of posterior samples H
+1: h â 0
+2: c â 0
+3: while h < H do
+4:
+5:
+6:
+7:
+8:
+9:
+10:
+11: end while
+12: return c
+
+uh â¼ P (u|Ï ) {Sample noise from the posterior}
+h â h + 1
+I â {Ai,t := ai,t} âª {Aiâ²,tâ² := Ï (Aiâ²,tâ²)}iâ² /âN,tâ²>t
+yh â¼ P (Y |uh)M do(I) {Sample cf outcome}
+if yh = y then
+c â c + 1
+
+end if
+
+H â 1(Ï (Y ) = y)
+
+Note that for cf-PSEg
+E(g) = E(G)\ (cid:83)
+
+ai,t
+
+(y|Ï )M in Algorithm 3, g represents the edge-subgraph of the causal graph of M , G, with
+
+Aiâ² ,tâ²
+Aiâ² ,tâ² :iâ² /âN,tâ²>t E
+â
+
+(G), where E
+
+Aiâ² ,tâ²
+â
+
+(G) denotes the set of incoming edges of Aiâ²,tâ² in G.
+
+C.3. Compute Architecture and Software Stack
+
+All experiments were run on a 64bit Debian-based machine having 4x12 CPU cores clocked at 3GHz with access to 1.5TB
+of DDR3 1600MHz RAM. The software stack relied on Python 3.9.13, with installed standard scientific packages for
+numeric calculations and visualization: NumPy (1.24.3), Pandas (2.0.3), Joblib (1.3.1), Matplotlib (3.7.1) and Seaborn
+(0.12.2). For learning agentâs policies in sepsis experiments, we relied on PyMDPToolbox (4.0-b3) library. The experiments
+are fully reproducible using the random seed 8854. The total running time of the experiments on the Graph environment is
+â¼ 2.5 hours and of the experiments on the Sepsis environment is â¼ 7.5 hours.
+
+D. Additional Experimental Results
+
+In this section, we provide additional experimental results for the Sepsis environment. In Plots 9a-9j, we present the average
+clinician- and AI-specific effects, as captured by cf-ASE and the counterfactual counterpart of PSE (cf-PSE), for different
+levels of trust and across 5 randomly selected total ordering sets. From the plots corresponding to any of these sets of total
+orderings, we can draw similar conclusions to the ones we drew from Plots 4c and 4d. Therefore, as also mentioned in
+
+14
+
+Agent-Specific Effects
+
+(a) Sepsis: Through CL Ord1
+
+(b) Sepsis: Through AI Ord1
+
+(c) Sepsis: Through CL Ord2
+
+(d) Sepsis: Through AI Ord2
+
+(e) Sepsis: Through CL Ord3
+
+(f) Sepsis: Through AI Ord3
+
+(g) Sepsis: Through CL Ord4
+
+(h) Sepsis: Through AI Ord4
+
+(i) Sepsis: Through CL Ord5
+
+(j) Sepsis: Through AI Ord5
+
+Figure 9. Plots in this figure show average values of cf-ASE and cf-PSE when computing effects that propagate through the clinician (CL)
+and AI, respectively, while varying trust parameter Âµ. Results are shown for 5 randomly selected total ordering sets (Ord1-Ord5).
+
+Section 7, these plots support our claim that the results of that section are robust to violations of our theoretical assumptions,
+which often happen in practice.
+
+E. Additional Related Work
+
+The results of Section 4 are in general related to works that study the identifiability of counterfactual effects. For instance,
+there are results on the identification of the effect of treatment on the treated (Heckman, 1991; Shpitser & Pearl, 2009)
+and the identification of counterfactual path-specific effects (Shpitser & Sherman, 2018). Moreover, (Shpitser & Pearl,
+2007) and (Correa et al., 2021) study the identification of arbitrary non-nested and nested counterfactuals, respectively, from
+observational and interventional data. Meanwhile, (Zhang & Bareinboim, 2018a) offers insights into the identifiability of
+counterfactual direct, indirect and spurious effects across three canonical model settings.
+
+In a broader sense, our work is also related to research papers that study repeated human-AI interactions involving both
+stationary (Ghosh et al., 2020; Dimitrakakis et al., 2017) and non-stationary (Radanovic et al., 2019; Nikolaidis et al., 2017)
+human policies. We believe that investigating the implications of non-stationary policies on our approach represents an
+intriguing research direction.
+
+15
+
+cf-ASEcf-PSE0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect Values0.00.20.40.60.81.0Trust Parameter Î¼0.000.200.400.600.801.00Avg. Effect ValuesF. Additional Theoretical Background
+
+Agent-Specific Effects
+
+In this section, we provide additional background and notation needed for the proofs of our theoretical results.
+Additional background on graphs. With EV i
+â(G) for short, we denote the set of incoming edges of node V i in
+G. Furthermore, we use standard graph notation for relationships such as ancestors, children and descendants, e.g., Ani(G)
+denotes the ancestor set of node V i in G. By convention, we also assume that the ancestor and descendant sets of a node
+are inclusive, i.e., V i â Ani(G) and V i â Dei(G). We call graph g a node-subgraph of G if V(g) â V(G) and E(g)
+contains all of the edges in E(G) connecting pairs of vertices in V(g).
+
+â (G) or Ei
+
+Counterfactual formulas. We refer to realizations of a counterfactual variable, e.g., Yw = y or simply yw, as atomic
+(counterfactual) formulas. Moreover, we call counterfactual formula any conjunction of atomic formulas, e.g., yw â§ yâ²
+wâ².
+Let Î± now be a counterfactual formula defined in an SCM M , we denote with V(Î±) the set of variables in V that correspond
+to an atomic formula in Î±, e.g., V(yw â§ yâ²
+
+wâ²) = {Y }.
+
+Building tools. Our proofs build on the do-calculus rules (Pearl, 2009) [Sec. 3.4], the exclusion and independence restrictions
+rules of SCMs (Pearl, 2009) [p. 232], and two axioms of structural counterfactuals: composition and consistency (Pearl,
+2009) [Sec. 7.3.1].
+
+Additional SCM notation. For some SCM M , let Vâ² â V and u â¼ P (u). We denote with Vâ²(u) the values of Vâ² in M
+given u.
+
+Monotonicity (Pearl, 1999). Finally, we present here for completeness the monotonicity property for binary SCMs.
+
+Definition F.1 (Monotonicity). Given a SCM M consisting of two binary variables X and Y , we say that Y is monotonic
+relative to X in M if for any x1, x2 â {0, 1} s.t. E[Y |x1] â¤ E[Y |x2] it holds that P (Yx1 = 1 â§ Yx2 = 0) = 0.
+
+G. Remark on Lemma 4.4 and Counterfactual Identification
+
+Remark G.1. Let M be an SCM with causal graph G. A counterfactual factor (Correa et al., 2021) is a distribution P (Î±),
+s.t. Î± is a counterfactual formula in M which consists only of atomic formulas of the form zpaZ , where Z â V, z â dom{Z}
+and paZ â dom{P aZ(G)}. Under the exogeneity assumption, counterfactual factor Î± can be expressed as the product of
+probability distributions of the form P (â§iâ{1,...,k}xi
+pai ), where x1, ..., xk â dom{X}, pa1, ..., pak â dom{P aX (G)} and
+X â V(Î±). The latter statement is licensed by the independence restrictions rule, and agrees with Theorem 3 of (Correa
+et al., 2021). Furthermore, according to Theorem 2 (resp. Lemma 3) of (Correa et al., 2021) any counterfactual (resp.
+conditional counterfactual) probability can be factorized as counterfactual factors. Therefore, it follows that Lemma 4.4 can
+be utilized for deriving the identification formula of any counterfactual or conditional counterfactual probability under the
+exogeneity and noise monotonicity assumptions.
+
+H. Additional Information on Fixed Path-Specific Effects
+
+In this section, we define counterfactual fixed path-specific effects (cf-FPSE), i.e., the counterfactual counterpart of FPSE
+from Section 6. Additionally, we show that the property of noise monotonicity suffices to render cf-FPSE identifiable.
+
+Definition H.1 (cf-FPSE). Given an SCM M with causal graph G, a realization v of its observable variables V, and two
+edge-subgraphs of G, effect subgraph g and reference subgraph gâ such that E(g) â© E(gâ) = â, the counterfactual fixed
+g-specific effect of intervention do(X := x) on Y = y, relative to reference subgraph gâ, is defined as
+
+cf-FPSEg,gâ
+
+x
+
+(y|v)M = P (yv(X)|v; M )Mq â P (y|v)M ,
+
+where q is the edge-subgraph of G with E(q) = E(G)\{E(g), E(gâ)}, and Mq = â¨U, V, Fq, P (u)â© is a modified SCM,
+which induces q and is formed as follows. Each function f i in F is replaced with a new function f i
+q in Fq, s.t. for every
+pai(q) â dom{P ai(q)} and u â¼ P (u) it holds f i
+q(pai(q), ui) = f i(pai(q), pai(g)e, pai(gâ)â, ui). Here, pai(gâ)â (resp.
+pai(g)e) denotes the value of P ai(gâ)v(X) (resp. P ai(g)x) in M for noise u.
+
+The next lemma is similar to Lemma 6.3 and shows how to express cf-ASE through cf-FPSE.
+
+Lemma H.2. Let M be an MMDP-SCM with causal graph G, N be a non-empty subset of agents in M , and Ï be a
+
+16
+
+trajectory of M . It holds that
+
+Agent-Specific Effects
+
+cf-ASEN
+ai,t
+
+(y|Ï )M = cf-FPSEg,gâ
+ai,t
+
+(y|Ï )M ,
+
+where g is the edge-subgraph of G with E(g) = (cid:83)
+E(gâ) = (cid:83)
+
+Aiâ² ,tâ²
+Aiâ²,tâ² :iâ² /âN,tâ²>t E
++
+
+(G).
+
+Aiâ² ,tâ² :iâ²âN,tâ²>t E
+
+Aiâ² ,tâ²
++
+
+(G) and gâ is the edge-subgraph of G with
+
+Proof. By Definitions 3.2 and H.1, it follows that it suffices to show that P (yÏ (Ai,t)|Ï ; M )M do(I) = P (yÏ (Ai,t)|Ï ; M )Mq .
+
+Let tY denote the time-step of variable Y . First, we show that for any noise u â¼ P (u|Ï ) the value of StY (u) (or equivalently
+Y (u)) is the same in Mq as in M do(I). To do so, we use induction in the number of time-steps tâ².
+
+Base case: By construction of Mq, the value of St+1(u) is the same in Mq as in M . Furthermore, note that the set of
+interventions I does not include interventions to variable St+1 or to any of its ancestors. As a result, the value of St+1(u) is
+the same in M do(I) as in M . We conclude then that the value of St+1(u) is the same in Mq as in M do(I).
+
+Induction hypothesis: We make the hypothesis that for some tâ² â [t + 1, tY ) the value of Stâ²(u) is the same in Mq as in
+M do(I).
+
+Induction step: Under the induction hypothesis, we want to show that the value of Stâ²+1(u) is the same in Mq as in M do(I).
+For convenience, we slightly abuse our notation and denote as sq
+tâ²+1 the value of
+Stâ²+1(u) in M do(I). From the hypothesis, it holds that the value stâ² of Stâ²(u) is the same in M do(I) and Mq.
+First, we consider the value of Stâ²+1(u) in M do(I),
+
+tâ²+1 the value of Stâ²+1(u) in Mq, and as sI
+
+tâ²+1 = f Stâ²+1(stâ², {Aiâ²,tâ²,ai,t(u)}iâ²âN, {Ï (Aiâ²,tâ²)}iâ² /âN, uStâ²+1).
+sI
+
+(3)
+
+Next, we consider the value of Stâ²+1(u) in Mq,
+
+sq
+tâ²+1 = f
+
+Stâ²+1
+q
+
+(paStâ²+1 (q), uStâ²+1),
+
+where paStâ²+1(q) here denotes the value of P aStâ²+1(q) in Mq given u. Note that P aStâ²+1(q) = Stâ², and since Stâ²(u) = stâ²
+in Mq, we can rewrite the equation of sq
+
+tâ²+1 as
+
+Stâ²+1
+Based on the definition of function f
+q
+
+we have that
+
+sq
+tâ²+1 = f
+
+Stâ²+1
+q
+
+(stâ², uStâ²+1 ).
+
+sq
+tâ²+1 = f Stâ²+1 (stâ², paStâ²+1(g)e, paStâ²+1(gâ)â, uStâ²+1),
+
+(4)
+
+where paStâ²+1(gâ)â and paStâ²+1(g)e denote the values of P aStâ²+1(gâ)Ï (Ai,t) and P aStâ²+1(g)ai,t in M given u, respectively.
+Since u â¼ P (u|Ï ) it holds that Z(u) = Ï (Z) for every Z â V. By the consistency axiom then we have that for every
+V j â P aStâ²+1(gâ) it holds V j
+Ï (Ai,t)(u) = V j(u) = Ï (V j). Moreover, from the definition of subgraph gâ it follows that
+P aStâ²+1(gâ) = {Aiâ²,tâ²}iâ² /âN. Eq. (4) then can be rewritten as follows
+
+sq
+tâ²+1 = f Stâ²+1(stâ², paStâ²+1(g)e, {Ï (Aiâ²,tâ²)}iâ² /âN, uStâ²+1).
+
+(5)
+
+Finally, from the definition of subgraph g it follows that P aStâ²+1(g) = {Aiâ²,tâ²}iâ²âN. Eq. (5) then can be rewritten as follows
+
+sq
+tâ²+1 = f Stâ²+1(stâ², {Aiâ²,tâ²,ai,t(u)}iâ²âN, {Ï (Aiâ²,tâ²)}iâ² /âN, uStâ²+1).
+
+(6)
+
+From Equations (3) and (6), it follows that sq
+
+tâ²+1 = sI
+
+tâ²+1, and hence the induction step is concluded.
+
+17
+
+Agent-Specific Effects
+
+Based on the induction argument above, for every u â¼ P (u|Ï ) it holds that the value of StY (u) or equivalently the value of
+Y (u) is the same in Mq as in M do(I), and hence
+
+P (y|u)M do(I) = P (y|u)Mq .
+
+Finally, the distribution of noise variables U is the same in M , M do(I) and Mq, and thus we can derive the following
+equations
+
+(cid:90)
+
+P (y|u)M do(I) Â· P (u|Ï ; M )M do(I) du =
+
+(cid:90)
+
+P (y|u)Mq Â· P (u|Ï ; M )Mq du â
+
+P (y|Ï ; M )M do(I) = P (y|Ï ; M )Mq â
+P (yÏ (Ai,t)|Ï ; M )M do(I) = P (yÏ (Ai,t)|Ï ; M )Mq ,
+
+where the last step follows from the consistency axiom.
+
+The next result states that that noise monotonicity suffices to render cf-FPSE identifiable.
+Lemma H.3. Let M be an SCM with causal graph G, g and gâ be two edge-subgraphs of G, such that E(g) â© E(gâ) = â,
+and q be the edge-subgraph of G with E(q) = E(G)\{E(g), E(gâ)}. Let also v â dom{V} be a realization of the
+observable variables in M . The counterfactual fixed g-specific effect of intervention do(X := x) on Y = y, relative
+to reference subgraph gâ, is identifiable, if for every variable Z â DeX (G) â© AnY (G) there is a total ordering â¤Z on
+dom{Z} w.r.t. which Z is noise-monotonic in M .
+
+Appendix H.1 contains the proof of Lemma 4.4. In Appendix H.2, we show two additional results that support the proof of
+Lemma H.3. In Appendix H.3, we prove Lemma H.3.
+
+H.1. Proof of Lemma 4.4
+
+Proof. Note that domain dom{X} is finite and discrete, and hence w.l.o.g. we can assume that dom{X} = {x1, ..., xm},
+with m â Nâ. For simplicity, we additionally assume that domain dom{X} is sorted w.r.t. the total ordering â¤X , i.e.,
+xi <X xj for i, j â {1, .., m} such that i < j.
+For every value pai of P aX (G), we define a partition of the domain of noise variable U X into m sets N i
+that f X (pai, uX ) = xj iff uX â N i
+
+x1 , ..., N i
+
+xm, such
+
+xj .
+
+We next state a number of simple properties that are going to be useful for the rest of this proof. Let xj â dom{X},
+pai â dom{P aX (G)} and uX
+
+2 â¼ P (U X ), then the following statements hold
+
+1 , uX
+P (U X â¤ min(uX
+P (U X < max(uX
+P (U X â N i
+
+1 , uX
+1 , uX
+
+2 )) = min(P (U X â¤ uX
+2 )) = max(P (U X < uX
+(N i
+
+1 ), P (U X â¤ uX
+1 ), P (U X < uX
+(N i
+
+2 )),
+2 )),
+
+xj ), max
+
+xj )(cid:3)),
+
+xj ) = P (U X â (cid:2) min
+
+u
+
+u
+
+P (U X â [uX
+
+1 , uX
+
+2 ]) =
+
+(cid:40)
+
+1 â P (U X < uX
+0
+
+1 ) â P (U X > uX
+2 )
+
+1 â¤ uX
+2
+
+if uX
+otherwise
+
+Eq. (9) follows from noise monotonicity. Moreover, by definition we have
+
+= max(0, 1 â P (U X < uX
+= max(0, P (U X â¤ uX
+
+1 ) â P (U X > uX
+1 )).
+
+2 ) â P (U X < uX
+
+2 ))
+
+P (U X â N i
+P (U X â¤ max
+
+u
+P (U X < min
+
+u
+
+xj ) = P (X = xj|pai) = P (Xpai = xj),
+
+(N i
+
+xj )) = P (U X â N i
+xj )) = P (U X â N i
+
+x1) + ... + P (U X â N i
+x1) + ... + P (U X â N i
+
+xj ) = P (X â¤X xj|pai),
+xjâ1 ) = P (X <X xj|pai).
+
+(N i
+
+18
+
+(7)
+
+(8)
+
+(9)
+
+(10)
+
+(11)
+
+(12)
+
+(13)
+
+The second step in Eq. (11) is licensed by the exogeneity assumption, while the first steps in Eq. (12) and (13) hold by the
+noise monotonicity assumption.
+
+Agent-Specific Effects
+
+P (â§iâ{1,...,k}xi
+
+Next, we derive the equation of the lemma by using the above mentioned properties:
+pai) = P (U X â â©iâ{1,...,k}N i
+= P (cid:0)U X â â©iâ{1,...,k}
+= P (cid:0)U X â (cid:2) max
+
+xi)
+(cid:2) min
+
+xi), max
+
+u
+xi)), min
+
+(N i
+
+(N i
+
+(N i
+
+xi)(cid:3)(cid:1)
+(max
+u
+
+u
+(min
+u
+
+(N i
+
+iâ{1,...,k}
+
+iâ{1,...,k}
+
+xi))(cid:3)(cid:1)
+
+(cid:18)
+
+= max
+
+0, P (cid:0)U X â¤ min
+
+(max
+u
+
+(N i
+
+xi))(cid:1) â P (cid:0)U X < max
+
+iâ{1,...,k}
+
+(min
+u
+
+(N i
+
+iâ{1,...,k}
+
+(cid:18)
+
+= max
+
+0, min
+
+iâ{1,...,k}
+
+(cid:18)
+
+= max
+
+0, min
+
+iâ{1,...,k}
+
+(cid:0)P (U X â¤ max
+
+(N i
+
+xi))(cid:1) â max
+
+u
+
+iâ{1,...,k}
+
+(cid:0)P (U X < min
+
+u
+
+(N i
+
+xi )(cid:1)
+
+(cid:0)P (X â¤X xi|pai)(cid:1) â max
+
+iâ{1,...,k}
+
+(cid:0)P (X <X xi|pai)(cid:1)
+
+(cid:19)
+
+.
+
+(cid:19)
+
+xi))(cid:1)
+(cid:19)
+
+The first step follows from Eq. (11). The second step follows from Eq. (9). The fourth step is licensed by Eq. (10), and the
+fifth step by Eq. (7) and (8). Finally, the sixth step holds by Eq. (12) and (13).
+
+H.2. Supporting Lemmas for the Proof of Lemma H.3
+
+Lemma H.4. Let M be an SCM with causal graph G, g be an edge-subgraph of G, and Î² be a counterfactual formula in
+Mg. For any X â V, V i â DeX (g)\X and W â V it holds that
+
+P (Î² â§ vi
+
+x|w; M )Mg =
+
+(cid:88)
+
+P (Î² â§ vi
+
+pai(g) â§ pai(g)x|w; M )Mg ,
+
+(14)
+
+pai(g)âdom{P ai(g)x}
+
+where dom{P ai(g)x} is equal to dom{P ai(g)} if X /â P ai(g), and equal to the subset of dom{P ai(g)} for which the
+value of X is always x, otherwise.
+
+Proof.
+
+P (Î² â§ vi
+
+x|w; M )Mg =
+
+(cid:88)
+
+P (Î² â§ vi
+
+x,pai(g) â§ pai(g)x|w; M )Mg
+
+pai(g)âdom{P ai(g)x}
+(cid:88)
+
+=
+
+pai(g)âdom{P ai(g)x})
+
+P (Î² â§ vi
+
+pai(g) â§ pai(g)x|w; M )Mg .
+
+The first step follows from the composition axiom. If X â P ai(g), then the second step follows from the fact that
+x â§ pai(g) = pai(g), which is implied by the definition of dom{P ai(g)x}. Otherwise, the second step follows from the
+exclusion restrictions rule.
+
+We next introduce Algorithm 4, which iteratively utilizes Lemma H.4 to fully unroll atomic formula yx. Lemma H.5
+characterizes the output of the algorithm.
+Lemma H.5. Let M be an SCM with causal graph G. For two variables X, Y â V, let also g be an edge-subgraph
+of G, such that it consists only of directed paths from X to some Z â V in G, and Y is part of at least one of those
+paths. For the input â¨g, Y, y, X, x, Ïgâ©, where Ïg is a causal ordering of g, it holds that Algorithm 4 terminates after
+|AnY (g)| â 1 iterations, and that its output Î± consists only of atomic formulas of the form vi
+pai(g) â one for each variable
+V i â AnY (g)\{X}. Furthermore, the following equation holds
+(cid:88)
+
+P (Î² â§ yx|w; M )Mg =
+
+P (Î² â§ Î±|w; M )Mg ,
+
+(15)
+
+where Î² is a counterfactual formula in Mg, and w is a realization of W â V in M .
+
+{vi|V iâAnY (g)\{X,Y }}
+
+19
+
+Agent-Specific Effects
+
+Algorithm 4 Iterative Process of Unrolling yx
+Input: g, Y , y, X, x, Ïg
+Output: counterfactual formula Î±
+1: n â 1 {Number of iterations}
+2: D1 â AnY (g)\{X}
+3: Î±1 â yx
+4: while Dn Ì¸= â do
+V n â argmaxV iâDn {Ïg(V i)}
+5:
+Î±â² â ËÎ± s.t. Î±n = ËÎ± â§ vn
+6:
+x
+pan(g) â§ pan(g)x
+Î±n+1 â Î±â² â§ vn
+7:
+8: Dn+1 â Dn\{V n}
+9:
+10: end while
+11: Î± â Î±|AnY (g)|
+12: return Î±
+
+n â n + 1
+
+x is indeed part of Î±n, and subsequently
+Proof. We first show that at every iteration n of the algorithm, the atomic formula vn
+that the algorithm does terminate without errors after |AnY (g)| â 1 iterations. To do so, we use induction in the number of
+iterations n.
+
+Base case: For n = 1, we have that V 1 = Y and Î±1 = yx. Therefore, the statement holds for the base case n = 1.
+Induction hypothesis: For some k â (1, |AnY (g)|], we make the hypothesis that the statement holds for every n < k, i.e.,
+we assume that the atomic formula vn
+
+x is part of Î±n for every n â [1, k).
+
+x is part of Î±k. Because Ïg in Step 5 is a causal ordering, it
+Induction step: Under this hypothesis, we want to prove that vk
+holds that all variables in Chk(g) â© AnY (g) must be selected by the algorithm before V k, i.e., prior to iteration k. Let, for
+example, m be the first iteration at which a child of V k is selected by the algorithm. Because of the induction hypothesis,
+we know that vm
+x becomes part of Î±m+1 in Step 7 of iteration m. Since vk
+x cannot be
+replaced in the counterfactual formula before V k is selected, i.e., before iteration k, we can conclude then that vk
+x is indeed
+part of Î±k.
+
+x is part of Î±m. It follows then that vk
+
+We next show that at every iteration n of the algorithm, the counterfactual formula Î±n consists of (a) an atomic formula
+vi
+x for some of the variables V i â Dn. To do so, we use
+pai(g) for each variable V i â D1\Dn, and (b) an atomic formula vi
+induction in the number of iterations n.
+
+(Base case) For n = 1, we have that Î±1 = yx. Therefore, the statement holds for the base case n = 1.
+(Induction hypothesis) For some k â [1, |AnY (g)|), we make the hypothesis that the statement holds for n = k.
+
+pak(g) â§ pak(g)x, where Î±â² is such that Î±k = Î±â² â§ vk
+
+(Induction step) Under this hypothesis, we want to show that the statement also holds for n = k + 1. From Step 7 of the
+algorithm, we have that Î±k+1 = Î±â² â§ vk
+x. From the induction hypothesis
+and equation Î±k = Î±â² â§ vk
+x, it follows that the counterfactual formula Î±â² â§ vk
+pai(g)
+for each variable V i â {V k} âª D1\Dk, or equivalently V i â D1\Dk+1, and (b) an atomic formula vi
+x for some of the
+variables V i â Dk\{V k}, or equivalently V i â Dk+1. Furthermore, because Ïg in Step 5 is a causal ordering, it has to hold
+that none of the variables in P ak(g) can be selected by the algorithm before V k, i.e., prior to iteration k. If X /â P ak(g),
+then this implies that P ak(g) â Dk+1, and hence the statement holds true for n = k + 1. If now X â P ak(g), then it
+follows that P ak(g)\{X} â Dk+1, and that xx is part of Î±k+1. Note, however, that xx does not influence the truth value of
+Î±k+1, since its own truth value is always 1. Hence, xx can be removed from Î±k+1 without affecting its value. We conclude
+then that the statement holds true for n = k + 1 also when X â P ak(g).
+
+pak(g) consists of (a) an atomic formula vi
+
+Note that Î± = Î±|AnY (g)| (Step 11), and that D|AnY (g)| = â. It follows from the last induction argument then that outcome
+Î± indeed consists of an atomic formula vi
+
+pai(g) for each variable V i â AnY (g)\{X}, and nothing else.
+
+Finally, Eq. (15) simply follows from repeatedly applying Lemma H.4.
+
+20
+
+H.3. Proof of Lemma H.3
+
+Agent-Specific Effects
+
+Proof. Without loss of generality we assume that every edge in E(g) and E(gâ) is part of some directed path from X to Y
+in G. Furthermore, we will use xâ to denote the factual value v(X). Thus, according to Definition H.1 we can write the
+counterfactual fixed g-specific effect as
+
+cf-FPSEg,gâ
+
+x
+
+(y|v)M = P (yxâ |v; M )Mq â P (y|v)M .
+
+(16)
+
+To identify the counterfactual fixed g-specific effect, we need to identify P (yxâ |v; M )Mq and P (y|v)M . Note that the term
+P (y|v)M can be trivially evaluated by comparing y with v(Y ); it is 1 if they are equal, and 0 otherwise.
+
+We now focus on identifying P (yxâ |v; M )Mq . Our first step is to express P (yxâ |v; M )Mq in terms of probabilities defined
+in M instead of Mq. On our second step, we will show that the expression we derived in the first step is identifiable from
+the observational distribution of M .
+
+Step 1: We denote with qd and Gd the node-subgraphs of q and G, which contain only the nodes that are parts of directed
+paths from X to Y in q and G, respectively. Formally, V(Gd) = DeX (G) â© AnY (G) and V(qd) = DeX (q) â© AnY (q).
+
+We next define the modified SCM MGd = â¨U, V(Gd), FGd , P (u)â© which induces Gd as follows. For each variable
+Gd in FGd , such that for every pai(Gd) â dom{P ai(Gd)}
+V i â V(Gd), function f i in F is replaced with a new function f i
+Gd (pai(Gd), ui) = f i(pai(Gd), v(P ai(Gd)), ui). Similarly, we define the modified SCM
+and ui â¼ P (ui) it holds that f i
+Mqd = â¨U, V(Gd), Fqd , P (u)â© which induces qd as follows. For each V i â V(qd), function f i
+q in Fq is replaced with a
+new function f i
+qd (pai(qd), ui) =
+qd in Fqd , such that for every pai(qd) â dom{P ai(qd)} and ui â¼ P (ui) it holds that f i
+q(pai(qd), v(P ai(Gd)), ui). Note that P ai(Gd) â© P ai(g) = â and P ai(Gd) â© P ai(gâ) = â, which follows from the fact
+f i
+that we assume each edge in E(g) and E(gâ) to be part of some directed path from X to Y in G. Furthermore, by the
+definitions of Mq and Mqd it also holds that P ai(qd) âª P ai(Gd) âª P ai(g) â© P ai(gâ) = P ai(G).
+
+Let set S = âªV iâV(qd)\{X}P ai(Gd). We can express P (yxâ |v; M )Mq as follows
+
+P (yxâ |v; M )Mq = P (yxâ,v(S)|v; M )Mq
+
+= P (yxâ |v; M )Mqd ,
+
+(17)
+
+where the first step is licensed by exogeneity. Therefore, from Eq. (17) we have that if P (yxâ |v; M )Mqd is identifiable in
+M then so is P (yxâ |v; M )Mq .
+Unroll yxâ in Mqd . Let Î± be the output of Algorithm 4 for input â¨qd, Y, y, X, xâ, Ïqd â©, where Ïqd is a causal ordering of qd.
+According to Lemma H.5, it holds that
+
+P (yxâ |v; M )Mqd =
+
+(cid:88)
+
+P (Î±|v; M )Mqd ,
+
+{vi,d|V iâV(qd)\{X,Y }}
+
+(18)
+
+where counterfactual formula a consists only of atomic formulas of the form vi,d
+V(qd)\{X}. Here, we use vi,d to denote the value of V i
+
+xâ in Mqd .
+
+pai(qd)d â one for each variable V i â
+
+Express Î± in MGd . Note that the counterfactual probabilities on the r.h.s. of Eq. (18) are still defined in Mqd instead
+of M . To redefine these probabilities in M , we will need to modify Î± such that all implicit references to functions
+f i
+qd in Mqd are removed, while its truth value is preserved. Towards that goal, we will first express Î± in the modified
+model MGd . In particular, we begin by replacing each atomic formula vi,d
+pai(qd)d in Î± with the counterfactual formula
+vi,d
+x in MGd , and vi,â denotes the value
+x â§ pai(gâ)â
+pai(qd)d,pai(g)e,pai(gâ)â â§ pai(g)e
+of V i
+
+xâ in MGd . Note also that under this new term, vi,d now denotes the value of V i
+
+xâ , where vi,e here denotes the value of V i
+
+xâ,pai(g)e,pai(gâ)â in MGd .
+
+Next, we group the terms of the resulting counterfactual formula as follows:
+
+â¢ We denote with Î±1 the conjunction of all atomic formulas vi,d
+
+pai(qd)d,pai(g)e,pai(gâ)â . It holds that V(Î±1) = V(qd)\{X}.
+
+â¢ We denote with Î±2 the conjunction of all atomic formulas of the form vi,e
+x .
+
+It holds that V(Î±2) =
+
+21
+
+âªV iâV(qd)\{X}P ai(g)\{X}.11
+
+Agent-Specific Effects
+
+â¢ We denote with Î±3 the conjunction of all atomic formulas of the form vi,â
+xâ .
+
+âªV iâV(qd)\{X}P ai(gâ)\{X}.12
+
+It holds that V(Î±3) =
+
+By replacing Î± with Î±1 â§ Î±2 â§ Î±3 in Eq. (18), we then have that
+
+P (yxâ |v; M )Mqd =
+
+(cid:88)
+
+P (Î±1 â§ Î±2 â§ Î±3|v; M )MGd .
+
+(19)
+
+{vi,d|V iâV(Î±1)\{Y }},
+{vi,e|V iâV(Î±2)},
+{vi,â|V iâV(Î±3)}
+
+Unroll Î±2 in MGd . Let Î±i
+of Gd and V i â V(Î±2). We denote with Î±â²
+we can then rewrite Eq. (19) as follows
+
+2 be the output of Algorithm 4 for input â¨Gd, V i, vi,e, X, x, ÏGd â©, where ÏGd is a causal ordering
+2 the conjunction of all such counterfactual formulas. According to Lemma H.5,
+
+P (yxâ |v; M )Mqd =
+
+(cid:88)
+
+P (Î±1 â§ Î±â²
+
+2 â§ Î±3|v; M )MGd ,
+
+(20)
+
+{vi,d|V iâV(Î±1)\{Y }},
+
+{vi,e|V iâV(Î±â²
+2)},
+{vi,â|V iâV(Î±3)}
+
+where counterfactual formula aâ²
+where V(Î±â²
+
+2) = âªV iâV(Î±2)Ani(Gd)\{X}.
+
+2 consists only of atomic formulas of the form vi,d
+
+pai(Gd)d â one for each variable V i â V(Î±â²
+
+2),
+
+Express Î±1 â§ Î±â²
+preserving their truth values
+
+2 â§ Î±3 in M . To remove from Î±1, Î±â²
+
+2 and Î±3 all implicit references to functions f i
+
+Gd in MGd , while
+
+each
+
+replace
+
+â¢ We
+vi,d
+pai(qd)d,pai(g)e,pai(gâ)â,v(P ai(Gd))
+holds V(Î²1) = V(Î±1).
+
+atomic
+
+formula
+
+vi,d
+pai(qd)d,pai(g)e,pai(gâ)â
+
+in Î±1 with
+. We denote with Î²1 the resulting counterfactual formula. Note that it
+
+new atomic
+
+formula
+
+the
+
+â¢ We replace each atomic formula vi,e
+
+pai(Gd)d in Î±â²
+
+2 with the new atomic formula vi,e
+
+pai(Gd)d,v(P ai(Gd))
+
+. We denote with Î²2
+
+the resulting counterfactual formula. Note that it holds V(Î²2) = V(Î±â²
+
+2).
+xâ in Î±3 with the new atomic formula vi,â
+
+â¢ We replace each atomic formula vi,â
+
+xâ,v(P ai(Gd))
+
+. We denote with Î²3 the resulting
+
+counterfactual formula. Note that it holds V(Î²3) = V(Î±3).
+
+Note that counterfactual formulas Î²1, Î²2 and Î²3 are all defined under the original model M . Therefore, by replacing
+Î±1 â§ Î±â²
+
+2 â§ Î±3 with Î²1 â§ Î²2 â§ Î²3 in Eq. (20), we have that
+
+P (yxâ |v; M )Mqd =
+
+(cid:88)
+
+P (Î²1 â§ Î²2 â§ Î²3|v)M .
+
+(21)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)},
+{vi,â|V iâV(Î²3)}
+
+This concludes Step 1.
+
+Step 2: By Bayes rule, we can rewrite Eq. (21) as
+
+P (yxâ |v; M )Mqd =
+
+1
+P (v)M
+
+Â·
+
+(cid:88)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)},
+{vi,â|V iâV(Î²3)}
+
+P (Î²1 â§ Î²2 â§ Î²3 â§ v)M .
+
+(22)
+
+11We consider X /â V(Î±2), because the atomic formula xx has always truth value equal to 1, and hence it can be trivially removed
+
+from any counterfactual formula.
+
+12We consider X /â V(Î±3), because the atomic formula xâ
+
+xâ has always truth value equal to 1, and hence it can be trivially removed
+
+from any counterfactual formula.
+
+22
+
+By consistency axiom, it holds X = v(X) â Vv(X) = V, and since v(X) = xâ, we have that Vxâ = V. Therefore, we
+can rewrite Eq. (22) as follows
+
+Agent-Specific Effects
+
+P (yxâ |v; M )Mqd =
+
+1
+P (v)M
+
+=
+
+1
+P (v)M
+
+Â·
+
+Â·
+
+(cid:88)
+
+P (Î²1 â§ Î²2 â§ Î²3 â§ vxâ )M
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)},
+{vi,â|V iâV(Î²3)}
+(cid:88)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)}
+
+P (Î²1 â§ Î²2 â§ vxâ )M .
+
+(23)
+
+The second step follows from the fact that if vi,â Ì¸= v(V i), for some variable V i â V(Î²3), then vi,â
+evaluates to 0.
+
+xâ â§ v(V i)xâ always
+
+By composition axiom, for some variable V i â V it holds that P ai(G)xâ = v(P ai(G)) â V i
+Therefore, we can rewrite Eq. (23) as follows
+
+v(P ai(G)),xâ = V i
+xâ .
+
+P (yxâ |v; M )Mqd =
+
+1
+P (v)M
+
+Â·
+
+(cid:88)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)}
+
+P (Î²1 â§ Î²2 â§ Î³)M ,
+
+(24)
+
+where Î³ is the conjunction of all atomic formulas v(V i)v(P ai(G)),xâ .13
+By exclusions restrictions rule, if X /â P ai(G) it holds that V i
+holds V i
+
+v(P ai(G)),xâ = V i
+
+v(P ai(G)), since v(X) = xâ. Therefore, we can rewrite Eq. (24) as follows
+
+v(P ai(G)),xâ = V i
+
+v(P ai(G)). Furthermore, if X â P ai(G) it
+
+P (yxâ |v; M )Mqd =
+
+1
+P (v)M
+
+Â·
+
+(cid:88)
+
+P (Î²1 â§ Î²2 â§ Î³â²)M ,
+
+(25)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)}
+
+where Î³â² is the conjunction of all atomic formulas v(V i)v(P ai(G)).
+
+Finally, the following equation holds by the independence restrictions rule and the exogeneity assumption.
+
+P (yxâ |v; M )Mqd =
+
+1
+P (v)M
+
+Â·
+
+(cid:88)
+
+{vi,d|V iâV(Î²1)\{Y }},
+{vi,e|V iâV(Î²2)}
+(cid:89)
+
+{i|V iâV(Î²1)âªV(Î²2)}
+
+(cid:89)
+
+{i|V iâV(Î²1)\V(Î²2)}
+
+(cid:89)
+
+{i|V iâV(Î²2)\V(Î²1)}
+(cid:89)
+
+P (vi,d
+
+pai(qd)d,pai(g)e,pai(gâ)â,v(P ai(Gd))
+
+â§
+
+vi,e
+pai(Gd)d,v(P ai(Gd))
+
+â§ v(V i)v(P ai(G)))M Â·
+
+P (vi,d
+
+pai(qd)d,pai(g)e,pai(gâ)â,v(P ai(Gd))
+
+â§
+
+v(V i)v(P ai(G)))M Â·
+
+P (vi,e
+
+pai(Gd)d,v(P ai(Gd))
+
+â§ v(V i)v(P ai(G)))M Â·
+
+P (v(V i)|v(P ai(G)))M .
+
+(26)
+
+{i|V iâV\{V(Î²1)âªV(Î²2)}}
+
+P (v)M can be computed from the observational distribution of M . The same also holds for the conditional probabilities
+P (v(V i)|v(P ai(G)))M in the last product of the equation. Regarding the counterfactual probabilities shown on the r.h.s. of
+Eq. (26), according to Lemma 4.4, they are also identifiable under the noise monotonicity assumption. We conclude then
+that P (yxâ |v; M )Mqd is indeed identifiable from the observational distribution of M .
+
+13The order in which the composition axiom is applied here can follow any causal ordering on G.
+
+23
+
+I. Proofs of Theorems 4.1 and 4.3
+
+First, we prove Theorem 4.1.
+
+Agent-Specific Effects
+
+Proof. Let G be the causal graph of M . First, we are going to prove the result for Y = St+2, i.e., tY = t + 2. According to
+Definition 3.1, we have that
+
+ASEN
+
+ai,t,aâ
+i,t
+
+(y)M = P (yaâ
+
+i,t
+
+)M do(I) â P (yaâ
+
+i,t
+
+)M ,
+
+where I = {Aiâ²,t+1 := Aiâ²,t+1,aâ
+
+i,t
+
+}iâ² /âN âª {Aiâ²,t+1 := Aiâ²,t+1,ai,t}iâ²âN.
+
+It trivially holds for Y = St+2 that P (yaâ
+it follows
+
+i,t
+
+)M do(I) = P (yaâ
+
+i,t
+
+)M do(Iâ² ), where I â² = {Aiâ²,t+1 := Aiâ²,t+1,ai,t}iâ²âN, and hence
+
+ASEN
+
+ai,t,aâ
+i,t
+
+(y)M = P (yaâ
+
+i,t
+
+)M do(Iâ² ) â P (yaâ
+
+i,t
+
+)M .
+
+(27)
+
+Note that the modified SCM M do(I â²) = â¨U, V, FI â², P (u)â© is identical to M apart from the functions corresponding to
+variables in {Aiâ²,t+1}iâ²âN. In particular, the function f Aj,t+1
+which corresponds to a variable Aj,t+1 â {Aiâ²,t+1}iâ²âN in
+M do(I â²) can be defined as
+
+I â²
+
+f Aj,t+1
+I â²
+
+(P aAj,t+1 (G), U Aj,t+1) = Aj,t+1,ai,t
+
+= f Aj,t+1(P aAj,t+1(G)ai,t, U Aj,t+1)
+= f Aj,t+1(St+1,ai,t, U Aj,t+1 ).
+
+(28)
+
+The second step follows from the exclusion restrictions rule. Consider now the path-specific effect
+
+PSEg
+aâ
+i,t,ai,t
+
+(y)M = P (yaâ
+
+i,t
+
+)Mg â P (yai,t )Mg
+
+= P (yaâ
+
+i,t
+
+)Mg â P (yai,t )M ,
+
+where g is the edge-subgraph of G that does not include the edges from St+1 to nodes in {Aiâ²,t+1}iâ²âN. The second step
+holds because the quantity P (yai,t) in the modified model Mg corresponds to P (yai,t) in the original model M .
+
+Based on Definition 6.1, we have that the modified SCM Mg = â¨U, V, Fg, P (u)â© is identical to M apart from the
+functions corresponding to variables in {Aiâ²,t+1}iâ²âN. In particular, the function f Aj,t+1
+which corresponds to a variable
+Aj,t+1 â {Aiâ²,t+1}iâ²âN in Mg can be defined as
+
+g
+
+f Aj,t+1
+g
+
+(P aAj,t+1(g), U Aj,t+1) = f Aj,t+1(P aAj,t+1(g), P aAj,t+1(g)ai,t, U Aj,t+1)
+
+= f Aj,t+1(St+1,ai,t, U Aj,t+1).
+
+(29)
+
+From Eq. (28) and (29), we can infer that the SCMs M do(I â²) and Mg are equivalent. Therefore, we can rewrite Eq. (27) as
+follows
+
+ASEN
+
+ai,t,aâ
+i,t
+
+(y)M = P (yaâ
+
+i,t
+
+)Mg â P (yaâ
+
+i,t
+
+)M .
+
+Note that quantity P (yaâ
+the identifiability of P (yaâ
+
+i,t
+
+i,t
+
+)M is trivially identifiable (the same holds for P (yai,t)M ). Thus, we can restrict our attention to
+
+)Mg , which we can determine using the recanting witness criterion (Avin et al., 2005).
+
+The subgraph g contains the directed path Ai,t â St+1 â St+2. As such, there is a directed path from Ai,t to St+1 in g, as
+well as a directed path from St+1 to Y in g. Furthermore, the directed path Ai,t â St+1 â Aj,t+1 â St+2, where j â N,
+does not belong to g. We can conclude then Ai,t, Y and g satisfy the recanting witness criterion, and hence P (yaâ
+)Mg is
+non-identifiable. Subsequently, ASEN
+
+(y)M is also non-identifiable.
+
+i,t
+
+ai,t,aâ
+i,t
+
+Since we cannot identify the agent-specific effect on St+2, it follows that we cannot also identify it on any state variable Stâ²
+that causally depends on St+2, i.e., for any tâ² > t + 2.
+
+24
+
+Agent-Specific Effects
+
+Next, we prove Theorem 4.3.
+
+Proof. This result follows directly from Lemma H.2 and Lemma H.3.
+
+J. Proof of Lemma 4.5
+
+Proof. We define the domain of each variable V i â V in M as dom{V i} = dom{X i}. Furthermore, we slightly abuse our
+notation to denote the set of variables in X that correspond to the variables V j in P ai(G), X(P ai(G)) = {X j â X|j :
+V j â P ai(G)}.
+
+Observe that function f i(pai(G), U i) is equivalent to the conditional quantile function QX i|X(P ai(G))=pai(G)(U i), i.e., the
+quantile function of random variable X i when variables in X(P ai(G)) are fixed to their corresponding values in pai(G).
+We consider the following equations
+
+P (V i â¤i vi|P ai(G) = pai(G)) = P (f i(P ai(G), U i) â¤i vi|P ai(G) = pai(G))
+
+= P (f i(pai(G), U i) â¤i vi)
+= P (QX i|X(P ai(G))=pai(G)(U i) â¤i vi)
+= P (U i â¤ P (X i â¤i vi|X(P ai(G)) = pai(G)))
+= P (X i â¤i vi|X(P ai(G)) = pai(G)).
+
+(30)
+
+The fifth step simply follows from the fact that U i â¼ Uniform[0, 1]. The fourth step holds by the reproduction property of
+quantile functions (KÂ¨ampke et al., 2015) [Theorem. 2.1], which we restate and prove for our setting next.
+
+Lemma J.1. QX i|X(P ai(G))=pai(G)(ui) â¤i vi iff P (X i â¤i vi|X(P ai(G)) = pai(G)) â¥ ui.
+
+Proof.
+
+â¢ P (X i â¤i vi|X(P ai(G)) = pai(G)) â¥ ui implies that
+QX i|X(P ai(G))=pai(G)(ui) =
+
+inf
+xiâdom{X i}
+
+{P (X i â¤i xi|X(P ai(G)) = pai(G)) â¥ ui} â¤i vi,
+
+because vi belongs to the set over which the infimum is formed.
+
+â¢ Let xi
+
+inf = inf xiâdom{X i}{P (X i â¤i xi|X(P ai(G)) = pai(G)) â¥ ui}. Then, QX i|X(P ai(G))=pai(G)(ui) â¤i vi
+
+implies that
+
+Since the set S = {xi â dom{X i} : P (X i â¤i xi|X(P ai(G)) = pai(G)) â¥ ui} is finite, discrete and non-empty, the
+inf |X(P ai(G)) = pai(G)) â¥ ui. By monotonicity of the
+value xi
+cumulative distribution function it has to also hold that P (X i â¤i vi|X(P ai(G)) = pai(G)) â¥ ui.
+
+inf has to belong to S. This means that P (X i â¤i xi
+
+vi â¥i xi
+
+inf .
+
+From Eq. (30), it follows that the MMDP-SCM M induces the transition probabilities and the initial state distribution of the
+MMDP, as well as the agentsâ joint policy Ï. Therefore, joint distributions P (X) and P (V) are indeed equal.
+
+Next, consider two noise values ui
+function, for any pai(G) â dom{P ai(G)}, it holds that
+
+2 â¼ P (U i) such that ui
+
+1, ui
+
+1 < ui
+
+2. By monotonicity of the cumulative distribution
+
+{P (X i â¤i vi|pai(G)) â¥ ui
+
+1} â¤i
+
+inf
+viâdom{V i}
+
+{P (X i â¤i vi|pai(G)) â¥ ui
+
+2}
+
+inf
+viâdom{V i}
+â f i(pai(G), ui
+
+1) â¤i f i(pai(G), ui
+
+2).
+
+Hence, variable V i â V is indeed noise-monotonic in M w.r.t. â¤i.
+
+25
+
+K. Proof of Proposition 4.6
+
+Agent-Specific Effects
+
+Proof. We prove the first part of this lemma by contradiction. We first assume that Y is noise-monotonic in M w.r.t. the
+numerical total ordering â¤. Let there now be two values x1, x2 â {0, 1} such that E[Y |x1] â¤ E[Y |x2] and P (Yx1 =
+1 â§ Yx2 = 0) > 0 (i.e., the monotonicity assumption is violated). This means that there has to be at least one noise
+value uY
+k ) = 0. Because Y is assumed to be noise-monotonic, for any noise
+value uY â¥ uY
+k it must hold that f Y (x2, uY ) = 0.
+Consequently, the following inequality holds
+
+k it must hold that f Y (x1, uY ) = 1, and for any noise value uY < uY
+
+k ) = 1 and f Y (x2, uY
+
+k such that f Y (x1, uY
+
+(cid:90)
+
+E[Y |x1] =
+
+P (uY ) Â· f Y (x1, uY ) duY
+
+uY â¼P (U Y )
+
+(cid:90)
+
+uY â¼P (U Y )|uY <uY
+k
+
+(cid:90)
+
+P (uY ) Â· f Y (x1, uY ) duY + 1 +
+
+P (uY ) Â· 0 duY + 0 +
+
+(cid:90)
+
+(cid:90)
+
+uY â¼P (U Y )|uY >uY
+k
+
+P (uY ) Â· 1 duY
+
+P (uY ) Â· f Y (x2, uY ) duY
+
+uY â¼P (U Y )|uY <uY
+k
+
+uY â¼P (U Y )|uY >uY
+k
+
+=
+
+>
+
+=
+
+(cid:90)
+
+P (uY ) Â· f Y (x2, uY ) duY
+
+uY â¼P (U Y )
+
+= E[Y |x2].
+
+Therefore, we have reached a contradiction.
+
+We prove the second part of this lemma by counterexample. Assume that noise variable U Y can only take the three values
+{1, 2, 3}, and that function f Y is defined as follows
+
+f Y (X = 0, U Y = 1) = 1, f Y (X = 0, U Y = 2) = 0, f Y (X = 0, U Y = 3) = 0,
+f Y (X = 1, U Y = 1) = 1, f Y (X = 1, U Y = 2) = 0, f Y (X = 1, U Y = 3) = 1.
+
+It can be easily inferred that in this SCM, variable Y is monotonic relative to X, while it is not noise-monotonic w.r.t. the
+numerical total ordering or any other total ordering â¤Y on {0, 1}.
+
+L. Proof of Theorem 5.1
+
+Proof. According to Theorem 4.3 we have that cf-ASEN
+(y|Ï ) ËM . This means that the output of
+ai,t
+Algorithm 1 is the same when it takes as input either model M or model ËM . Therefore, to prove Theorem 5.1 it would
+suffice to show that the output of Algorithm 1, when it takes as input MMDP-SCM M , is an unbiased estimator of
+cf-ASEN
+ai,t
+
+(y|Ï )M = cf-ASEN
+ai,t
+
+(y|Ï )M .
+
+We begin by formally expressing the output of Algorithm 1
+
+O(M, Ï, N, Ai,t, ai,t, Y, y, H) =
+
+=
+
+(cid:80)
+
+(cid:80)
+
+uâ{u1,...,uH } P (y|u)M do(I(u))
+H
+
+â P (y|Ï )M
+
+uâ{u1,...,uH } P (y|u)M do(I(u)) â P (y|u)M
+H
+
+,
+
+(31)
+
+where I(u) is defined as in line 7 of the algorithm. The second step of the equation holds because {u1, ..., uH } â¼ P (u|Ï ).
+
+By Definition 3.2, we have that
+
+cf-ASEN
+ai,t
+
+(y|Ï )M = P (yÏ (Ai,t)|Ï ; M )M do(I) â P (y|Ï )M ,
+
+where I = {Aiâ²,tâ² := Ï (Aiâ²,tâ²)}iâ² /âN,tâ²>t âª {Aiâ²,tâ² := Aiâ²,tâ²,ai,t}iâ²âN,tâ²>t.
+Note that for any given noise u â¼ P (u|Ï ), it holds that Aiâ²,tâ²,ai,t(u) = Ï h(Aiâ²,tâ²), where Ï h â¼ P (V|u)M do(Ai,t:=ai,t).
+
+26
+
+Hence, it follows that P (y|u)M do(I) = P (y|u)M do(I(u)). We consider next the following equations
+
+Agent-Specific Effects
+
+Euâ¼P (u|Ï )[P (y|u)M do(I(u)) â P (y|u)M ] =
+
+=
+
+=
+
+(cid:90)
+
+(cid:90)
+
+(cid:90)
+
+P (y|u)M do(I(u)) Â· P (u|Ï ) â P (y|u)M Â· P (u|Ï ) du
+
+P (y|u)M do(I) Â· P (u|Ï ) â P (y|u)M Â· P (u|Ï ) du
+
+P (y|u)M do(I) Â· P (u|Ï ; M )M do(I) â P (y|u)M Â· P (u|Ï )M du
+
+= P (y|Ï ; M )M do(I) â P (y|Ï )M
+= P (yÏ (Ai,t)|Ï ; M )M do(I) â P (y|Ï )M
+= cf-ASEN
+(y|Ï )M ,
+ai,t
+
+where the third step follows from the fact that the distribution of noise variables U remains the same between M and
+M do(I). The fifth step follows from the consistency axiom. We conclude then that O(M, Ï, N, Ai,t, ai,t, Y, y, H) is indeed
+an unbiased estimator of cf-ASEN
+ai,t
+
+(y|Ï )M .
+
+M. Proof of Lemma 6.3
+
+Proof. By Definitions 3.1 and 6.2, it follows that it suffices to show that P (yaâ
+
+i,t
+
+)M do(I) = P (yaâ
+
+i,t
+
+)Mq .
+
+Let tY denote the time-step of variable Y . First, we show that for any noise u â¼ P (u) the value of StY (u) (or equivalently
+Y (u)) is the same in M
+
+i,t). To do so, we use induction in the number of time-steps tâ².
+
+as in M do(IâªAi,t:=aâ
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+i,t). Furthermore,
+Base case: By construction of Mq, the value of St+1(u) is the same in M
+note that the set of interventions I does not include interventions to variable St+1 or to any of its ancestors. As a result, the
+value of St+1(u) is the same in M do(IâªAi,t:=aâ
+i,t). We conclude then that the value of St+1(u) is the
+i,t).
+same in M
+
+i,t) as in M do(Ai,t:=aâ
+
+as in M do(IâªAi,t:=aâ
+
+do(Ai,t:=aâ
+q
+
+as in M do(Ai,t:=aâ
+
+i,t)
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+Induction hypothesis: We make the hypothesis that for some tâ² â [t + 1, tY ) the value of Stâ²(u) is the same in
+M
+
+as in M do(IâªAi,t:=aâ
+
+do(Ai,t:=aâ
+q
+
+i,t).
+
+i,t)
+
+Induction step: Under the induction hypothesis, we want to show that the value of Stâ²+1(u) is the same in M
+as in M do(IâªAi,t:=aâ
+M
+
+i,t). For convenience, we slightly abuse our notation and denote as sq
+
+tâ²+1 the value of Stâ²+1(u) in
+i,t). From the hypothesis, it holds that the value stâ² of
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+, and as sI
+
+tâ²+1 the value of Stâ²+1(u) in M do(IâªAi,t:=aâ
+do(Ai,t:=aâ
+as in M do(IâªAi,t:=aâ
+Stâ²(u) is the same in M
+q
+First, we consider the value of Stâ²+1(u) in M do(IâªAi,t:=aâ
+
+i,t),
+
+i,t).
+
+i,t)
+
+tâ²+1 = f Stâ²+1(stâ², {Aiâ²,tâ²,ai,t(u)}iâ²âN, {Aiâ²,tâ²,aâ
+sI
+
+i,t
+
+(u)}iâ² /âN, uStâ²+1 ).
+
+(32)
+
+Next, we consider the value of Stâ²+1(u) in M
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+,
+
+sq
+tâ²+1 = f
+
+Stâ²+1
+q
+
+(paStâ²+1 (q), uStâ²+1),
+
+where paStâ²+1(q) here denotes the value of P aStâ²+1(q) in M
+i,t)
+Stâ²(u) = stâ² in M
+
+, we can rewrite the equation of sq
+
+do(Ai,t:=aâ
+q
+
+tâ²+1 as
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+given u. Note that P aStâ²+1 (q) = Stâ², and since
+
+sq
+tâ²+1 = f
+
+Stâ²+1
+q
+
+(stâ², uStâ²+1 ).
+
+27
+
+Stâ²+1
+Based on the definition of function f
+q
+
+we have that
+
+Agent-Specific Effects
+
+sq
+tâ²+1 = f Stâ²+1(stâ², paStâ²+1(g)e, paStâ²+1(gâ)â, uStâ²+1),
+
+(33)
+
+where paStâ²+1(gâ)â and paStâ²+1(g)e denote the values of P aStâ²+1(gâ)aâ
+From the definition of subgraph gâ it follows that P aStâ²+1 (gâ) = {Aiâ²,tâ²}iâ² /âN. Eq. (33) then can be rewritten as follows
+
+and P aStâ²+1(g)ai,t in M given u, respectively.
+
+i,t
+
+sq
+tâ²+1 = f Stâ²+1(stâ², paStâ²+1(g)e, {Aiâ²,tâ²,aâ
+
+i,t
+
+(u)}iâ² /âN, uStâ²+1).
+
+(34)
+
+Finally, from the definition of subgraph g it follows that P aStâ²+1(g) = {Aiâ²,tâ²}iâ²âN. Eq. (34) then can be rewritten as
+follows
+
+sq
+tâ²+1 = f Stâ²+1(stâ², {Aiâ²,tâ²,ai,t(u)}iâ²âN, {Aiâ²,tâ²,aâ
+
+i,t
+
+(u)}iâ² /âN, uStâ²+1 ).
+
+(35)
+
+From Equations (32) and (35), it follows that sq
+
+tâ²+1 = sI
+
+tâ²+1, and hence the induction step is concluded.
+
+Based on the induction argument above, for every u â¼ P (u) it holds that the value of StY (u) or equivalently the value of
+Y (u) is the same in M
+
+as in M do(IâªAi,t:=aâ
+
+i,t), and hence
+
+do(Ai,t:=aâ
+q
+
+i,t)
+
+Finally, the distribution of noise variables U is the same in M do(I) as in Mq, and thus we can derive the following equations
+
+P (yaâ
+
+i,t
+
+|u)M do(I) = P (yaâ
+
+i,t
+
+|u)Mq .
+
+(cid:90)
+
+P (yaâ
+
+i,t
+
+|u)M do(I) Â· P (u)M do(I) du =
+
+(cid:90)
+
+P (yaâ
+
+i,t
+
+|u)Mq Â· P (u)Mq du â
+
+P (yaâ
+
+i,t
+
+)M do(I) = P (yaâ
+
+i,t
+
+)Mq .
+
+N. Proof of Proposition 6.4
+
+Proof. By Definition 6.1, we have that
+
+P SEg
+
+x,xâ (y)M = P (yx)Mg â P (yxâ )Mg
+= P (yx)Mg â P (yxâ )M .
+
+(36)
+
+The second step holds because the quantity P (yai,t) in the modified model Mg corresponds to P (yai,t) in the original model
+M . By Definition 6.2, we have that
+
+F P SEg,gâ
+
+xâ,x(y)M = P (yx)Mq â P (yx)M
+= P (yx)Mg â P (yx)M .
+
+The second step follows from E(gâ) = â. From Section 2, we have that
+
+T CEx,xâ (y)M = P (yx)M â P (yxâ )M .
+
+By combining Equations (36), (37) and (38) we get
+
+(37)
+
+(38)
+
+P SEg
+
+x,xâ (y)M = F P SEg,gâ
+
+xâ,x(y)M + T CEx,xâ (y)M .
+
+28
+
+

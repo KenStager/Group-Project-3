@@ -1,0 +1,2213 @@
+2
+0
+0
+2
+
+l
+u
+J
+
+3
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+8
+0
+0
+7
+0
+2
+0
+/
+s
+c
+:
+v
+i
+X
+r
+a
+
+Agent Programming with Declarative Goals
+
+F.S. de Boer ab K.V. Hindriks a W. van der Hoek c J.-J.Ch. Meyer a
+
+a Institute of Information & Computing Sciences, Utrecht
+University, The Netherlands
+P.O. Box 80 089, 3508 TB Utrecht {koenh,frankb,jj}@cs.uu.nl
+b National Research Institute for Mathematics and Computer
+Science (CWI), Amsterdam, The Netherlands
+c Department of Computer Science, University of Liverpool,
+United Kingdom {wiebe}@csc.liv.ac.uk
+
+Abstract
+
+A long and lasting problem in agent research has been to close the
+gap between agent logics and agent programming frameworks. The main
+reason for this problem of establishing a link between agent logics and
+agent programming frameworks is identiï¬ed and explained by the fact
+that agent programming frameworks have not incorporated the concept of
+a declarative goal. Instead, such frameworks have focused mainly on plans
+or goals-to-do instead of the end goals to be realised which are also called
+goals-to-be. In this paper, a new programming language called GOAL is
+introduced which incorporates such declarative goals. The notion of a
+commitment strategy - one of the main theoretical insights due to agent
+logics, which explains the relation between beliefs and goals - is used to
+construct a computational semantics for GOAL. Finally, a proof theory
+for proving properties of GOAL agents is introduced. Thus, we oï¬er
+a complete theory of agent programming in the sense that our theory
+provides both for a programming framework and a programming logic
+for such agents. An example program is proven correct by using this
+programming logic.
+
+1 Goal-Oriented Agent Programming
+
+Agent technology has come more and more into the limelight of computer
+science.
+Intelligent agents have not only become one of the central topics
+of artiï¬cial intelligence (nowadays sometimes even deï¬ned as âthe study of
+agentsâ, [27]), but also mainstream computer science, especially software en-
+gineering, has taken up agent-oriented programming as a new and exciting
+paradigm to investigate, while industries experiment with the use of it on a
+large scale, witness the results reported in conferences like Autonomous Agents
+(e.g. [18]) and books like e.g. [17].
+
+Although the deï¬nition of an agent is subject to controversy, many re-
+searchers view it as a software (or hardware) entity that displays some form
+
+ 
+ 
+ 
+ 
+ 
+ 
+of autonomy, in the sense that an agent is both reactive (responding to its en-
+vironment) and pro-active (taking initiative, independent of a user). Often this
+aspect of autonomy is translated to agents having a mental state comprising (at
+least) beliefs on the environment and goals that are to be achieved ([35]).
+
+In the early days of agent research, an attempt was made to make the concept
+of agents more precise by means of logical systems. This eï¬ort resulted in a
+number of - mainly - modal logics for the speciï¬cation of agents which formally
+deï¬ned notions like belief, goal, intention, etc. associated with agents [25, 19, 5,
+6]. The relation of these logics with more practical approaches remains unclear,
+however, to this day. Several eï¬orts to bridge this gap have been attempted.
+In particular, a number of agent programming languages have been developed
+to bridge the gap between theory and practice [24, 14]. These languages show
+a clear family resemblance with one of the ï¬rst agent programming languages
+Agent-0 [30, 12], and also with the language ConGolog [10, 13, 16].
+
+These programming languages deï¬ne agents in terms of their corresponding
+beliefs, goals, plans and capabilities. Although they deï¬ne similar notions as
+in the logical approaches, there is one notable diï¬erence. In logical approaches,
+a goal is a declarative concept, (also called a goal-to-be), whereas in the cited
+programming languages goals are deï¬ned as sequences of actions or plans (or
+goals-to-do). The terminology used diï¬ers from case to case. However, whether
+they are called commitments (Agent-0), intentions (AgentSpeak [24]), or goals
+(3APL [15]) makes little diï¬erence: all these notions are structures built from
+actions and therefore similar in nature to plans. With respect to ConGolog, a
+more traditional computer science perspective is adopted, and the corresponding
+structures are simply called programs. The PLACA language [32], a successor of
+AGENT0, also focuses more on extending AGENT0 to a language with complex
+planning structures (which are not part of the programming language itself!)
+than on providing a clear theory of declarative goals of agents as part of a
+programming language and in this respect is similar to AgentSpeak and 3APL.
+The type of goal included in these languages may also be called a goal-to-do and
+provides for a kind of procedural perspective on goals.
+
+In contrast, a declarative perspective on goals in agent languages is still miss-
+ing. Because of this mismatch it has not been possible so far to use modal logics
+which include both belief and goal modalities for the speciï¬cation and veriï¬ca-
+tion of programs written in such agent languages and it has been impossible to
+close the gap between agent logics and programming frameworks so far. The
+value of adding declarative goals to agent programming lies both in the fact
+that it oï¬ers a new abstraction mechanism as well as that agent programs with
+declarative goals more closely approximate the intuitive concept of an intelli-
+gent agent. To fully realise the potential of the notion of an intelligent agent,
+a declarative notion of a goal, therefore, should also be incorporated into agent
+programming languages.
+
+In this paper, we introduce the agent programming language GOAL (for
+Goal-Oriented Agent Language), which takes the declarative concept of a goal
+seriously and which provides a concrete proposal to bridge the gap between
+theory and practice. GOAL is inspired in particular by the language UNITY
+
+2
+
+designed by Chandy and Misra [4], be it that GOAL incorporates complex agent
+notions. We oï¬er a complete theory of agent programming in the sense that our
+theory provides both for a programming framework and a programming logic
+for such agents. In contrast with other attempts [30, 34] to bridge the gap, our
+programming language and programming logic are related by means of a formal
+semantics. Only by providing such a formal relation it is possible to make sure
+that statements proven in the logic concern properties of the agent.
+
+2 The Programming Language GOAL
+
+In this section, we introduce the programming language GOAL. As mentioned
+in the previous section, GOAL is inï¬uenced by by work in concurrent program-
+ming, in particular by the language UNITY ([4]). The basic idea is that a set
+of actions which execute in parallel constitutes a program. However, whereas
+UNITY is a language based on assignment to variables, the language GOAL is
+an agent-oriented programming language that incorporates more complex no-
+tions such as belief, goal, and agent capabilities which operate on high-level
+information instead of simple values.
+
+2.1 Mental States
+
+As in most agent programming languages, GOAL agents select actions on the
+basis of their current mental state. A mental state consists of the beliefs and
+goals of the agent. However, in contrast to most agent languages, GOAL in-
+corporates a declarative notion of a goal that is used by the agent to decide
+what to do. Both the beliefs and the goals are drawn from one and the same
+logical language, L, with associated consequence relation |=C . In this paper,
+L is a propositional language, and one may think about |=C as âclassical con-
+sequenceâ.
+In general however, the language L may also be conceived as an
+arbitrary constraint system, allowing one to combine tokens (predicates over a
+given universe) using the operator â§ (to accumulate pieces of information) and
+âx (to hide information) to represent constraints over the universe of discourse
+(Cf. [28]).
+In such a setting, one often assumes the presence of a constraint
+solver that tests Î |=C Ï, i.e., whether information Î entails Ï.
+
+Our GOAL-agent thus keeps two databases, respectively called the belief
+base and the goal base. The diï¬erence between these two databases originates
+from the diï¬erent meaning assigned to sentences stored in the belief base and
+sentences stored in the goal base. To clarify the interaction between beliefs and
+goals, one of the more important problems that needs to be solved is establishing
+a meaningful relationship between beliefs and goals. This problem is solved
+here by imposing a constraint on mental states that is derived from the default
+commitment strategy that agents use. The notion of a commitment strategy
+is explained in more detail below. The constraint imposed on mental states
+requires that an agent does not believe that Ï is the case if it has a goal to
+achieve Ï, and, moreover, requires Ï to be consistent if Ï is a goal.
+
+3
+
+Deï¬nition 2.1 (mental state)
+A mental state of an agent is a pair hÎ£, Îi where Î£ â L are the agentâs beliefs
+and Î â L are the agentâs goals (both sets may be inï¬nite) and Î£ and Î are
+such that:
+
+â¢ Î£ is consistent (Î£ 6|=C false)
+
+â¢ Î is such that, for any Î³ â Î:
+
+(i) Î³ is not entailed by the agentâs beliefs (Î£ 6|=C Î³),
+
+(ii) Î³ is consistent (6|=C Â¬Î³), and
+(iii) for any Î³â², if |=c Î³ â Î³â² and Î³â² satisï¬es (i) and (ii) above, then
+
+Î³â² â Î
+
+A mental state does not contain a program or plan component in the âclassi-
+calâ sense. Although both the beliefs and the goals of an agent are drawn from
+the same logical language, as we will see below, the formal meaning of beliefs
+and goals is very diï¬erent. This diï¬erence in meaning reï¬ects the diï¬erent fea-
+tures of the beliefs and the goals of an agent. The declarative goals are best
+thought of as achievement goals in this paper. That is, these goals describe a
+goal state that the agent desires to reach. Mainly due to the temporal features
+of such goals many properties of beliefs fail for goals. For example, the fact that
+an agent has the goal to be at home and the goal to be at the movies does not
+allow the conclusion that this agent also has the conjunctive goal to be at home
+and at the movies at the same time. As a consequence, less stringent consistency
+requirements are imposed on goals than on beliefs. An agent may have the goal
+to be at home and the goal to be at the movies simultaneously; assuming these
+two goals cannot consistently be achieved at the same time does not mean that
+an agent cannot have adopted both in the language GOAL.
+
+In this paper, we assume that the language L used for representing beliefs
+language. As a consequence, we do not
+and goals is a simple propositional
+discuss the use of variables nor parameter mechanisms. Our motivation for
+this assumption is the fact that we want to present our main ideas in their
+simplest form and do not want to clutter the deï¬nitions below with details. Also,
+more research is needed to extend the programming language with a parameter
+passing mechanism, and to extend the programming logic for GOAL with ï¬rst
+order features.
+
+The language L for representing beliefs and goals is extended to a new lan-
+guage LM which enables us to formulate conditions on the mental state of an
+agent. The language LM consists of so called mental state formulas. A mental
+state formula is a boolean combination of the basic mental state formulas BÏ,
+which expresses that Ï is believed to be the case, and GÏ, which expresses that
+Ï is a goal of the agent.
+
+Deï¬nition 2.2 (mental state formula)
+The set of mental state formulas LM is deï¬ned by:
+
+4
+
+â¢ if Ï â L, then BÏ â LM ,
+
+â¢ if Ï â L, then GÏ â LM ,
+
+â¢ if Ï1, Ï2 â LM , then Â¬Ï1, Ï1 â§ Ï2 â LM .
+
+The usual abbreviations for the propositional operators â¨, â, and â are
+used. We write true as an abbreviation for B(p â¨ Â¬p) for some p and false for
+Â¬true.
+
+The semantics of belief conditions BÏ, goal conditions GÏ and mental state
+
+formulas is deï¬ned in terms of the classical consequence relation |=C .
+
+Deï¬nition 2.3 (semantics of mental state formulas)
+Let hÎ£, Îi be a mental state.
+
+â¢ hÎ£, Îi |=M BÏ iï¬ Î£ |=C Ï,
+
+â¢ hÎ£, Îi |=M GÏ iï¬ Ï â Î,
+
+â¢ hÎ£, Îi |=M Â¬Ï iï¬ hÎ£, Îi 6|=M Ï,
+
+â¢ hÎ£, Îi |=M Ï1 â§ Ï2 iï¬ hÎ£, Îi |=M Ï1 and hÎ£, Îi |=M Ï2.
+
+We write |=M Ï for the fact that mental state formula Ï is true in all mental
+
+states hÎ£, Îi.
+
+A number of properties of the belief and goal modalities and the relation
+between these operators are listed in Tables 1 and 2. Here, â¢C denotes deriv-
+ability in classical logic, whereas â¢M refers to derivability in the language of
+mental state formulas LM .
+
+The ï¬rst rule (R1) below states that mental state formulas that âhave the
+form of a classical tautologyâ (like (BÏ â¨ Â¬BÏ) and GÏ1 â (BÏ2 â GÏ1)),
+are also derivable in â¢M . By the necessitation rule (R2), an agent believes all
+classical tautologies. Then, (A1) expresses that the belief modality distributes
+over implication. This implies that the beliefs of an agent are closed under logical
+consequence. Finally, A2 states that the beliefs of an agent are consistent. In
+essence, the belief operator thus satisï¬es the properties of the system KD (see
+[9, 21]). Although in its current presentation, our language does not allow
+for nested (belief-) operators, from [21, Section 1.7] we conclude that we may
+assume as if our agent has positive (BÏ â BBÏ) and negative (Â¬BÏ â BÂ¬BÏ)
+introspective properties: every formula in the system KD45 (which is KD
+together with the two mentioned properties) is equivalent to a formula without
+nestings of operators.
+
+Axiom A4 below, is a consequence of the constraint on mental states and
+expresses that if an agent believes Ï it does not have a goal to achieve Ï. As a
+consequence, an agent cannot have a goal to achieve a tautology: Â¬Gtrue. An
+agent also does not have inconsistent goals (A3), that is, Â¬Gfalse is an axiom
+(see Table 2). Finally, the conditions that allow to conclude that the agent has
+a (sub)goal Ï are that the agent has a goal Ï that logically entails Ï and that
+
+5
+
+if Ï is an instantiation of a classical tautology, then â¢M Ï
+
+R1
+R2 â¢C Ï ââ¢M BÏ, for Ï â L
+A1 â¢M B(Ï â Ï) â (BÏ â BÏ)
+A2 â¢M Â¬Bfalse
+
+Table 1: Properties of Beliefs
+
+the agent does not believe that Ï is the case. Axiom A5 below then allows to
+conclude that GÏ holds. From now on, for any mental state formula Ï, â¢M Ï
+means that that there is a derivation of Ï using the proof rules R1 and R2
+and the axioms A1 â âA6. If â is a set of mental state formulas from LM ,
+then â â¢M Ï means that there is a derivation of Ï using the rules and axioms
+mentioned, and the formulas of â as premises.
+
+A3 â¢M Â¬Gfalse
+A4 â¢M BÏ â Â¬GÏ
+A5 â¢C Ï â Ï â â¢M Â¬BÏ â (GÏ â GÏ)
+
+Table 2: Properties of Goals
+
+The goal modality is a weak logical operator. For example, the goal modality
+does not distribute over implication. A counter example is provided by the goal
+base that is generated from {p, p â q}. The consequences of goals are only
+computed locally, from individual goals. But even from the goal base {p â§
+(p â q) one cannot conclude that q is a goal, since this conclusion is blocked
+in a mental state in which q is already believed. Deriving only consequences of
+goals locally ensures that from the fact that GÏ and GÏ hold, it is not possible
+to conclude that G(Ï â§ Ï). This reï¬ects the fact that individual goals cannot be
+added to a single bigger goal; recall that two individual goals may be inconsistent
+(GÏ â§ GÂ¬Ï is satisï¬able) in which case taking the conjunction would lead to
+an inconsistent goal.
+In sum, most of the usual problems that many logical
+operators for motivational attitudes suï¬er from do not apply to our G operator
+(cf. also [22]). On the other hand, the last property of Lemma 2.4 justiï¬es to
+call G a logical, and not just a syntactical operator:
+
+Lemma 2.4
+
+â¢ 6|=M G(Ï â Ï) â (GÏ â GÏ),
+
+â¢ 6|=M G(Ï â§ (Ï â Ï)) â GÏ,
+
+â¢ 6|=M (GÏ â§ GÏ) â G(Ï â§ Ï)
+
+â¢ |=C (Ï â Ï) â |=M (GÏ â GÏ)
+
+6
+
+One ï¬nds a similar quest for such weak operators in awareness logics for
+doxastic and epistemic modalities, see e.g.
+[8, 31]. As agents do not want all
+the side-eï¬ects of their goals, being limited reasoners they also do not always
+adopt all the logical consequences of their belief or knowledge. However, the
+question remains whether modal logic is the formal tool to reason with and
+about goals. Allowing explicitly for mutually inconsistent goals, our treatment
+of goals resides in the landscape of paraconsistent logic (cf. [23]). One might
+even go a step further and explore to use linear logic ([11] to reason about
+goals, enabling to have the same goal more than once, and to model process
+and resource use in a ï¬ne-tuned way. We will not pursue the diï¬erent options
+for logics of goals in this paper.
+
+Theorem 2.5 (Soundness and Completeness of â¢M )
+For any Ï â LM , we have
+
+â¢M Ï â|=M Ï
+
+Proof. We leave it for the reader to check soundness (i.e., the âââ-direction).
+Here, A1 and A2 are immediate consequences of the deï¬nition of a belief as
+a consequence from a given consistent set, A3 follows from condition (ii) of
+Deï¬nition 2.1, A4 from property (i) and A5 from (iii) of that same deï¬nition.
+For completeness, assume that 6â¢M Ï. Then Â¬Ï is consistent, and we will
+construct a mental state hÎ£, Îi that veriï¬es Ï. First, we build a maximal â¢M -
+consistent set â with Â¬Ï â â. This â can be split in a set Î£ and a set Î as
+follows: Î£ = {Ï | BÏ â â} and Î = {Ï | GÏ â â}. We now prove two properties
+of hÎ£, Îi:
+
+1. hÎ£, Îi is a mental state
+
+2. hÎ£, Îi satisï¬es the following coincidence property:
+
+for all Ï â Lm : hÎ£, Îi |=M Ï â Ï â â
+
+The proofs for these claims are as follows:
+
+1. We must show that hÎ£, Îi satisï¬es the properties of Deï¬nition 2.1. Obvi-
+ously, Î£ is classically consistent, since otherwise we would have Bâ¥ in the
+â¢M -consistent set â, which is prohibited by axiom A2. Also, by axiom
+A3, no Î³ â Î is equivalent to â¥. We now show that no Î³ â Î is classically
+entailed by Î£. Suppose that we would have that Ï1, . . . , Ïn â¢C Î³, for
+certain Ï1, . . . , Ïn â Î£ and G â Î. Then, by construction of Î£ and Î, the
+formulas BÏ1, . . . , BÏn , GÎ³ all are members of the maximal â¢M -consistent
+set â. Since Ï1, . . . , Ïn â¢C Î³, by the deduction theorem for â¢C , R2 and
+A2 we conclude â¢M (BÏ1, . . . , BÏn ) â BÎ³. But this means that both BÎ³
+and GÎ³ are members of â, which is prohibited by axiom A4. Finally, we
+show (iii) of Deï¬nition 2.1, Suppose Î³ â Î, |=C Î³ â Î³â² and that Î³â is
+consistent, and not classically entailed by Î£. We have to Î³â² â Î, and this
+is immediately guaranteed by axiom A5.
+
+7
+
+2. The base case for the second claim is about BÏ and GÏ, with Ï â L. We
+have hÎ£, Îi |=M BÏ iï¬ Î£ |=C Ï iï¬, by deï¬nition of Î£, {Ï | BÏ â â} |=C Ï.
+Using compactness and the deduction theorem for classical logic, we ï¬nd
+â¢C Ï1 â§ Â· Â· Â· â§ Ïn ) â Ï, for some propositional formulas Ï1, . . . , Ïn . By
+the rule R2 we conclude â¢M B(Ï1 â§ Â· Â· Â· â§ Ïn ) â Ï). By A1, this is
+equivalent to â¢M (BÏ1 â§ Â· Â· Â· â§ BÏn ) â BÏ and, since all the BÏi (i â¤ n)
+are members of â, we have BÏ â â. For the other base case, consider
+hÎ£, Îi |=M GÏ, which, using the truth-deï¬nition for G, holds iï¬ Î³ â Î. By
+deï¬nition of Î, this means that GÎ³ â â, which was to be proven. The
+cases for negation and conjunction follow immediately from this. Hence,
+in particular, we have hÎ£, Îi |=M Â¬Ï, and thus 6|=M Ï.
+
+2.2 GOAL Agents
+
+A third basic concept in GOAL is that of an agent capability. The capabilities
+of an agent consist of a set of so called basic actions. The eï¬ects of executing
+such a basic action are reï¬ected in the beliefs of the agent and therefore a basic
+action is taken to be a belief update on the agentâs beliefs. A basic action thus is
+a mental state transformer. Two examples of agent capabilities are the actions
+ins(Ï) for inserting Ï in the belief base and del(Ï) for removing Ï from the belief
+base. Agent capabilities directly aï¬ect the belief base of the agent and not its
+goals, but because of the constraints on mental states they may as a side eï¬ect
+modify the current goals. For the purpose of modifying the goals of the agent,
+two special actions adopt(Ï) and drop(Ï) are introduced to respectively adopt
+a new goal or drop some old goals. We write Bcap and use it to denote the
+set of all belief update capabilities of an agent. Bcap thus does not include
+the two special actions for goal updating adopt(Ï) and drop(Ï). The set of
+all capabilities is then deï¬ned as Cap = Bcap âª {adopt(Ï), drop(Ï) | Ï â L}.
+Individual capabilities are denoted by a.
+
+The set of basic actions or capabilities associated with an agent determines
+what an agent is able to do. It does not specify when such a capability should
+be exercised and when performing a basic action is to the agentâs advantage. To
+specify such conditions, the notion of a conditional action is introduced. A con-
+ditional action consists of a mental state condition expressed by a mental state
+formula and a basic action. The mental state condition of a conditional action
+states the conditions that must hold for the action to be selected. Conditional
+actions are denoted by the symbol b throughout this paper.
+
+Deï¬nition 2.6 (conditional action)
+A conditional action is a pair Ï â do(a) such that Ï â LM and a â Cap.
+
+Informally, a conditional action Ï â do(a) means that if the mental con-
+dition Ï holds, then the agent may consider doing basic action a. Of course,
+if the mental state condition holds in the current state, the action a can only
+be successfully executed if the action is enabled, that is, only if its precondition
+holds.
+
+8
+
+A GOAL agent consists of a speciï¬cation of an initial mental state and a set
+
+of conditional actions.
+
+Deï¬nition 2.7 (GOAL agent)
+A GOAL agent is a triple hÎ , Î£0, Î0i where Î  is a non-empty set of conditional
+actions, and hÎ£0, Î0i is the initial mental state.
+
+2.3 The Operational Semantics of GOAL
+
+One of the key ideas in the semantics of GOAL is to incorporate into the seman-
+tics a particular commitment strategy (cf. [26, 5]). The semantics is based on a
+particularly simple and transparent commitment strategy, called blind commit-
+ment. An agent that acts according to a blind commitment strategy drops a
+goal if and only if it believes that that goal has been achieved. By incorporating
+this commitment strategy into the semantics of GOAL, a default commitment
+strategy is built into agents. It is, however, only a default strategy and a pro-
+grammer can overwrite this default strategy by means of the drop action. It
+is not possible, however, to adopt a goal Ï in case the agent believes that Ï is
+already achieved.
+
+The semantics of action execution should now be deï¬ned in conformance with
+this basic commitment principle. Recall that the basic capabilities of an agent
+were interpreted as belief updates. Because of the default commitment strategy,
+there is a relation between beliefs and goals, however, and we should extend the
+belief update associated with a capability to a mental state transformer that
+updates beliefs as well as goals according to the blind commitment strategy.
+To get started, we thus assume that some speciï¬cation of the belief update
+semantics of all capabilities - except for the two special actions adopt and drop
+which only update goals - is given. Our task is, then, to construct a mental
+state transformer semantics from this speciï¬cation for each action. That is, we
+must specify how a basic action updates the complete current mental state of
+an agent starting with a speciï¬cation of the belief update associated with the
+capability only.
+
+From the default blind commitment strategy, we conclude that if a basic
+action a - diï¬erent from an adopt or drop action - is executed, then a goal is
+dropped only if the agent believes that the goal has been accomplished after
+doing a. The revision of goals thus is based on the beliefs of the agent. The
+beliefs of an agent represent all the information that is available to an agent to
+decide whether or not to drop or adopt a goal. So, in case the agent believes
+that a goal has been achieved by performing some action, then this goal must be
+removed from the current goals of the agent. Besides the default commitment
+strategy, only the two special actions adopt and drop can result in a change to
+the goal base.
+
+The initial speciï¬cation of the belief updates associated with the capabilities
+Bcap is formally represented by a partial function T of type : Bcap Ã â(L) â
+â(L). T (a, Î£) returns the result of updating belief base Î£ by performing action
+a. The fact that T is a partial function represents the fact that an action may
+
+9
+
+not be enabled or executable in some belief states. The mental state transformer
+function M is derived from the semantic function T and also is a partial func-
+tion. As explained, M(a, hÎ£, Îi) removes any goals from the goal base Î that
+have been achieved by doing a. The function M also deï¬nes the semantics of
+the two special actions adopt and drop. An adopt(Ï) action adds Ï to the goal
+base if Ï is consistent and Ï is not believed to be the case. A drop(Ï) action
+removes every goal that entails Ï from the goal base. As an example, consider
+the two extreme cases: drop(false) removes no goals, whereas drop(true) removes
+all current goals.
+
+Deï¬nition 2.8 (mental state transformer M)
+Let hÎ£, Îi be a mental state, and T be a partial function that associates belief
+updates with agent capabilities. Then the partial function M is deï¬ned by:
+
+M(a, hÎ£, Îi)
+
+= hT (a, Î£), Î \ {Ï â Î | T (a, Î£) |=C Ï}i
+for a â Bcap, if T (a, Î£) is deï¬ned
+is undeï¬ned for a â Bcap if T (a, Î£) is undeï¬ned
+
+M(a, hÎ£, Îi)
+M(drop(Ï), hÎ£, Îi)
+M(adopt(Ï), hÎ£, Îi) = hÎ£, Î âª {Ïâ² | Î£ 6|=M Ïâ² & |=C Ï â Ïâ²}i
+
+= hÎ£, Î \ {Ï â Î | Ï |=C Ï}i
+
+M(adopt(Ï), hÎ£, Îi)
+
+if 6|=C Â¬Ï and Î£ 6|=C Ï
+is undeï¬ned if Î£ |=C Ï or |=C Â¬Ï
+
+The semantic function M maps an agent capability and a mental state to a
+new mental state. The capabilities of an agent are thus interpreted as mental
+state transformers by M. Although it is not allowed to adopt a goal Ï that is
+inconsistent - an adopt(false) is not enabled - there is no check on the global
+consistency of the goal base of an agent built into the semantics. This means
+that it is allowed to adopt a new goal which is inconsistent with another goal
+present in the goal base. For example, if the current goal base Î contains p, it
+is legal to execute the action adopt(Â¬p) resulting in a new goal base containing
+p, Â¬p, (if Â¬p was not already believed). Although inconsistent goals cannot
+be achieved at the same time, they may be achieved in some temporal order.
+Individual goals in the goal base, however, are required to be consistent. Thus,
+whereas local consistency is required (i.e. individual goals must be consistent),
+global consistency of the goal base is not required.
+
+The second idea incorporated into the semantics concerns the selection of
+conditional actions. A conditional action Ï â do(a) may specify conditions on
+the beliefs as well as conditions on the goals of an agent. As is usual, conditions
+on the beliefs are taken as a precondition for action execution: only if the agentâs
+current beliefs entail the belief conditions associated with Ï the agent will select
+a for execution. The goal condition, however, is used in a diï¬erent way. It is
+used as a means for the agent to determine whether or not the action will help
+bring about a particular goal of the agent. In short, the goal condition speciï¬es
+where the action is good for. This does not mean that the action necessarily
+establishes the goal immediately, but rather may be taken as an indication that
+the action is helpful in bringing about a particular state of aï¬airs.
+
+In the deï¬nition below, we assume that the action component Î  of an agent
+hÎ , Î£0, Î0i is ï¬xed. The execution of an action gives rise to a computation
+
+10
+
+b
+
+ââ where b is the conditional
+step formally denoted by the transition relation
+action executed in the computation step. More than one computation step
+may be possible in a current state and the step relation ââ thus denotes a
+possible computation step in a state. A computation step updates the current
+state and yields the next state of the computation. Note that because M is a
+partial function, a conditional action can only be successfully executed if both
+the condition is satisï¬ed and the basic action is enabled.
+
+Deï¬nition 2.9 (action selection)
+Let hÎ£, Îi be a mental state and b = Ï â do(a) â Î . Then, as a rule, we have:
+If
+
+â¢ the mental condition Ï holds in hÎ£, Îi, i.e. hÎ£, Îi |= Ï, and
+
+â¢ a is enabled in hÎ£, Îi, i.e. M(a, hÎ£, Îi) is deï¬ned,
+
+b
+
+then hÎ£, Îi
+is the smallest relation closed under this rule.
+
+ââ M(a, hÎ£, Îi) is a possible computation step. The relation ââ
+
+Now, the semantics of GOAL agents is derived directly from the operational
+semantics and the computation step relation ââ . The meaning of a GOAL
+agent consists of a set of so called traces. A trace is an inï¬nite computation
+sequence of consecutive mental states interleaved with the actions that are sched-
+uled for execution in each of those mental states. The fact that a conditional
+action is scheduled for execution in a trace does not mean that it is also enabled
+in the particular state for which it has been scheduled.
+In case an action is
+scheduled but not enabled, the action is simply skipped and the resulting state
+is the same as the state before. In other words, enabledness is not a criterion
+for selection, but rather it decides whether something is happening in a state,
+once selected.
+
+Deï¬nition 2.10 (trace)
+A trace s is an inï¬nite sequence s0, b0, s1, b1, s2, . . . such that si
+state, bi is a conditional action, and for every i we have: si
+not enabled in si and si = si+1.
+
+is a mental
+biââ si+1, or bi is
+
+An important assumption in the semantics for GOAL is a fairness assump-
+tion. Fairness assumptions concern the fair selection of actions during the exe-
+cution of a program. In our case, we make a weak fairness assumption [20]. A
+trace is weakly fair if it is not the case that an action is always enabled from
+some point in time on but is never selected for execution. This weak fairness
+assumption is built into the semantics by imposing a constraint on traces. By
+deï¬nition, a fair trace is a trace in which each of the actions is scheduled in-
+ï¬nitely often. In a fair trace, there always will be a future time point at which
+an action is scheduled (considered for execution) and by this scheduling policy
+a fair trace implements the weak fairness assumption. However, note that the
+fact that an action is scheduled does not mean that the action also is enabled
+
+11
+
+(and therefore, the selection of the action may result in an idle step which does
+not change the state).
+
+The meaning of a GOAL agent now is deï¬ned as the set of fair traces in
+which the initial state is the initial mental state of the agent and each of the
+steps in the trace corresponds to the execution of a conditional action or an idle
+transition.
+
+Deï¬nition 2.11 (meaning of a GOAL agent)
+The meaning of a GOAL agent hÎ , Î£0, Î0i is the set of fair traces S such that
+for s â S we have s0 = hÎ£0, Î0i.
+
+2.4 Mental States and Enabledness
+
+We formally said that a capability a â Cap is enabled in a mental state hÎ£, Îi
+in case M(a, hÎ£, Îi) is deï¬ned. This deï¬nition implies that a belief update
+capability a â Bcap is enabled if T (a, Î£) is deï¬ned. Let us assume that this only
+depends on the action a âthis seems reasonable, since a paradigm like AGM ([1])
+only requires that a revision with Ï fails iï¬ Ï is classically inconsistent, whereas
+expansions and contractions succeed for all Ï, hence the question whether such
+an operation is enabled does not depend on the current beliefs. A conditional
+b
+action b is enabled in a mental state hÎ£, Îi if there are Î£â², Îâ² such that hÎ£, Îi
+ââ
+hÎ£â², Îâ²i. Note that if a capability a is not enabled, a conditional action Ï â
+do(a) is also not enabled. The special predicate enabled is introduced to denote
+that a capability a or conditional action b is enabled (denoted by enabled (a)
+respectively enabled (b)).
+
+The relation between the enabledness of capabilities and conditional actions
+is stated in the next table together with the fact that drop(Ï) is always enabled
+and a proof rule for deriving enabled (adopt(Ï)). Let LME be the language
+obtained by Boolean combinations of mental state formulas and enabledness
+formulas. We denote derivability in the system for this language by â¢ME . Then,
+â¢ME consists of the axioms and rules for â¢M , plus
+
+E 1
+E 2
+R3
+R4
+R5
+
+enabled (Ï â do(a)) â (Ï â§ enabled (a)),
+enabled (drop(Ï)),
+6|=C Â¬Ï ââ¢ME Â¬BÏ â enabled (adopt(Ï)
+|=C Â¬Ï ââ¢ME Â¬enabled(adopt(Ï))
+â¢ME enabled (a) if T (a, Â·) is deï¬ned (a â Bcap)
+
+Table 3: Enabledness
+
+Rule R5 enforces that we better write â¢T
+
+ME given a belief revision function
+T , but in the sequel we will suppress this T . The semantics |=ME for LME is
+based on truth in pairs hÎ£, Îi, T , where hÎ£, Îi is a mental state and T a partial
+function for belief updates. For formulas of the format BÏ and GÏ, we just use
+the mental state and Deï¬nition 2.3 to determine their truth. For enabledness
+formulas, we have the following:
+
+12
+
+Deï¬nition 2.12 (Truth of enabledness)
+
+â¢ hÎ£, Îi, T |=ME enabled(a) iï¬ T (a, Î£) is deï¬ned
+
+â¢ hÎ£, Îi, T |=ME enabled(drop(Ï)) iï¬ true
+
+â¢ hÎ£, Îi, T |=ME enabled(adopt(Ï)) iï¬ 6|=C Â¬Ï and hÎ£, Îi, T |=ME Â¬BÏ
+
+â¢ hÎ£, Îi, T |=ME enabled(Ï â do(a)) iï¬ hÎ£, Îi, T |=ME Ï and at the same
+
+time hÎ£, Îi, T |=ME enabled(a)
+
+Note that we can summarize this deï¬nition to:
+
+â¢ hÎ£, Îi, T |=ME enabled (a) iï¬ M(a, hÎ£, Îi) is deï¬ned for a â Cap,
+
+â¢ hÎ£, Îi, T |=ME enabled (b) iï¬ |=ME Ï and there are Î£â², Îâ² such that
+b
+ââ hÎ£â², Îâ²i for conditional actions where b = Ï â do(a).
+
+hÎ£, Îi
+
+Theorem 2.13 (Soundness and Completeness of â¢ME )
+We have, for all formulas Ï in LME ,
+
+â¢ME Ï iï¬ |=ME Ï
+
+Proof. Again, checking soundness is straightforward and left to the reader.
+For the converse, we have to make a complexity measure explicit for LME -
+formulas, along which the induction can proceed. It suï¬ces to stipulate that
+the complexity of enabled(Ï â do(a) is greater than that of BÏ and enabled(a).
+Furthermore, the complexity of enabled(adopt(Ï) is greater than that of (Â¬)BÏ.
+Now, suppose that 6â¢ME Ï, i.e., Â¬Ï is consistent. Note that the language LME
+is countable, so that we can by enumeration, extend {Â¬Ï} to a maximal â¢ME -
+consistent set â. From this â, we distill a pair hÎ£, Îi, T as follows: Î£ = {Ï |
+BÏ â â}, Î = {Ï | GÏ â â}, and T (a, Î£) is deï¬ned iï¬ enabled(a) â â, for any
+belief capability a. We claim, for all Ï â LME :
+
+hÎ£, Îi, T |= Ï iï¬ Ï â â
+
+For formulas of type BÏ and GÏ this is easily seen. Let us check it for
+
+enabledness formulas.
+
+â¢ Ï = enabled(a), with a a belief capability. By construction of T , the result
+
+immediately holds
+
+â¢ Ï = enabled(drop(Ï)). By construction of â, every enabled(drop(Ï)) is an
+element of â (because of axiom E 2), and also, every such formula is true
+in hÎ£, Îi, T .
+
+â¢ Ï = enabled(adopt(Ï)). Suppose hÎ£, Îi, T |=ME Ï. Then, 6|= Â¬Ï and
+hÎ£, Îi, T 6|=ME BÏ. By the induction hypothesis, we have that BÏ 6â â,
+hence Â¬BÏ â â, and, by R3, enabled(adoptÏ)) â â. For the converse,
+
+13
+
+suppose enabled(adopt(Ï)) â â. Then (by R4), we cannot have that
+|=C Â¬Ï. Hence, 6|=C Â¬Ï, and by R3, we also have Â¬BÏ â â and hence,
+by applying the induction hypothesis, hÎ£, Îi, T |=C Â¬BÏ. Since R3 is a
+sound rule, we ï¬nally conclude that hÎ£, Îi, T |=ME enabled(adopt(Ï)).
+
+â¢ Ï = enabled(Ï â a). We can write this as Ï â§ enabled(a) and then use
+
+the induction hypothesis.
+
+3 A Personal Assistant Example
+
+In this section, we give an example to show how the programming language
+GOAL can be used to program agents. The example concerns a shopping agent
+that is able to buy books on the Internet on behalf of the user. The example
+provides for a simple illustration of how the programming language works. The
+agent in our example uses a standard procedure for buying a book. It ï¬rst goes
+to a bookstore, in our case Am.com. At the web site of Am.com it searches for
+a particular book, and if the relevant page with the book details shows up, the
+agent puts the book in its shopping cart. In case the shopping cart of the agent
+contains some items, it is allowed to buy the items on behalf of the user. The
+idea is that the agent adopts a goal to buy a book if the user instructs it to do
+so.
+
+The set of capabilities Bcap of the agent is deï¬ned by
+
+{goto website(site), search(book ), put in shopping cart (book ), pay cart }
+
+The capability goto website(site) goes to the selected web page site.
+In our
+example, relevant web pages are the home page of the user, the main page of
+Am.com, web pages with information about books to buy, and a web page
+that shows the current items in the shopping cart of the agent. The ca-
+pability search(book ) is an action that can be selected at the main page of
+Am.com and selects the web page with information about book . The action
+put in shopping cart (book ) can be selected on the page concerning book and
+puts book in the cart; a new web page called ContentCart shows up showing the
+content of the cart. Finally, in case the cart is not empty the action pay cart
+can be selected to pay for the books in the cart.
+
+In the program text below, we assume that book is a variable referring to the
+speciï¬cs of the book the user wants to buy (in the example, we use variables as
+a means for abbreviation; variables should be thought of as being instantiated
+with the relevant arguments in such a way that predicates with variables reduce
+to propositions). The initial beliefs of the agent are that the current web page is
+the home page of the user, and that it is not possible to be on two diï¬erent web
+pages at the same time. We also assume that the user has provided the agent
+with the goals to buy The Intentional Stance by Daniel Dennett and Intentions,
+Plans, and Practical Reason by Michael Bratman.
+
+14
+
+Î  = {
+
+B(current website(hpage(user )) â¨ current website(ContentCart ))
+â§G(bought (book )) â do(goto website(Am.com)),
+
+B(current website(Am.com)) â§ Â¬B(in cart (book ))â§
+
+G(bought (book )) â do(search(book )),
+
+B(current website(book )) â§ G(bought (book ))
+â do(put in shopping cart (book )),
+B(in cart (book )) â§ G(bought (book )) â do(pay cart )},
+
+Î£0 = {current webpage(hpage(user )),
+
+â s, s â²((s 6= s â² â§ current webpage(s)) â Â¬current webpage(s â²))},
+
+Î0 = {bought (The Intentional Stance)
+
+â§bought (Intentions, Plans and Practical Reason)}
+
+GOAL Shopping Agent
+
+Some of the details of this program will be discussed in the sequel, when we
+prove some properties of the program. The agent basically follows the recipe for
+buying a book outlined above. For now, however, just note that the program
+is quite ï¬exible, even though the agent more or less executes a ï¬xed recipe for
+buying a book. The ï¬exibility results from the agentâs knowledge state and
+the non-determinism of the program. In particular, the ordering in which the
+actions are performed by the agent - which book to ï¬nd ï¬rst, buy a book one
+is not determined by the
+at a time or both in the same shopping cart, etc.
+program. The scheduling of these actions thus is not ï¬xed by the program, and
+might be ï¬xed arbitrarily on a particular agent architecture used to run the
+program.
+
+4 Logic for GOAL
+
+On top of the language GOAL and its semantics, we now construct a temporal
+logic to prove properties of GOAL agents. The logic is similar to other temporal
+logics but its semantics is derived from the operational semantics for GOAL.
+Moreover, the logic incorporates the belief and goal modalities used in GOAL
+agents. We ï¬rst informally discuss the use of Hoare triples for the speciï¬cation
+of actions. In Section 4.3 we give a sound an complete system for such triples.
+These Hoare triples play an important role in the programming logic since it
+can be shown that temporal properties of agents can be proven by means of
+proving Hoare triples for actions only. Finally, in 4.4 the language for express-
+ing temporal properties and its semantics is deï¬ned and the fact that certain
+classes of interesting temporal properties can be reduced to properties of actions,
+expressed by Hoare triples, is proven.
+
+4.1 Hoare Triples
+
+The speciï¬cation of basic actions provides the basis for the programming logic,
+and, as we will show below, is all we need to prove properties of agents. Because
+
+15
+
+they play such an important role in the proof theory of GOAL, the speciï¬ca-
+tion of the basic agent capabilities requires special care. In the proof theory
+of GOAL, Hoare triples of the form {Ï} b {Ï}, where Ï and Ï are mental
+state formulas, are used to specify actions. The use of Hoare triples in a formal
+treatment of traditional assignments is well-understood [2]. Because the agent
+capabilities of GOAL agents are quite diï¬erent from assignment actions, how-
+ever, the traditional predicate transformer semantics is not applicable. GOAL
+agent capabilities are mental state transformers and, therefore, we require more
+extensive basic action theories to formally capture the eï¬ects of such actions.
+Hoare triples are used to specify the postconditions and the frame conditions of
+actions. The postconditions of an action specify the eï¬ects of an action whereas
+the frame conditions specify what is not changed by the action. Axioms for the
+predicate enabled specify the preconditions of actions.
+
+The formal semantics of a Hoare triple for conditional actions is derived from
+the semantics of a GOAL agent and is deï¬ned relative to the set of traces SA
+associated with the GOAL agent A. A Hoare triple for conditional actions thus
+expresses a property of an agent and not just a property of an action. The
+semantics of the basic capabilities are assumed to be ï¬xed, however, and are
+not deï¬ned relative to an agent.
+
+Deï¬nition 4.1 (semantics of Hoare triples for basic actions)
+A Hoare triple for basic capabilities {Ï} a {Ï} means that for all Î£, Î
+
+â¢ hÎ£, Îi |= Ï â§ enabled (a) â M(a, hÎ£, Îi) |= Ï, and
+
+â¢ hÎ£, Îi |= Ï â§ Â¬enabled (a) â hÎ£, Îi |= Ï.
+
+To explain this deï¬nition, note that we made a case distinction between
+states in which the basic action is enabled and in which it is not enabled. In
+case the action is enabled, the postcondition Ï of the Hoare triple {Ï} a {Ï}
+should be evaluated in the next state resulting from executing action a. In case
+the action is not enabled, however, the postcondition should be evaluated in the
+same state because a failed attempt to execute action a is interpreted as an idle
+step in which nothing changes.
+
+Hoare triples for conditional actions are interpreted relative to the set of
+traces associated with the GOAL agent of which the action is a part. Below, we
+write Ï[si ] to denote that a mental state formula Ï holds in state si .
+
+Deï¬nition 4.2 (semantics of Hoare triples for conditional actions)
+Given an agent A, a Hoare triple for conditional actions {Ï} b {Ï} (for A)
+means that for all traces s â SA and i, we have that
+
+(Ï[si ] â§ b = bi â s) â Ï[si+1]
+
+where bi â s means that action bi is taken in state i of trace s.
+
+Of course, there is a relation between the execution of basic actions and that
+of conditional actions, and therefore there also is a relation between the two
+types of Hoare triples. The following lemma makes this relation precise.
+
+16
+
+Lemma 4.3 Let A be a GOAL agent and SA be the meaning of A. Suppose
+that we have {Ï â§ Ï} a {Ïâ²} and SA |= (Ï â§ Â¬Ï) â Ïâ². Then we also have
+{Ï} Ï â do(a) {Ïâ²}.
+
+Proof: We need to prove that (Ï[si ] â§ (Ï â do(a)) = bi â s) â Ïâ²[si+1].
+Therefore, assume Ï[si ] â§ (Ï â do(a)) = bi â s). Two cases need to be
+distinguished: The case that the condition Ï holds in si and the case that
+it does not hold in si . In the former case, because we have {Ï â§ Ï} a {Ïâ²} we
+then know that si+1 |= Ïâ².
+In the latter case, the conditional action is not
+executed and si+1 = si . From ((Ï â§ Â¬Ï) â Ïâ²)[si ], Ï[si ] and Â¬Ï[si ] it then
+follows that Ïâ²[si+1] since Ïâ² is a state formula.
+
+The deï¬nition of Hoare triples presented here formalises a total correctness
+property. A Hoare triple {Ï} b {Ï} ensures that if initially Ï holds, then an
+attempt to execute b results in a successor state and in that state Ï holds. This
+is diï¬erent from partial correctness where no claims about the termination of
+actions and the existence of successor states are made.
+
+4.2 Basic Action Theories
+
+A basic action theory speciï¬es the eï¬ects of the basic capabilities of an agent.
+It speciï¬es when an action is enabled, it speciï¬es the eï¬ects of an action and
+what does not change when an action is executed. Therefore, a basic action
+theory consists of axioms for the predicate enabled for each basic capability,
+Hoare triples that specify the eï¬ects of basic capabilities and Hoare triples that
+specify frame axioms associated with these capabilities. Since the belief update
+capabilities of an agent are not ï¬xed by the language GOAL but are user-
+deï¬ned, the user should specify the axioms and Hoare triples for belief update
+capabilities. The special actions for goal updating adopt and drop are part of
+GOAL and a set of axioms and Hoare triples for these actions is speciï¬ed below.
+
+4.2.1 Actions on beliefs: capabilities of the shopping assistant
+
+Because in this paper, our concern is not with the speciï¬cation of basic action
+theories in particular, but with providing a programming framework for agents
+in which such speciï¬cations can be plugged in, we only provide some example
+speciï¬cations of the capabilities deï¬ned in the personal assistant example that
+we need in the proof of correctness below.
+
+First, we specify a set of axioms for each of our basic actions that state when
+that action is enabled. Below, we abbreviate the book titles of the example, and
+write T for The Intentional Stance and I for Intentions, Plans, and Practical
+
+17
+
+Reason. In the shopping agent example, we then have:
+
+enabled (goto website(site)) â true,
+enabled (search(book )) â B(current website(Amazon.com)),
+enabled (put in shopping cart (book )) â B(current website(book )),
+enabled (pay cart ) â
+
+((Bin cart (T ) â¨ Bin cart (I )) â§ Bcurrent website(ContentCart )).
+
+Second, we list a number of eï¬ect axioms that specify the eï¬ects of a capa-
+bility in particular situations deï¬ned by the preconditions of the Hoare triple.
+
+â¢ The action goto website(site) results in moving to the relevant web page:
+
+{true} goto website(site) {Bcurrent website(site)},
+
+â¢ At Amazon.com, searching for a book results in ï¬nding a page with rele-
+
+vant information about the book:
+{Bcurrent website(Amazon.com)} search(book ) {Bcurrent website(book )}
+
+â¢ On the page with information about a particular book, selecting the action
+put in shopping cart (book ) results in the book being put in the cart; also,
+a new web page appears on which the contents of the cart are listed:
+{Bcurrent website(book )}
+
+put in shopping cart (book )
+
+{B(in cart (book ) â§ current website(ContentCart ))}
+
+â¢ In case book is in the cart, and the current web page presents a list of all
+the books in the cart, the action pay cart may be selected resulting in the
+buying of all listed books:
+{B(in cart (book ) â§ current website(ContentCart ))}
+
+pay cart
+
+{Â¬Bin cart (book ) â§ B(bought (book ) â§ current website(Amazon.com))}
+
+Finally, we need a number of frame axioms that specify which properties
+are not changed by each of the capabilities of the agent. For example, both the
+capabilities goto website(site) and search(book ) do not change any beliefs about
+in cart . Thus we have, e.g.:
+
+{Bin cart (book )} goto website(site) {Bin cart (book )}
+{Bin cart (book )} search(book ) {Bin cart (book )}
+
+It will be clear that we need more frame axioms than these two, and some of
+these will be speciï¬ed below in the proof of the correctness of the shopping
+agent.
+
+It is important to realise that the only Hoare triples that need to be speciï¬ed
+for agent capabilities are Hoare triples that concern the eï¬ects upon the beliefs of
+the agent. Changes and persistence of (some) goals due to executing actions can
+be derived with the proof rules and axioms below that are speciï¬cally designed
+to reason about the eï¬ects of actions on goals.
+
+18
+
+4.2.2 Actions on goals
+
+A theory of the belief update capabilities and their eï¬ects on the beliefs of an
+agent must be complemented with a theory about the eï¬ects of actions upon the
+goals of an agent. Such a theory should capture both the eï¬ects of the default
+commitment strategy as well as give a formal speciï¬cation of the the drop and
+adopt actions. Only in Section 4.3 we aim at providing a complete system, in
+the discussion in the current section, there are dependencies between the axioms
+and rules discussed.
+
+Default commitment strategy The default commitment strategy imposes
+a constraint on the persistence of goals. A goal persists if it is not the case
+that after doing a the goal is believed to be achieved. Only action drop(Ï) is
+allowed to overrule this constraint. Therefore, in case a 6= drop(Ï), we have that
+{GÏ} a {BÏ â¨ GÏ} (using the rule for conditional actions from Table 9, one can
+derive that this triple also holds for general conditional actions b, rather than
+just actions a). The Hoare triple precisely captures the default commitment
+strategy and states that after executing an action the agent either believes it
+has achieved Ï or it still has the goal Ï if Ï was a goal initially.
+
+a 6= drop(Ï)
+{GÏ} a {BÏ â¨ GÏ}
+
+Table 4: Persistence of goals
+
+A similar Hoare triple can be given for the persistence of the absence of a
+
+goal. Formally, we have
+
+{Â¬GÏ} b {Â¬BÏ â¨ Â¬GÏ}
+
+(1)
+
+This Hoare triple states that the absence of a goal Ï persists, and in case
+it does not persist the agent does not believe Ï (anymore). The adoption of
+a goal may be the result of executing an adopt action, of course. However, it
+may also be the case that an agent believed it achieved Ï but after doing b no
+longer believes this to be the case and adopts Ï as a goal again. For example,
+if the goal base is {p â§ q} and the belief base Î£ = {p}, then the agent does not
+have a goal to achieve p because it already believes p to be the case; however,
+in case an action changes the belief base such that p is no longer is believed, the
+agent has a goal to achieve p (again). This provides for a mechanism similar to
+that of maintenance goals. We do not need the Hoare triple (1) as an axiom,
+however, since it is a direct consequence of the fact that BÏ â Â¬GÏ (this is
+exactly the postcondition of (1). Note that the stronger {Â¬GÏ} b {Â¬GÏ} does
+not hold, even if b 6= Ï â do(adopt(Ï)). This occurs for example if we have
+G(p â§ q) â§ Bp. Then the agent does not have p as a goal, since he believes it
+has already been achieved, but, if he would give up p as a belief, it becomes to
+be a goal.
+
+19
+
+In the semantics of Hoare triples (Deï¬nition 4.2) we stipulated that if a is
+not enabled, we verify the postcondition in the same state as the pre-condition:
+
+Ï â Â¬enabled (a)
+{Ï} a {Ï}
+
+Table 5: Infeasible actions
+
+Frame properties on Beliefs The speciï¬cation of the special actions drop
+and adopt involves a number of frame axioms and a number of proof rules.
+The frame axioms capture the fact that neither of these actions has any eï¬ect
+on the beliefs of an agent. Note that, combining such properties with e.g. the
+Consequence Rule (Table 10) one can derive the triple {BÏ} adopt(Ï) {Â¬GÏ} .
+
+{BÏ} adopt(Ï) {BÏ}
+{BÏ} drop(Ï) {BÏ}
+
+{Â¬BÏ} adopt(Ï) {Â¬BÏ}
+{Â¬BÏ} drop(Ï) {Â¬BÏ}
+
+Table 6: Frame Properties on Beliefs for adopt and drop
+
+(Non-)eï¬ects of adopt The proof rules for the actions adopt and drop capture
+the eï¬ects on the goals of an agent. For each action, we list proof rules for the
+eï¬ect and the persistence (ânon-eï¬ectâ) on the goal base for adoption (Table 7)
+and dropping (Table 8) of goals, respectively.
+
+An agent adopts a new goal Ï in case the agent does not believe Ï and Ï is
+not a contradiction. Concerning persistence, an adopt action does not remove
+any current goals of the agent. Any existing goals thus persist when adopt is
+executed. The persistence of the absence of goals is somewhat more complicated
+in the case of an adopt action. An adopt(Ï) action does not add a new goal Ï
+in case Ï is not entailed by Ï or Ï is believed to be the case:
+
+Eï¬ects of adopt
+
+6|=C Â¬Ï
+{Â¬BÏ} adopt(Ï) {GÏ}
+
+Non-eï¬ect of adopt
+
+{GÏ} adopt(Ï) {GÏ}
+
+6|=C Ï â Ï
+{Â¬GÏ} adopt(Ï) {Â¬GÏ}
+
+Table 7: (Non-)eï¬ects of adopt
+
+A drop action drop(Ï) results in the removal of all goals that entail Ï. This
+
+is captured by the ï¬rst proof rule in Table 8
+
+20
+
+Eï¬ects of drop
+
+Non-Eï¬ects of drop
+
+|=C Ï â Ï
+{GÏ} drop(Ï) {Â¬GÏ}
+
+{Â¬GÏ} drop(Ï) {Â¬GÏ}
+
+{Â¬G(Ï â§ Ï) â§ GÏ} drop(Ï) {GÏ}
+
+Table 8: (Non-)eï¬ects of drop
+
+Concerning persistence of goals under drop: a drop action drop(Ï) never
+results in the adoption of new goals. The absence of a goal Ï thus persists when
+a drop action is executed. It is more diï¬cult to formalise the persistence of a
+goal with respect to a drop action. Since a drop action drop(Ï) removes goals
+which entail Ï, to conclude that a goal Ï persists after executing the action, we
+must make sure that the goal does not depend on a goal (is a subgoal) that is
+removed by the drop action. In case the conjunction Ï â§ Ï is not a goal, we
+know this for certain.
+
+The basic action theories for GOAL include a number of proof rules to
+derive Hoare triples. The Rule for Infeasible Actions (Table 5) allows to derive
+frame axioms for an action in case it is not enabled in a particular situation.
+The Rule for Conditional Actions allows the derivation of Hoare triples for
+conditional actions from Hoare triples for capabilities. This rule is justiï¬ed
+by lemma 4.3. Finally, there are three rules for combining Hoare triples and
+for strengthening the precondition and weakening the postcondition: they are
+displayed in Table 10.
+
+Finally, we list how one goes from simple actions a to conditional actions b,
+
+and how to use complex formulas in pre- and post-conditions.
+
+{Ï â§ Ï} a {Ïâ²}, (Ï â§ Â¬Ï) â Ïâ²
+{Ï} Ï â do(a) {Ïâ²}
+
+Table 9: Rule for conditional actions
+
+We did not aim in this section at giving a weakest set of rules: in fact, the
+rules that manipulate the pre- and post-conditions in Table 10 for conditional
+actions b could already be derived if we had only given them from simple actions
+a.
+
+4.3 A Complete Hoare System
+
+We now address the issue of ï¬nding a complete Hoare system for GOAL. Let â¢H
+{Ï} S {Ï} denote that the Hoare triple with pre-condition Ï and postcondition Ï
+is derivable in the calculus H that we are about to introduce, and let |=H denote
+the truth of such assertions, that is, |=H determines the truth of mental state
+
+21
+
+Consequence Rule:
+Ïâ² â Ï, {Ï} a {Ï}, Ï â Ïâ²
+{Ïâ²} a {Ïâ²}
+
+Conjunction Rule:
+
+{Ï1} b {Ï1}, {Ï2} b {Ï2}
+
+{Ï1 â§ Ï2} b {Ï1 â§ Ï2}
+
+Disjunction Rule:
+{Ï1} b {Ï}, {Ï2} b {Ï}
+
+{Ï1 â¨ Ï2} b {Ï}
+
+Table 10: Structural rules
+
+formulas (Deï¬nition 2.3), that of formulas with enabled(â) (Deï¬nition 2.12) and
+that of Hoare triples (Deï¬nition 4.1), on mental states hÎ£, Îi. From now on, the
+statement S ranges over basic actions a and conditional actions b. Then, this
+subsection wants to settle whether our calculus H is sound and complete, i.e.
+whether it can be proven that, for any pre- and postcondition Ï and Ï â LM ,
+
+â¢H {Ï} S {Ï} ââ |=H {Ï} S {Ï}
+
+Finding such a complete system is, even for âordinary deterministic pro-
+gramsâ, impossible, since such programs are interpreted over domains that in-
+clude the integers, and by GÂ¨odelâs Incompleteness Theorem, we know that ax-
+iomatize a domain that includes those integers (cf. [3]). Here, our domain is not
+that of the integers, but, instead, we will assume a completeness result for the
+basic capabilities Bcap that modify the belief base, so that we can concentrate
+on the actions that modify the goals.
+
+Deï¬nition 4.4 (General Substitutions)
+We deï¬ne the following general substitution scheme. Let Ï, Î±, Î² be mental
+state formulas, and X a variable ranging over formulas from L. Then Î²(X )
+denotes that X may occur in Î². Let C (X ) denote a condition on X . Then
+Ï[Î±/Î²(X ) | C (X )] denotes the formula that is obtained from Ï by substituting
+all occurrences in Ï of Î²(X ) for which C (X ) holds, by Î±.
+
+For instance, the result of (Gp â§ Â¬Gq â§ Gs)[Br /GÏ | (p â§ q) â Ï] is
+
+Br â§ Â¬Br â§ Gs.
+
+Deï¬nition 4.5 (The system H)
+The valid Hoare triples for GOAL are as follows:
+
+22
+
+Belief Capabilities
+Adopt
+
+Drop
+
+{Ï(a)} a {Ï(a)}
+{(enabled(adopt(Ï)) â§ Ï[Â¬BÏâ²/GÏâ² |â¢C Ï â Ïâ²])
+â¨ (Â¬enabled(adopt(Ï)) â§ Ï)}{adopt(Ï)}{Ï}
+{Ï[true/Â¬GÏâ² | â¢C Ïâ² â Ï]} drop(Ï) {Ï}
+
+Conditional Actions
+
+{Ï â§ Ï} a {Ï}, |=ME (Ï â§ Â¬Ï) â Ï
+{Ï} Ï â do(a) {Ï}
+
+Consequence Rule
+
+|=ME Ï â Ï, {Ï} a {Ï}, |=ME Ï â Ï
+{Ï} a {Ï}
+
+Lemma 4.6 (Substitution Lemma)
+
+(i) Let hÎ£, Îi |=M enabled(adopt(Ï)) and let hÎ£â², Îâ²i = M(adopt(Ï), hÎ£, Îi).
+
+Then:
+
+hÎ£, Îi |=M Ï[Â¬BÏâ²/GÏâ² |â¢C Ï â Ïâ²] ââ hÎ£â², Îâ²i |=M Ï
+
+(ii) Let hÎ£â², Îâ²i = M(drop(Ï), hÎ£, Îi). Then:
+
+hÎ£, Îi |=M Ï[true/Â¬GÏâ² | â¢C Ïâ² â Ï] ââ hÎ£â², Îâ²i |=M Ï
+
+Proof. We only prove (i), the proof of (ii) is similar. We prove (i) by induction
+on the mental state formula Ï.
+
+1. Ï is of the form GÏ. We distinguish two cases.
+
+(a) â¢C Ï â Ï. By deï¬nition of M(adopt(Ï), hÎ£, Îi), we immediately see
+
+that hÎ£, Îi |=M Â¬BÏ iï¬ hÎ£â², Îâ²i |=M GÏ.
+
+(b) 6â¢C Ï â Ï. The deï¬nition of M(adopt(Ï), hÎ£, Îi) guarantees that
+the adopt has no eï¬ect on the fact that Ï is a goal, thus we have
+hÎ£, Îi |=H GÏ iï¬ M(adopt(Ï), hÎ£, Îi) |=H GÏ. Also, the substitution
+has no change as an eï¬ect: (GÏ)[Â¬BÏâ²/GÏâ² |â¢C Ï â Ïâ²] = GÏ, and
+we have the desired result.
+
+2. Ï if of the form BÏ. In this case, the substitution had no eï¬ect, and also,
+since the adopt has no eï¬ect on the belief base, we have that hÎ£, Îi |=M BÏ
+iï¬ hÎ£â², Îâ²i |=M BÏ.
+
+3. The cases that Ï is a negation or a conjunction of mental states, follows
+
+immediately.
+
+Lemma 4.7 (Soundness of â¢H )
+for any pre- and postcondition Ï and Ï â LM , â¢H {Ï} S {Ï} =â |=H {Ï} S {Ï}
+
+23
+
+Proof. Soundness of Belief Capabilities is assumed. The cases for adopt and
+drop immediately follow from Lemma 4.6. The soundness of Consequence Rule
+is easily proven using Theorem 2.5. Let us ï¬nally consider the rule Condi-
+tional Actions. Suppose that |=H {Ï â§ Ï} a {Ï} (1), and |=ME (Ï â§ Â¬Ï) â Ï
+(2), and take an arbitrary mental state hÎ£, Îi. We have to demonstrate that
+hÎ£, Îi |=ME {Ï} Ï â do(a) {Ï} (3). Hence, we assume that hÎ£, Îi |=ME Ï. We
+then distinguish two cases. First, assume hÎ£, Îi |=ER Ï. Then, by our assump-
+tion (1), we have that hÎ£â², Îâ²i |=M Ï, for hÎ£â², Îâ²i = M(a, hÎ£, Îi). The second
+case is the one in which hÎ£, Îi 6|=M Ï, i.e., hÎ£, Îi |=M Â¬Ï. By (2), we know
+b
+that hÎ£â², Îâ²i |=ER Ï, for any hÎ£â², Îâ²i for which hÎ£, Îi
+ââ hÎ£â², Îâ²i. All in all, we
+have proven (3).
+
+We ï¬rst introduce the notion of weakest liberal precondition, originally due
+
+to Dijkstra ([7]). However, we introduce it immediately in the syntax.
+
+Deï¬nition 4.8 (Weakest Liberal Precondition)
+For S = aâ², adopt(Ï)drop(Ï) and Ï â a, (aâ² a belief capability, a any ba-
+sic capability), we deï¬ne the weakest liberal precondition for S to achieve Ï,
+wlp(S , Ï) â Lm , as follows:
+
+1. If aâ² is a belief capability, and â¢H {Ïâ1(aâ²)} aâ² {Ï(aâ²)} is the rule for aâ²,
+
+then wlp(aâ², Ï(aâ²)) = Ïâ1
+
+2. wlp(adopt(Ï), Ï) = (enabled(adopt(Ï)) â§ Ï[Â¬BÏâ²/GÏâ² |â¢C Ï â Ïâ²)
+
+â¨ (Â¬enabled(adopt(Ï)) â§ Ï)
+
+3. wlp(drop(Ï), Ï) = Ï[true/Â¬GÏâ² | â¢C Ïâ² â Ï]
+
+4. wlp(Ï â a, Ï) = (Ï â§ wlp(a, Ï)) â¨ (Â¬Ï â§ Ï)
+
+Note that the weakest precondition wlp(S , Ï) is indeed an mental state for-
+
+mula.
+
+Lemma 4.9 (Weakest Precondition Lemma)
+We have: â¢H {wlp(S , Ï} S {Ï}, for every S and every postcondition Ï.
+
+Proof. For S = aâ², adopt(Ï), drop(Ï), this follows immediately from Deï¬ni-
+tion 4.5. For conditional actions b = Ï â a, we have to prove
+
+â¢H {(Ï â§ wlp(a, Ï)) â¨ (Â¬Ï â§ Ï)} Ï â a {Ï}
+
+Let us abbreviate (Ï â§ wlp(a, Ï)) â¨ (Â¬Ï â§ Ï) to Ïâ1
+tells us that â¢H {wlp(a, Ï)} a {Ï} (1). Note that |=M Ïâ1
+by the Consequence Rule and (1), we have â¢H {Ïâ1
+also have |=M (Ïâ1
+(2) and (3), we conclude â¢H {Ïâ1
+
+b . The induction hypothesis
+b â wlp(a, Ï). Hence,
+b } a {Ï} (2). Obviously, we
+b â§ Â¬Ï) â Ï (3). Applying the Conditional Actions rule to
+
+b } Ï â a {Ï}, which was to be proven.
+
+Lemma 4.10
+|=H {Ï} S {Ï} â|=M Ï â wlp(S , Ï)
+
+24
+
+Proof. We even prove a stronger statement, i.e., that for all mental states
+hÎ£, Îi, if hÎ£, Îi |=H {Ï} S {Ï}, then hÎ£, Îi |=M Ï â wlp(S , Ï). To prove
+this, we take an arbitrary hÎ£, Îi for which both hÎ£, Îi |=M Ï and hÎ£, Îi |=H
+{Ï} S {Ï} and we then have to show that hÎ£, Îi |=M wlp(S , Ï).
+
+1. S = adopt(Ï). We know that hÎ£, Îi |=H {Ï} adopt(Ï) {Ï}. We distinguish
+two cases, the ï¬rst of which says that hÎ£, Îi |=M Â¬enabled(adopt(Ï)).
+Then we have a transition from hÎ£, Îi to itself, and hence hÎ£, Îi |=M
+Ï, and hence hÎ£, Îi |=M Â¬enabled(adopt(Ï)) â§ Ï, so that hÎ£, Îi |=M
+wlp(adopt(Ï), Ï). In the second case, hÎ£, Îi |=M enabled(adopt(Ï)). By
+the Substitution Lemma 4.6, case (i), we then immediately see hÎ£, Îi |=M
+Ï[Â¬BÏâ²/GÏâ² |â¢C Ï â Ïâ²], and hence hÎ£, Îi |=M wlp(adopt(Ï, Ï).
+
+2. S = drop(Ï). This case follows immediately from the Substitution Lemma
+
+and the deï¬nition of wlp(drop(Ï, Ï).
+
+3. S = Ï â a. We know that hÎ£, Îi |=H {Ï} Ï â a {Ï} and that hÎ£, Îi |=M
+Ï. If hÎ£, Îi |=M Â¬Ï, then the transition belonging to S ends up in hÎ£, Îi,
+and hence we then have hÎ£, Îi |=M Â¬Ï â§ Ï, and in particular hÎ£, Îi |=M
+wlp(S , Ï). In the other case we have hÎ£, Îi |=M Ï, and we then know that
+hÎ£, Îi |=H {Ï} a {Ï}. By induction we conclude that hÎ£, Îi |=M wlp(a, Ï,
+and hence hÎ£, Îi |=M wlp(Ï â a), Ï).
+
+Theorem 4.11 (Completeness of â¢H ))
+For any pre- and postcondition Ï and Ï â LM ,
+
+â¢H {Ï} S {Ï} ââ |=H {Ï} S {Ï}
+
+Proof. Suppose |=M {Ï} S {Ï}. The Weakest Precondition Lemma (4.9)
+tells us that â¢H {wlp(S , Ï)} S {Ï} (1). By Lemma 4.10, we have |=M Ï â
+wlp(S , Ï) (2). We ï¬nally apply the Consequence Rule to (1) and (2) to conclude
+to conclude that â¢H {Ï} S {Ï}.
+
+4.4 Temporal logic
+
+On top of the Hoare triples for specifying actions, a temporal logic is used
+to specify and verify properties of GOAL agents. Two new operators are in-
+troduced. The proposition init states that the agent is at the beginning of
+execution and nothing has happened yet. The second operator until is a weak
+until operator. Ï until Ï means that Ï eventually becomes true and Ï is true
+until Ï becomes true, or Ï never becomes true and Ï remains true forever.
+
+Deï¬nition 4.12 (language of temporal logic LT based on L)
+The temporal logic language LT is inductively deï¬ned by:
+
+â¢ init â LT ,
+
+â¢ enabled (a), enabled (Ï â do(a)) â LT for a â Cap,
+
+25
+
+â¢ if Ï â L, then BÏ, GÏ â LT ,
+
+â¢ if Ï, Ï â LT , then Â¬Ï, Ï â§ Ï â LT ,
+
+â¢ if Ï, Ï â LT , then Ï until Ï â LT .
+
+A number of other well known temporal operators can be deï¬ned in terms of
+the operator until . The always operator â·Ï is an abbreviation for Ï until false,
+and the eventuality operator âÏ is deï¬ned as Â¬â·Â¬Ï as usual.
+
+Temporal formulas are evaluated with respect to a trace s and a time point
+i. State formulas like BÏ, GÏ, enabled (a) etc. are evaluated with respect to
+mental states.
+
+Deï¬nition 4.13 (semantics of temporal formulas)
+Let s be a trace and i be a natural number.
+
+â¢ s, i |= init iï¬ i = 0,
+
+â¢ s, i |= enabled (a) iï¬ enabled (a)[si ],
+
+â¢ s, i |= enabled (Ï â do(a)) iï¬ enabled (Ï â do(a))[si ],
+
+â¢ s, i |= BÏ iï¬ BÏ[si ],
+
+â¢ s, i |= GÏ iï¬ GÏ[si ],
+
+â¢ s, i |= Â¬Ï iï¬ s, i 6|= Ï,
+
+â¢ s, i |= Ï â§ Ï iï¬ s, i |= Ï and s, i |= Ï,
+
+â¢ s, i |= Ï until Ï iï¬ â j â¥ i(s, j
+
+|= Ï â§ â k (i â¤ k < j (s, k |= Ï))) or
+
+â k â¥ i(s, k |= Ï).
+
+We are particularly interested in temporal formulas that are valid with re-
+spect to the set of traces SA associated with a GOAL agent A. Temporal
+formulas valid with respect to SA express properties of the agent A.
+
+Deï¬nition 4.14 Let S be a set of traces.
+
+â¢ S |= Ï iï¬ â s â S , i(s, i |= Ï),
+
+â¢ |= Ï iï¬ S |= Ï where S is the set of all traces.
+
+In general, two important types of temporal properties can be distinguished.
+Temporal properties are divided into liveness and safety properties. Liveness
+properties concern the progress that a program makes and express that a (good)
+state eventually will be reached. Safety properties, on the other hand, express
+that some (bad) state will never be entered. In the rest of this section, we discuss
+a number of speciï¬c liveness and safety properties of an agent A = hÎ A, Î£0, Î0i.
+We show that each of the properties that we discuss are equivalent to a set
+of Hoare triples. The importance of this result is that it shows that temporal
+
+26
+
+properties of agents can be proven by inspection of the program text only. The
+fact that proofs of agent properties can be constructed by inspection of the
+program text means that there is no need to reason about individual traces of
+an agent or its operational behaviour. In general, reasoning about the program
+text is more economical since the number of traces associated with a program
+is exponential in the size of the program.
+
+The ï¬rst property we discuss concerns a safety property, and is expressed
+by the temporal formula Ï â (Ï until Ï). Properties in this context always
+refer to agent properties and are evaluated with respect to the set of traces
+associated with that agent. Therefore, we can explain the informal meaning of
+the property as stating that if Ï ever becomes true, then it remains true until
+Ï becomes true. By deï¬nition, we write this property as Ï unless Ï:
+
+Ï unless Ï
+
+df
+= Ï â (Ï until Ï)
+
+An important special case of an unless property is Ï unless false, which
+expresses that if Ï ever becomes true, it will remain true. Ï unless false means
+that Ï is a stable property of the agent. In case we also have init â Ï, where
+init denotes the initial starting point of execution, Ï is always true and is an
+invariant of the program.
+
+Now we show that unless properties of an agent A = hÎ , Ï0, Î³0i are
+equivalent to a set of Hoare triples for basic actions in Î . This shows that we
+can prove unless properties by proving a ï¬nite set of Hoare triples. The proof
+relies on the fact that if we can prove that after executing any action from Î 
+either Ï persists or Ï becomes true, we can conclude that Ï unless Ï.
+
+Theorem 4.15 Let A = hÎ A, Î£0, Î0i. Then:
+
+â b â Î A({Ï â§ Â¬Ï} b {Ï â¨ Ï}) iï¬ SA |= Ï unless Ï
+
+Proof: The proof from right to left is the easiest direction in the proof. Sup-
+pose SA |= Ï unless Ï and s, i |= Ï. This implies that s, i |= Ï until Ï. In
+case we also have s, i |= Ï, we are done. So, assume s, i |= Â¬Ï and action b is
+selected in the trace at state si . From the semantics of until we then know
+that Ï â¨ Ï holds at state si+1, and we immediately obtain {Ï â§ Â¬Ï} b {Ï â¨ Ï}
+since s and i were arbitrarily chosen trace and time point. To prove the Hoare
+triple for the other actions in the agent program A, note that when we replace
+action b with another action c from Î A in trace s, the new trace s â² is still a
+valid trace that is in the set SA. Because we have SA |= Ï unless Ï, we also
+have s â², i |= Ï unless Ï and from reasoning by analogy we obtain the Hoare
+triple for action c (and similarly for all other actions).
+
+We prove the left to right case by contraposition. Suppose that
+
+(â) â b â Î A({Ï â§ Â¬Ï} b {Ï â¨ Ï})
+
+and for some s â SA we have s, i 6|= Ï unless Ï. The latter fact means that we
+have s, i |= Ï and s, i 6|= Ï until Ï. s, i 6|= Ï until Ï implies that either (i) Ï
+
+27
+
+is never established at some j â¥ i but we do have Â¬Ï at some time point k > i
+or (ii) Ï is established at some time j > i, but in between i and any such j it
+is not always the case that Ï holds.
+
+In the ï¬rst case (i), let k > i be the smallest k such that s, k 6|= Ï. Then,
+we have s, k â 1 |= Ï â§ Â¬Ï and s, k |= Â¬Ï â§ Â¬Ï. In state sk â1, however, either
+a conditional action is performed or no action is performed. From (*) we then
+derive a contradiction.
+
+In the second case (ii), let k > i be the smallest k such that s, k |= Ï. Then
+we know that there is a smallest j such that i < j < k and s, j 6|= Ï (j 6= i since
+s, i |= Ï). This means that we have s, j â 1 |= Ï â§ Â¬Ï. However, in state sj
+either a conditional action is performed or no action is performed. From (*) we
+then again derive a contradiction.
+
+Liveness properties involve eventualities which state that some state will be
+reached starting from a particular situation. To express a special class of such
+properties, we introduce the operator Ï ensures Ï. Ï ensures Ï informally
+means that Ï guarantees the realisation of Ï, and is deï¬ned as:
+
+Ï ensures Ï
+
+df
+= Ï unless Ï â§ (Ï â âÏ)
+
+Ï ensures Ï thus ensures that Ï is eventually realised starting in a situation
+in which Ï holds, and requires that Ï holds until Ï is realised. For the class
+of ensures properties, we can show that these properties can be proven by
+proving a set of Hoare triples. The proof of a ensures property thus can be
+reduced to the proof of a set of Hoare triples.
+
+Theorem 4.16 Let A = hÎ A, Ï0, Î³0i. Then:
+
+â b â Î A({Ï â§ Â¬Ï} b {Ï â¨ Ï}) â§ â b â Î A({Ï â§ Â¬Ï} b {Ï})
+â SA |= Ï ensures Ï
+
+Proof:
+In the proof, we need the weak fairness assumption. Since Ï ensures Ï
+is deï¬ned as Ï unless Ï â§ (Ï â âÏ), by theorem 4.15 we only need to
+prove that SA |= Ï â âÏ given that â b â Î A({Ï â§ Â¬Ï} b {Ï â¨ Ï}) â§ â b â
+Î A({Ï â§ Â¬Ï} b {Ï}). Now suppose, to arrive at a contradiction, that for some
+time point i and trace s â SA we have: s, i |= Ï â§ Â¬Ï and assume that for all
+later points j > i we have s, j |= Â¬Ï. In that case, we know that for all j > i
+we have s, j |= Ï â§ Â¬Ï (because we may assume Ï unless Ï). However, we
+also know that there is an action b that is enabled in a state in which Ï â§ Â¬Ï
+holds and transforms this state to a state in which Ï holds. The action b thus is
+always enabled, but apparently never taken. This is forbidden by weak fairness,
+and we arrive at a contradiction.
+
+Finally, we introduce a third temporal operator âleads toâ 7â. The operator
+Ï 7â Ï diï¬ers from ensures in that it does not require Ï to remain true until
+Ï is established, and is derived from the ensures operator.
+7â is deï¬ned as
+the transitive, disjunctive closure of ensures .
+
+28
+
+Deï¬nition 4.17 (leads to operator)
+The leads to operator 7â is deï¬ned by:
+
+Ï ensures Ï
+Ï 7â Ï
+
+Ï 7â Ï, Ï 7â Ï
+Ï 7â Ï
+
+Ï1 7â Ï, . . . , Ïn 7â Ï
+(Ï1 â¨ . . . â¨ Ïn ) â Ï
+
+The meaning of the âleads toâ operator is captured by the following lemma.
+Ï 7â Ï means that given Ï condition Ï will eventually be realised. The proof
+of the lemma is an easy induction on the deï¬nition of 7â.
+
+Lemma 4.18 Ï 7â Ï |= Ï â âÏ.
+
+5 Proving Agents Correct
+
+In this section, we use the programming logic to prove the correctness of our
+example shopping agent. We do not present all the details, but provide enough
+details to illustrate the use of the programming logic. Before we discuss what
+it means that an agent program is correct and provide a proof which shows
+that our example agent is correct, we introduce some notation. The notation
+involves a number of abbreviations concerning names and propositions in the
+language of our example agent:
+
+â¢ Instead of current website(sitename) we just write sitename; e.g., we
+write Am.com and ContentCart instead of current website(Am.com) and
+current website(ContentCart ), respectively.
+
+â¢ As before, the book titles The Intentional Stance and Intentions, Plans
+and Practical Reason that the agent intends to buy are abbreviated to T
+and I respectively. These conventions can result in formulas like B(T ),
+which means that the agent is at the web page concerning the book The
+Intentional Stance.
+
+A simple and intuitive correctness property, which is natural in this context
+and is applicable to our example agent, states that a GOAL agent is correct
+when the agent program realises the initial goals of the agent. For this sub-
+class of correctness properties, we may consider the agent to be ï¬nished upon
+establishing the initial goals and in that case the agent could be terminated. Of
+course, it is also possible to continue the execution of such agents. This class
+of correctness properties can be expressed by means of temporal formulas like
+GÏ â âÂ¬GÏ. Other correctness properties are conceivable, of course, but not
+all of them can be expressed easily in the temporal proof logic for GOAL.
+
+5.1 Correctness Property of the Shopping Agent
+
+From the discussion above, we conclude that the interesting property to prove
+for our example program is the following property:
+
+Bcond â§ G(bought (T ) â§ bought (I )) 7â B(bought (T ) â§ bought (I ))
+
+29
+
+where Bcond is some condition of the initial beliefs of the agent. More speciï¬-
+cally, Bcond is deï¬ned by:
+
+Bcurrent webpage(hpage(user )) â§ Â¬Bin cart (T ) â§ Â¬Bin cart (I )â§
+B(â s, s â²((s 6= s â² â§ current webpage(s)) â Â¬current webpage(s â²)))
+
+The correctness property states that the goal to buy the books The Intentional
+Stance and Intentions, Plans and Practical Reason, given some initial conditions
+on the beliefs of the agent, leads to buying (or believing to have bought) these
+books. Note that this property expresses a total correctness property. It states
+both that the program behaves as desired and that it will eventually reach
+the desired goal state. An extra reason for considering this property to express
+correctness of our example agent is that the goals involved once they are achieved
+remain true forever (they are âstableâ properties).
+
+5.2
+
+Invariants and Frame Axioms
+
+To be able to prove correctness, we need a number of frame axioms. There
+is a close relation between frame axioms and invariants of a program. This
+is because frame axioms express properties that are not changed by actions,
+and a property that, once true, remains true whatever action is performed is
+a stable property. In case such a property also holds initially, the property is
+an invariant of the program. In our example program, there is one invariant
+that states that it is impossible to be at two web pages at the same time:
+inv = B â s, s â²((s 6= s â² â§ current webpage(s)) â Â¬current webpage(s â²)).
+
+To prove that inv is an invariant of the agent, we need frame axioms stating
+that when inv holds before the execution of an action it still holds after executing
+that action. Formally, for each a â Cap, we need: {inv } a {inv }. These frame
+axioms need to be speciï¬ed by the user, and for our example agent we assume
+that they are indeed true. By means of the Consequence Rule (strengthen the
+precondition of the Hoare triples for capabilities a) and the Rule for Conditional
+Actions (instantiate Ï and Ïâ² with inv ), we then obtain that {inv } b {inv } for
+all b â Î . By theorem 4.15, we then know that inv unless false. Because we
+also have that initially inv holds since hÏ0, Î³0i |= inv , we may conclude that
+init â Binv â§ inv unless false. inv thus is an invariant and holds at all times
+during the execution of the agent. Because of this fact, we do not mention inv
+explicitly anymore in the proofs below, but will freely use the property when
+we need it.
+
+A second property that is stable is the property status(book ):
+
+status(book )
+
+df
+= (Bin cart (book ) â§ Gbought (book )) â¨ Bbought (book )
+
+The fact that status(book ) is stable means that once a book is in the cart and
+it is a goal to buy the book, it remains in the cart and is only removed from the
+cart when it is bought.
+
+30
+
+The proof obligations to prove that status(book ) is a stable property, i.e. to
+
+prove that status(book ) unless false, consist of supplying proofs for
+
+{status(book )} b {status(book )}
+
+for each conditional action b â Î  of the shopping agent (cf. theorem 4.15). By
+the Rule for Conditional Actions, therefore, it is suï¬cient to prove for each
+conditional action Ï â do(a) â Î  that {status(book ) â§ Ï} a {status(book )}
+and (status(book ) â§ Â¬Ï) â status(book ). The latter implication is trivial.
+Moreover, it is clear that to prove the Hoare triples it is suï¬cient to prove
+{status(book )} a {status(book )} since we can strengthen the precondition by
+means of the Consequence Rule. The proof obligations thus reduce to prov-
+ing {status(book )} a {status(book )} for each capability of the shopping agent.
+
+Again, we cannot prove these Hoare triples without a number of frame ax-
+ioms. Because no capability is allowed to reverse the fact that a book has been
+bought, for each capability, we can specify a frame axiom for the predicate
+bought :
+
+(1)
+
+{Bbought (book )} a {Bbought (book )}
+
+In case the book is not yet bought, selecting action pay cart may change the con-
+tents of the cart and therefore we ï¬rst treat the other three actions goto website,
+search, and put in shopping cart which are not supposed to change the contents
+of the cart. For each of the latter three capabilities we therefore add the frame
+axioms:
+
+{Bin cart (book ) â§ Â¬Bbought (book )} a {Bin cart (book ) â§ Â¬Bbought (book )}
+
+where a 6= pay cart . Note that these frame axioms do not refer to goals but only
+refer to the beliefs of the agent, in agreement with our claim that only Hoare
+triples for belief updates need to be speciï¬ed by the user. By using the axiom
+Gbought (book ) â Â¬Bbought (book ) and the Consequence Rule, however, we can
+conclude that:
+
+{Bin cart (book ) â§ Gbought (book )} a {Bin cart (book ) â§ Â¬Bbought (book )}
+
+By combining this with the axiom
+
+{Gbought (book )} a {Bbought (book ) â¨ Gbought (book )}
+
+by means of the Conjunction Rule and by rewriting the postcondition with the
+Consequence Rule, we then obtain
+
+(2){Bin cart (book ) â§ Gbought (book )} a {Bin cart (book ) â§ Gbought (book )}
+
+where a 6= pay cart . By weakening the postconditions of (1) and (2) by means of
+the Consequence Rule and combining the result with the Disjunction Rule, it is
+then possible to conclude that {status(book )} a {status(book )} for a 6= pay cart .
+
+31
+
+As before, in the case of capability pay cart we deal with each of the disjuncts
+of status(book ) in turn. The second disjunct can be handled as before, but the
+ï¬rst disjunct is more involved this time because pay cart can change both the
+content of the cart and the goal to buy a book if it is enabled. Note that pay cart
+only is enabled in case BContentCart holds. In case BContentCart holds and
+pay cart is enabled, from the eï¬ect axiom for pay cart and the Consequence
+Rule we obtain
+
+{Bin cart (book ) â§ Gbought (book ) â§ BContentCart }
+
+(3)
+
+pay cart
+{Bbought (book )}
+
+In case Â¬BContentCart holds and pay cart is not enabled, we use the Rule for
+Infeasible Capabilities to conclude that
+
+{Bin cart (book ) â§ Gbought (book ) â§ Â¬BContentCart }
+
+(4)
+
+pay cart
+
+{Bin cart (book ) â§ Gbought (book ) â§ Â¬BContentCart }
+
+By means of the Consequence Rule and the Disjunction Rule, we then can
+conclude from (1), (3) and (4) that {status(book )} pay cart {status(book )}, and
+we are done.
+
+5.3 Proof Outline
+
+The main proof steps to prove our agent example correct are listed next. The
+proof steps below consists of a number of ensures formulas which together
+prove that the program reaches its goal in a ï¬nite number of steps.
+
+(1) Bhpage(user ) â§ Â¬Bin cart (T ) â§ Gbought (T )â§
+
+â§Â¬Bin cart (I ) â§ Gbought (I )
+ensures
+BAm.com â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )
+(2) BAm.com â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )
+
+ensures
+[(B(T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I ))â¨
+(B(I ) â§ Gbought (I ) â§ Â¬Bin cart (T ) â§ Gbought (T ))]
+
+(3) B(T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )
+
+ensures
+Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I ) â§ BContentCart
+
+(4) Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )
+
+ensures
+BAm.com â§ Â¬Bin cart (I ) â§ Gbought (I ) â§ status(T )
+
+32
+
+(5) B(Am.com) â§ Â¬Bin cart (I ) â§ Gbought (I ) â§ status(T )
+
+ensures
+B(I ) â§ Gbought (I ) â§ status(T )
+
+(6) B(I ) â§ Gbought (I ) â§ status(T )
+
+ensures
+Bin cart (I ) â§ Gbought (I ) â§ BContentCart â§ status(T )
+
+(7) Bin cart (I ) â§ Gbought (I ) â§ BContentCart â§ status(T )
+
+ensures
+Bbought (T ) â§ Bbought (I )
+
+At step 3, the proof is split up into two subproofs, one for each of the dis-
+juncts of the disjunct that is ensured in step 2. The proof for the other disjunct
+is completely analogous. By applying the rules for the âleads toâ operator the
+third to seventh step result in:
+
+(a) B (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I ) 7â
+
+Bbought (T ) â§ Bbought (I )
+
+(b) B (I ) â§ Gbought (I ) â§ Â¬Bin cart (T ) â§ Gbought (T ) 7â
+
+Bbought (T ) â§ Bbought (I )
+
+Combining (a) and (b) by the disjunction rule for the âleads toâ operator and by
+using the transitivity of âleads toâ we then obtain the desired correctness result:
+
+Bcond â§ G(bought (T ) â§ bought (I )) 7â B(bought (T ) â§ bought (I ))
+
+with Bcond as deï¬ned previously.
+
+Step 1 We now discuss the ï¬rst proof step in somewhat more detail. The re-
+mainder of the proof is left to the reader. The proof of a formula Ï ensures Ï
+requires that we show that every action b in the Personal Assistant program
+satisï¬es the Hoare triple {Ï â§ Â¬Ï} b {Ï â¨ Ï} and that there is at least one ac-
+tion bâ² which satisï¬es the Hoare triple {Ï â§ Â¬Ï} bâ² {Ï}. By inspection of the
+program, in our case the proof obligations turn out to be:
+
+{Bhpage(user ) â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )}
+
+b
+
+{Bhpage(user ) â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )}
+
+where b is one of the actions
+
+B(Am.com) â§ Â¬B(in cart (book )) â§ G(bought (book )) â do(search(book )),
+B(book ) â§ G(bought (book )) â do(put in shopping cart (book )),
+B(in cart (book )) â§ G(bought (book )) â do(pay cart )}
+
+and
+
+33
+
+{Bhpage(user ) â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )}
+
+B(hpage(user ) â¨ ContentCart ) â§ G(bought (book )) â do(goto website(Am.com))
+
+{BAm.com â§ Â¬Bin cart (T ) â§ Gbought (T ) â§ Â¬Bin cart (I ) â§ Gbought (I )}
+
+The proofs of the ï¬rst three Hoare triples are derived by using the Rule for
+Conditional Actions. The key point is noticing that each of the conditions of
+the conditional actions involved refers to a web page diï¬erent from the web page
+hpage(user ) referred to in the precondition of the Hoare triple. The proof thus
+consists of using the fact that initially Bhpage(user ) and the invariant inv to
+derive an inconsistency which immediately yield the desired Hoare triples by
+means of the Rule for Conditional Actions.
+
+To prove the Hoare triple for
+
+B(hpage(user ) â¨ ContentCart ) â§ G(bought (book )) â do(goto website(Am.com))
+we use the eï¬ect axiom (5) for goto website and the frame axiom (6):
+
+{Bhpage(user )}
+
+(5)
+
+goto website(Am.com)
+
+{BAm.com}
+
+and
+
+{Â¬Bin cart (book ) â§ Â¬Bbought (book )}
+
+(6)
+
+goto website(Am.com)
+
+{Â¬Bin cart (book ) â§ Â¬Bbought (book )}
+
+By using the axiom
+
+{Gbought (book )} goto website(Am.com) {Bbought (book ) â¨ Gbought (book )}
+
+the Conjunction Rule and the Rule for Conditional Actions it is then not diï¬cult
+to obtain the desired conclusion.
+
+6 Possible Extensions of GOAL
+
+Although the basic features of the language GOAL are quite simple, the pro-
+gramming language GOAL is already quite powerful and can be used to program
+real agents. In particular, GOAL only allows the use of basic actions. There are,
+however, several strategies to deal with this restriction. First of all, if a GOAL
+agent is proven correct, any scheduling of the basic actions that is weakly fair
+can be used to execute the agent. More speciï¬cally, an interesting possibility is
+to deï¬ne a mapping from GOAL agents to a particular agent architecture (cf.
+also [4]). As long as the agent architecture implements a weakly fair schedul-
+ing policy, concerns like the eï¬ciency or ï¬exibility may determine the speciï¬c
+mapping that is most useful with respect to available architectures.
+
+A second strategy concerns the grain of atomicity that is required.
+If a
+coarse-grained atomicity of basic actions is feasible for an application, one might
+
+34
+
+consider taking complex plans as atomic actions and instantiate the basic actions
+in GOAL with these plans (however, termination of these complex plans should
+be guaranteed). Finally, in future research the extension of GOAL with a richer
+notion of action structure like for example plans could be explored. This would
+make the programming language more practical. The addition of such a richer
+notion, however, is not straightforward. At a minimum, more bookkeeping
+seems to be required to keep track of the goals that an agent already has chosen
+a plan for and which it is currently executing. This bookkeeping is needed, for
+example, to prevent the selection of more than one plan to achieve the same
+goal. Note that this problem was dealt with in GOAL by the immediate and
+complete execution of a selected action. It is therefore not yet clear how to give
+a semantics to a variant of GOAL extended with complex plans.
+
+The ideal, however, would be to combine the language GOAL which includes
+declarative goals with our previous work on the agent programming language
+3APL which includes planning features into a single new programming frame-
+work. Let us elaborate a little on the (im-)possibilities, here. A 3APL-Goal is a
+program or procedural goal, written P-Goal, and deï¬ned as either a basic action
+Bact â Goal, a test on the beliefs of the agent Ï? or composed as a sequence
+(Ï1; Ï2) or a choice (Ï1 + Ï2). However, also goal-variables X are allowed in
+P-Goals. Central in 3APL is the so-called practical reasoning rule of the form
+
+Ïh â Ï | Ïb â
+
+which should be read as: âif Ïh , the goal in the head of the rule, is the agentâs
+current (procedural) P-Goal, and he believes that Ï is the case, then the rule
+allows the agent replace Ïh with the goal in the body, Ïbâ
+
+Apart from introducing more complex action structures, it would also be par-
+ticularly interesting to extend GOAL with high-level communication primitives.
+Because both declarative knowledge as well as declarative goals are present in
+GOAL, communication primitives could be deï¬ned in the spirit of speech act
+theory [29]. The semantics of, for example, a request primitive could then be
+formally deï¬ned in terms of the knowledge and goals of an agent. Moreover,
+such a semantics would have a computational interpretation because both beliefs
+and goals have a computational interpretation in our framework.
+
+Finally, there are a number of interesting extensions and problems to be
+investigated in relation to the programming logic. For example, it would be
+interesting to develop a semantics for the programming logic for GOAL that
+would allow the nesting of the belief and goal operators. In the programming
+logic, we cannot yet nest knowledge modalities which would allow an agent
+to reason about its own knowledge or that of other agents. Moreover, it is
+not yet possible to combine the belief and goal modalities. It is therefore not
+possible for an agent to have a goal to obtain knowledge, nor can an agent have
+explicit rather than implicit knowledge about its own goals or those of other
+agents. So far, the use of the B and G operators in GOAL is, ï¬rst of all, to
+distinguish between beliefs and goals. Secondly, it enables an agent to express
+that it does not have a particular belief or goal (consider the diï¬erence between
+
+35
+
+Â¬BÏ and BÂ¬Ï). Another important research issue concerns an extension of the
+programming framework to incorporate ï¬rst order languages and extend the
+programming logic with quantiï¬ers. Finally, more work needs to be done to
+investigate and classify useful correctness properties of agents. In conclusion,
+whereas the main aim may be a uniï¬ed programming framework which includes
+both declarative goals and planning features, there is still a lot of work to be
+done to explore and manage the complexities of the language GOAL itself.
+
+7 Conclusion
+
+Although a programming language dedicated to agent programming is not the
+only viable approach to building agents, we believe it is one of the more practical
+approaches for developing agents. Several other approaches to the design and
+implementation of agents have been proposed. One such approach promotes the
+use of agent logics for the speciï¬cation of agent systems and aims at a further
+reï¬nement of such speciï¬cations by means of an associated design methodology
+for the particular logic in use to implementations which meet this speciï¬cation
+in, for example, an object-oriented programming language like Java.
+In this
+approach, there is no requirement on the existence of a natural mapping relating
+the end result of this development process - a Java implementation - and the
+formal speciï¬cation in the logic. It is, however, not very clear how to implement
+these ideas for agent logics incorporating both informational and motivational
+attitudes and some researchers seem to have concluded from this that the notion
+of a motivational attitude (like a goal) is less useful than hoped for.
+
+Still another approach consists in the construction of agent architectures
+which âimplementâ the diï¬erent mental concepts. Such an architecture pro-
+vides a template which can be instantiated with the relevant beliefs, goals, etc.
+Although this second approach is more practical than the ï¬rst one, our main
+problem with this approach is that the architectures proposed so far tend to
+be quite complex. As a consequence, it is quite diï¬cult to understand what
+behaviour an architecture that is instantiated will generate.
+
+For these reasons, our own research concerning intelligent agents has focused
+on the programming language 3APL which supports the construction of intelli-
+gent agents, and reï¬ects in a natural way the intentional concepts used to design
+agents (in contrast with the approach discussed above which promotes the use
+of logic, but at the same time suggests that such an intermediate level is not
+required).
+
+Nevertheless, in previous work the incorporation of declarative goals in agent
+programming frameworks has, to our knowledge, not been established. It has
+been our aim in this paper to show that it is feasible to incorporate declarative
+goals into a programming framework (and there is no need to dismiss the con-
+cept). Moreover, our semantics is a computational semantics and it is rather
+straightforward to implement the language, although this may require some
+restrictions on the logical reasoning involved on the part of GOAL agents.
+
+Let us brieï¬y indicate how incorporating declarative goals in the language
+
+36
+
+3APL might proceed. To this end, let us rename the goals in 3APL to plans Ï,
+which are either a basic action a(t1, . . . , tn ) on terms ti , a test Ï? or combined in
+sequential composition (Ï1; Ï2) or nondeterministic choice (Ï1 + Ï2). One may
+also use goal-variablesâ X , Y , . . . in goals. Central in 3APL are the so-called
+Practical Reasoning Rules, in its most general form written as
+
+Ïh â Ï | Ïb â Rule
+
+In this paper, we provided a complete programming theory. The theory
+includes a concrete proposal for a programming language and a formal, opera-
+tional semantics for this language as well as a corresponding proof theory based
+on temporal logic. The logic enables reasoning about the dynamics of agents
+and about the beliefs and goals of the agent at any particular state during its
+execution. The semantics of the logic is provided by the GOAL program se-
+mantics which guarantees that properties proven in the logic are properties of
+a GOAL program. By providing such a formal relation between an agent pro-
+gramming language and an agent logic, we were able to bridge the gap between
+theory and practice. Moreover, a lot of work has already been done in providing
+practical veriï¬cation tools for temporal proof theories [33].
+
+Finally, our work shows that the (re)use of ideas and techniques from con-
+current programming can be very fruitful. In particular, we have used many
+ideas from concurrent programming and temporal logics for programs in devel-
+oping GOAL. It remains fruitful to explore and exploit ideas and techniques
+from these areas.
+
+References
+
+[1] P. GÂ¨ardenfors AlchourrÂ´on, C. E. and D. Makinson. On the logic of the-
+ory change: Partial meet contraction and revision functions. Journal of
+Symbolic Logic, 50:510â530, 1985.
+
+[2] Gregory R. Andrews. Concurrent Programming: Principles and Practice.
+
+The Benjamin/Cummings Publishing Company, 1991.
+
+[3] K.R. Apt and E-R. Olderog. Veriï¬cation of Sequential and Concurrent
+
+Programs. Springer, New York, 1991.
+
+[4] K. Mani Chandy and Jayadev Misra. Parallel Program Design. Addison-
+
+Wesley, 1988.
+
+[5] Philip R. Cohen and Hector J. Levesque. Intention is choice with commit-
+
+ment. Artiï¬cial Intelligence, 42:213â261, 1990.
+
+[6] Philp R. Cohen and Hector J. Levesque. Communicative Actions for Artiï¬-
+cial Agents. In Proceedings of the International Conference on Multi-Agent
+Systems. AAAI Press, 1995.
+
+37
+
+[7] E.W. Dijkstra. Guarded commands, nondeterminacy and formal derivation
+
+of programs. Communications of the ACM, 18:453â457, 1975.
+
+[8] R. Fagin and J. Halpern. Belief, awareness, and limited reasoning. Artiï¬cial
+
+Intelligence, 34:39â76, 1988.
+
+[9] R. Fagin, J.Y. Halpern, Y. Moses, and M.Y. Vardi. Reasoning about Knowl-
+
+edge. MIT Press, Cambridge MA, 1994.
+
+[10] Giuseppe de Giacomo, Yves LespÂ´erance, and Hector Levesque. ConGolog,
+a Concurrent Programming Language Based on the Situation Calculus.
+Artiï¬cial Intelligence, 121(1-2):109â169, 2000.
+
+[11] J.Y. Girard. Linear logic. Theoretical Computer Science, 50:1â101, 1987.
+
+[12] Koen V. Hindriks, Frank S. de Boer, Wiebe van der Hoek, and John-Jules
+Meyer. An Operational Semantics for the Single Agent Core of AGENT-
+0. Technical Report UU-CS-1999-30, Department of Computer Science,
+University Utrecht, 1999.
+
+[13] Koen V. Hindriks, Frank S. de Boer, Wiebe van der Hoek, and John-
+Jules Ch. Meyer. A Formal Embedding of AgentSpeak(L) in 3APL.
+In
+G. Antoniou and J. Slaney, editors, Advanced Topics in Artiï¬cial Intelli-
+gence (LNAI 1502), pages 155â166. Springer-Verlag, 1998.
+
+[14] Koen V. Hindriks, Frank S. de Boer, Wiebe van der Hoek, and John-
+Jules Ch. Meyer. Formal Semantics for an Abstract Agent Programming
+Language. In M.P. Singh, A. Rao, and M.J. Wooldridge, editors, Intelligent
+Agents IV (LNAI 1365), pages 215â229. Springer-Verlag, 1998.
+
+[15] Koen V. Hindriks, Frank S. de Boer, Wiebe van der Hoek, and John-
+Jules Ch. Meyer. Agent Programming in 3APL. Autonomous Agents and
+Multi-Agent Systems, 2(4):357â401, 1999.
+
+[16] Koen V. Hindriks, Yves LespÂ´erance, and Hector J. Levesque. An Embed-
+ding of ConGolog in 3APL. Technical Report UU-CS-2000-13, Department
+of Computer Science, University Utrecht, 2000.
+
+[17] N.R. Jennings and M.J. Wooldridge. Agent technology: Foundations, Ap-
+
+plications, and Markets. Springer, 1997.
+
+[18] W.L. Johnson, editor. Proc. of the 1st Internatioanl Conference on Au-
+
+tonomous Agents. ACM Press, 1997.
+
+[19] Bernd van Linder, Wiebe van der Hoek, and John-Jules Ch. Meyer. Formal-
+ising motivational attitudes of agents: On preferences, goals, and commit-
+ments. In M.J. Wooldridge, J.P. MÂ¨uller, and M. Tambe, editors, Intelligent
+agents II (LNAI 1037), pages 17â32. Springer-Verlag, 1996.
+
+[20] Zohar Manna and Amir Pnueli. The Temporal Logic of Reactive and Con-
+
+current Systems. Springer-Verlag, 1992.
+
+38
+
+[21] J.-J.Ch. Meyer and W. van der Hoek. Epistemic Logic for AI and Computer
+Science. Number 41 in Cambridge Tracks in Theoretical Computer Science.
+Cambridge University Press, 1995.
+
+[22] John-Jules Ch. Meyer, Wiebe van der Hoek, and Bernd van Linder. A
+Logical Approach to the Dynamics of Commitments. Aritiï¬cial Intelligence,
+113:1â40, 1999.
+
+[23] G. Priest, R. Routley, and J. Norman, editors. Paraconsistent Logic: Essays
+
+on the Inconsistent. Philosophia Verlag, MÂ¨unchen, 1989.
+
+[24] Anand S. Rao. AgentSpeak(L): BDI Agents Speak Out in a Logical Com-
+putable Language. In W. van der Velde and J.W. Perram, editors, Agents
+Breaking Away (LNAI 1038), pages 42â55. Springer-Verlag, 1996.
+
+[25] Anand S. Rao. Decision Procedures for Propositional Linear-Time Belief-
+Desire-Intention Logics. In M.J. Wooldridge, J.P. MÂ¨uller, and M. Tambe,
+editors, Intelligent Agents II (LNAI 1037), pages 33â48. Springer-Verlag,
+1996.
+
+[26] Anand S. Rao and Michael P. Georgeï¬.
+
+Intentions and Rational Com-
+mitment. Technical Report 8, Australian Artiï¬cial Intelligence Institute,
+Melbourne, Australia, 1990.
+
+[27] S. Russell and P. Norvig. Artiï¬cial Intelligence, A Modern Approach. Pren-
+
+tice Hall, 1995.
+
+[28] V. Saraswat, M Ringard, and P Panangaden. Semantic foundations of con-
+current constraint programming. In Proceedings of the 18th. ACM Sympo-
+sium on Principles of Programming Languages (POPLâ91), pages 333â352,
+1991.
+
+[29] John R. Searle. Speech acts. Cambridge University Press, 1969.
+
+[30] Yoav Shoham. Agent-oriented programming. Artiï¬cial Intelligence, 60:51â
+
+92, 1993.
+
+[31] E. Thijsse. On total awareness logics (with special attention to mono-
+tonicity constraints and ï¬exibility). In M. de Rijke, editor, Diamonds and
+Defaults, volume 229 of Synthese Library. Kluwer Academic Publishers,
+Dordrecht, 1993.
+
+[32] Sarah Rebecca Thomas. PLACA, An Agent Oriented Programming Lan-
+guage. PhD thesis, Department of Computer Science, Stanford University,
+1993.
+
+[33] Tanja Vos. UNITY in Diversity. PhD thesis, Department of Computer
+
+Science, Utrecht University, 2000.
+
+39
+
+[34] Wayne Wobcke. On the Correctness of PRS Agent Programs. In N.R. Jen-
+nings and Y. LespÂ´erance, editor, Intelligent Agents VI (LNAI 1757).
+Springer-Verlag, 2000.
+
+[35] Michael Wooldridge and Nicholas R. Jennings. Intelligent agents: Theory
+and practice. The Knowledge Engineering Review, 10(2):115â152, 1995.
+
+40
+
+

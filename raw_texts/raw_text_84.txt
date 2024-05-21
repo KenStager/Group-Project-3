@@ -1,0 +1,726 @@
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+A Study on AI-FML Robotic Agent for Student 
+Learning Behavior Ontology Construction 
+
+Chang-Shing Lee, Mei-Hui Wang, Wen-Kai Kuan 
+Zong-Han Ciou, Yi-Lin Tsai, Wei-Shan Chang 
+Dept. of Computer Science and Information Engineering 
+National University of Tainan 
+Tainan, Taiwan 
+leecs@mail.nutn.edu.tw 
+
+Lian-Chao Li, Naoyuki Kubota 
+Dept. of Mechanical Systems Engineering 
+Tokyo Metropolitan University 
+Tokyo, Japan 
+kubota@tmu.ac.jp 
+
+Tzong-Xiang Huang, Eri Sato-Shimokawara 
+Toru Yamaguchi 
+Dept. of System Design 
+Tokyo Metropolitan University 
+Tokyo, Japan 
+yamachan@tmu.ac.jp 
+
+intelligent  agents, 
+
+AbstractâIn this paper, we propose an AI-FML robotic agent 
+for student learning behavior ontology construction which can be 
+applied  in  English  speaking  and  listening  domain.  The  AI-FML 
+robotic  agent  with  the  ontology  contains  the  perception 
+intelligence, computational intelligence, and cognition intelligence 
+for  analyzing  student  learning  behavior.  In  addition,  there  are 
+three 
+including  a  perception  agent,  a 
+computational agent, and a cognition agent in the AI-FML robotic 
+agent. We deploy the perception agent and the cognition agent on 
+the robot Kebbi Air. Moreover, the computational agent with the 
+Deep Neural Network (DNN) model is performed in the cloud and 
+can communicate with the perception agent and cognition agent 
+via the Internet. The proposed AI-FML robotic agent is applied in 
+Taiwan and tested in Japan. The experimental results show that 
+the agents can be utilized in the human and machine co-learning 
+model for the future education. 
+
+KeywordsâAI-FML,  Agent,  Robot,  Fuzzy  Machine  Learning, 
+
+Ontology, Learning Behavior 
+
+I. 
+
+INTRODUCTION 
+
+What is the relationship between Artificial Intelligence (AI) 
+and  Computational  Intelligence  (CI)?  According  to  IEEE 
+Computational  Intelligence  Society  (CIS),  CI  is  the  theory, 
+design,  application  and  development  of  biologically  and 
+linguistically  motivated  computational  paradigms  [1].  It  plays 
+an important role in developing successful intelligent systems, 
+including  games,  multilayer  perceptron,  and  cognitive 
+developmental  systems,  for  example,  Deep  Learning  (DL)  or 
+Deep Convolutional Neural Networks (DCNN). DL or DCNN 
+is one of the core methods for AI systems [1]. In addition, using 
+the  human  language  as  a  source  of  inspiration,  fuzzy  logic 
+systems  (FLS)  can  model  linguistic  imprecision  and  solve 
+uncertain problems [1]. FLS enables us to perform approximate 
+reasoning based on humanized thinking, and it includes fuzzy 
+sets  and  fuzzy  logic,  fuzzy  clustering  and  classification, 
+linguistic  summarization,  fuzzy  neural  networks,  type-2 fuzzy 
+sets and systems, and so on [1]. 
+
+B.  Bouchon-Meunier,  President  of  the  IEEE  CIS  in 2020-
+2021, wrote her welcome message in the IEEE CIS Website to 
+the  readers  as  follows  [2]:  ââ¦One  century  ago,  in  1920,  the 
+word ârobotâ appeared, â¦ 1920 is also the year when the writer 
+Isaac Asimov was born and everyone knows his Three Laws of 
+Robotics,  which  he  first  published  in  1942  in  the  novel 
+Runaround. This novel was the first in a long series of stories in 
+
+which he explored relations between humans and artifacts and 
+questioned the applicability of these rules to robots in real-life 
+situations  with  humansâ¦.â,  and,  ââ¦Claude  E.  Shannon 
+published  his  paper  âProgramming  a  computer  for  playing 
+chess,â  the  first  paper  proposing  a  computer  program  to  play 
+chess, a distant ancestor to AlphaGo. The same year, in 1950, 
+Alan Turing published âComputing Machinery and Intelligence,â  
+in which he proposed to consider the question âCan machines 
+think?â and described the âimitation gameâ, now known as the 
+Turing test, a âbig leap for mankindâ, from my point of view.â. 
+
+Fig. 1.  System  structure  for  student  learning  performance  assessment  with 
+BCI mechanism [7]. 
+
+Fig.  1  shows  the  system  structure  for  student  learning 
+performance  assessment  with  brain  computer  interface  (BCI) 
+mechanism which describes as follows [7]: The subject wearing 
+a BCI device interacts with the intelligent learning assessment 
+robot and AI-FML robot to learn English through listening or 
+speaking [7]. Meanwhile, the data related to his/her expressions, 
+emotions, and learning performance are collected to store in the 
+cloud resources/database. The left side of the brain is better at 
+things like reading, writing, and computations [3]. However, the 
+right  brain  has  a  more  creative  and  less  organized  way  of 
+thinking [3]. Hence, the robot can help humans to do things in a 
+more  rational  thinking,  and  human  can  add  much  creative 
+information and knowledge to the robotic behavior. Therefore, 
+humans can work with the robot in the world such as listening 
+to music or Go applications for human and machine co-learning 
+in future education [7-10]. In this paper, we propose an AI-FML 
+robotic  agent  for  student  behavior  ontology  construction  and 
+analyze  student  learning  behavior.  Kebbi  Air  robots  with  AI-
+FML robotic agent were deployed in Taiwan and tested in Japan. 
+
+Cloud ResourcesDatabaseSubjectsDomain ExpertExpressions and EmotionsBrain and ComputerInterface (BCI)Learning PerformanceExpressionsBCIIntelligent LearningAssessment RobotAI-FML RobotHumanityActionHumanityThinkingRationalityThinkingRationalityActionâ¦â¦Brain 
+ 
+ 
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+The  research  question  in  this  paper  is  try  to  observe  student 
+learning  behavior  in  class  to  construct  their  learning  behavior 
+ontology. Fuzzy markup language (FML) is a human machine 
+language  and  it  is  able  to  establish  the  communication  bridge 
+between humans and machines. Humans interact with the robots 
+to make learning fun and the robots collect the information from 
+humans  to  make  themselves  much  smarter  after  machine 
+learning. Thatâs way, we use FML as a communication language 
+between humans and machines. The experimental results show 
+the agents can be utilized in the human and machine co-learning 
+model for the future education. 
+
+The remainder of the paper is organized as follows. We first 
+introduce  the  system  structure  of  AI-FML  robotic  agent  in 
+Section II. We then analyze and construct the student learning 
+behavior  extraction  mechanism  based  on  the  robotic  agent  in 
+Section III. Section IV presents the exploration and exploitation 
+for  learning  behavior  ontology  construction.  Experimental 
+results are given in Section V and finally we conclude the paper 
+in Section VI. 
+
+II.  SYSTEM STRUCTURE OF AI-FML ROBOTIC AGENT 
+
+A.  AI-FML  Agent  with  Perception  Agent,  Computational 
+
+Agent and Cognition Agent 
+In  this  paper,  we  classify  the  intelligence  of  AI-FML  into 
+including  Perception  Intelligence,  Cognition 
+three  parts, 
+Intelligence, and Computational Intelligence. Fig. 2 shows the 
+structure  of  AI-FML  robotic  agent  which  is  deployed  to  the 
+robot  Kebbi  Air  developed  by  NUWA  Robotics.  The 
+specification  of  the  Kebbi  Air  is  355mm  long Ã 347mm 
+wideÃ196mm high and its weight is 4400g. Containing neural 
+networks,  fuzzy  systems,  and  evolutionary  computation,  the 
+computational  intelligence  can  be  applied  to  many  real-world 
+applications, for example, to ambient intelligence, artificial life, 
+cultural learning, computer games, and social reasoning [1]. 
+
+human experience and personality. For example, Kebbi Air can 
+infer the student learning performance according to the retrieved 
+learning information in the past. 
+
+B.  Perception Agent and Cognition Agent Structure 
+
+Before  learning  happens,  humans  first  need  to  have  input. 
+Second, humans transform the information into a model that we 
+use to take action on our surroundings. Finally, learning happens 
+after humans perform the action to new information [4]. Fig. 3 
+shows the structure of the perception agent and cognition agent 
+in  the  teaching  fields  where  students  learn  through  the 
+interaction  with  the  various  kinds  of  the  robots  and  human 
+teachers  observe  their  studentsâ  learning  performance  in 
+different  learning  pathways  to  human  and  robot  co-learning. 
+Here, the perception agent is responsible for gathering data and 
+information using its sensors, and the cognition agent observes 
+the  involved  studentsâ  behavior  of  human  actions  and  human 
+thinking. 
+
+Fig. 3.  System structure of the perception agent and cognition agent. 
+
+C.  Computational Agent with Deep Neural Network Structure 
+Fig. 4 shows the structure of the computational agent with 
+
+deep neural network for AI-FML robotic agent. 
+
+Fig. 2.  Structure  of  AI-FML  robotic  agent  with  perception  intelligence, 
+cognition intelligence, and computational intelligence. 
+
+The AI-FML robotic agent contains the perception agent, the 
+cognition  agent,  and  the  computational  agent.  The  perception 
+agent  with  perception  intelligence  has  the  ability  to  get  data, 
+information, or knowledge from the environment based on some 
+devices  and  perceptron  through  voice  recognition,  image 
+processing,  or  natural  language  processing.  It  can  help  a 
+machine to communicate with a person to deal with real-world 
+applications. The cognition agent with cognition intelligence is 
+able to receive information or knowledge from the environment, 
+perception agent, or the computational agent. Then, it generates 
+various  specific  responses  to  the  environment  based  on  each 
+
+Fig. 4.  Structure of the computational agent with deep neural network for AI-
+FML robotic agent. 
+
+The  involved  students  learn  the  teaching  materials  on  the 
+cloud through the AI-FML robotic learning platform and their 
+learning performance are stored in the cloud. Feature variables, 
+for example, x1, x2, â¦, and x7, of the deep neural network are 
+extracted from the collected data during the learning period and 
+y  is  the  output  of  the  established  deep  learning  model.  The 
+labeled variable could be the involved studentsâ monthly exam 
+
+Perception IntelligenceComputation IntelligenceKebbiAirDomain ExpertStudentsCognition IntelligenceAI-FML Robotic AgentStudentsâ¦â¦Domain ExpertComputer/RobotHandheld DeviceAI-FML Robotic Learning PlatformKebbi AirPalro/PalmiCell Phone/TabletComputer/NotebookAgent Expert...TeachersZenbo/Zenbo Juniorâ¦â¦â¦Studentsâ¦â¦PerceptionAgentCognitionAgentComputationalAgentAI-FML RoboticAgentLearning CloudAI-FMLRobotic Learning PlatformMonthly Exam Score (MES)MES1, MES2, â¦, MESnStudentsInputLayerHidden Layerâ¦Output Layer 
+ 
+ 
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+score (MES), for example, MES1, MES2, .., MESn, in the semester. 
+The learned model is used to predict their learning performance 
+to  adjust  the  learning  method  of  the  involved  students  in  the 
+future.  The  detailed  information  about  the  the  network 
+architecture of deep neural network for AI-FML robotic agent, 
+including  the  input  layer,  hidden  layers,  and  output  layer,  are 
+given in Section V.A. 
+
+III.  AI-FML ROBOTIC AGENT ANALYSIS AND 
+CONSTRUCTION FOR STUDENT LEARNING BEHAVIOR 
+EXTRACTION MECHANISM 
+
+A.  Use Case Diagram for Learning Behavior Extraction 
+
+Fig.  5  shows  a  use  case  diagram  for  learning  behavior 
+extraction.  Here,  we  use  an  intelligent  speaking  assistance 
+system,  including a  student  sub-system,  a  teacher  sub-system, 
+and  a  backend  sub-system,  as  an  example.  The  backend  sub-
+system  provides  a  user  interface  to  allow  human  teachers  to 
+import the involved studentsâ profile, the edited questions, and 
+so on. The involved teachers edit the questions and validate the 
+questions using the developed teacher sub-system. After that, a 
+student makes a challenge to practice speaking to collect his/her 
+challenge result. Additionally, the student sub-system provides 
+the playback function to play the sound of text recognized by AI. 
+Finally,  their  teachers  can  view  their  studentsâ  learning 
+performance  after  they  login  the  system.  The  collected 
+information contains such as âdo they practice speaking,â âhow 
+many  times  they  practice,â  and  âhow  well  their  speaking 
+performance.â  We  extract  the  involved  studentsâ  learning 
+behavior according to the collected information. 
+
+analysis (T1.2). In this paper, we develop an intelligent speaking 
+assistance system to deploy it to the teaching fields in Taiwan 
+and  tested  in  Japan.  Hence,  we  should  take  funding,  process, 
+equipment,  feedbacks,  human  resources,  and  place  related  to 
+teaching fields into consideration in addition to system design, 
+implementation, and integration related to the student, teacher, 
+and  backend  sub-systems.  Finally,  we  should  have  human 
+resources to deploy them to the teach fields to assist in human 
+teachers in class in the initial introducing phase. 
+
+Fig. 6.  WBS of the intelligent speaking assistance system. 
+
+C.  User Interface  and Functionalities  for  Learning  Behavior 
+
+Extraction 
+We  develop  the  user  interface  and  functionalities  for 
+behavior  extraction  based  on  the  above-mentioned  use  case 
+diagram and WBS structure. 
+
+Fig. 7.   Screenshots of the home screen of the teacher sub-system and editing 
+question. 
+
+Fig. 5.  Use case diagram of the intelligent speaking assistance system. 
+
+B.  Work  Breakdown  Structure  for  Perception  Agent  and 
+
+Cognition Agent 
+Fig.  6  shows  the  work  breakdown  structure  (WBS)  of  the 
+intelligent  speaking  assistance  system,  including  six  sub-
+deliverables  work  packages  (WPs)  for  developing  three  sub-
+systems  to  extract  the  involved  studentsâ  perception  data  and 
+cognition information during learning. Each WP has the list of 
+tasks  or  âto-dosâ  to  produce  the  specific  unit  of  work.  For 
+example,  requirement  analysis  (WP1)  needs  to  write  down 
+requirement  analysis  (T1.1)  and  conduct  expected  effect 
+
+Fig. 8.  Screenshots  of  the  choosing/listing  learning  contents  and  displaying 
+learning performance of the student sub-system. 
+
+Intelligent Speaking Assistance SystemStudentPracticeSpeakingMake a ChallengeStudent Sub-SystemTeacherValidate QuestionEdit QuestionTeacher Sub-SystemView Student Learning PerformanceChallenge ResultEngineerSpeech RecognitionFeedback InterfaceBackend Sub-SystemEstablish Question DataUI DesignEdit Student ProfileNetwork MaintenanceLogin InterfaceLogin InterfaceLogout InterfaceLogout InterfacePlayback Interfaceâ¦â¦â¦Intelligent Speaking Assistance SystemStudent Sub-SystemWP3Make a ChallengeT3.1PracticeSpeakingT3.2Challenge ResultT3.3Feedback InterfaceT3.5Playback InterfaceT3.8Speech RecognitionT3.4Login InterfaceT3.6Logout InterfaceT3.7Teacher Sub-SystemWP4Edit QuestionT4.1Validate QuestionT4.2View Student Learning PerformanceT4.3Login InterfaceT4.4Logout InterfaceT4.5Backend Sub-SystemWP5Edit Student ProfileT5.1Establish Question DataT5.2UI DesignT5.3Network MaintenanceT5.4Requirement AnalysisWP1Assess FeasibilityWP2Write Requirement AnalysisT1.1Expected Effect AnalysisT1.2Assess Field CostT2.1Assess Field  BenefitT2.2Field Design WP6FundingT6.1ProcessT6.2EquipmentT6.3FeedbackT6.4Human ResourcesT6.5PlaceT6.6Edit QuestionValidate QuestionViewLearning PerformanceTopic: Daily Life English Class: Class three of fifth grade Content: Itâs a nice day.Fuzzy Value: 0.5AI Recognized Threshold: 0.5SubmitAI Recognized TextNumber of Speaking Practice: 9Speaking PracticeLearning Performance of âI would like a cup of coffee, please.âScore: 5.7Score Correctly/Partially Recognized by AI1. Daily Life English 
+ 
+ 
+ 
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+Fig. 7 shows the home screen of the developed teacher sub-
+system,  including  editing  question,  validating  question,  and 
+viewing studentsâ learning performance. And, the screenshot of 
+the editing questions including topic, contents, fuzzy value, and 
+AI  recognized 
+threshold.  Fig.  8  shows  screenshots  of 
+choosing/listing the learning contents of the student sub-system. 
+In addition, Fig. 8 shows the screenshot of the learning results, 
+including a correct or partially correct AI recognized score, AI 
+recognized  text,  and  how  many  times  the  student  speaks  this 
+sentence,  where  happy  face  and  smile  face  represent  that  the 
+audio received by the speech recognizer is correctly and partially 
+recognized by AI, respectively. 
+
+IV.  EXPLORATION AND EXPLOITATION FOR STUDENT 
+LEARNING BEHAVIOR ONTOLOGY CONSTRUCTION 
+
+A.  Student Learning Behavior Ontology 
+
+Fig. 9 shows the observed student learning behavior of AI-
+FML  experimental  class  in  Taiwan  from  2019  to  2020. 
+According to [3], the right brain is more humanity; however, the 
+left  brain  is  more  rationality.  Take  an  AI-FML  experimental 
+course of subject computer science at Rende elementary school 
+in Taiwan for an example. In class, students rationally need to 
+follow human teachers to establish knowledge base, rule base, 
+setup  AIoT/Robot  environment,  â¦,  and  execute  machine 
+learning  tool,  in  order  to  interact  with  the  robot  Kebbi  Air. 
+However,  some  students  (fall-behind  or  ahead-of-schedule) 
+naturally have a desire for playing game, watching video, â¦, or 
+listening to music in class. Moreover, some students may feel 
+sleepy sometimes. Fig. 10 shows the ontology structure of the 
+student  learning  behavior  according  to  the  observed  student 
+learning behavior in the AI-FML experimental class. 
+
+Fig. 9.  Student learning behavior of AI-FML experimental class in Taiwan. 
+
+B.  Explore on-line Student Learning Data and Informtion 
+
+In  this  paper,  we  adopt  the  exploration  and  exploitation 
+strategy to construct student learning behavior ontology for the 
+AI-FML robotic agent [5]. In Taiwan, the introduced AI-FML 
+experimental class time at the elementary school is 40 minutes, 
+and  we  introduced  AI-FML  human  and  machine  co-learning 
+class to the Rende elementary school in Tainan, Taiwan in 2019 
+and  2020.  The  class  is  divided  into  two  parts  described  as 
+follows: Part I (20 minutes) is for human teaching time and Part 
+II (20 minutes) is for AI-FML robotic agent time. In the second 
+part, the AI-FML robotic agent uses its sensors to explore the 
+on-line learning data and information from students in the class. 
+Fig. 11 shows the structure of on-line exploring student learning 
+data and information in class. 
+
+Fig. 11. Explore on-line student learning data and information in class. 
+
+C.  Exploit  Student  Learned  Information  and  Knowledge  to 
+
+Teach Adaanced Contents 
+After  students  learn  English  in  the  classroom  via  the 
+perception  agent,  the  computational  agent  in  AI-FML  robotic 
+agent assess their learning performance based on item response 
+theory  (IRT)  [6]  to  justify  the  learned  information  and 
+knowledge for each student. Then, the cognition agent sends the 
+learning results to the students or their teachers for learning or 
+teaching advanced content next time. 
+
+Fig. 10. Student learning behavior ontology for AI-FML experimental class. 
+
+Fig. 12. Exploit  student  learned  information  and  knowledge  for  adaptive 
+teaching. 
+
+V.  EXPERIMENTAL RESULTS 
+
+A.  Speaking Practice Data in Taiwan 
+
+This  subsection  describes  the  speaking  practice  data  in 
+Taiwan in 2019. Based on the system structure of the perception 
+agent  and  cognition  agent  shown  in  Fig.  3,  we  developed  an 
+
+Students learn AI-FMLin ClassEstablishKnowledge BaseEstablish Rule BaseSetup AIoT/Robot EnvironmentExecuteMachine Learning Toolâ¦Students in ClassFeel SleepyDesire forPlaying GameWatching VideoListening to Musicâ¦Student Learning Behavior OntologyRationality ThinkingRationality ActionHumanity ThinkingHumanity ActionKnowledge BaseRule BaseInferenceDataRobotMachine LearningKnowledge Base ToolRule Base ToolFunctionExcelSave DataSettingIntendedBefore LearningAfter LearningPlay GameYoutube MusicTake RestSleepingYoutube VideoDramaâ¦â¦OntologyAI-FML RoboticAgentLearning PerformanceAI-FMLRobotDomain ExpertIntelligent Speaking Assistance Systemâ¦AI-FMLRobotic AgentOntologyAI-FML RobotDomain ExpertStudentsâ¦Adults 
+ 
+ 
+ 
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+English speaking practice platform. Since Sept. 2019, National 
+University of Tainan (NUTN) has cooperated with Tainan City 
+Government  to  introduce  AI-FML  experimental  class  of 
+students  and  robots  co-learning  English/Computer  Science  to 
+two  elementary  schools  (ES1:  Rende  Elementary  School  and 
+ES2:  Guiren  Elementary  School)  and  one  junior  high  school 
+(JHS1: Rende Junior High School) in Tainan. Table I shows the 
+partial collected data of JHS1 related to English speaking, where 
+NULL denotes that this student was absent from the class on Oct. 
+19, 2020. The total number of data from ES1, ES2, and JHS1 is 
+1110, 2490, and 624. The AI-FML robotic agent summarizes a 
+record  with  nine  feature  values,  x1,  x2,  â¦, and  x9,  and  a  label 
+value, y, for each student after class. The x1 is school code, for 
+example, JHS1 is 0, ES1 is 1, and ES2 is 2. The x2 is the grade 
+of the involved students. In Taiwan, there are six grades (Grade 
+1 to Grade 6) at elementary school and three grades (Grade 7 to 
+Grade  9)  at  junior  high  school.  The  x3  is  the  gender  of  the 
+involved  student.  The  x4,  x5,  and  x6  are  computed  scores 
+extracted from his/her feedback. The x7 denotes his/her number 
+of  speaking  practice  in  class.  The  x8  is  the  ratio  correctly 
+recognized  by  AI.  The  x9  is  the  score  correctly  and  partially 
+recognized  by  AI.  The  y1  and  y2  are  his/her  monthly  English 
+paper-and-pencil  test  score  and  listening  test  score  at  school, 
+respectively, and the y denotes his/her monthly final exam score 
+which equals y1Ã0.7+ y2Ã0.3. In addition to students of JHS1, 
+the  other  involved  students  only  have  y1  score  and  their  label 
+value y is y1. In this paper, the data pre-processing mechanism, 
+including outlier and standardization analysis, is performed as 
+follows.  (1)  Replace  NULL  with  the  mean  value  of  the 
+respectively  collected  data.  (2)  Remove  outliers  based  on 
+measures of the interquartile range (IQR = Q3âQ1) where Q1 
+and Q3 denote the lower quartile and upper quartile, respectively. 
+When a point is beyond 1.9ÃIQR, it will be removed from the 
+training dataset. (3) Standardize features x4 to x9 between 0 and 
+1. 
+
+TABLE I.  
+
+PARTIAL DATA OF PRACTICE SPEAKING FROM JHS1. 
+
+Date 
+
+x4 
+
+x5 
+
+x6 
+
+2019/10/9  NULL  NULL  NULL 
+5.83 
+2019/10/9  8.36 
+9.62 
+2019/10/9  9.15 
+5.82 
+2019/10/9  8.34 
+
+8.6 
+9.38 
+8.52 
+
+2019/10/9  9.53 
+2019/10/9  8.62 
+2019/10/9  9.35 
+
+9.37 
+8.28 
+9.33 
+
+9.64 
+5.7 
+9.92 
+
+x9 
+2 
+5 
+
+x8 
+0.4 
+0.417 
+0.25  4.476 
+0.316  7.045 
+
+0.063  1.681 
+
+0 
+0.182 
+
+0 
+2 
+
+y1 
+53 
+12 
+72 
+46 
+
+78 
+19 
+98 
+
+y2 
+81 
+24 
+94 
+88 
+
+92 
+66 
+100 
+
+y 
+61.4 
+15.6 
+78.6 
+58.6 
+
+82.2 
+33.1 
+98.6 
+
+x7 
+5 
+12 
+16 
+19 
+â® 
+16 
+8 
+11 
+â® 
+
+Next, we describe the conducted four experimental results of 
+speaking practice performance in Taiwan using DNN model as 
+follows: (1) In Exp. 1, there are seven input features x1 and  x4 to 
+x9 in the input layer. The number of nodes in hidden layers 1, 2, 
+3, 4, and 5 are 21, 64, 512, 64, and 10, respectively, followed by 
+a ReLU activation function. (2) In Exp. 2, there are seven input 
+features x1 and x4 to x9 in the input layer. The number of nodes 
+in  hidden  layers  1,  2,  3,  and  4,  are  21,  512,  512,  and  3, 
+respectively, followed by a ReLU activation function. (3) In Exp. 
+3, there are nine input features x1 to x9 in the input layer. The 
+number of nodes in hidden layers 1, 2, 3, 4, and 5 are 27, 64, 512, 
+64, and 10, respectively, followed by a ReLU activation function. 
+(4) In Exp. 4, there are nine input features x1 to x9 in the input 
+
+layer. The number of nodes in hidden layers 1, 2, 3, and 4 are 27, 
+512,  512,  and  3,  respectively,  followed  by  a  ReLU  activation 
+function. (5) Exps. 3 and 4 standardize the collected data based 
+on the class date, grade, and school of the involved students. 
+
+the  parameters  for  Adam 
+
+In all experiments, the final layer has 1 node to denote the 
+predicted  learning  performance  of  this  semester  and  applies  a 
+regression function. Moreover, the dropout is 0.3, mini-batch is 
+30, and Adam optimization mechanisms are also adopted in this 
+paper.  In  addition, 
+learning 
+optimization are as follows: learning rate is 0.001, Î²_1 is 0.1, 
+and    Î²_2  is  0.999.  The  proportion  which  splits  the  training 
+dataset into a validation dataset is 0.3 during training. There are 
+1,771 training data and 759 testing data after data preprocessing. 
+Mean Square Error (MSE) is used as the loss function. Figs. 13(a) 
+and 13(b) show the loss curves for both the training dataset and 
+validation dataset against iterations 100 and 3000, respectively, 
+in  Exp.  1,  which  indicates  that  learning  for  100  epochs  has 
+reached convergence. Fig. 14 shows the loss value after learning 
+100 epochs in Exps. 1, 2, 3, and 4, which indicates that Exp. 4 
+has a better performance than the other three experiments. 
+
+(a) 
+
+(b) 
+
+Fig. 13. Loss curve of epochs (a) 100 and (b) 3000. 
+
+Fig. 14. Loss value after learning 100 epochs in Exps. 1, 2, 3 and 4. 
+
+B.  Speaking Practice Performance in Japan 
+
+NUTN  cooperated  with  Tokyo  Metropolitan  University 
+(TMU)  to  collect  the  learning  data  of  undergraduate  and 
+graduate studentsâ English speaking and listening on Feb. 11, 12, 
+and 13, 2020. Table II shows the number of collected data and 
+experimental descriptions on Feb. 11 to Feb. 13 in Japan. Fig. 
+15  shows  the  average  score  recognized  by  AI  in  Exp.  5. 
+Sentences âAs soon as possible and I would like a cup of coffee, 
+pleaseâ are more difficult for students to speak fluently enough 
+to make AI correctly to be recognized. Fig. 16 shows the average 
+score recognized by AI and ratio correctly recognized by AI of 
+each involved member of Kubota Lab. and Yamaguchi Lab. in 
+Exp. 6. The correctly recognized ratio from AI is about 0.5 for 
+most of the members and yamguchi001 member got the highest 
+average score. In Exp. 7, all members were invited to make an 
+
+MSE0.058350.05810.056050.05490.050.0520.0540.0560.0580.06Exp. 1Exp. 2Exp. 3Exp. 4 
+ 
+ 
+ 
+This article has been accepted as a conference paper at CcS 2020 and will be published in IEEE__________________________________ 
+
+adaptive listening challenge on BillKuo English Levels 1, 2, and 
+7. The higher the level, the  more difficult.  Fig. 17 shows that 
+Level 7 is more difficult for most of the involved members than 
+the  other  two  levels  but  two  members,  kubota003  and 
+yamaguchi003, did not make a challenge on Level 7 in Exp. 7. 
+
+TABLE II.   DESCRIPTIONS OF EXPS. ON FEB. 11 TO FEB. 13 IN JAPAN. 
+
+Date 
+Exp. No. 
+Exp. 5: Speaking Practice 
+with Robot Kebbi Air 
+Exp. 6: Speaking Practice 
+using an Android Tablet 
+Exp. 7: Adaptive Challenge 
+using a Notebook 
+
+Feb. 11 
+2020 
+
+Feb. 12 
+2020 
+
+Feb. 13 
+2020 
+
+Total 
+
+10 
+
+30 
+
+20 
+
+90 
+
+270 
+
+180 
+
+70 
+
+210 
+
+140 
+
+170 
+
+510 
+
+340 
+
+Fig. 15. Average score recognized by AI in Exp. 5. 
+
+Fig. 16. Average score recognized by AI and ratio correctly recognized by AI 
+in Exp. 6. 
+
+Fig. 17. Ratio  correctly  answered  by  involved  members  when  challenging 
+Levels 1, 2, and 7 in Exp. 7. 
+
+VI.  CONCLUSIONS 
+
+including 
+
+This  paper  proposes  an  AI-FML  robotic  agent  for  student 
+the 
+learning  behavior  ontology  construction, 
+perception agent, cognition agent, and computational agent, for 
+analyzing student learning behavior. Moreover, the perception 
+agent  and  the  cognition  agent  are  deployed  in  the  Kebbi  Air 
+robot. In addition, the computational agent with the DNN model 
+can communicate with the perception agent and cognition agent 
+via the Internet. The proposed AI-FML robotic agent has been 
+applied to the teaching fields in Taiwan and tested in Japan. The 
+involved  students  interacted  with  the  Kebbi  Air  to  co-learn 
+English  and  AI-FML  in  class  which  makes  learning  fun  for 
+students. The experimental results show that the agents can be 
+utilized  in  the  human  and  machine  co-learning  model  for  the 
+future education. 
+
+ACKNOWLEDGMENT 
+
+The  authors  would  like  to  thank  the  staff  of  Center  for 
+Research  of  Knowledge  Application  &  Web  Service  (KWS 
+Center)  of  NUTN  and  the  involved  faculty  and  students  of 
+Rende elementary school, Guiren elementary school, and Rende 
+junior high school in Taiwan, and the members of Yamaguchi 
+Lab. and Kubota Lab. of TMU in Japan. 
+
+REFERENCES 
+
+[1] 
+
+IEEE  CIS,  âWhat 
+https://cis.ieee.org/about/what-is-ci. 
+
+is  CI?,â  May  2020. 
+
+[Online]  Available: 
+
+[2]  B. Bouchon-Meunier, âWelcome from the President of IEEE CIS,â May 
+
+2020. [Online] Available: https://cis.ieee.org/about. 
+
+[3]  Healthline, âLeft brain vs. right brain: what does this mean for me?â May 
+2020.  [Online]  Available:  https://www.healthline.com/health/left-brain-
+vs-right-brain. 
+
+[4]  P.  Soulos,  âAgent  perception,â  May  2020.  [Oneline]  Available: 
+http://paulsoulos.com/editorial/2016/08/10/agent-perception-and-
+learning.html. 
+
+[5]  B.  Christian  and  T.  Griffiths,  âAlgorithms  to  Live  By:  The  Computer 
+
+Science of Human Decisions,â Picador, USA, 2017. 
+
+[6]  C. S. Lee, M. H. Wang, C. S. Wang, O. Teytaud, J. L. Liu, S. W. Lin, and 
+P.  H.  Hung,  âPSO-based  fuzzy  markup  language  for  student  learning 
+performance evaluation and educational application,â IEEE Transactions 
+on Fuzzy Systems, vol. 26, no. 5, pp. 2618-2633, 2018. 
+
+[7]  C. S. Lee, M. H. Wang, Y. L. Tsai, L. W. Ko, B. Y. Tsai, P. H. Hung, L. 
+A. Lin, and N. Kubota, âIntelligent agent for real-world applications on 
+robotic  edutainment  and  humanized  co-learning,â  Journal  of  Ambient 
+Intelligence  and  Humanized  Computing,  2019.  (DOI:  10.1007/s12652-
+019-01454-4) 
+
+[8]  C. S. Lee, Y. L. Tsai, M. H. Wang, W. K. Kuan, Z. H. Ciou, and N. Kubota, 
+âAI-FML agent for robotic game of Go and AIoT real-world co-learning 
+applications,â  2020  World  Congress  on  Computational  Intelligence 
+(IEEE WCCI 2020), Glasgow, Scotland, UK, Jul. 19-24, 2020. (Accepted) 
+[9]  C. S. Lee, Y. L. Tsai, M. H. Wang, H. Sekino, T. X. Huang, W. F. Hsieh, 
+E. Sato-Shimokawara, and T. Yamaguchi, âFML-based machine learning 
+tool  for  human  emotional  agent  with  BCI  on  music  application,â  2019 
+International Conference on Technologies and Applications of Artificial 
+Intelligence (TAAI 2019), Kaohsiung, Taiwan, Nov. 21-23, 2019. 
+[10]   C. S. Lee, M. H. Wang, Y. L. Tsai, R. P. Chang, L. C. Li, N. Takese, S. 
+Yamamoto, and N. Kubota, âFML-based intelligent agent for robotic e-
+learning and entertainment application,â 2019 International Conference 
+on Technologies and Applications of Artificial Intelligence (TAAI 2019), 
+Kaohsiung, Taiwan, Nov. 21-23
+
+0.80.610.710.90.80.610.800.10.20.30.40.50.60.70.80.91Average score recognized by AI00.511.522.5Average Score Recognized by AIAverage Ratio Correctly Recognized by AI0.880.960.9610.920.940.960.8410.960.960.9210.960.840.810.920.9610.680.960.80.880.720.80.73910.640.720.70830.640.6250.680.60870.68180.6250.600.20.40.60.811.2BillKuo English L1BillKuo English L2BillKuo English L7 
+ 
+ 
+ 
+ 
+

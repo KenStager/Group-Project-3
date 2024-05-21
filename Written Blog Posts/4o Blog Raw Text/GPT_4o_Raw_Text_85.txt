@@ -1,0 +1,75 @@
+# Who Needs Consensus? A Distributed Monetary System Between Rational Agents via Hearsay
+
+*By Yanni Georghiades, Robert Streit, and Vijay Garg, The University of Texas at Austin, United States*
+
+## Introduction
+
+Distributed monetary systems have garnered significant attention in recent years, most notably with the advent of Bitcoin. These systems have traditionally relied on consensus mechanisms to validate transactions, such as Nakamoto consensus or Byzantine fault-tolerant consensus. However, these methods have their limitations, including high transaction settlement times and significant overheads. This blog post introduces a groundbreaking distributed monetary system called Hearsay, which operates without requiring consensus. The Hearsay protocol innovatively tolerates both Byzantine and rational behaviors while ensuring transaction validity through a single broadcast per transaction.
+
+## The Problem with Traditional Consensus Protocols
+
+### Nakamoto Consensus
+
+The Nakamoto consensus, used by Bitcoin, requires participants to solve complex cryptographic puzzles, a process known as Proof-of-Work. This method, while secure, has notable drawbacks such as limited transaction throughput and high settlement times due to its probabilistic finality.
+
+### Byzantine Fault-Tolerant Consensus
+
+Classical Byzantine fault-tolerant (BFT) consensus protocols, like PBFT, offer stronger guarantees of transaction finality but are notoriously complex and resource-intensive, especially in asynchronous systems. They also require a supermajority (greater than \(\frac{2}{3}\)) of agents to be correct, which is a strong assumption in economically motivated environments.
+
+## Enter Hearsay: A Novel Approach
+
+### The Core Idea
+
+Hearsay challenges the traditional reliance on consensus by adopting a fault tolerance model that assumes a mix of Byzantine and rational agents. In Hearsay, up to \(\frac{N}{3}\) agents can behave arbitrarily (Byzantine), while the remaining agents are rational, meaning they follow the protocol as long as it is in their best interest.
+
+### Rational Reliable Broadcast (RRB)
+
+At the heart of Hearsay is the Rational Reliable Broadcast (RRB) protocol, which ensures messages are broadcast and processed correctly even in the presence of rational agents. Unlike traditional reliable broadcast systems, RRB introduces incentives for rational agents to behave correctly and mechanisms to penalize deviations.
+
+## Hearsay Protocol Details
+
+### Transaction Flow
+
+In Hearsay, transactions are initiated by an agent broadcasting a transaction message to all other agents using the RRB protocol. Each agent, upon receiving the transaction, places it in a buffer until certain conditions are met:
+
+1. **Sequence Order**: Transactions must be executed in the order they were sent.
+2. **Dependency Satisfaction**: All referenced transactions must be executed first.
+3. **Sufficient Balance**: The initiator must have enough balance to cover the transaction and associated fees.
+
+### Incentives and Punishments
+
+To motivate rational agents to follow the protocol, Hearsay incorporates transaction fees as rewards for participation. If an agent deviates from the protocol, they risk losing these rewards and potentially facing penalties.
+
+## Game Theoretic Analysis
+
+### Nash Equilibrium
+
+The Hearsay protocol is designed so that following it constitutes a Nash equilibrium for rational agents. This means that no rational agent can gain more utility by deviating from the protocol than by following it, given that other agents are also following the protocol.
+
+### Handling Byzantine Agents
+
+Even with the presence of Byzantine agents, the Rational Reliable Broadcast ensures that messages are delivered and transactions are processed correctly, maintaining the integrity and reliability of the system.
+
+## Implications and Future Work
+
+### Broader Applications
+
+Hearsay's innovative approach can be applied beyond monetary systems. Any distributed system with economically motivated participants can benefit from Hearsay's model that blends game theory with fault tolerance.
+
+### Optimizations and Extensions
+
+Future research could explore optimizations to the Hearsay protocol, such as reducing transaction settlement times and improving efficiency. Additionally, examining the protocol under more complex game theoretic models, including collusion among rational agents, could provide deeper insights.
+
+### Strengthening Guarantees
+
+Further work could also involve providing stronger game theoretic guarantees and exploring the impact of external factors like communication delays and network failures on the protocol's robustness.
+
+## Conclusion
+
+Hearsay introduces a novel way to handle distributed monetary systems by eliminating the need for consensus, relying instead on rational behavior incentivized by rewards and penalties. This approach not only simplifies the transaction process but also ensures robustness against both Byzantine and rational misbehaviors. The Hearsay protocol represents a significant step forward in the design of distributed systems, with potential applications extending far beyond monetary systems.
+
+What are your thoughts on the Hearsay protocol? Do you think it can revolutionize distributed systems? Let us know in the comments below!
+
+---
+
+### Keywords: Distributed Monetary System, Hearsay Protocol, Rational Reliable Broadcast, Byzantine Fault Tolerance, Game Theory, Nash Equilibrium, Blockchain, Consensus Mechanisms.

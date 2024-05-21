@@ -1,0 +1,1806 @@
+Scalable Multi-Agent Inverse Reinforcement Learning via
+Actor-Attention-Critic
+
+Wonseok Jeon 1 2 Paul Barde 1 2 Derek Nowrouzezahrai 1 2 Joelle Pineau 1 2
+
+0
+2
+0
+2
+
+b
+e
+F
+4
+2
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+1
+v
+5
+2
+5
+0
+1
+.
+2
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Multi-agent adversarial inverse reinforcement
+learning (MA-AIRL) is a recent approach that ap-
+plies single-agent AIRL to multi-agent problems
+where we seek to recover both policies for our
+agents and reward functions that promote expert-
+like behavior. While MA-AIRL has promising
+results on cooperative and competitive tasks, it is
+sample-inefï¬cient and has only been validated em-
+pirically for small numbers of agents â its ability
+to scale to many agents remains an open ques-
+tion. We propose a multi-agent inverse RL algo-
+rithm that is more sample-efï¬cient and scalable
+than previous works. Speciï¬cally, we employ
+multi-agent actor-attention-critic (MAAC) â an
+off-policy multi-agent RL (MARL) method â for
+the RL inner loop of the inverse RL procedure. In
+doing so, we are able to increase sample efï¬ciency
+compared to state-of-the-art baselines, across both
+small- and large-scale tasks. Moreover, the RL
+agents trained on the rewards recovered by our
+method better match the experts than those trained
+on the rewards derived from the baselines. Finally,
+our method requires far fewer agent-environment
+interactions, particularly as the number of agents
+increases.
+
+1. Introduction
+
+Inverse reinforcement learning (IRL) (Ng & Russell, 2000)
+captures the problem of inferring a reward function that re-
+ï¬ects the objective function of an expert, from limited obser-
+vations of the expertâs behavior. Traditionally, IRL required
+planning algorithms as an inner step (Ziebart et al., 2008),
+which makes IRL expensive in high-dimensional control
+tasks. Later work alleviates this by using adversarial training
+objectives (Ho & Ermon, 2016; Fu et al., 2018), inspired by
+the generative adversarial network (GAN) method (Good-
+
+1Mila, Quebec AI Institute 2McGill University. Correspon-
+
+dence to: Wonseok Jeon <jeonwons@mila.quebec>.
+
+Preliminary work. Source code will be made public upon publica-
+tion of this work.
+
+fellow et al., 2014). Essentially, these methods iteratively
+train a discriminator to measure the difference between the
+agentâs and the expertâs behaviors, and optimize a policy
+to reduce such difference via reinforcement learning. Com-
+bined with modern deep RL algorithms (Schulman et al.,
+2015), adversarial imitation and IRL show improved scala-
+bility to high-dimensional tasks.
+
+Recently, adversarial imitation and IRL have been extended
+to multi-agent imitation (Song et al., 2018) and multi-agent
+IRL (Yu et al., 2019), respectively, where the agents in the
+same environment aim to learn rewards or policies from mul-
+tiple expertsâ demonstrations. Both these previous works
+have shown strong theoretical relationship between single-
+agent and multi-agent learning methods, and demonstrated
+that the proposed methods outperform baselines. How-
+ever, there remains some questions on their empirical per-
+formances. First of all, both Song et al. (2018) and Yu
+et al. (2019) have focused on the performance after conver-
+gence, but the sample efï¬ciency of the proposed methods
+in terms of agent-environment interactions has not been
+considered rigorously. Also, both used the multi-agent ex-
+tension of ACKTR, MACK (Wu et al., 2017), which is
+built upon the centralized-training decentralized-execution
+framework (Lowe et al., 2017; Foerster et al., 2018) and uses
+centralized critics to stabilize training. If such centralized
+critics are not carefully designed, the resultant MARL algo-
+rithm may scale poorly with the number of agents due to
+the curse of dimensionality, i.e., the joint observation-action
+space grows exponentially with the number of agents.
+
+In this work, we propose multi-agent discriminator-actor-
+attention-critic (MA-DAAC), a multi-agent algorithm capa-
+ble of sample-efï¬cient imitation and inverse reward learning,
+regardless of the number of agents. MA-DAAC uses multi-
+agent actor-attention-critic (Iqbal & Sha, 2019) that scales
+to large numbers of agents thanks to a shared attention-critic
+network (Vaswani et al., 2017). We verify that MA-DAAC
+is more sample-efï¬cient than the multi-agent imitation and
+IRL baselines, and demonstrate that the reward functions
+learned by MA-DAAC lead to improved empirical perfor-
+mances. Finally, MA-DAAC is shown to be more robust to
+smaller number of expertsâ demonstration.
+
+ 
+ 
+ 
+ 
+ 
+ 
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+2. Preliminaries
+
+2.1. Markov Games and Notations
+
+i=1, {ri}N
+
+In a Markov Game (Littman, 1994), multiple agents ob-
+serve a shared environment state and take individual ac-
+tions based on their observations. Then, each agent
+gets a reward and the environment transitions to a new
+state. Mathematically, a Markov Game is deï¬ned by
+(cid:104)S, {Ai}N
+i=1, PT , Î½, Î³(cid:105), where N is the number
+of agents, S is the state space, Ai is the action space for
+agent i, ri(s, a1, ..., aN ) is a reward function for agent i,
+PT (s(cid:48)|s, a1, ..., aN ) is a state transition distribution, Î½(s) is
+an initial state distribution, Î³ is a discount factor. Also, the
+policy Ïi(ai|s) is the probability of the i-th agent choos-
+ing an action ai at the state s. For succinct notation, we
+use bars to indicate joint quantities over the agents, e.g.,
+Â¯A = A1 Ã Â· Â· Â· AN is a joint action space, Â¯a = (a1, ..., aN )
+is a joint action, Â¯Ï = (Ï1, ..., ÏN ) is a joint policy, Â¯r(s, Â¯a) =
+(r1(s, Â¯a), r2(s, Â¯a), ..., rN (s, Â¯a)) is a joint reward. The value
+function of the i-th agent with respect to Â¯Ï is deï¬ned by
+QÂ¯Ï
+t=0Î³tri(st, Â¯at)|s0 = s, Â¯a0 = Â¯a], where
+the superscript Â¯Ï on the expectation implies that states and
+joint actions are sampled from Î½, PT and Â¯Ï. Addition-
+ally, the Î³-discounted state occupancy measure ÏÂ¯Ï of the
+joint policy Â¯Ï is deï¬ned by ÏÂ¯Ï(s, Â¯a) = EÂ¯Ï[(cid:80)â
+t=0 Î³tI{st =
+s, Â¯at = Â¯a}] , where I{Â·} is an indicator function.
+
+i (s, Â¯a) = EÂ¯Ï[(cid:80)â
+
+In this work, we consider a partially observable Markov
+Game, where each agent can only use its own observation
+oi â Oi from the environmentâs state s â S. Due to the par-
+tial observability, we consider the policy Ïi(ai|oi) which is
+the probability that the i-th agent chooses an action ai after
+observing oi. Also, we consider value functions of the form
+QÂ¯Ï
+i (Â¯o, Â¯a) that use the joint observation Â¯o := (o1, ..., oN )
+instead of the state s, which is commonly done in previous
+works (Lowe et al., 2017; Iqbal & Sha, 2019).
+
+2.2. Multi-Agent Adversarial Imitation and IRL
+
+1 , ..., ÏE
+
+In the multi-agent IRL problem, N agents respectively try to
+mimic N expertsâ policies Â¯ÏE = (ÏE
+N ). Here, each
+agent is not allowed to access to its own target expertâs pol-
+icy directly and should rely on a limited amount of expertsâ
+demonstration. There are two possible objectives in this
+problem; (1) policy imitation â learning policies close to
+those of the experts â and (2) reward learning â recovering
+reward functions that lead to expert-like behavior.
+
+Multi-agent generative adversarial imitation learning (MA-
+GAIL) enables agents to learn expertsâ policies by optimiz-
+ing the following mini-max objective (Song et al., 2018):
+
+min
+Â¯Ï
+
+max
+D1,...,DN
+
+Es,Â¯aâ¼ÏÂ¯Ï
+
+(cid:104)(cid:80)N
+
+(cid:105)
+i=1 log Di(s, ai)
+(cid:104)(cid:80)N
+
++ E
+
+s,Â¯aâ¼ÏÂ¯ÏE
+
+i=1 log(1 â Di(s, ai))
+
+(cid:105)
+
+.
+
+In practice, MA-GAIL iteratively optimizes discriminators
+D1, . . . , DN and policies Â¯Ï, where the discriminators are
+trained to classify whether state-action pairs come from
+agents or experts and the policies are optimized with MARL
+methods and reward functions log Di(s, ai) deï¬ned by the
+discriminators. Although MA-GAIL successfully imitates
+experts, learned rewards log Di(s, ai) of MA-GAIL cannot
+be used as reward functions due to discriminators converg-
+ing to 1/2 (Goodfellow et al., 2014; Fu et al., 2018).
+
+MA-AIRL addressed this issue by modifying the following
+parts in MA-GAIL. First, structured form of discriminators
+motivated by logistic stochastic best response equilibrium
+(LSBRE) was used (Yu et al., 2019):
+
+Di(s, ai, s(cid:48)) =
+
+exp(fi(s, ai, s(cid:48)))
+exp(fi(s, ai, s(cid:48))) + Ïi(ai|s)
+
+,
+
+fi(s, ai, s(cid:48)) = g(s, ai) + Î³h(s(cid:48)) â h(s).
+
+In addition, MA-AIRL used log Di(s, ai, s(cid:48)) â log(1 â
+Di(s, ai, s(cid:48))) as reward functions instead of the functions
+log Di(s, ai) of MA-GAIL. It turns out that either fi or g
+can recover the reward functions that lead to the expertsâ
+behavior.
+
+3. Related Works
+
+3.1. Sample-Efï¬cient Adversarial Imitation Learning
+
+In Kostrikov et al. (2019), TD3 (Fujimoto et al., 2018) was
+used with a discriminator. To stabilize their algorithm, they
+proposed to learn the terminal-state values using a discrimi-
+nator and use them in the RL inner loop of imitation learning,
+whereas conventional off-policy reinforcement learning al-
+gorithms implicitly consider zero terminal-state values and
+do not account for them. In Sasaki et al. (2019), another
+sample-efï¬cient imitation learning algorithm was proposed.
+In contrast with prior works, their method did not use dis-
+criminators by considering the Bellman consistency of the
+imitation learning reward signal. Then, by using off-policy
+actor-critic (Degris et al., 2012), it was shown that the pro-
+posed method is much more sample-efï¬cient than GAIL.
+
+3.2. Scalable Multi-Agent Learning
+
+For large number of agents, it has been regarded as a chal-
+lenging problem for MARL to achieve coordinated multi-
+agent behavior. Although existing works using central-
+ized critics such as MADDPG (Lowe et al., 2017) and
+COMA (Foerster et al., 2018) make a handful of agents
+coordinated, they struggle when the number of agents to
+manage increases. This is mainly due to the exponential
+growth of the critic inputs with the increasing number of
+agents, which possibly increases the input variance of train-
+ing as well. MAAC (Iqbal & Sha, 2019) addressed such
+an issue by using the attention mechanism (Vaswani et al.,
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+2017) and a shared critic network, and it outperformed ex-
+isting algorithms for large number of agents. Thanks to
+the attention mechanism, MAAC is trained to focus only
+on part of joint observations and actions, which leads to
+rapid and efï¬cient training. Mean-ï¬eld MARL (Yang et al.,
+2018) is another approach to address the scalability issue
+of MARL, which is based on mean-ï¬eld approximation for
+the centralized critics. However, its application is restricted
+to the situation where all agents are homogeneous, whereas
+MAAC can be applied to much general scenarios in which
+non-homogeneous agents exist.
+
+Meanwhile, there were some multi-agent imitation learning
+algorithms applied to large-scale environments. Le et al.
+(2017) proposed multi-agent imitation learning in the index-
+free control setting, where agents are not allowed to know
+the indices of their own expert. The proposed method trains
+a model that infers and assigns the role of each agent with
+rollout trajectories and given expertsâ demonstration and
+exploits that model to make highly coordinated behavior.
+Sanghvi et al. (2019) uses multi-agent imitation learning
+to learn social group communication among agents with
+a single shared policy network among agents. However,
+they used multi-agent behavioral cloning and focused on the
+environments with homogeneous agents. In contrast with
+those works, our algorithm can deal with non-homogeneous
+agents as well. In addition, it has been reported in existing
+literature (Kostrikov et al., 2019; Sasaki et al., 2019; Song
+et al., 2018) that behavioral cloning performs poorly when
+there are only small number of expertsâ demonstration due
+to the co-variate shift problem (Ross et al., 2011). For these
+reasons, we narrow down our scope to MA-GAIL and MA-
+AIRL in this work.
+
+4. Our Method
+
+We consider multi-agent IRL problems where agents desire
+to learn expertsâ behavior as well as reward functions that
+lead to such behavior. Note that agents cannot access to
+experts directly, but learning agents are allowed to used the
+limited amount of expertsâ demonstration. In such setting,
+we introduce MA-DAAC, our multi-agent IRL method as
+outlined in Algorithm 1. Our method iteratively trains
+discriminators and policies using expertsâ demonstration
+and agentsâ rollout trajectories â using MARL and a reward
+signal modeled by the discriminators â similar to MA-GAIL
+and MA-AIRL.
+
+MARL Algorithm. In our method, we use MAAC, which
+are off-policy MARL algorithms and shown to be sample-
+efï¬cient and scalable to large number of agents (Iqbal &
+Sha, 2019). We summarize it as follows. Assuming discrete
+action spaces, let
+
+Â¯(cid:126)Q Â¯Ï(Â¯o, Â¯a) = ( (cid:126)QÏ1(Â¯o, Â¯a), ..., (cid:126)QÏN (Â¯o, Â¯a)),
+
+Algorithm 1 Multi-Agent Discriminator-Actor-Attention-
+Critic (MA-DAAC)
+1: Input: a buffer BA for agentsâ rollout trajectories,
+expertsâ demonstration BE, policy networks Â¯ÏÂ¯Î¸ =
+{ÏÎ¸i}N
+i=1,
+and discriminators Â¯DÂ¯Ï, Â¯Ï = {DÏi,Ïi}N
+
+i=1, a shared attention critic Â¯Q Â¯Ï = {QÏi}N
+
+i=1
+
+2: for each iteration do
+3:
+4:
+5:
+6:
+7:
+8:
+
+Sample rollout trajectories: (Â¯o, Â¯a, Â¯o(cid:48)) â¼ Â¯ÏÂ¯Î¸.
+Add sampled trajectories to BA.
+for each training iteration do
+
+Sample (Â¯oA, Â¯aA, Â¯o(cid:48)A) from BA.
+Sample (Â¯oE, Â¯aE, Â¯o(cid:48)E) from BE.
+Update rewards by using discriminators.
+
+i (Â¯oA, Â¯aA, Â¯o(cid:48)A) = log DÏi,Ïi(Â¯oA, Â¯aA, Â¯o(cid:48)A)
+rA
+
+â log(1 â DÏi,Ïi(Â¯oA, Â¯aA, Â¯o(cid:48)A))
+
+9:
+
+10:
+
+// Policy learning via MAAC
+Update Â¯Î¸, Â¯Ï with (1) and (2).
+// Reward learning
+Update Â¯Ï, Â¯Ï with (3).
+
+end for
+
+11:
+12: end for
+13: Output: Â¯Î¸, Â¯Ï
+
+Â¯(cid:126)Q Â¯Ï(Â¯o, Â¯a) is a
+denote action values, where each element of
+vector-valued action value of the corresponding agents and
+Â¯Ï = (Ï1, ..., ÏN ) is a set of neural network parameters for
+the critic network. In MAAC, the i-th agentâs action value
+was modeled as a neural network
+
+(cid:126)QÏi(Â¯o, Â¯a) = (cid:126)fi(glocal
+
+i
+
+(oi), gglobal
+i
+
+(Â¯o, Â¯a)),
+
+i
+
+i
+
+where glocal
+is a network looking at the i-th agentâs local ob-
+servation and action, gglobal
+is another network that considers
+other agentsâ observations and actions. Finally, (cid:126)fi is a net-
+work that takes into account the extracted features from both
+of the previous neural networks. The main idea of MAAC
+is to model gglobal
+with an attention mechanism (Vaswani
+et al., 2017) and to share this network among agents, i.e.,
+for the i-th agentâs embedding ei,
+
+i
+
+gglobal
+i
+
+(Â¯o, Â¯a) =
+
+(cid:88)
+
+j(cid:54)=i
+
+Piâj(oi, ai, oj, aj)vj(oj, aj),
+
+where
+
+Piâj(oi, ai, oj, aj) â exp((WKej(oj, aj))T WQei(oi, ai)),
+
+vj(oj, aj) = Ï(WV ej(oj, aj))
+
+for element-wise non-linear activation Ï and shared neural
+network parameters WK, WQ and WV among agents. The
+objective of the critic training is to minimize the sum of
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+temporal difference (TD) errors:
+
+nators are parameterized neural networks such that
+
+EÂ¯o,Â¯aâ¼ÏB
+
+(cid:104)(cid:80)N
+
+i=1(yi(Â¯o, Â¯a, Â¯o(cid:48)) â QÏi(Â¯o, Â¯a))2(cid:105)
+
+, (1)
+
+argmin
+Â¯Ï
+
+where yi(Â¯o, Â¯a, Â¯o(cid:48)) = ri(Â¯o, Â¯a) + Î³EÂ¯a(cid:48)â¼Â¯Ï Â¯Î¸(cid:48) (Â·|Â¯o(cid:48))QÏ(cid:48)
+(Â¯o(cid:48), Â¯a(cid:48)),
+Â¯o, Â¯a â¼ ÏB implies Â¯o, Â¯a are sampled from an experience
+replay buffer B, QÏi is the value for ai in (cid:126)QÏi, Â¯Î¸(cid:48) is a target
+policy parameter, Ï(cid:48)
+i is a target critic parameter, and ri is the
+i-th agentâs reward function. For policy updates, the policy
+gradient
+
+i
+
+EÂ¯oâ¼ÏB,Â¯aâ¼Â¯Ï Â¯Î¸(Â·|Â¯o)âÎ¸i log ÏÎ¸i(ai|oi)Ai(Â¯o, Â¯a),
+Ai(Â¯o, Â¯a) = QÏi(Â¯o, Â¯a) â
+
+Ïi(a(cid:48)
+
+(cid:88)
+
+i|oi)QÏi(Â¯o, Â¯aâi(a(cid:48)
+
+i))
+
+(2)
+
+a(cid:48)
+iâAi
+
+was used, where Â¯aâi(a(cid:48)
+Â¯a to a(cid:48)
+i.
+
+i) is the change of the i-th action in
+
+Discriminator. We consider two types of discriminator
+models that were considered in MA-GAIL (Song et al.,
+2018); a centralized discriminator that takes all agentsâ ob-
+servations and actions as its input and outputs multi-head
+classiï¬cation for each agent; a decentralized discriminator
+that takes each agentâs local observations and actions and
+outputs a single-head classiï¬cation result. It should be noted
+that both sample efï¬ciency and scalability for both discrimi-
+nators have not been rigorously analyzed in MA-GAIL and
+MA-AIRL (Song et al., 2018; Yu et al., 2019).
+Let Â¯D(Â¯o, Â¯a, Â¯o(cid:48)) = (D1(Â¯o, Â¯a, Â¯o(cid:48)), ..., DN (Â¯o, Â¯a, Â¯o(cid:48))) denote
+the vector-valued discriminator output. This is a general
+expression for both types of discriminators since one can
+consider a shared feature among D1, ..., DN for the central-
+ized discriminator, while decentralized discriminators do
+not share feature but ignore other agentsâ observations and
+actions, i.e., Di(oi, ai, o(cid:48)
+i). For each training iteration, we
+train discriminator by maximizing
+
+(cid:104)(cid:80)N
+
+EÂ¯oA,Â¯aAâ¼ÏÂ¯ÏA
++ EÂ¯oE ,Â¯aE â¼ÏÂ¯ÏE
+
+i=1 log(1 â Di(Â¯oA, Â¯aA, Â¯o(cid:48)A))
+(cid:105)
+(cid:104)(cid:80)N
+i=1 log Di(Â¯oE, Â¯aE, Â¯o(cid:48)E)
+
+.
+
+(cid:105)
+
+(3)
+
+Intuitively, discriminators are trained in a way that expert-
+like behavior gets higher values, whereas non-expert-like
+behavior results in lower values. Also, note that the objec-
+tive (3) means the use of rollout trajectories sampled from
+agentsâ policies Â¯ÏA in the ï¬rst expectation. In practice, how-
+ever, we use the samples from the replay buffer without
+off-policy correction to enhance the sample-efï¬ciency of
+discriminator training via sample reuse. As shown in our
+experiments, such an abuse of samples does not harm the
+performance, which is similar to the results in Kostrikov
+et al. (2019). Similar to MA-AIRL, we assume the discrimi-
+
+,
+
+DÏi,Ïi(Â¯o, Â¯a, Â¯o(cid:48)) =
+
+exp(fÏi,Ïi (Â¯o, Â¯a, Â¯o(cid:48)))
+exp(fÏi,Ïi(Â¯o, Â¯a, Â¯o(cid:48))) + Ïi(ai|oi)
+fÏi,Ïi(Â¯o, Â¯a, Â¯o(cid:48)) = gÏi(Â¯o, Â¯a) + Î³hÏi(Â¯o(cid:48)) â hÏi(Â¯o).
+During training, we use log Di(Â¯o, Â¯a, Â¯o(cid:48)) â log(1 â
+Di(Â¯o, Â¯a, Â¯o(cid:48))) for i = 1, ..., N as agentsâ reward func-
+tions. Especially for centralized discriminators, we use
+observation-only rewards (Fu et al., 2018) that ignore the
+action inputs of the discriminators and lead to slightly better
+performance than those using action inputs. In Section 6,
+we discuss about it in detail.
+
+(4)
+
+5. Experiments
+
+Our experiments are designed to answer the following ques-
+tions:
+
+1. Is MA-DAAC capable of recovering multi-agent reward
+functions effectively?
+2. Is MA-DAAC sample-efï¬cient in terms of the number of
+agent-environment interactions and available expert demon-
+stration?
+3. Is MA-DAAC scalable to the environments with many of
+agents?
+
+We evaluate our methods from two perspectives; policy
+imitation and reward learning. We brieï¬y summarize our
+experiment setup in the following sections and include more
+detailed information in Appendix.
+
+5.1. Experiment Setup
+
+Tasks. We consider two classes of environments, which
+respectively cover small-scale and large-scale environments.
+All of them run on OpenAI Multi-agent Particle Environ-
+ment (MPE) (Mordatch & Abbeel, 2018). The small-scale
+environments include:
+
+Keep Away â There are 2 agents âreacherâ and âpusherâ,
+where reacher tries to reach the goal and pusher tries to push
+it away from the goal.
+
+Cooperative Communication â There are 2 agents,
+âspeakerâ and âlistenerâ. One of three landmarks is ran-
+domly chosen as a target at each episode and its location
+can only be seen by speaker. Speaker cannot move, whereas
+listener can observe speakerâs message and move toward
+the target landmark.
+
+Cooperative Navigation â There are 3 agents and 3 land-
+marks, and the goal of agents is to cover as many landmarks
+as possible.
+
+We also consider a large-scale environments proposed in
+MAAC (Iqbal & Sha, 2019) to measure the scalability of
+MA-DAAC and the existing methods:
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+Figure 1. Imitation performance and reward learning performance in small-scale environments. The results in the same row share their
+environments; Keey Away, Cooperative Communication, Cooperative Navigation from top to bottom row. For the ï¬rst three columns, we
+report NSS of policies during training, where 50, 100 and 200 expertsâ demonstration were used from left to right column. Note that
+MA-DAAC converges to the best performance among all methods sample-efï¬ciently. For the last column, we report NSS of policies
+learned by reward functions from MA-DAAC. The result show that MA-DAAC always recover better reward functions than the baselines.
+Note that means and 95% conï¬dence intervals over 10 runs are considered.
+
+Rover Tower (Iqbal & Sha, 2019) â There are even number
+of agents (8, 12, 16), where half of them are âroversâ and
+the others are âtowersâ. For each episode, rovers and tow-
+ers are randomly paired, and each tower has its own goal
+destination. Similar to Cooperative Communication, towers
+cannot move but can communicate with rovers so that rovers
+can move toward corresponding goals.
+
+Experts. For expertsâ policies, we trained policies by using
+MAAC over either 50,000 episodes (Keep Away, Coopera-
+tive Communication, Cooperative Navigation) or 100,000
+episodes (Rover Tower). Then, we considered those trained
+policies as experts and generated trajectories from them,
+where the actions in those episodes are always taken with
+the largest probability. Throughout our experiment, we vary
+the number of available demonstration from 50, 100 to 200.
+
+Performance Measure. In multi-agent IRL problems, we
+need to deï¬ne a proper performance measure to see the gap
+between learned agents and experts during training. How-
+ever, episodic-score-based measure widely used in single-
+agent learning (Ho & Ermon, 2016; Kostrikov et al., 2019;
+
+Sasaki et al., 2019) cannot be directly used in our problems
+due to the multiple reward functions for each agent and their
+unnormalized scales. Therefore, we deï¬ne the normalized
+score similarity (NSS) as follows:
+
+NSS =
+
+1
+N
+
+N
+(cid:88)
+
+i=1
+
+scoreAi â scoreRi
+scoreEi â scoreRi
+
+.
+
+Here, scoreAi is the i-th agentâs (episode) score during train-
+ing, scoreEi is the i-th expertâs average score for expertsâ
+demonstration, and scoreRi is the average score of the i-th
+agent when uniformly random actions were taken by all
+agents. Intuitively, NSS gets close to 1 if every agent shows
+expert-like behavior since such behavior will lead to the ex-
+pertsâ score. One advantage of NSS is that we can evaluate
+multi-agent imitation performance for both competitive and
+cooperative tasks. In our experiments, we show that it is an
+effective measure.
+
+0250050000.000.250.500.751.00Keep Away(2 Agents)NSS50 Expert Traj.025005000Policy Imitation100 Expert Traj.025005000200 Expert Traj.0.000.250.500.751.00CooperativeCommunication(2 Agents)NSS0500010000Num. Episodes0.000.250.500.751.00CooperativeNavigation(3 Agents)NSS0500010000Num. Episodes0500010000Num. EpisodesMA-GAIL w/ DecentralizedDiscMA-GAIL w/ CentralizedDiscMA-AIRL w/ DecentralizedDiscMA-AIRL w/ CentralizedDiscMA-DAAC w/ DecentralizedDiscMA-DAAC w/ CentralizedDiscExpertRandom0.00.51.0Reward Evaluation0.00.51.050100200Num. Expert Traj.0.00.51.0Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+Figure 2. Imitation performance and reward learning performance in Rover Tower tasks. The results in the same row share the number of
+agents; 8, 12 and 16 from top to bottom row. For the ï¬rst three columns, we report NSS of policies during training, where 50, 100 and
+200 expertsâ demonstration were used from left to right column. Regardless of the number of agents, MA-DAAC converges much faster
+than the baselines. Also, its convergence is not affected much by the number of agents, whereas those of baselines becomes slower for the
+increasing number of agents. For the last column, we report NSS of policies learned by reward functions from MA-DAAC. The policies
+learned by the rewards from MA-DAAC achieve higher NSS. Note that means and 99% conï¬dence intervals over 10 runs are considered.
+
+5.2. Small-Scale Environments
+
+Policy Imitation. The results in the small-scale environ-
+ments are summarized in Figure 1 (column 1-3). For all
+small-scale environments, we demonstrate MA-DAAC con-
+verges faster than the baselines. This is due to the use of
+MAAC â an off-policy MARL methods â rather than using
+MACK â an on-policy MARL methods â proposed by Song
+et al. (2018). Also, there is only a negligible gap between
+the performances of using centralized discriminators and
+using decentralized discriminators. It should be noted that
+in Song et al. (2018), imitation learning with centralized dis-
+criminators leads to slightly better performance compared
+to its decentralized counterparts, whereas we get compa-
+rable results for both types of discriminators. We believe
+this small difference comes from using different MACK
+implementations and expertsâ demonstration.
+
+Reward Learning. For all imitation and IRL methods, we
+ï¬rst train both policies and rewards over 50,000 episodes
+and re-train policies with MACK and learned rewards over
+
+50,000 episodes. For rewards from MA-DAAC and MA-
+AIRL, we use gÏi in (4), a learned reward without potential
+functions hÏi (Fu et al., 2018; Yu et al., 2019). For MA-
+GAIL, we use log Di(Â¯o, Â¯a) as compared by Yu et al. (2019).
+The results of reward learning are described in Figure 1
+(column 4). Note that the policies trained by either imitation
+or IRL methods have comparable mean NSS for given the
+number of expert demonstration and environment. Neverthe-
+less, the rewards learned by either MA-DAAC or MA-AIRL
+with decentralized discriminators achieve the best retraining
+performance. One interesting observation is that rewards
+from MA-DAAC with centralized discriminators lead to
+better performance compared to those from MA-AIRL with
+centralized discriminators. We believe using the off-policy
+samples in MA-DAAC makes the reward training more ro-
+bust since MA-AIRL is trained by on-policy samples and
+can easily overï¬t to the latest rollouts. Additional results in
+small-scale environments are given in Appendix.
+
+0.000.250.500.751.00(8 Agents)NSS50 Expert Traj.Policy Imitation100 Expert Traj.200 Expert Traj.0.000.250.500.751.00Rover Tower(12 Agents)NSS04000080000Num. Episodes0.000.250.500.751.00(16 Agents)NSS04000080000Num. Episodes04000080000Num. EpisodesMA-GAIL w/ DecentralizedDiscMA-GAIL w/ CentralizedDiscMA-AIRL w/ DecentralizedDiscMA-AIRL w/ CentralizedDiscMA-DAAC w/ DecentralizedDiscMA-DAAC w/ CentralizedDiscExpertRandom0.00.51.0Reward Evaluation0.00.51.050100200Num. Expert Traj.0.00.51.0Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+Table 1. Imitation learning performance relative to that of MA-
+GAIL in Rover Tower tasks. Note that the gain becomes much
+larger for the decreasing amount of available expertsâ demonstra-
+tion. The evaluation score after training 100,000 episodes were
+used.
+
+# Agents
+
+Algorithm
+
+# Expert Traj.
+100
+
+50
+
+8
+
+12
+
+16
+
+21.459
+MA-AIRL
+MA-DAAC 46.684
+9.285
+MA-AIRL
+MA-DAAC 44.574
+6.472
+MA-AIRL
+MA-DAAC 41.167
+
+8.279
+12.716
+8.910
+20.154
+7.918
+24.982
+
+200
+
+1.590
+0.042
+2.400
+1.406
+3.538
+8.145
+
+Table 2. Reward learning performance relative to that of MA-GAIL
+in Rover Tower tasks. MA-DAAC consistently performs better
+than the baselines. The evaluation scores after training 100,000
+episodes were used.
+
+# Agents
+
+Algorithm
+
+# Expert Traj.
+100
+
+50
+
+200
+
+8
+
+12
+
+16
+
+25.700
+MA-AIRL
+MA-DAAC 54.640
+21.489
+MA-AIRL
+MA-DAAC 40.887
+32.875
+MA-AIRL
+MA-DAAC 56.326
+
+24.963
+50.468
+13.177
+36.511
+16.451
+43.364
+
+47.944
+64.144
+25.360
+44.920
+26.510
+48.945
+
+criminator and policy parameters linearly increases for all
+cases. Additional results in small-scale environments are
+given in Appendix.
+
+5.4. Effect of Number of Expertsâ Demonstration
+
+For both small-scale and large-scale environments, we vary
+the number of available expertsâ demonstration among 50,
+100, 200 and check its effect on policy imitation and reward
+learning performances (See Figure 1, 2). In the large-scale
+environments, the performance is highly affected by the
+number of expertsâ demonstration, whereas thereâs a negli-
+gible effect in the small-scale environments. We believe this
+comes from the different size of joint observation-action
+spaces between small-scale and large-scale environments.
+Speciï¬cally for the ï¬xed amount of expertsâ demonstration,
+the effective amount of training data â the number of expertsâ
+demonstration relative to input dimensions â decreases and
+causes discriminators to be more biased as the number of
+agents increases. In the end, this leads to learning in the
+large-scale environments more difï¬cult than learning in the
+small-scale environments.
+
+Figure 3. The number of trainable parameters for each method with
+decentralized discriminator in Rover Tower tasks. The number of
+parameters linearly increases for MA-DAAC, whereas it increases
+for MA-AIRL. Note that MA-DAAC performs better than MA-
+AIRL for both policy imitation and reward learning with fewer
+number of parameters in the environments with either 12 or 16
+agents.
+
+5.3. Large-Scale Environments
+
+Policy Imitation. The imitation performances in the large-
+scale environments are depicted in Figure 2 (column 1-3).
+In the large-scale environments, we observe that sample ef-
+ï¬ciencies of the methods with decentralized discriminators
+are extremely higher than those with centralized discrim-
+inators. This is in contrast with the results in the small-
+scale environments in the sense that both efï¬ciencies are
+comparable in those environments. This comes from the
+higher variance of training centralized discriminators in
+the large-scale environments compared to the small-scale
+counterparts. Among the methods with decentralized dis-
+criminators, we ï¬nd out MA-DAAC learns much faster than
+the baselines. Especially, MA-DAAC robustly achieves the
+best NSS irrespective of the number of agents, whereas
+the convergence of the baselines becomes slower for the
+increasing number of agents. This comes from the fact that
+MA-DAAC uses a shared attention-based critic as well as
+the off-policy samples via replay.
+
+Reward Learning. For the large-scale environments, we
+train policies and rewards over 100,000 episodes and re-
+train policies with MAAC and learned reward over 100,000
+episodes. Also, the same reward models as those in the
+small-scale environments are used. The reward learning
+results are described in Figure 1 (column 4). Among all
+methods, learned rewards from MA-DAAC with decentral-
+ized discriminators leads to the best NSS. The performance
+of retrained policies decreases as the number of agents in-
+creases.
+
+Number of Learnable Parameters. MA-DAAC is more
+efï¬cient than baselines in terms of the number of parameters.
+As depicted in Figure 3, the number of MA-DAACâs param-
+eters linearly increases, while the number of the baselinesâs
+parameters exponentially increase. Such an exponential in-
+crease comes from the fact that MACK doesnât share critic
+networks among the agents. Note that the number of dis-
+
+81216Num. Agents5e51e615e6Num. ParametersMA-AIRLMA-DAACScalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+Especially for learning with decentralized discriminators
+in the large-scale environments, we demonstrate that MA-
+DAAC performs better than the baselines with small amount
+of expertsâ demonstration (Table 1, 2). For policy imita-
+tion (Table 1), we observe the relative score of MA-DAAC
+becomes larger as the number of available demonstration
+decreases irrespective of the number of agents, whereas the
+relative score of MA-AIRL is much smaller than that of
+MA-DAAC. This result supports that our method is much
+more robust than the baseline with respect to the number
+of expertsâ demonstration. For reward learning (Table 2)),
+we again observe that the relative socre of MA-DAAC is
+consistently higher than that of MA-AIRL.
+
+6. Discussion
+
+Why do decentralized discriminators work well? Letâs think
+about the sources of coordination that can lead to successful
+learning with decentralized discriminators. The ï¬rst one is
+centralized critics, which take joint observations and actions
+as inputs as used in many MARL algorithms. The second
+one is achieved by sampling expertsâ joint observations and
+actions that happened in the same time step. Since expertsâ
+joint trajectories include information about how to coordi-
+nate at the speciï¬c time step, decentralized discriminators
+can be sufï¬ciently trained toward the coordination of experts.
+These two mechanisms allow decentralized discriminators
+to focus on local experiences, which highly reduces the
+input spaces and leads to better scalability.
+
+Why donât we use observation-only decentralized discrimi-
+nators? In single-agent AIRL (Fu et al., 2018), it was shown
+that a discriminator model that ignores action inputs can
+recover a reward function that is robust to changes of en-
+vironment. In the multi-agent problems, however, we ï¬nd
+that observation-only discriminators may fail to imitate well,
+depending on the task. In Cooperative Communication, for
+example, the speakerâs observation os is ï¬xed as the color of
+a goal landmark in an episode, i.e., os,0 = Â· Â· Â· = os,T â1 for
+the length T of the episode, and the speakerâs action (mes-
+sage) as,t at t becomes the part of the listenerâs successor
+observation ol,t+1 at t + 1. In such setting, if observation-
+only decentralized discriminators Ds(os, o(cid:48)
+s) and Dl(ol, o(cid:48)
+l)
+are used, the speaker cannot learn how to send a correct
+message since Ds does not include the message informa-
+tion as. Due to the incorrect message from the speaker, the
+observation of the listener becomes noisy, which results in
+poor performance of listener as well. On the other hand, an
+observation-only centralized discriminator Â¯D(os, ol, o(cid:48)
+s, o(cid:48)
+l)
+does not suffer from the above issue since the centralized
+discriminators of both speaker and listener can exploit the
+full observation transition (os, ol) â (o(cid:48)
+l) and match the
+transition with transitions in expertsâ demonstration. Such a
+problem, from the partial observable nature of multi-agent
+
+s, o(cid:48)
+
+Figure 4. Pearsonâs correlation coefï¬cient (PCC) between ground
+truth rewards and learned rewards (left) and NSS (right) during
+retraining with learned rewards. The results imply the expertsâ
+behavior can be achieved by the learned rewards having low corre-
+lation with the ground truth.
+
+problem, opens a new challenge: learning reward functions
+that are both scalable and robust. We leave this problem to
+future work.
+
+Is the correlation between learned rewards and ground truth
+rewards meaningful? In the experiments of MA-AIRL (Yu
+et al., 2019), statistical correlations between ground truth
+rewards â the rewards used to train expertsâ policies â and
+learned rewards were regarded as the performance measure
+of reward learning. We also check statistical correlations in
+our implementation, but the reward recovery performance
+reported in Yu et al. (2019) cannot be reproduced. Discrep-
+ancies in the results may come from differences between our
+implementation and that of Yu et al. (2019). However, we
+additionally ï¬nd that high correlation between the learned
+rewards and the ground truth rewards is not a necessary con-
+dition of learned rewards leading to the expertsâ behavior,
+as depicted in Figure. 4. It is well known that IRL problems
+are ill-deï¬ned, therefore there can exist multiple rewards
+that can be matched to the expertsâ observed trajectories.
+
+7. Conclusion
+
+We propose MA-DAAC, a multi-agent IRL method that
+is much more scalable and sample-efï¬cient than existing
+works. We massively and rigorously analyze the perfor-
+mance of MA-DAAC and compare to baselines in terms of
+sample efï¬ciency and the retraining score with newly de-
+ï¬ned measure (NSS), using various types of discriminators
+(decentralized and centralized). We show that MA-DAAC
+with decentralized discriminators outperforms other meth-
+ods. One interesting future direction is a scalable multi-
+agent IRL with a centralized discriminator, so that we can
+efï¬ciently interpret sequential behavior of a large number of
+agents by looking at the resultant centralized reward func-
+tions.
+
+02500050000Num. Episodes0.000.250.500.751.00PCC02500050000Num. Episodes0.000.250.500.751.00NSSScalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+References
+
+Degris, T., White, M., and Sutton, R. S. Off-policy actor-
+critic. In Proceedings of the 29th International Confer-
+ence on Machine Learning (ICML), pp. 179â186, 2012.
+
+Foerster, J. N., Farquhar, G., Afouras, T., Nardelli, N., and
+Whiteson, S. Counterfactual multi-agent policy gradients.
+In Proceedings of the 32nd AAAI Conference on Artiï¬cial
+Intelligence, 2018.
+
+Fu, J., Luo, K., and Levine, S. Learning robust rewards
+with adverserial inverse reinforcement learning. In Pro-
+ceedings of the 6th International Conference on Learning
+Representations (ICLR), 2018.
+
+Fujimoto, S., Hoof, H., and Meger, D. Addressing function
+approximation error in actor-critic methods. In Proceed-
+ings of the 35th International Conference on Machine
+Learning (ICML), pp. 1582â1591, 2018.
+
+Goodfellow, I., Pouget Abadie, J., Mirza, M., Xu, B., Warde
+Farley, D., Ozair, S., Courville, A., and Bengio, Y. Gener-
+ative adversarial nets. In Advances in Neural Information
+Processing Systems (NeurIPS), pp. 2672â2680, 2014.
+
+Ho, J. and Ermon, S. Generative adversarial imitation learn-
+ing. In Advances in Neural Information Processing Sys-
+tems (NeurIPS), pp. 4565â4573, 2016.
+
+Iqbal, S. and Sha, F. Actor-attention-critic for multi-agent
+reinforcement learning. In Proceedings of the 36th Inter-
+national Conference on Machine Learning (ICML), pp.
+2961â2970, 2019.
+
+Kostrikov, I., Agrawal, K. K., Dwibedi, D., Levine, S., and
+Tompson, J. Discriminator-Actor-Critic: Addressing sam-
+ple inefï¬ciency and reward bias in adversarial imitation
+learning. In Proceedings of the 7th International Confer-
+ence on Learning Representations (ICLR), 2019.
+
+Le, H. M., Yue, Y., Carr, P., and Lucey, P. Coordinated
+multi-agent imitation learning. In Proceedings of the 34th
+International Conference on Machine Learning (ICML),
+pp. 1995â2003, 2017.
+
+Littman, M. L. Markov games as a framework for multi-
+agent reinforcement learning. In Machine Learning Pro-
+ceedings, pp. 157â163. Elsevier, 1994.
+
+Ng, A. Y. and Russell, S. J. Algorithms for inverse reinforce-
+ment learning. In Proceedings of the 17th International
+Conference on Machine Learning (ICML), 2000.
+
+Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J.,
+Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga,
+L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z., Raison,
+M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L.,
+Bai, J., and Chintala, S. Pytorch: An imperative style,
+high-performance deep learning library. In Advances in
+Neural Information Processing Systems (NeurIPS), pp.
+8024â8035, 2019.
+
+Ross, S., Gordon, G., and Bagnell, D. A reduction of imita-
+tion learning and structured prediction to no-regret online
+learning. In Proceedings of the 14th International Confer-
+ence on Artiï¬cial Intelligence and Statistics (AISTATS),
+pp. 627â635, 2011.
+
+Sanghvi, N., Yonetani, R., and Kitani, K. Modeling social
+group communication with multi-agent imitation learning.
+arXiv preprint arXiv:1903.01537, 2019.
+
+Sasaki, F., Yohira, T., and Kawaguchi, A. Sample efï¬cient
+imitation learning for continuous control. In Proceedings
+of the 7th International Conference on Learning Repre-
+sentations (ICLR), 2019.
+
+Schulman, J., Levine, S., Abbeel, P., Jordan, M., and Moritz,
+P. Trust region policy optimization. In Proceedings of
+the 32th International Conference on Machine Learning
+(ICML), pp. 1889â1897, 2015.
+
+Schulman, J., Moritz, P., Levine, S., Jordan, M., and Abbeel,
+P. High-dimensional continuous control using general-
+In Proceedings of the 4th
+ized advantage estimation.
+International Conference on Learning Representations
+(ICLR), 2016.
+
+Song, J., Ren, H., Sadigh, D., and Ermon, S. Multi-agent
+generative adversarial imitation learning. In Advances
+in Neural Information Processing Systems (NeurIPS), pp.
+7461â7472, 2018.
+
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones,
+L., Gomez, A. N., Kaiser, Å., and Polosukhin, I. Atten-
+tion is all you need. In Advances in Neural Information
+Processing Systems (NeurIPS), pp. 5998â6008, 2017.
+
+Lowe, R., Wu, Y., Tamar, A., Harb, J., Abbeel, P., and Mor-
+datch, I. Multi-agent actor-critic for mixed cooperative-
+competitive environments. In Advances in Neural Infor-
+mation Processing Systems (NeurIPS), pp. 6379â6390,
+2017.
+
+Wu, Y., Mansimov, E., Grosse, R. B., Liao, S., and Ba,
+J. Scalable trust-region method for deep reinforcement
+In
+learning using Kronecker-factored approximation.
+Advances in Neural Information Processing Systems
+(NeurIPS), pp. 5279â5288, 2017.
+
+Mordatch, I. and Abbeel, P. Emergence of grounded com-
+positional language in multi-agent populations. In Pro-
+ceedings of the 32nd AAAI Conference on Artiï¬cial Intel-
+ligence, 2018.
+
+Yang, Y., Luo, R., Li, M., Zhou, M., Zhang, W., and Wang,
+J. Mean ï¬eld multi-agent reinforcement learning.
+In
+Proceedings of the 35th International Conference on Ma-
+chine Learning (ICML), pp. 5567â5576, 2018.
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+Yu, L., Song, J., and Ermon, S. Multi-agent adversarial
+inverse reinforcement learning. In Proceedings of the 36th
+International Conference on Machine Learning (ICML),
+2019.
+
+Ziebart, B. D., Maas, A. L., Bagnell, J. A., and Dey, A. K.
+Maximum entropy inverse reinforcement learning. In
+Proceedings of the 23rd AAAI Conference on Artiï¬cial
+Intelligence, volume 8, pp. 1433â1438, 2008.
+
+Scalable Multi-Agent Inverse Reinforcement Learning via
+Actor-Attention-Critic
+(Supplementary Material)
+
+A. Details of Experiments
+
+Tasks. In our experiments, we consider four tasks built on OpenAIâs Multi-Agent Particle Environments (Mordatch &
+Abbeel, 2018; Lowe et al., 2017; Iqbal & Sha, 2019); Keep Away, Cooperative Communication, Cooperative Navigation,
+Rover Tower. For all tasks, the length of each episode is set to be 25. For Rover Tower, the number of agents is chosen
+among 8, 12, 16.
+
+MARL implementations. We implement both MACK (Song et al., 2018) and MAAC (Iqbal & Sha, 2019) in Py-
+Torch (Paszke et al., 2019) by refactoring the codes released by the respective authors1 2. Especially to implement MACK
+in PyTorch, we use generalized advantage estimation (GAE) (Schulman et al., 2016) and KFAC optimizer from ACKTR
+implementation in PyTorch3. Additionally, we apply advantage normalization technique used in OpenAI baselines4 which
+has not been implemented in original MACK implementation but highly stabilizes and improves the performance of MACK.
+For all policies and the value baselines in MACK, we use two-layer neural networks with 128 hidden units and LeakyReLU
+activations. For attention critic in MAAC, we use the same network architecture used in the released code. For all methods,
+we divide the rewards with the length of episodes.
+
+Experts. We use our MAAC implementation to train expertsâ policies for 50,000 episodes. We use the normalization of
+inputs and rewards for each agent based on the methods of calculating running mean and standard deviation5 in OpenAI
+baselines. Other hyperparamters are summarized in Table 3. After training experts, we sample 500 episodes by using learned
+expertsâ policies and use the average score of each agent over 500 episodes to deï¬ne scoreEi in NSS.
+
+Table 3. Hyperparameters for training experts with MAAC
+
+hyperparameters
+
+discount factor
+buffer size
+policy learning rate
+target policy update rate
+policy entropy regularization coefï¬cient
+critic learning rate
+target critic update rate
+critic gradient norm clipping
+critic loss function
+batch size
+update period
+
+value
+
+0.995
+50,000
+0.001
+0.01
+0.01
+0.001
+0.01
+1.0
+Huber loss
+1,000
+100
+
+Random Agents. We sample 500 episodes by uniformly sample actions and use the average score of each agent over 500
+episodes to deï¬ne scoreRi in NSS.
+
+Multi-agent inverse RL. For inverse RL, we donât use any kind of normalization as opposed to learning expertsâ policies.
+
+1 https://github.com/ermongroup/multiagent-gail
+2 https://github.com/shariqiqbal2810/MAAC
+3 https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail
+4 https://github.com/openai/baselines
+5 https://github.com/openai/baselines/blob/master/baselines/common/running_mean_std.py
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+While Song et al. (2018) and Yu et al. (2019) have considered the policy initialization with behavioral cloning, we use
+randomly initialized policies as done in existing works on single-agent adversarial imitation learning (Ho & Ermon, 2016;
+Kostrikov et al., 2019; Sasaki et al., 2019). Although we havenât demonstrated the effect of behavioral-cloning initialization
+on scalablity, we guess such initialization does not give signiï¬cant gain to either MA-GAIL or MA-AIRL because of both
+using MACK as MARL algorithm. For the discriminators of MA-GAIL, we use two-layer neural networks with 128 hidden
+units and LeakyReLU activation to model Di. For the discriminators of MA-AIRL and MA-DAAC, we use two-layer neural
+networks with 128 hidden units and LeakyReLU activation for both reward estimation gi and potential shaping function hi.
+For the training of discriminators, we use entropy regularization of discriminators used in Ho & Ermon (2016)6 instead of
+using L2 regularization of discriminators in the released codes7. This empirically leads to much better imitation and reward
+learning performances than using L2 regularization. Other hyperparameters for MA-GAIL and MA-AIRL are in Table 4,
+and those for MA-DAAC are in Table 5.
+
+Table 4. Hyperparameters for both MA-GAIL and MA-AIRL
+
+hyperparameters
+
+Î» for GAE
+discount factor
+policy learning rate
+policy target update rate
+policy entropy regularization coefï¬cient
+critic learning rate
+critic target update rate
+critic gradient norm clipping
+critic loss function
+discriminator learning rate
+discriminator entropy regularization coefï¬cient
+discriminator gradient norm clipping
+batch size
+
+Table 5. Hyperparameters for MA-DAAC
+
+hyperparameters
+
+discount factor
+buffer size
+policy learning rate
+target policy update rate
+policy entropy regularization coefï¬cient
+critic learning rate
+target critic update rate
+critic gradient norm clipping
+critic loss function
+discriminator learning rate
+discriminator entropy regularization coefï¬cient
+discriminator gradient norm clipping
+batch size
+update period
+
+value
+
+0.95
+0.995
+0.001
+0.0005
+0.01
+0.001
+0.001
+10
+Huber loss
+0.01
+0.01
+10
+1,000
+
+value
+
+0.995
+1,250,000
+0.001
+0.0005
+0.01
+0.001
+0.0005
+1.0
+Huber loss
+0.0005
+0.01
+10
+1,000
+100
+
+6 https://github.com/openai/imitation
+7 https://github.com/ermongroup/MA-AIRL
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+B. Results in Small-Scale Environments
+
+The scores of learned policies are given in Table 6, and the scores of policies retrained with learned rewards are given in
+Table 7. For both cases, we train policies for 50,000 episodes.
+
+Table 6. 95% conï¬dence interval of scores after either imitation learning (MA-GAIL) or inverse reinforcement learning (MA-AIRL,
+MA-DAAC) in small-scale environments. Mean and conï¬dence interval are calculated for 10 runs.
+
+Number of Expertsâ
+Demonstration
+
+Algorithm
+
+Random
+Expert
+
+MA-GAIL
+
+50
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+100
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+200
+
+MA-AIRL
+
+MA-DAAC
+
+Discriminator
+Type
+
+Keep Away
+
+Pusher
+
+Reacher
+
+Cooperative
+Communication
+
+Cooperative
+Navigation
+
+114.401 Â± 5.087 â25.910 Â± 1.034 â57.196 Â± 2.404 â178.575 Â± 4.108
+â77.129 Â± 1.766
+â9.688 Â± 0.331 â15.290 Â± 0.811
+
+44.449 Â± 1.673
+
+44.361 Â± 3.900
+45.394 Â± 2.401
+44.515 Â± 2.736
+43.374 Â± 2.898
+44.329 Â± 3.457
+44.768 Â± 3.278
+43.506 Â± 3.550
+42.891 Â± 3.278
+43.594 Â± 2.594
+43.351 Â± 2.789
+43.267 Â± 3.137
+42.303 Â± 2.838
+44.626 Â± 3.028
+42.246 Â± 3.683
+42.611 Â± 4.360
+43.150 Â± 3.105
+44.041 Â± 4.201
+41.492 Â± 2.818
+
+â9.580 Â± 0.784 â17.669 Â± 1.714
+â9.785 Â± 0.499 â17.707 Â± 1.337
+â9.625 Â± 0.557 â17.305 Â± 1.354
+â9.390 Â± 0.597 â16.499 Â± 1.594
+â9.595 Â± 0.708 â20.824 Â± 1.290
+â9.675 Â± 0.679 â20.702 Â± 1.734
+â9.450 Â± 0.728 â14.962 Â± 1.346
+â9.311 Â± 0.674 â14.884 Â± 1.343
+â9.468 Â± 0.532 â14.790 Â± 1.458
+â9.404 Â± 0.575 â15.085 Â± 1.502
+â9.381 Â± 0.648 â18.184 Â± 1.419
+â9.204 Â± 0.586 â17.542 Â± 1.504
+â9.676 Â± 0.625 â14.508 Â± 1.520
+â9.192 Â± 0.760 â14.526 Â± 1.562
+â9.268 Â± 0.883 â14.757 Â± 1.405
+â9.364 Â± 0.636 â14.713 Â± 1.587
+â9.558 Â± 0.850 â15.820 Â± 1.292
+â9.045 Â± 0.570 â15.885 Â± 1.270
+
+â81.393 Â± 4.447
+â86.585 Â± 4.266
+â79.659 Â± 4.415
+â79.929 Â± 5.255
+â80.248 Â± 4.182
+â80.826 Â± 4.077
+â78.626 Â± 4.375
+â81.188 Â± 4.346
+â78.368 Â± 4.308
+â77.788 Â± 4.194
+â78.002 Â± 4.123
+â79.334 Â± 4.360
+â78.503 Â± 4.431
+â80.003 Â± 4.850
+â78.825 Â± 4.465
+â78.403 Â± 4.805
+â77.474 Â± 4.820
+â79.252 Â± 4.696
+
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+
+Table 7. 95% conï¬dence interval of scores after retraining with either discriminator (MA-GAIL) or learned reward functions (MA-AIRL,
+MA-DAAC) in small-scale environments. Mean and conï¬dence interval are calculated for 10 runs.
+
+Number of Expertsâ
+Demonstration
+
+Algorithm
+
+Random
+Expert
+
+MA-GAIL
+
+50
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+100
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+200
+
+MA-AIRL
+
+MA-DAAC
+
+Discriminator
+Type
+
+Keep Away
+
+Pusher
+
+Reacher
+
+Cooperative
+Communication
+
+Cooperative
+Navigation
+
+114.401 Â± 5.087 â25.910 Â± 1.034 â57.196 Â± 2.404
+â9.688 Â± 0.331 â15.290 Â± 0.811
+
+44.449 Â± 1.673
+
+â178.575 Â± 4.108
+â77.129 Â± 1.766
+
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+
+50.302 Â± 7.254 â10.751 Â± 1.514 â35.746 Â± 6.407
+
+â88.737 Â± 10.900
+104.775 Â± 34.312 â22.669 Â± 7.084 â39.449 Â± 3.679 â134.150 Â± 12.031
+42.349 Â± 1.817
+â80.355 Â± 2.471
+â9.112 Â± 0.366 â26.585 Â± 3.509
+51.765 Â± 9.712 â11.068 Â± 1.950 â40.513 Â± 7.691 â148.842 Â± 14.124
+â72.671 Â± 0.393
+41.520 Â± 1.304
+â8.933 Â± 0.267 â22.827 Â± 1.158
+â129.666 Â± 5.945
+43.004 Â± 2.197
+â9.245 Â± 0.439 â26.399 Â± 1.282
+56.646 Â± 21.924 â12.175 Â± 4.573 â26.587 Â± 4.296 â108.806 Â± 18.459
+94.367 Â± 24.518 â20.866 Â± 4.722 â40.004 Â± 4.350 â155.032 Â± 13.791
+43.087 Â± 1.302
+â71.304 Â± 0.646
+â9.275 Â± 0.265 â17.615 Â± 0.683
+50.066 Â± 4.977 â10.845 Â± 1.028 â31.832 Â± 7.729 â179.813 Â± 23.884
+â70.165 Â± 0.951
+40.895 Â± 1.199
+â8.824 Â± 0.240 â16.470 Â± 0.304
+â133.241 Â± 8.657
+39.158 Â± 1.051
+â8.478 Â± 0.210 â17.185 Â± 0.339
+71.033 Â± 29.519 â15.388 Â± 5.903 â20.436 Â± 3.922
+â89.098 Â± 8.290
+65.213 Â± 16.812 â15.052 Â± 3.115 â36.375 Â± 3.005 â186.348 Â± 18.565
+â8.701 Â± 0.219 â16.079 Â± 0.173
+â70.626 Â± 0.574
+â8.753 Â± 0.638 â25.498 Â± 5.444 â208.919 Â± 17.735
+â69.530 Â± 0.589
+â8.165 Â± 0.151 â15.153 Â± 0.139
+â8.351 Â± 0.188 â15.315 Â± 0.140 â152.142 Â± 13.646
+
+40.246 Â± 1.109
+38.603 Â± 3.140
+37.615 Â± 0.741
+38.405 Â± 0.949
+
+Scalable Multi-Agent Inverse Reinforcement Learning via Actor-Attention-Critic
+
+C. Results in Large-Scale Environments
+
+The scores of learned policies are given in Table 8, and the scores of policies retrained with learned rewards are given in
+Table 9. For both cases, we train policies for 100,000 episodes.
+
+Table 8. 95% conï¬dence interval of scores after either imitation learning (MA-GAIL) or inverse reinforcement learning (MA-AIRL,
+MA-DAAC) in large-scale environments. Mean and conï¬dence interval are calculated for 10 runs.
+
+Number of Expertsâ
+Demonstration
+
+Algorithm
+
+Random
+Expert
+
+MA-GAIL
+
+50
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+100
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+200
+
+MA-AIRL
+
+MA-DAAC
+
+Discriminator
+Type
+
+8 Agents
+
+Rover Tower
+12 Agents
+
+16 Agents
+
+â8.350 Â± 7.324
+127.506 Â± 7.136
+
+â7.691 Â± 7.399
+126.258 Â± 7.149
+
+â7.016 Â± 7.447
+123.905 Â± 7.349
+
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+
+76.871 Â± 12.076
+22.687 Â± 6.884
+98.330 Â± 9.890
+13.471 Â± 8.119
+123.555 Â± 9.899
+27.824 Â± 9.566
+116.679 Â± 9.450
+76.053 Â± 7.845
+124.958 Â± 9.346
+24.219 Â± 8.562
+129.395 Â± 8.851
+69.189 Â± 10.891
+129.867 Â± 8.288
+81.646 Â± 8.043
+131.456 Â± 8.850
+55.244 Â± 10.558
+129.909 Â± 8.638
+99.000 Â± 8.405
+
+61.583 Â± 6.299
+
+41.017 Â± 6.452
+2.050 Â± 7.660 â42.226 Â± 6.223
+47.488 Â± 7.508
+70.868 Â± 7.709
+â5.344 Â± 5.054
+15.178 Â± 7.308
+82.184 Â± 10.106
+106.157 Â± 6.865
+â5.897 Â± 2.865
+13.148 Â± 3.904
+99.835 Â± 3.838
+79.035 Â± 7.221
+11.679 Â± 7.368 â18.358 Â± 7.257
+86.953 Â± 7.406
+7.457 Â± 4.118
+104.017 Â± 7.968
+4.275 Â± 5.001
+104.923 Â± 6.920
+9.384 Â± 4.712
+108.461 Â± 7.676
+9.268 Â± 4.743
+113.068 Â± 7.059
+5.894 Â± 4.343
+
+108.745 Â± 6.382
+15.382 Â± 5.354
+119.990 Â± 3.848
+16.021 Â± 5.337
+122.465 Â± 3.853
+41.779 Â± 11.829
+124.865 Â± 3.356
+17.093 Â± 5.807
+123.871 Â± 3.986
+31.292 Â± 5.700
+
+Table 9. 95% conï¬dence interval of scores after retraining with either discriminator (MA-GAIL) or learned reward functions (MA-AIRL,
+MA-DAAC) in large-scale environments. Mean and conï¬dence interval are calculated for 10 runs.
+
+Number of Expertsâ
+Demonstration
+
+Algorithm
+
+Random
+Expert
+
+MA-GAIL
+
+50
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+100
+
+MA-AIRL
+
+MA-DAAC
+
+MA-GAIL
+
+200
+
+MA-AIRL
+
+MA-DAAC
+
+Discriminator
+Type
+
+8 Agents
+
+Rover Tower
+12 Agents
+
+16 Agents
+
+â8.350 Â± 7.324
+127.506 Â± 7.136
+
+â7.691 Â± 7.399
+126.258 Â± 7.149
+
+â7.016 Â± 7.447
+123.905 Â± 7.349
+
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+Decentralized
+Centralized
+
+73.584 Â± 7.715
+
+81.783 Â± 5.797
+
+47.884 Â± 6.650
+
+20.972 Â± 4.398
+45.212 Â± 5.701
+â43.134 Â± 4.511 â40.042 Â± 2.947 â46.644 Â± 3.469
+53.848 Â± 4.561
+66.700 Â± 4.429
+â24.649 Â± 8.476 â13.008 Â± 3.343 â21.239 Â± 4.914
+77.299 Â± 2.930
+86.099 Â± 3.216
+102.523 Â± 5.147
+â0.402 Â± 4.640
+â3.786 Â± 3.045
+37.058 Â± 5.255
+55.605 Â± 4.394
+72.801 Â± 5.130
+56.820 Â± 4.052
+â40.101 Â± 3.222 â33.989 Â± 4.197 â40.653 Â± 4.001
+72.056 Â± 2.421
+85.978 Â± 3.853
+â38.940 Â± 6.682 â20.038 Â± 5.944 â19.045 Â± 4.746
+98.969 Â± 2.906
+109.312 Â± 3.325
+107.288 Â± 3.747
+2.674 Â± 3.186
+â6.471 Â± 2.168
+49.207 Â± 5.798
+57.997 Â± 1.997
+72.653 Â± 3.115
+44.758 Â± 8.127
+â24.300 Â± 3.624 â25.582 Â± 7.643 â38.050 Â± 3.034
+84.507 Â± 2.464
+98.013 Â± 3.546
+â48.468 Â± 8.504 â29.585 Â± 6.222 â21.437 Â± 4.652
+106.942 Â± 2.395
+117.573 Â± 1.950
+108.902 Â± 4.831
+2.741 Â± 3.455
+5.999 Â± 3.978
+75.090 Â± 3.188
+
+92.702 Â± 2.447
+
+

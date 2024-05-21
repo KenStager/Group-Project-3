@@ -1,0 +1,730 @@
+A General Auxiliary Controller for Multi-agent Flocking
+
+Jinfan Zhou, Jiyu Cheng, Lin Zhang, and Wei Zhang
+
+1
+2
+0
+2
+
+c
+e
+D
+1
+1
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+1
+v
+3
+2
+0
+6
+0
+.
+2
+1
+1
+2
+:
+v
+i
+X
+r
+a
+
+Abstractâ We aim to improve the performance of multi-agent
+ï¬ocking behavior by quantifying the structural signiï¬cance
+of each agent. We designed a conï¬dence score(ConfScore) to
+measure the spatial signiï¬cance of each agent. The score will
+be used by an auxiliary controller to reï¬ne the velocity of
+agents. The agents will be enforced to follow the motion of
+the leader agents whose ConfScores are high. We demonstrate
+the efï¬cacy of
+to
+several existing algorithms including learning-based and non-
+learning-based methods. Furthermore, we examined how the
+auxiliary controller can help improve the performance under
+different settings of communication radius, number of agents
+and maximum initial velocity.
+
+the auxiliary controller by applying it
+
+I. INTRODUCTION
+
+Multiple collaborative agents can form large scale swarms
+which have wide application in various ï¬elds including
+assisting public safety communications [11], environment
+mapping and exploration [13, 2], and cooperative hunting [3].
+A centralized controller is capable of handling these prob-
+lems when the scale of the swarm is moderate, while it
+fails as the scale becomes much larger. Thus, a decentralized
+method is an appropriate solution to deal with this situation.
+In a decentralized system, each agent makes its own decision
+based on the local information it collects by itself and the
+information shared by its neighbours.
+
+Flocking is a task to coordinate the motion of several
+autonomous agents which is closely related to the natural
+animal behaviours [25, 10]. The early research in ecology
+and biology [1, 26, 12] has inspired the multi-agent ï¬ocking
+research. A computer animation program [14] mimicking
+the animal aggregation behaviour was proposed and paved
+the path for several following work leading to the creation
+of a new research area called artiï¬cial
+life in computer
+graphics [20]. Flocking is also an important problem in
+control and robotics [22], and has many practical applications
+especially in the control of UAVs [23, 17, 5]
+
+Some previous work uses machine learning methods like
+imitation learning [9, 15, 16] and reinforcement learning [7]
+
+Jinfan Zhou, Jiyu Cheng, Lin Zhang are with the School of Control
+Science and Engineering, Shandong University, Jinan 250061, China
+(e-mail:zjf@mail.sdu.edu.cn;
+jycheng@sdu.edu.cn;
+zl935546110@gmail.com).
+
+Wei Zhang is with the School of Control Science and Engineering,
+Shandong University, Jinan 250061, China, and also with the Institute
+of Brain and Brain-Inspired Science, Shandong University, Jinan 250061,
+China (e-mail:davidzhang@sdu.edu.cn).
+
+This work was supported in part by the National Key Research and
+Development Project of New Generation Artiï¬cial Intelligence of China
+under Grant 2018AAA0102504 ; in part by the National Natural Science
+Foundation of China under Grant U1913204, and Grant 61991411; and in
+part by the Shandong Major Scientiï¬c and Technological Innovation Project
+(MSTIP) under Grant 2019JZZY010428 and in part by the Fundamental
+Research Funds of Shandong University under Grant 31400061340342.
+
+which require a lot of time to train the controller. While other
+methods like [18, 14, 6, 19] require no training but will be
+very difï¬cult to ï¬nd an optimal controller in a distributed
+setting.
+
+As proposed in [21], graph neural networks [4, 27, 8]
+are suited for the decentralized control system where com-
+munication is limited and agents can only share information
+with their nearby peers. Aggregation graph neural networks
+are useful when dealing with information sharing, but it
+aggregates information only depending on the adjacency
+relationship and ignores the signiï¬cance of it. VeliËckoviÂ´c et
+al. [24] combined attention mechanism with graph neural
+networks but they only considered point-to-point attention
+and did not use the information provided by neighbours to
+measure each agentâs structural signiï¬cance in a point-to-
+group manner. Moreover, such proposed attention can only
+be used in a learning-based method, which means that it
+needs extra time to train the network.
+
+In order to address these issues, we introduce the Con-
+fScore to comprehensively measure the quality of each
+agentâs position and the consistency of its motion with
+neighbours. We also propose an auxiliary controller based
+on the ConfScore for better coordination. We examine the
+dynamic structural importance of each agent and enforce the
+agents to follow those opinion leaders in a swarm. It proves
+to be beneï¬cial to a wide variety of algorithms and requires
+no extra training. The whole procedure is illustrated as in
+Fig. 1.
+
+II. CONTROL OF MULTI-AGENT SWARM
+
+We consider there are N agents in a swarm involved in
+some dynamic process which requires to be controlled. The
+process can be characterized by some state value xxxi(t) â Rp
+which demonstrates the states including position, velocity
+and acceleration of each agent in time t. Also, some control
+action uuui(t) â Rq is also needed so as to illustrate the action
+that agents take so as to realize the goal of controlling the
+whole system. We denote matrix xxx(t) = [xxxT
+N (t)] â
+RN Ãp as a collection of the states of all of the agents in a
+N (t)] â RN Ãq as
+swarm and the matrix uuu(t) = [uuuT
+a collection of the control action of the system in time t.
+The evolution of the dynamic process can be formulated as
+a differential equation: Ëxxx(t) = f (xxx(t), uuu(t)).
+
+1 (t); ...; uuuT
+
+1 (t); ...; xxxT
+
+Our controller operates in discrete time with a sampling
+time TS and the index n. During one sampling time, the
+control action uuu(n) is kept the same from time nTs until
+(n + 1)Ts. As the state value matrix xxxn = xxx(nTs), we can
+accumulate Ëxxx(t) from time nTs to (n + 1)Ts and give a
+formulation of the discrete dynamic system as:
+
+ 
+ 
+ 
+ 
+ 
+ 
+ConfScore-based auxiliary controller. (a)A centralized/decentralized controller Î¦ takes state value xxx as input and output control action uuu.
+Fig. 1.
+(b)ConfScores are calculated according to the state value xxx. (c)Based on the ConfScores, we calculate the assistant acceleration Â¯uÂ¯uÂ¯u to adjust the agentsâ
+motion.
+
+xxxn+1 =
+
+(cid:90) (n+1)Tx
+
+nTs
+
+f (xxx(t), uuu(t))dt + xxxn
+
+(1)
+
+Based on different tasks we are dealing with, we have
+different cost function l(xxx(t), uuu(t)). So at each time step nTs,
+we have an immediate cost ln = l(xxx(n), uuu(n)). The objective
+of the control policy is to minimize the accumulative cost
+(cid:80)â
+
+n=0 ln.
+We use a graph G to denote an agent network and use
+nnn to represent the collection of all the agents. we deï¬ne a
+communication radius R . If the distance between two agents
+nnni and nnnjare within R , then we add an edge (i, j) â En
+to the graph and nnni and nnnj are treated as neighbours. Thus
+we can deï¬ne the neighbourhood of nnni at time n as Nij =
+{j : (i, j) â En}.
+
+III. CONFSCORE-BASED AUXILIARY CONTROLLER
+
+As different agents take different positions in a swarm,
+they intrinsically have different structural signiï¬cance. We
+ï¬rst propose a ConfScore to comprehensively measure the
+structural importance as well as the motion quality of an
+agent in the swarm. We evaluate it based on two criteria (1)
+the number of the neighbours and (2) to which extent its
+velocity is in accordance with its neighbours. Criterion (1)
+measures the goodness of an agentâs position and criterion
+(2) is used to decide an agentâs motion quality. Thus we
+propose a ConfScore Ci to measure the extent to which one
+agent should be conï¬dent about its current motion.
+
+Ci =
+
+(cid:88)
+
+jâNi
+
+vi Â· vj
+||vi|| Â· ||vj||
+
+(2)
+
+One agent would have higher score if it has more neigh-
+
+bours sharing similar velocity with it and vice versa.
+
+After the computation of the ConfScores, every agent is
+assigned with one score. The score can be interpreted as
+how conï¬dent an agent should stick to its current motion
+or change its velocity in order to follow other agents who
+are more likely to be on the right track. Then we utilize
+
+Algorithm 1 Computation of Assistant Acceleration Based
+on ConfScore
+Require: nnn: collection of agents; NNN : collection of neigh-
+bourhood of all agents; vvv: collection of velocity of all
+agents; Î»: a heuristic magnitude coefï¬cient
+
+Ensure: ccc: collection of ConfScores of all agents Â¯uuu: collec-
+
+tion of assistant acceleration of all agents
+
+for each neighbour nnnj in nnniâs neighbourhood Ni do
+
+vnnni Â·vnnnj
+||vnnni ||Â·||vnnnj ||
+
+1: Initialize ccc, Â¯uuu to be 000
+2: for each agent nnni in nnn do
+3:
+
+4:
+
+cnnni = cnnni +
+
+end for
+
+5:
+6: end for
+7: for each agent nnni in nnn do
+8:
+9:
+10:
+
+counter = 0
+for each neighbour nnnj in nnniâs neighbourhood Ni do
+is among nnnjâs top-k
+
+if cnnnj > cnnni and nnnj
+neighbours with regard to ccc then
+
+Â¯uuunnni = Â¯uuunnni + Î»(Cm â Ci)(vnnnjvnnnjvnnnj â vnnnivnnnivnnni)
+counter+ = 1
+
+11:
+
+end if
+
+12:
+13:
+14:
+15:
+16: end for
+17: return ccc, Â¯uuu
+
+end for
+Â¯uuunnni =
+
+Â¯uuunnni
+counter
+
+ConfScores to compute assistant acceleration as in Algorithm
+1.
+
+Î» is a coefï¬cient used to determine the extent to which we
+wish the agent to follow its leaders. It is set heuristically to
+be number of agents 30
+NNN for a non-learning-based algorithm
+and 15
+
+NNN for a learning-based algorithm.
+
+The scalar difference (Cm âCi) shows the extent to which
+the agent is enforced to follow the motion of its neighbours.
+If both agents are similarly conï¬dent,
+their neighboursâ
+motion will not have much inï¬uence while as the difference
+gets larger, the impact of the neighbours will be stronger.
+
+The vector difference (vmvmvm â vivivi) is used to adjust the
+velocity. Note that only when the two vector vmvmvm and vivivi is
+completely same both in direction and magnitude will it take
+no effect, in other words, even if two agents move in same
+direction, still, the auxiliary controller will force them to be
+at the same speed.
+
+We can generalize ï¬ocking algorithms using some policy
+
+Î¦ to be
+
+uuu = Î¦(xxx)
+
+(3)
+
+So it will be convenient to modify the ï¬nal control action
+
+by an assistant control action Â¯uuu using policy Â¯Î¦ as
+
+Ëuuu = Î¦(xxx) + Â¯Î¦(xxx)
+
+= uuu + Â¯uuu
+
+(4)
+
+Our ConfScore gives a good measurement to the agents
+and the auxiliary controller can push the agent to follow
+at least one best neighbour, which prevents agents losing
+communication with other agent .
+
+IV. EXPERIMENT
+
+We apply the auxiliary controller to ï¬ocking controller
+proposed in [19, 21] which cover centralized, decentralized,
+learning-based and non-learning-based methods to see how
+the auxiliary controller can improve the performance of dif-
+ferent kinds of methods. We examine the performance under
+different settings of number of agents NNN , communication
+radius RRR and maximum initial velocity VVV . ConfScore-based
+auxiliary controller is denoted as SA for simplicity. We use
+the variance in velocities
+
+L =
+
+1
+N
+
+T
+(cid:88)
+
+N
+(cid:88)
+
+n=1
+
+j=1
+
+(cid:13)
+(cid:13)
+(cid:13)
+vvvj,n â
+(cid:13)
+(cid:13)
+
+1
+N
+
+(cid:34) N
+(cid:88)
+
+i=1
+
+vvvi,n
+
+(cid:35)(cid:13)
+2
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+
+(5)
+
+as our cost function.
+
+A. Applying to Non-learning-based Method
+
+uuulocal proposed in [19] can be used as a local controller
+
+to make the control action. Its centralized version
+
+uuuâ
+
+i = â
+
+(cid:88)
+
+jânnn
+
+(vvvi â vvvj) â
+
+(cid:88)
+
+jânnn
+
+âriUij
+
+(6)
+
+is a more powerful controller yet needs access to the global
+information. Both uuulocaland uuuâ have no learnable parameters.
+We apply the auxiliary controller to both of the controllers
+and examine the performance based on different settings. For
+a local controller, the controller should enforce the agents not
+to disperse sparsely at early stage otherwise the drastic lost
+of neighbours will quickly occur. The performance of a local
+controller depends highly on the number of the neighbours
+each agent have because it relies only on local information
+to decide its control action. Once an agent completely loses
+communication with its peers, it will simply keep moving
+in its original velocity unless it comes into its peers again,
+which rarely happens.
+
+The auxiliary controller helps improve the robustness of
+the controller in regard with the maximum initial velocity.
+
+(a) Local controller with SA
+
+(b) Local controller
+
+At
+
+the initial state of the process,
+
+Fig. 2.
+the auxiliary controller
+successfully constrains the swarm from scattering, while the local controller
+cannot. VVV is set to be 3.5m/s, NNN =100 and RRR=1m.
+
+As Fig.2 shows, the main reason for the local controller to
+behave poorly as the maximum initial velocity increases is
+that high velocity will cause the agents to quickly scatter
+at the very beginning, and it will result in a random mo-
+tion behaviour. However, the auxiliary controller can help
+alleviate this situation in that the magnitude of the auxiliary
+controller is in proportion to the velocity of the agents and the
+ConfScore can selectively amplify or shrink the magnitude.
+So the swarm can keep cohesive even if it is driven by a
+high velocity. In Fig.2(a), the swarm is driven by the fast
+initial speed and get scattered. But in Fig.2(b), the agents
+are still cohesive. We ï¬x the NNN to be 100 and RRR to be 1m.
+From Fig.2(b) we can see that the performance of a local
+controller with auxiliary controller is far more stable than a
+vanilla one.
+
+The number of neighbours will increase as the communi-
+cation radius increases, thus each agent can sample more
+neighboursâ speed so as to choose a better leader. As is
+shown in Fig. 3, when the swarm is ï¬rst initialized, due to the
+randomness of velocity, the distribution of the ConfScores is
+largely dependent on the position of the agents. Generally,
+an agentâs ConfScore is higher if it is located near the center
+of the swarm , as it will have more neighbours, and lower
+if it is closed to the margin. This can cause an phenomenon
+that the outer agents tend to follow the motion of the inner
+ones which can help prevent the agents from scattering. As
+
+(a)
+
+(c)
+
+(b)
+
+(d)
+
+Fig. 3. ConfScores distribution under different communication radius. (a) and (b) show the initial and ï¬nal scores of the ï¬ock under when Comm. Radius
+is 1.5m while (c) and (d) shows the situation under 4.0m. The cosine similarity is normalized to be in range [0, 1] for better illustration.
+
+the process proceeds, the distribution of the ConfScores will
+be attributed to the communication radius R. As in Fig.3(b)
+a small R = 1.5m will result in that the agents with high
+scores scatter over the entire swarm while in Fig.3(d) a large
+R = 4m will then make the conï¬dent agents gather in the
+center of the swarm. In consequence, the entire swarm tends
+to split up if the communication radius is too small while
+much more robust as the radius increases.
+
+We also examine different k values. As k increases from
+1, instead of only focusing on the leader of the highest score,
+each agent pays more attention to other neighbours. However,
+different to simple averaging over the velocity of an agentâs
+neighbours, the assistant acceleration actually only focuses
+on those neighbours whose scores are higher ignoring those
+with scores lower than the agent itself, even if they are among
+its top-k neighbours. Increase in k can enhance the robustness
+of the acceleration since it is intuitive that the weighted
+average over the top-k neighbours can avoid the situation
+where a fake leader, whose motion may be in consistency
+with its neighbours while different from the whole swarm,
+may be too conï¬dent about itself and just split the original
+swarm leading some agents to move in a wrong way with it.
+We also test on the global controller uuuâ to see how it
+works. As we can see from ï¬g.4(b), 4(d), 4(e), the auxiliary
+
+controller can also help a global controller to achieve better
+performance, although as the communication radius varies,
+the controller will sometimes become unstable. In general,
+still, it is of much beneï¬t.
+
+B. Applying to Learning-based Method
+
+As is illustrated, the auxiliary controller can be conducive
+to non-learning methods, likewise, it can be readily applied
+to a learning-based method.
+
+DAGNN proposed by [21] uses imitation learning to train
+an aggregation graph neural network as a local controller. It
+imitates the behavior of a global expert algorithm by utilizing
+local observation shared by multi-hop information exchange.
+The auxiliary controller is compatible with an imitation
+learning algorithm in that it doesnât cause the failure of
+convergence. We conduct experiments on different stages
+when we apply the auxiliary controller to DAGNN, namely
+we (1) train a DAGNN with auxiliary controller and (2) apply
+the controller to the output of a pre-trained DAGNN model. It
+can be seen from Fig.4(b), 4(d), 4(e) the auxiliary controller
+can largely help the improvement of the DAGNN model in
+both ways.
+
+Use of the auxiliary controller helps the local DAGNN
+controller to excel the performance of a global control. The
+
+(a)
+
+(c)
+
+(e)
+
+(b)
+
+(d)
+
+(f)
+
+Fig. 4. Experimental results on different numbers of agents, maximum initial velocity and communication radius.
+
+drawback of a local controller mainly lies in the lost of
+communication caused by scattering and since the auxiliary
+controller can largely help alleviate the scattering problem,
+it is of much beneï¬t to the existent local controllers. Further,
+As the communication radius expands, the performance of
+a vanilla DAGNN plateaus,
+the application of auxiliary
+controller helps the model break through the bottleneck to
+achieve better performance as shown in Fig.4(f).
+
+V. CONCLUSION
+We have demonstrated that the utility of auxiliary con-
+troller is convenient and compatible to various kinds of ex-
+isting ï¬ocking algorithms. We test it under different settings
+
+of the scale, communication radius and maximum initial
+velocity of swarms. We show that the auxiliary controller
+is adaptive to the scale of the swarm and can improve
+other algorithmsâ robustness. It was also discussed that
+how the distribution of ConfScore varies due to different
+communication radius and how it takes affect to keep the
+agents cohesive. We propose the ConfScore to be a proper
+measurement of an agentâs motion quality and the auxiliary
+controller to be a general tool to improve the performance
+of the ï¬ocking task.
+
+[15] StÂ´ephane Ross and Drew Bagnell. âEfï¬cient reduc-
+tions for imitation learningâ. In: Proceedings of the
+thirteenth international conference on artiï¬cial intelli-
+gence and statistics. JMLR Workshop and Conference
+Proceedings. 2010, pp. 661â668.
+
+[16] StÂ´ephane Ross, Geoffrey J Gordon, and J Andrew
+Bagnell. âNo-regret reductions for imitation learning
+and structured predictionâ. In: In AISTATS. Citeseer.
+2011.
+
+[17] Fabian Schilling, Julien Lecoeur, Fabrizio Schiano,
+and Dario Floreano. âLearning vision-based ï¬ight in
+drone swarms by imitationâ. In: IEEE Robotics and
+Automation Letters 4.4 (2019), pp. 4523â4530.
+[18] Herbert G Tanner. âFlocking with obstacle avoidance
+in switching networks of interconnected vehiclesâ. In:
+IEEE International Conference on Robotics and Au-
+tomation, 2004. Proceedings. ICRAâ04. 2004. Vol. 3.
+IEEE. 2004, pp. 3006â3011.
+
+[19] Herbert G Tanner, Ali Jadbabaie, and George J Pappas.
+âStable ï¬ocking of mobile agents part I: dynamic
+topologyâ. In: 42nd IEEE International Conference on
+Decision and Control (IEEE Cat. No. 03CH37475).
+Vol. 2. IEEE. 2003, pp. 2016â2021.
+
+[20] Demetri Terzopoulos. âArtiï¬cial
+
+graphicsâ.
+(1999), pp. 32â42.
+
+In: Communications of
+
+life for computer
+the ACM 42.8
+
+[21] Ekaterina Tolstaya et al. âLearning decentralized con-
+trollers for robot swarms with graph neural networksâ.
+In: Conference on Robot Learning. PMLR. 2020,
+pp. 671â682.
+
+[22] GÂ´abor VÂ´asÂ´arhelyi et al. âOptimized ï¬ocking of au-
+tonomous drones in conï¬ned environmentsâ. In: Sci-
+ence Robotics 3.20 (2018).
+
+[23] GÂ´abor VÂ´asÂ´arhelyi et al. âOutdoor ï¬ocking and for-
+mation ï¬ight with autonomous aerial robotsâ. In:
+2014 IEEE/RSJ International Conference on Intelli-
+gent Robots and Systems. IEEE. 2014, pp. 3866â3873.
+[24] Petar VeliËckoviÂ´c et al. âGraph attention networksâ. In:
+
+arXiv preprint arXiv:1710.10903 (2017).
+
+[25] Tamas Vicsek. âA question of scaleâ. In: Nature
+
+411.6836 (2001), pp. 421â421.
+
+[26] Kevin Warburton and John Lazarus. âTendency-
+distance models of social cohesion in animal groupsâ.
+In: Journal of
+theoretical biology 150.4 (1991),
+pp. 473â488.
+
+[27] Zonghan Wu et al. âA comprehensive survey on graph
+neural networksâ. In: IEEE transactions on neural
+networks and learning systems (2020).
+
+REFERENCES
+
+[1] CM Breder Jr. âEquations descriptive of ï¬sh schools
+and other animal aggregationsâ. In: Ecology 35.3
+(1954), pp. 361â370.
+
+[2] Wolfram Burgard et al. âCollaborative multi-robot
+explorationâ. In: Proceedings 2000 ICRA. Millen-
+nium Conference. IEEE International Conference on
+Robotics and Automation. Symposia Proceedings (Cat.
+No. 00CH37065). Vol. 1. IEEE. 2000, pp. 476â481.
+
+[3] Zhiqiang Cao et al. âCooperative hunting by dis-
+tributed mobile robots based on local interactionâ. In:
+IEEE Transactions on Robotics 22.2 (2006), pp. 402â
+406.
+
+[4] Fernando Gama, Antonio G Marques, Geert Leus,
+and Alejandro Ribeiro. âConvolutional neural network
+architectures for signals supported on graphsâ. In:
+IEEE Transactions on Signal Processing 67.4 (2018),
+pp. 1034â1049.
+
+[5] Ting-Kuei Hu et al. âVGAI: End-to-End Learning
+of Vision-Based Decentralized Controllers for Robot
+Swarmsâ. In: arXiv preprint arXiv:2002.02308 (2020).
+[6] Ali Jadbabaie, Jie Lin, and A Stephen Morse. âCo-
+ordination of groups of mobile autonomous agents
+using nearest neighbor rulesâ. In: IEEE Transactions
+on automatic control 48.6 (2003), pp. 988â1001.
+[7] Arbaaz Khan, Ekaterina Tolstaya, Alejandro Ribeiro,
+and Vijay Kumar. âGraph policy gradients for large
+scale robot controlâ. In: Conference on Robot Learn-
+ing. PMLR. 2020, pp. 823â834.
+
+[8] Thomas N Kipf and Max Welling. âSemi-supervised
+classiï¬cation with graph convolutional networksâ. In:
+arXiv preprint arXiv:1609.02907 (2016).
+
+[9] Qingbiao Li, Weizhe Lin, Zhe Liu, and Amanda
+Prorok. âMessage-aware graph attention networks
+for
+In:
+large-scale multi-robot path planningâ.
+IEEE Robotics and Automation Letters 6.3 (2021),
+pp. 5533â5540.
+
+[10] David J Low. âFollowing the crowdâ. In: Nature
+
+407.6803 (2000), pp. 465â466.
+
+[11] Arvind Merwaday and Ismail Guvenc. âUAV assisted
+heterogeneous networks for public safety communi-
+cationsâ. In: 2015 IEEE wireless communications and
+networking conference workshops (WCNCW). IEEE.
+2015, pp. 329â334.
+
+[12] Akira Okubo. âDynamical aspects of animal grouping:
+swarms, schools, ï¬ocks, and herdsâ. In: Advances in
+biophysics 22 (1986), pp. 1â94.
+
+[13] Wolfgang D Rencken. âConcurrent localisation and
+map building for mobile robots using ultrasonic sen-
+sorsâ. In: Proceedings of 1993 IEEE/RSJ Interna-
+tional Conference on Intelligent Robots and Systems
+(IROSâ93). Vol. 3. IEEE. 1993, pp. 2192â2197.
+[14] Craig W Reynolds. âFlocks, herds and schools: A
+distributed behavioral modelâ. In: Proceedings of the
+14th annual conference on Computer graphics and
+interactive techniques. 1987, pp. 25â34.
+
+

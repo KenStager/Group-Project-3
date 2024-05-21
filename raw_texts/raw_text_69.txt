@@ -1,0 +1,1357 @@
+2
+2
+0
+2
+
+r
+a
+
+M
+6
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+8
+6
+0
+3
+0
+.
+3
+0
+2
+2
+:
+v
+i
+X
+r
+a
+
+O R I G I N A L A R T I C L E
+
+J o u r n a l S e c t i o n
+
+Diversifying Agentâs Behaviors in Interactive
+Decision Models
+
+Yinghui Pan1
+Biyang Ma2
+
+| Hanyi Zhang1
+
+| Yifeng Zeng2
+
+|
+
+|
+
+Jing Tang2
+
+| Zhong Ming1
+
+1College of Computer Science and
+Software Engineering, Shenzhen University,
+Shenzhen, 510810, China
+
+2Department of Computer and Information
+Sciences, Northumbria University,
+Newcastle, NE7 7UX, UK
+
+Correspondence
+Yifeng Zeng, Department of Computer and
+Information Sciences, Northumbria
+University, Newcastle, NE7 7UX, UK
+Ming Zhong, College of Computer Science
+and Software Engineering, Shenzhen
+University, Shenzhen, 510810, China
+Email: yifeng.zeng@northumbria.ac.uk;
+
+Funding information
+UKRI EPSRC Grant: EP/S011609/1 and
+NSFC: Grants: 62176225, 61772442 and
+61836005
+
+Modelling other agentsâ behaviors plays an important role
+
+in decision models for interactions among multiple agents.
+
+To optimise its own decisions, a subject agent needs to model
+
+what other agents act simultaneously in an uncertain en-
+
+vironment. However, modelling insuï¬ciency occurs when
+
+the agents are competitive and the subject agent can not
+
+get full knowledge about other agents. Even when the agents
+
+are collaborative, they may not share their true behaviors
+
+due to their privacy concerns. In this article, we investigate
+
+into diversifying behaviors of other agents in the subject
+
+agentâs decision model prior to their interactions. Starting
+
+with prior knowledge about other agentsâ behaviors, we
+
+use a linear reduction technique to extract representative
+
+behavioral features from the known behaviors. We sub-
+
+sequently generate their new behaviors by expanding the
+
+features and propose two diversity measurements to select
+
+top-K behaviors. We demonstrate the performance of the
+
+new techniques in two well-studied problem domains. This
+
+research will contribute to intelligent systems dealing with
+
+unknown unknowns in an open artiï¬cial intelligence world.
+
+K E Y W O R D S
+
+Interactive behaviors, Intelligent Agents, behavior Diversity
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+1 |
+
+INTRODUCTION
+
+Pan et al.
+
+Understanding interactive behaviors facilitates the development of intelligent systems that involves interactions be-
+
+tween either multiple agents or agents-and-humans. From the viewpoint of a subject agent, it expects to optimise its
+
+own decisions given what it observes from an environment shared by other agents who act in a similar way. However,
+
+the decision optimisation becomes diï¬cult when the subject agent can not get full knowledge about the other agents.
+
+This often occurs in a setting of competitive agents where the subject agent can not obtain suï¬cient knowledge about
+
+others in the decision making process. For example, a ground force schedules its routine patrol based on the criminal
+
+activities without fully knowing what the criminals will precisely react. Even in a collaborative agent environment, the
+
+agents may not be willing to share their information with each other due to their privacy concerns.
+
+Solving decision problems without suï¬cient prior knowledge, also termed as modelling insuï¬ciency, has been a
+
+long-standing issue in the ï¬eld of uncertainty in artiï¬cial intelligence (UAI) [1] and opens a new challenge to deploy
+
+intelligent systems in an open AI world [2]. Figure 1 shows one example of interactions involving two agents (i and
+
+j ) in a partially observable stochastic game (POSG) [3]. Both agents act when they receive observations from the
+
+environment and are awarded according to impact of their actions on the environmental states. From the viewpoint
+
+of agent i , it needs to predict behaviors of the other agent j which are not known prior to their interactions. Hence,
+
+agent i has to hypothesise a large number of agent j âs possible models by solving which agent i can predict j âs be-
+
+haviors. Unfortunately, the set of candidate models may not contain the true model of agent j due to the modelling
+
+insuï¬ciency. This leads to the challenge of optimising the subject agent i âs decisions under the uncertainty of other
+
+agentsâ behaviors.
+
+F I G U R E 1 Agent i optimises its actions by solving the hypothesised models of the other agent j . In this case, the
+true model of agent j (the frame colored by red) is contained in the set of candidate models. However, it often
+occurs that agent i does not hold the true model of agent j due to the modelling insuï¬ciency.
+
+In this article, we consider modelling insuï¬ciency in a well-known interactive multiagent decision model, e.g.
+
+interactive dynamic inï¬uence diagrams (I-DIDs) and interactive partially observable Markov decision processes (I-
+
+POMDPs), in a POSG setting [4, 5]. As demonstrated in the previous work, I-DIDs have shown both representation and
+
+computational advantages compared to I-POMDPs [6, 4]. Hence we develop I-DID-based solutions to the modelling
+
+insuï¬ciency issue in this work and the solutions can also be generalized to other multiagent decision models. An I-
+
+DID model extends a single-agent dynamic inï¬uence diagram [7] to represent how a subject agent solves a sequential
+
+decision problem involving other agents in a common environment. In a POSG setting, both agents act simultaneously
+
+and they can not directly see what the others act and can only reason with their actions given what they receive from
+
+the environment. In addition, their observations do not fully reï¬ect the environmental states in a deterministic manner,
+
+AgentsiandjinteractinacommonenvironmentwheretheycannotsharetheirknowledgewitheachotherinPOSG...............................Physical StatesActionAgent iAgent jActionObservation & RewardObservation & RewardAgent j's Possible ModelsPan et al.
+
+but with a probabilistic distribution.
+
+3
+
+A main component of a I-DID model is a subject agent i âs dynamic inï¬uence diagram based on which the other
+
+agent j âs behaviors are modelled and embedded into the decision model. Modelling insuï¬ciency occurs where agent
+
+j âs behaviors are not fully represented in an agent i âs I-DID model. For example, if some actions of agent j are not
+
+modelled, agent i may not receive consistent observations in their real-time interactions. This is because agent j acts
+
+according to its own optimal decisions and this true behavior is not in agent i âs mind when agent i builds its I-DID
+
+model. The issue of inconsistent observations was also identiï¬ed in a general probabilistic graphical decision model [8].
+
+To the best of our knowledge, our work is the ï¬rst attempt to solve the modelling insuï¬ciency issue in I-DIDs.
+
+Given limited amount of prior knowledge about agent j âs behaviors, we aim to develop a set of its new behaviors
+that are to be modelled in agent i âs I-DID models 1. The new behavior set expects to contain agent j âs true behaviors in
+a large probability so as to increase agent i âs decision quality. Since the prior knowledge provides essential information
+
+about the other agent, we ï¬rst use a linear reduction technique to elicit behavioral features from the known behaviors.
+
+The features could reï¬ect representative patterns of what the other agent acts given its beliefs about the environment.
+
+The reduction diï¬ers from the previous work on reducing agent j âs behavior space since it is to ï¬nd representative
+
+behavior patterns and does not aim to compress the behavior space [4, 9, 10].
+
+Subsequently, we randomize a set of new behaviors for the other agent based on the behavioral features. The
+
+randomization is conducted by sampling the action that achieves the best reward for the other agent. By doing so,
+
+we can obtain a large set of candidate behaviors for the other agent. The issue lies in selecting a set of K behaviors,
+
+namely top-K behaviors, that holds a good chance of including the true behaviors of the other agent. We propose
+
+two new measurements that quantify the diversity of a set of behaviors and are used to optimise the top-K behavior
+
+selection. The ï¬rst diversity measurement considers the diï¬erence between speciï¬c actions upon observations at
+
+each time step while the second one contains an extra factor of diï¬erentiating general behavior patterns over time.
+
+Intuitively, a set of diverse behaviors have a large chance of containing the true behavior of the other agent which is
+
+not known by a subject agent prior to their interactions. Once we have the top-K behaviors, we can represent them in
+
+the subject agentâs I-DID model and solve the decision model, which results in an optimal policy for the subject agent.
+
+Finally, we conduct comprehensive experiments in two well-known problem domains and show the performance of
+
+the new techniques. This work is one of very few attempts on developing behavior diversity in I-DID solutions and
+
+will inspire more interesting work in studying agent behaviors in intelligent systems.
+
+We organise this article as follows. Section 2 reviews the related works on modelling other agentsâ behaviors in
+
+interactive decision models. We present the background knowledge of I-DID models in Section 3. In Section 4, we
+
+propose the new methods in generating a set of new behaviors through top-K behavior selection. We demonstrate
+
+the empirical performance of our proposal in Section 5 and conclude this work with discussions in Section 6.
+
+2 | RELATED WORKS
+
+Research on modelling other agents has attracted growing interests in the ï¬elds of artiï¬cial intelligence, decision
+
+science and general intelligent systems [11, 12]. It mainly explores various types of modelling languages to represent
+
+decision making, behavior reasoning and learning problems in diï¬erent types of environments, e.g. from a classical
+
+model of ï¬ctitious play [13] to a probabilistic deterministic ï¬nite-state automaton for modelling stochastic actions
+
+in POSG [14]. More sophisticated ones include recursive modelling methods that follow a nested reasoning form of
+
+1To facilitate the presentation, we elaborate the development using two agents (agents i and j ) in the following discussion; however, the
+techniques are general for a multiagent setting.
+
+4
+
+Pan et al.
+
+what does agent A think that agent B thinks that agent A thinks (and so on), e.g. I-POMDPs [15], and even more
+
+rigorous planning systems based on epistemic logic [16]. Recently, Ma et al. [17] used knowledge graph to model
+
+opponentsâ behaviors and inferred agentsâ intentions accordingly.
+
+In particular, a series of probabilistic graphical models have been proposed to solve multiagent decision making
+
+problems. Suryadi and Gmytrasiewicz [18] used inï¬uence diagrams to model other agents, but do not provide a
+
+mechanism to update the models upon a subject agentâs observations. Koller and Milch [19] proposed multiagent
+
+inï¬uence diagrams (MAID) to compute Nash equilibrium strategies for all agents involved in the interaction while Gal
+
+and Pfeï¬er [20] developed networks of inï¬uence diagrams (NID) for recursively modelling other agents. Both MAID
+
+and NID formalisms focus on a static, single-shot interaction. In contrast, I-DIDs oï¬er solutions over extended time
+
+interactions, where agents act and update their beliefs over othersâ models which are themselves dynamic.
+
+Due to unknown behaviors (true models) of other agents, most of the research hypothesizes a large number of
+
+models for the other agents based on which a subject agent adapts its decisions even when their behaviors change
+
+over time (sometimes is referred as a dynamic opponent) [5]. This leads to a signiï¬cantly increasing complexity in
+
+solving other agentsâ models. Hence, a large amount of research has been invested into reducing the model space
+
+of the other agents. For example, the concept of minimal mental models was used to compress candidate models
+
+of other agents so as to reduce the computational complexity due to introducing redundant potential models [21].
+
+The behavioral equivalence principle becomes a commonly used technique to group candidate models that exhibit
+
+identical behaviors of other agents [22, 23]. Similarly, a value equivalence was used by Conroy [24] to cluster the
+
+models that have similar inï¬uence on a subject agentâs expected rewards, which leads to more compressed model
+
+space. This line of work on compressing model space is also due to limited prior knowledge on building a good set of
+
+candidate behavior models. Hence, generating a good set of initial models becomes important since it may provide a
+
+good chance of containing the true models and the model compression techniques are not strictly required.
+
+Most of the current research on modelling other agents still relies on hand-crafted models according to available
+
+domain knowledge. Recently, Pan et al. [25] learned models of other agents from historical data of agentsâ interac-
+
+tions, but did not provide new models from the learned models. In this article, we aim to generate new models of
+
+other agents given limited knowledge about their behaviors and the new behaviors may not be seen in the previous
+
+interactions.
+
+3 | BACKGROUND KNOWLEDGE ON I-DIDS
+
+As we will develop methods to generate new behaviors for other agents in I-DID models, we proceed to provide
+
+background knowledge on I-DIDs. By extending inï¬uence diagrams [26] that are commonly used to represent a
+
+single-agent decision making problem, I-DIDs are a general probabilistic graphical representation for solving interac-
+
+tive multiagent decision making problems under uncertainty [27]. From the viewpoint of a subject agent, an I-DID
+
+model represents how it solves the decision problems when considering other agentsâ behaviors that impact their
+
+decision outcomes. It integrates multiagent game theory into individual decision making frameworks. Details about
+
+I-DIDs can be found in the previous research [4].
+
+Figure 2(a) shows a dynamic inï¬uence diagram (DID - a dynamic version of inï¬uence diagrams over time) for a
+
+single agent who plans its decisions over three time steps. In the DID model, a chance node (denoted by a circle/oval
+
+shape) represents environmental states (S ) and observations (O ) received by the agent, a decision node (denoted by
+
+a rectangular shape) represents the agentâs decisions (A) and a utility node (denoted by a diamond shape) models the
+
+agentâs rewards (R , also called as a utility function) upon the states and decisions. The agent decision (A) is directly
+
+Pan et al.
+
+5
+
+inï¬uenced by what it observes (O ) from the environment while the environmental states (S ) are not fully observable.
+
+To quantify the strength of variablesâ relations, we associate the arcs with conditional probabilities (P r ( Â· | Â·)) while the
+arcs into the utility node models actual reward/utility values. For example, P r (S 3 |S 2, A2) is a transition function from
+S 2 to S 3 given the eï¬ect of the action A2 at time t = 2. P r (O 3 |S 3, A2) is an observation function that models the
+probability of how the observations reï¬ect the true environmental states.
+
+F I G U R E 2 A dynamic inï¬uence diagram and its solutions: (a)the dynamic inï¬uence diagram with three time
+steps; and (b) its solution is represented as a policy tree.
+
+Once we have the parameter speciï¬cation, e.g. the transition, observation and utility functions, in a dynamic
+
+inï¬uence diagram, we can solve the model through well-developed inference algorithms [26] and obtain an optimal
+
+plan for the subject agent. The plan prescribes how the agent shall act upon its observations at each time step and is
+
+often represented by a policy tree. For example, Fig. 2(b) shows one policy tree as the optimal plan given the dynamic
+
+inï¬uence diagram in Fig. 2(a). The agent takes action a1 at the ï¬rst time step t =1, and repeats the action if it receives
+
+observation o1; otherwise, it takes a2 at t =2. As a solution to a dynamic inï¬uence diagram, a policy tree represents
+
+the optimal plan according to which a subject agent behaves over times. In general, the policy tree is termed as a
+
+behavioral model - optimal decision outcomes from a decision model.
+
+An I-DID model extends dynamic inï¬uence diagrams for multiple agents by introducing the model node Mj (the
+hexagon node) in the model, as shown in Fig. 3. The model node contains possible models of the other agent j each
+
+of which is either a decision model, e.g. dynamic inï¬uence diagrams, or a behavioral model. Once the subject agent
+
+expands the model node with possible models of other agents, it can solve the I-DID model through conventional
+
+dynamic inï¬uence diagram algorithms therefore resulting in an optimal plan for the subject agent. As the true model
+
+is not known by the subject agent i , the number of candidate models contained in the model node tends to rather
+
+large. In theory, it requires an inï¬nite number of j âs candidate models so that a subject agent can suï¬ciently predict
+
+j âs behaviors in order to optimise its decisions. The computational limit prevents a large model space in the model
+
+node within an I-DID model. Hence, there is a signiï¬cant amount of research on dealing with the compression of the
+
+model space in the I-DID [23, 25].
+
+Most of the current I-DID research still assumes that the true behavior is within the model node (Mj ) and does
+not handle unknown behaviors of other agents that are not contained in the model node [23, 25]. One barrier to deal
+
+with the case of unknown behaviors is partially due to the incapability of generating a good set of candidate behaviors
+
+for other agents. The current work always stands on the pre-deï¬ned models that lead to a set of monotonic behaviors
+
+for other agents. Consequently, there is a rather large chance that the true behaviors slip from the model node in a
+
+!!"!#!$!!"""#"$"!#"###$#Pr(!!|#!)(%!,%")(%!,%")(%!,%")Pr(#!)Pr(#"|#!,%!)Pr(##|#",%")Pr(!"|#",%!)Pr(!#|##,%")R(#",%")R(#!,%!)R(##,%#)('!,'")('!,'")('!,'")!(!(!(!)!)!)")"("(")")"(")t=1t=2t=3(%)(')(cid:13)(cid:14)(cid:8)(cid:15)(b)(cid:19)(cid:6)(cid:9)(cid:16)(cid:11)(cid:7)(cid:4)(cid:18)(cid:2)a(cid:3)(cid:12)(cid:5)(cid:10)(cid:17)(cid:11)(cid:1)6
+
+Pan et al.
+
+F I G U R E 3 By extending dynamic inï¬uence diagrams, the I-DID model represents how the subject agent i
+optimises its decisions by modelling the other agent j âs behaviors over three time steps.
+
+subject agentâs I-DID model. In this article, we will propose a novel model generation approach to modelling unknown
+
+behaviors in an I-DID model and focus on measure the quality of the new set of generated behaviors.
+
+4 | TOP-K BEHAVIOR SELECTION
+
+Intuitively, a large set of new behaviors have the potential of increasing the chance to include the true behaviors
+
+of other agents. However, due to the computational constraints, solving I-DID models becomes infeasible when
+
+the set is too large as shown in the previous I-DID research [4]. Hence, the set of new behaviors expect to have a
+
+good diversity while keeping a reasonable size. In addition, the new behaviors can not be fully randomised since we
+
+have prior knowledge (although it is limited) about other agentsâ behaviors. Accordingly, we proceed to exploit the
+
+knowledge by eliciting representative behaviors from the known behaviors, based on which the set of new behaviors
+
+are generated and measured in terms of their diversity.
+
+4.1 | Eliciting Representative Behaviors
+
+An agentâs behavior prescribes what the agent shall do given its observations in an environment. By solving a decision
+
+model, e.g. dynamic inï¬uence diagrams in Fig. 2(a), we can obtain the agentâs optimal policy that contains a set of
+
+actions given various observations received by the agent over time. In general, the policy can be represented in a tree
+
+structure as shown in Fig. 2(b). Each branch of the policy tree is a behavior sequence specifying the agentâs optimal
+
+action given a possible observation at each time step. We formally deï¬ne a behavior sequence below.
+
+Deï¬nition 1 (Behavior Sequence) For agent j , a behavior sequence, hj
+T
+ot (â â¦), is a set of alternating actions and observations over its planning horizon T .
+
+= (a1, o2, a2, Â· Â· Â· , oT â1, aT ) where at (â A) and
+
+Subsequently, we can deï¬ne a policy tree that is composed of a set of behavior sequences.
+
+Deï¬nition 2 (Policy Tree) A policy tree for agent j is a set of behavior sequences, H j
+structure with the depth T where actions are in the nodes while observations are attached to the branches in the tree.
+
+T , that are organized as a tree
+
+T =(cid:208) hj
+
+!!"#"$!"#!!"#$"!#%"#$#%!"#!!"$!!!""!#%"#$#%!!!&#"$!&#!!"&$"!#%"#$#%!&##%"#%"&$Pan et al.
+
+7
+
+F I G U R E 4 A set of behavior sequences, Fj =(h1, h6, h8), are selected from known behavior matrix Pj for agent j .
+
+Following a policy tree, an agent executes a behavior sequence when it receives a particular observation from an
+
+environment at each time step. In the policy tree example in Fig. 2(b), the agent takes the action a1 at the ï¬rst time
+
+step and will execute the actions a2 and a1 given its observations o2 and o1 respectively at the second and third time
+
+steps.
+
+A policy tree represents the agentâs behavior that can be obtained by solving its decision model. Variations of
+
+parameters, e.g. probability distributions in a dynamic inï¬uence diagram, in the agentâs decision model could lead to
+
+diï¬erent behaviors. From the viewpoint of a subject agent i , what does matter is the behaviors exhibited by the other
+
+agent j , not how agent j optimises its behaviors through a decision model. Hence, in this article, we will focus on
+
+j âs behavior representation and assume that agent i knows a set of M behaviors for the other agent j . The question
+
+remains on generating a new set of behaviors (â¥ M including the known behaviors) for agent j based on the known
+
+M behaviors. The set of new behaviors are expected to include potentially true behaviors of the other agent j .
+
+The known M behaviors represent basic types of how agent j behaves according to agent i âs prior knowledge
+
+about agent j . They can serve as salient features to expand new behaviors of agent j . We proceed to extract a set of
+
+behavior sequences from the known agent j âs behaviors based on which its new behaviors are to be generated. The
+
+behavior sequences are representative of agent j behaviors that are known to agent i .
+
+Instead of randomly selecting m behavior sequences, Fj ={h1, Â· Â· Â· , hm }, from M behaviors, H={H1, Â· Â· Â· , HM } 2, we
+use a linear reduction method to extract the sequences that have most suï¬cient features from the known behaviors.
+
+We compose a behavior matrix, namely P , where each row is a policy tree Hm and each column is one behavior
+sequence seen in the policy trees. Since some behavior sequences could appear in diï¬erent policy trees, the column
+dimension is smaller than M Ã |â¦ |T â1, but much larger than the row dimension M particularly for a large planning
+horizon T . The matrix element P (Hi , hj ) is 1 if the sequence hj appears in the behavior Hi ; otherwise, P (Hi , hj )
+= 0. Hence, the matrix P may contain some linearly dependent behavior sequences so that its columns could be
+
+reduced into a set of representative sequences F . To extract the linearly independent sequences F , we use a G aussi an
+
+elimination method to ï¬nd the pivot columns in the large matrix P . The extraction process can be conducted in a
+
+2We use the subscript of H according to the context. Here it numbers the policy tree in the set while it may refer to the length of a policy tree
+as deï¬ned in Def. 2. It shall be self-evident in the context.
+
+!!=Rank = 3Linearly Independent!!"""""#"#"""#!!!!!!!!!"!!!!"""""#"#"""#!!!#!!!!!!!!!!"""""#"#"""#!!!#!!!!!!!"#"###$!!!"!##$#$""""$%$&$'#$#$#$"#""#$#$#%"#"##$#$#$""""#$#$#$"""##$#%#$"#""#$#%#$"#"##$#$#&""""#$#$#$"""##$#$#$"#""#$#$#$"#"##$#$#&""""#$#$#$"""##$#$#$"#""#$#$#%"#"##$â"â$â(â#â)â$â*â+1011100001100 11001 100101100010011F!=8
+
+Pan et al.
+
+polynomial time [28]. In principle, we ï¬nd one pivot matrix Fj (corresponding to the linearly independent sequences
+F 3) and the other matrix Uj to ensure: Pj =Fj Ã Uj .
+
+In Fig. 4, we elaborate the extraction of behavior sequences from three behavior models H = {H1, H2, H3 }. The
+
+behavior matrix Pj has the rank of three so that we could obtain the pivot matrix Fj =
+
+0
+
+1
+
+1
+
+1
+ï£®
+ï£¯
+ï£¯
+0
+ï£¯
+ï£¯
+ï£¯
+0
+ï£¯
+ï£°
+
+0
+ï£¹
+ï£º
+ï£º
+0
+ï£º
+ï£º
+ï£º
+1
+ï£º
+ï£»
+
+(1)
+
+that returns three linearly independent sequences, e.g. Fj =(h1, h6, h8). The selected sequences provide suï¬cient
+features, also called as behavioral features, that represent the three known behavior models.
+
+We shall note that selecting the matrix-based behavior sequences is diï¬erent from the research on compressing
+
+model or behavioral space [21, 4]. The previous compression method focuses on reducing the entire behavior space
+
+while maintaining a complete policy tree. Our work is to select a set of representative behavior sequences that are
+
+often a partial policy tree. The selected sequences provide important behavioral features in the expansion of new
+
+behaviors for other agents.
+
+4.2 | Measuring Behavior Diversity
+
+Given the representative behavior sequences Fj , we aim to generate new policy trees that contain the sequences
+corresponding to a set of branches, and select the top-K policy trees by measuring their diversity. Algorithm 1 presents
+
+the procedure of top-K policy tree generation.
+
+Algorithm 1 Generating Top-K Policy Trees HK
+1: function TopK(Fj , H={ H1, Â· Â· Â· , HM } and DID of Agent j )
+2:
+
+Get a set of behavior sequences Fj from H
+Convert agent j âs DID into dynamic Bayesian networks Bj
+Instantiate Bj with Fj
+Initiate HK ={ H1, Â· Â· Â· , HM }
+repeat
+
+Sample a full policy tree HT from the Bj
+HK =HK
+Recompute the set diversity Di v ( HK )
+
+(cid:208) HT
+
+3:
+
+4:
+
+5:
+
+6:
+
+7:
+
+8:
+
+9:
+
+10:
+
+11:
+
+until Di v ( HK ) does not change
+return HK
+
+To sample a full policy tree, we ï¬rst convert agent j âs dynamic inï¬uence diagram into its counterpart of Bayesian
+networks Bj and instantiate the networks using the known behavior sequences Fj (line 3-4). We convert decision
+nodes A into chance nodes where we can instantiate their states with the actions a from the behavior sequences Fj .
+The utility nodes are converted into chance nodes where the utility values are normalized into probabilities in the
+
+nodes. For chance nodes O , we instantiate their states with the observations o from Fj .
+
+We randomise a probability distribution in the initial beliefs S 1 in Bj and calculate the probability distributions for
+
+3To simplify the presentation, we do not diï¬erentiate the two terms between a pivot matrix and linearly independent sequences.
+
+Pan et al.
+
+9
+
+the chance nodes O t and At at each time step. Given the probability P r (O t |S 1, Fj ), we sample a possible observation
+ot to be added into a new tree HT . To decide the action at given ot , we choose the best one that results in the largest
+utility value R (S t , At ). By sampling the actions and observations over the planning horizon T , we can compose a set
+of behavior sequences therefore composing a new policy tree HT (line 7). In other words, we complete a full policy
+tree by ï¬lling in the rest of its branches based on the known sequences. We repeat the adding of new policy trees until
+
+the diversity of the new set of K policy trees does not increase (line 8-9). We may terminate the process once a big
+
+K is reached. This is to ensure that the I-DID models with the top-K behaviors can be solved within a computational
+
+limit.
+
+What remains is to compute the diversity of the behavior set Di v ( HK ). We need to measure how diï¬erent the
+K behavior trees would be in terms of their actions given speciï¬c observations over T time steps. We propose two
+
+diversity measurements for this purpose. The ï¬rst measurement of diversity considers diï¬erence among behavior
+
+sequences in a vertical manner: the sequences or paths (with one speciï¬c observation at one time step) in the tree
+
+are examined separately along the depth. It, called as MDP (measurement of diversity over paths), mainly measures
+
+the diversity of sequences in the tree. The second diversity measurement extends MDP with the extra consideration
+
+of behaviors in a horizontal way: the sequences (with all possible observations at one time step) are compared along
+
+the width. It, also named as MDF (measurement of diversity with frames), measures the frames of a policy tree on the
+
+top of MDP.
+
+In the ï¬rst measurement, we retrieve all the diï¬erent behavior sequences from the policy trees HK . For every
+sequence hT , we aggregate all sub-sequences ht with the length t (â [1, T ]). Since early actions of agent j have
+immediate impacts on agentsâ interactions, the short sequences contribute more into the diversity. Hence, we weight
+
+the sequence ht using the factor of
+
+1
+
+|â¦|t â1 . Formally, we deï¬ne the MDP diversity of K policy trees in Eq. 2.
+
+Di v ( HK )M D P =
+
+T
+(cid:213)
+
+t =1
+
+Di f f (ht )
+|â¦j |t â1
+
+(2)
+
+where Di f f (ht ) is the number of diï¬erent sequences ht in HK and |â¦j | is the number of agent j âs observations.
+
+The ï¬rst measurement considers a single action at one time step (within individual sequences) and may lose
+
+a general picture of what agent j behaves given diï¬erent observations at one time step. To capture the frame of
+general behaviors, we add the diversity of sub-trees (Ht as a part of each policy tree in HK ) of diï¬erent depths into
+MDP. This leads to the second diversity measurement MDF in Eq. 3.
+
+Di v ( HK )M D F =
+
+T
+(cid:213)
+
+t =1
+
+Di f f (ht ) + Di f f (Ht )
+|â¦j |t â1
+
+(3)
+
+where Di f f (ht ) and Di f f (Ht ) are the numbers of diï¬erent sequences ht and sub-trees (frames) Ht respectively in
+HK , and |â¦j | is the number of agent j âs observations.
+
+In Fig. 5, we elaborate the two diversity measurements (MDP and MDF) in one speciï¬c example. Given four
+
+behavior trees, e.g. H={H1, Â· Â· Â· , H4 }, we could obtain 2 diï¬erent sequences with the length of one time step, 5
+
+diï¬erent sequences with the length of two time steps and 12 diï¬erent sequences with the length of three time steps,
+
+as shown in the left panel in Fig. 5. In contrast, there exist: 2 diï¬erent frames with one time step, 3 diï¬erent frames
+
+with two time steps and 4 diï¬erent frames with three time steps in the right panel. Following the diversity calculation in
+
+Eqs. 2 and 3, we can get the diversity values for the four policy trees using the two measurements, Di v ( HK )M D P =7.5
+
+10
+
+Pan et al.
+
+F I G U R E 5 By aggregating all the (sub)-sequences and frames from the known policy trees H={H1, Â· Â· Â· , H4 }, the
+two diversity measurements (MDP and MDF) can be calculated.
+
+and Di v ( HK )M D F =12.0, respectively.
+
+As shown in Eqs. 2 and 3, MDF has a larger diversity value than MDP since it includes more factors in the computa-
+
+tion and could diï¬erentiate more behaviors. We will investigate how this extra information will add value into decision
+
+quality for a subject agent in the experiments. In terms of time complexity, MDP needs to compare all possible be-
+
+havior sequences (with length from 1 to T ) for at most N potential trees (generated in the sampling process) resulting
+in NT (1+T )
+2
+parison is merely to check the actional equivalence, there is no signiï¬cant diï¬erence between the time complexities
+
+comparison operations while MDF requires extra NT operations in the frame comparison. Since the com-
+
+of the two diversity measurements.
+
+Once we have the diversity measurements, we calculate the set diversity (Di v ( HK ) in line 9-10) using either
+Di v ( HK )M D P or Di v ( HK )M D F in the the top-K behavior selection in Alg. 1. Notice that we decide whether a new
+policy tree is to be included in the top-K set while generating one from the sampling process (line 7). We do not
+
+generate all the policy trees and select K from them. As the number of possible new trees could be inï¬nite, it is still
+
+an open issue about the boundary of agentsâ sound behaviors given prior knowledge.
+
+5 | EXPERIMENTAL STUDY
+
+We implemented the proposed approach of generating new behaviors for other agents by ï¬rst eliciting linearly in-
+
+dependent behavior sequences and then selecting the top-K behaviors through the two behavior diversity measure-
+
+ments. We integrated this new approach into the I-DID solutions and investigated its performance in an empirical way.
+
+We used two well-known problem domains in our experiments. One is multiagent tiger problem while the other is
+
+multiagent unmanned aerial vehicle (UAV) problem [4]. All the implementations and tests were conducted in Window
+10 with the setting of CPU (11t h Gen Intel Core i7-6700 @ 3.40GHz 4-core) and 24GB RAM.
+
+For each problem domain involving two agents, we built an I-DID model for the subject agent i who hypothesises
+a number of behavioral models of the other agent j in the model node Mj of Fig. 3. As the new approach provides
+
+!!"""""#"#"""#!!!!!!!!!"!!!!"""""#"#"""#!!!#!!!!!!!!!1!2!!"""""#"#"""#!!!#!!!!!!!"!!"""""#"#"""#!"!!!!!!!!!"!3!4!!""!""#!"!!!!""!!"#!!!""#!!!!!!!""#"#!!!"!!!!""""!!!!!!"""#!!!!"#""!!!!!"!!""""!!!#"#"""#!!!!!!"#"#!!!!!!"#"#!!!!!"!!""""!"!!"#"#!"!!!""""#!"!!"#""!"!!!!!!!!!"!!!!!"!!!!!!!!!"!!!!!!!!!!!!!"!!!!!!!#!!!!!!!!!!!!!#!!!!!!!"!!!"!!!!!!!!!"All the (Sub-)sequences  All the Frames  Pan et al.
+
+11
+
+a new way of solving I-DID models by providing more diverse behaviors to the other agent j , we compare three
+
+I-DID algorithms in the experiments. One is the state-of-art I-DID algorithm (IDID) that expands the model node
+
+only using the known models M . However, it assumes that the true behaviors of agent j are in the model node.
+
+The other two algorithms, namely IDID-MDP and IDID-MDF, use the diversity measurements of MDP and MDF to
+
+select top-K behaviors respectively for the other agent, and expand the model node in the I-DID models. The three
+
+algorithms (IDID, IDID-MDP and IDID-MDF) adopt the same exact algorithm to solve the I-DID models [6] once the
+
+model nodes are expanded with diï¬erent candidate models of the other agent j .
+
+We evaluate the algorithms in terms of the average rewards that agent i receives when it interacts with agent
+
+j . We randomly select one behavioral model of agent j as its true model that is either from the M known models
+
+or a randomised model from K models (generated by either the IDID-MDP or IDID-MDF algorithm). Subsequently,
+
+agent i executes its I-DID optimal policies while agent j follows the selected behaviors in their interactions. For every
+
+interaction, agent i receives actual rewards given the outcomes of their actions for each time step and accumulates
+
+the rewards over the entire planning horizon T . We let both agents interact for 50 rounds and compute the average
+
+rewards for agent i accordingly. In addition, we investigate the impact of the diversity values for the two diversity
+
+measurements in the experiments.
+
+5.1 | Multiagent Tiger Problems
+
+F I G U R E 6 A two-agent tiger problem where agent i models agent j âs behaviors in order to optimise its own
+decisions over times. The problem speciï¬cation follows: |S |=2,|Ai |=|Aj |=3,|â¦i |=6, and |â¦j |=2.
+
+A multi-agent tiger problem is well studied in multi-agent planning research and has become a benchmark for
+
+evaluating agent planning models [3, 5]. We consider the two-agent version of this problem in Fig. 6. Both agent i and
+
+agent j need to decide either Open the Right/Left-hand side of door (OR or OL) or Listen (L) when they are uncertain
+
+of a tigerâs location (behind a door). If both open the door behind which a pot of gold exists, they share the gold;
+
+otherwise, they will be eaten by the tiger if only one of them faces the tiger. Their decisions are based on what they
+
+can observe, e.g. tigerâs growls or creaks from either door. From the viewpoint of agent i , it needs to predict what
+
+agent j does simultaneously in order to optimise its own decisions. We build an I-DID model for agent i and vary the
+agent j âs model space Mj in the I-DID model.
+
+Figure 7 shows the average rewards received by agent i when it runs the I-DID models with diï¬erent planning
+
+horizons (T =3 and 4). For both the models, we have six initial models (M =6) for agent j . However, the model with
+
+T =4 selects four new models (K =4) when the model with T =3 adds only three new models (K =3) using both MDF
+
+and MDP measurements in the top-K model selection. The selection is reasonable since the model with a large
+
+planning horizon often has more diï¬erent behaviors. In almost all the cases, the IDID-MDF algorithm achieves better
+
+Agent jAgent iGR (Growls from Right)GL (Growls from Left)CR (Creaks from Right)GL (Creaks from Left)S   (No Creaks )OR (Open Right)OL (Open Left)L    (Listen)12
+
+Pan et al.
+
+performance (when agent i receives larger rewards) than the other two algorithms.
+
+In addition, we observe that
+
+IDID-MDF has better reliability than IDID-MDP in terms of small variances (the vertical candle bars). This is partially
+
+attributed to the merit that the MDF measurement considers a general behavioral pattern when selecting the models.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 7 Average rewards received by the subject agent i when it uses j âs behaviors models in the I-DID
+models of the planning horizons (a) T =3 and (b) T =4.
+
+Subsequently, we run the I-DID models with K =4 given four initial (M =4) models of agents. Hence, the model
+
+size in the models are equal to eight. In the ï¬rst set of experiment, we have the true model j selected from the eight
+
+models (as the experiments in Fig. 7). Fig. 8 repeats the similar performance pattern for four models randomly selected
+
+in the experiments.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 8 Average rewards received by the subject agent i when the true model of agent j is randomly selected
+from one of the candidate models within the mode node in the I-DID models with (a) T =3 and (b) T =4.
+
+In contrast, in the second set of experiments, we randomly generate a true model for agent j (based on the initial
+
+models). The model is not identical to any model in the model node expanded by the three algorithms. Hence agent i
+
+interacts with agent j whose behaviors are not completely in agent i âs model space. This is to test the model capability
+
+in dealing with unknown behaviors of agent j . Fig. 9 demonstrates that the IDID-MDF algorithm performs better than
+
+both I-DID and IDID-MDP. This is beneï¬ted from the fact that IDID-MDF includes more diverse behaviors so that it
+
+H1H2H3H4H5H6H7H8H9-120-100-80-60-40-2002040Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4H5H6H7H8H9H10-150-100-500Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4-20-1001020Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4010Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFPan et al.
+
+13
+
+can capture some random models (could potentially be true models) in a good manner.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 9 Average rewards received by the subject agent i when the true model of agent j is randomly
+generated (not being identical to any model generated by IDID-MDP or IDID-MDF) in the I-DID models (a) T =3 and
+(b) T =4.
+
+Finally, we empirically investigate the relations between the model diversity and the average rewards. For each
+
+I-DID model with the same planning horizon (either T =3 or T =4), we run various settings of M and K , and calculate
+
+the diversity of the resulting candidate models in the I-DID models as well as the average rewards received by agent
+
+i in the interactions.
+
+(a) MDP Performance
+
+(b) MDF Performance
+
+F I G U R E 1 0 Relations between the diversity values [of (a) MDP and (b) MDF] and the average rewards received
+by agent i using the I-DID models with T =3 and T =4.
+
+Figure 10 shows positive correlations between the diversity values and the average rewards. The MDF values
+
+are generally larger than the MDP values as indicated in Eq. 2 and 3. Agent i obtains better rewards when the I-DID
+
+models have larger diversity values using both the MDP and MDF measurements. This veriï¬es our motivation of
+
+improving agentsâ decision quality through diversifying model selection.
+
+H1H2H3H4-18-16-14-12-10-8-6-4-202Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4-20-10010Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDF2.02.53.03.54.04.55.0Diversity-35-30-25-20-15Average RewardsT = 3T = 43456789Diversity-25-20-15-10-5Average RewardsT = 3T = 414
+
+Pan et al.
+
+F I G U R E 1 1 A two-agent UAV problem where agent i intends to capture agent j before agent j reaches the safe
+house. The problem has the speciï¬cation of |Si |=81, |Sj |=25, |Ai |=|Aj |=5, and |â¦i |=|â¦j |=4.
+
+5.2 | Multiagent UAV Problems
+
+The multi-agent UAV problem is the largest problem domain in testing I-DID algorithms [4, 5]. As shown in Fig. 11,
+
+both UAVs have the options of either moving in four directions or staying at their original positions. They do not know
+
+exact positions of their own and others, but can receive the signals of relative positions from each other. Since the
+
+two UAVs act simultaneously, one UAV needs to have a good estimation of what the other behaves so as to achieve
+
+its own goal. In our experiments, we let agent i act as a chaser UAV who is planning to intercept a fugitive UAV j on
+
+its way to the safe house. The chaser agent i gets rewarded once it captures the fugitive agent j before the agent j
+
+reaches the safe house. We build the I-DID models for the chaser agent i who models the fugitive agent j âs behaviors
+
+through the IDID, IDID-MDP and IDID-MDF algorithms.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 1 2 Average rewards received by the chaser agent i when it plans to capture the fugitive agent j
+through solving the I-DID models of (a) T =3 and (b) T =4.
+
+In Fig. 12, we report the average rewards of agent i
+
+in the setting of M =6 for both the I-DID models of T =3
+
+and T =4. The IDID-MDF algorithm exhibits better performance, compared to the IDID and IDID-MDP algorithms,
+
+similarly as shown in the multiagent problem domain.
+
+In most of the cases, both the IDID-MDP and IDID-MDF
+
+Agent jAgent iH1H2H3H4H5H6H7H8H9H10H11H12H13-10010Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4H5H6H7H8H9H10H11H12H13-10010203040Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFPan et al.
+
+15
+
+algorithms outperform the IDID algorithm particularly in the I-DID models with T =3 and T =4. Surprisingly, we notice
+
+that the IDID algorithm does not perform good particularly in the I-DID models of T =3. For a short planning horizon,
+
+the chaser agent i does not have enough times to gather suï¬cient information as so to reduce the uncertainty of
+
+agent j âs behaviors, therefore failing in capturing the fugitive agent j in most the cases. With extra models introduced
+
+by IDID-MDP and IDID-MDF, the chaser agent i gains more knowledge about the fugitive agent j âs behaviors and
+
+achieves better rewards. The IDID-MDF algorithm performs slightly better than the IDID-MDP algorithm in the I-DID
+
+models of T =4. Capturing general patterns (in IDID-MDF) provides more informative behaviors when the fugitive
+
+agent j plans a long way to the safe house.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 1 3 Average rewards received by the chaser agent i when it knows the true model of the fugitive agent
+j within the candidate model set in the I-DID models with (a) T =3 and (b) T =4.
+
+(a)T =3
+
+(b)T =4
+
+F I G U R E 1 4 Average rewards received by the chaser agent i when it faces random behaviors of the fugitive
+agent j in the I-DID models (a) T =3 and (b) T =4.
+
+We proceed to examine the performance of the IDID, IDID-MDP and IDID-MDF algorithms when (a) the chaser
+
+agent i knows the true model of the fugitive agent j in Fig. 13 and (b) the chaser agent i interacts with the fugitive agent
+
+j whose behaviors are not in the chaserâs mind in Fig. 14. Both the IDID-MDP and IDID-MDF algorithms perform
+
+better than IDID, which is consistently with what we observed in the multiagent tiger problem domain. The IDID-MDF
+
+H1H2H3H4-30-20-100102030Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4-20-10010Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4-30-20-1001020Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDFH1H2H3H4-16-15-14-13-12-11-10-9-8-7-6-5Average RewardsAgent j's Behaviours IDID IDID-MDP IDID-MDF16
+
+Pan et al.
+
+algorithm performs similarly to the IDID-MDP algorithm in this problem domain. Since the fugitive agent j has many
+
+paths leading to the safe house, the limited number of models do not provide general patterns, which compromises
+
+the beneï¬ts of IDID-MDF. When we increase the number of models, as shown in Fig. 12, the IDID-MDF algorithm
+
+does show better performance. Hence, the IDID-MDF algorithm is suggested to be well used in complex behaviors
+
+of other agents.
+
+Additionally, we show the increasing rewards for the chaser agent i when it holds a more diverse set of candidate
+
+models for the fugitive agent j in Fig. 15. We observe that MDP has a small dip of the average rewards when the
+
+diversity is increased. In contrast, the rewards increase monotonically with the increasing values of the MDF diversity.
+
+We notice that the factor of capturing general behavior patterns does not contribute much into the MDF measurement,
+
+as shown the diversity values in the x -axis of the ï¬gure. This indicates that both the IDID-MDP and IDID-MDF
+
+algorithms may select the same models for the fugitive agent j . Thus, the two algorithms provide similar performance
+
+in the aforementioned experiments.
+
+(a) MDP Performance
+
+(b) MDF Performance
+
+F I G U R E 1 5 The chaser agent i gets better rewards when the diversity of the fugitive agent j âs
+models (measured by (a) MDP and (b) MDF) is increased in the I-DID models with T =3 and T =4.
+
+In summary, both the IDID-MDF and IDID-MDP algorithms perform as we expect in the experiments, and the
+
+IDID-MDF algorithm would be a better choice when more complex behaviors are involved in a problem domain. Fur-
+
+thermore, we show the comparative eï¬ciency for the IDID-MDP and IDID-MDF algorithms in Table 1. For every set
+
+of initial models (M ) of agent j , we compare their running times including generating new models and then select-
+
+ing the top-K models from the models in the Alg. 1. Since MDF considers the extra factor of behavioral patterns in
+
+selecting the models, it can diï¬erentiate more behaviors therefore resulting in more new models in the model gen-
+
+eration. Apparently, MDF needs more times in comparing more models. However, its eï¬ciency is not signiï¬cantly
+
+compromised as shown in the table - not more than double amount of times as spent by MDP in most the experiments.
+
+6 | CONCLUSION
+
+This work is the ï¬rst attempt on studying the behavior diversity in I-DID solutions, which is signiï¬cantly diï¬erent from
+
+the previous I-DID research on compressing other agentsâ models in I-DIDs. Given known behaviors of other agents,
+
+we use a linear reduction technique to generate a set of representative behavior sequences. The resulting sequences
+
+are linearly independent and provide basic knowledge to generating new behaviors for other agents. Subsequently,
+
+we sample a new set of behaviors, represented by policy trees, through applying conventional inference techniques
+
+in the I-DID model. We propose two diversity measurements to select top-K policy trees that maximise the diversity
+
+3.03.54.04.55.05.5Diversity-10.0-7.5-5.0-2.50.02.55.0Average RewardsT = 3T = 43.54.04.55.05.5Diversity-4-202468Average RewardsT = 3T = 4Pan et al.
+
+17
+
+TA B L E 1 Running times spent by the MDP and MDF methods on generating and selecting the top-K models in
+Alg. 1.
+
+Tiger
+
+UAV
+
+Tiger
+
+UAV
+
+M
+
+MDP
+
+MDF
+
+MDP
+
+MDF
+
+MDP
+
+MDF
+
+MDP
+
+MDF
+
+3
+
+4
+
+5
+
+6
+
+7
+
+0.35
+
+0.97
+
+2.37
+
+6.86
+
+0.41
+
+1.80
+
+2.75
+
+6.96
+
+1.66
+
+1.65
+
+2.94
+
+9.26
+
+1.79
+
+2.25
+
+4.02
+
+9.52
+
+1.98
+
+4.49
+
+10.43
+
+10.54
+
+2.14
+
+11.29
+
+24.20
+
+10.42
+
+41.56
+
+76.32
+
+17.14
+
+10.46
+
+45.16
+
+100.74
+
+18.92
+
+22.30
+
+328.43
+
+442.94
+
+42.76
+
+81.96
+
+330.31
+
+573.85
+
+46.46
+
+97.40
+
+of the selected behaviors. We conduct experiments to investigate the performance of the new I-DID solutions on
+
+dealing with unknown behaviors of other agents in two problem domains.
+
+As observed in the experimental study, it seems that the two diversity measurements are not one-size-ï¬ts-all.
+
+However, the study lights up critical thoughts about behavior diversity and its impact on a subject agentâs decision
+
+quality. Thoughts are also captured by the recent I-DID study although the work still focuses on known behaviors of
+
+other agents [10]. Hence, this work will open a new ï¬eld on developing I-DID solutions based on diversifying other
+
+agentsâ behaviors. A couple of new research lines would be conducted in the future. For example, a new method of
+
+diversifying behaviors with the consideration of a subject agentâs decision quality would be immediate improvement
+
+of the current measurements. Of course, the challenge lies in measuring the decision quality since the subject agent
+
+has not yet completed the modelling process at this stage. Another way of developing new diversity measurements
+
+could be conducted in an online manner when the subject agent receives more knowledge about true behaviors of
+
+other agents in real-time interactions. The diversity needs to be adjusted in a dynamic way when a speciï¬c type of
+
+behavior is discovered in the interactions. The aforementioned work can also beneï¬t the recent research on intelligent
+
+systems when the systems are to be deployed in an open world and can not fully model a new environment prior to
+
+their applications.
+
+Acknowledgements
+
+Professor Yifeng Zeng received the EPSRC New Investigator Award (Grant No. EP/S011609/1) and Dr. Biyang Ma
+
+conducted the research under the EPSRC project. This work is supported in part by the National Natural Science
+
+Foundation of China (Grants No.62176225, 61772442 and 61836005).
+
+references
+
+[1] Poh KL, Fehling MR, Horvitz EJ. Dynamic Construction and Reï¬nement of Utility-Based Categorization Models. IEEE
+
+Trans Syst Man Cybern Syst 1994;24(11):1653â1663.
+
+[2] Albrecht SV, Stone P. Autonomous agents modelling other agents: A comprehensive survey and open problems. Artif
+
+Intell 2018;258:66â95.
+
+18
+
+Pan et al.
+
+[3] Bernstein D, Givan R, Immerman N, Zilberstein S. The Complexity of Decentralized Control of Markov Decision Pro-
+
+cesses. Mathematics of Operations Research 2002 12;27:637â842.
+
+[4] Zeng Y, Doshi P. Exploiting Model Equivalences for Solving Interactive Dynamic Inï¬uence Diagrams. J Artif Intell Res
+
+2012;43:211â255.
+
+[5] Doshi P, Gmytrasiewicz PJ, Durfee EH. Recursively modeling other agents for decision making: A research perspective.
+
+Artif Intell 2020;279.
+
+[6] Doshi P, Zeng Y, Chen Q. Graphical models for interactive POMDPs: representations and solutions. Auton Agents Multi
+
+Agent Syst 2009;18(3):376â416.
+
+[7] Tatman JA, Shachter RD. Dynamic programming and inï¬uence diagrams.
+
+IEEE Transactions on Systems, Man, and
+
+Cybernetics 1990;20(2):365â379.
+
+[8] SÃ¸ndberg-Jeppesen N, Jensen FV, Zeng Y. Opponent modeling in a PGM framework. In: Proceedings of International
+
+conference on Autonomous Agents and Multi-Agent Systems (AAMAS); 2013. p. 1149â1150.
+
+[9] Conroy R, Zeng Y, Tang J. Approximating Value Equivalence in Interactive Dynamic Inï¬uence Diagrams Using Behavioral
+In: Kambhampati S, editor. Proceedings of the Twenty-Fifth International Joint Conference on Artiï¬cial
+
+Coverage.
+Intelligence (IJCAI); 2016. p. 201â207.
+
+[10] Pan Y, Ma B, Tang J, Zeng Y. Behavioral model summarisation for other agents under uncertainty. Information Sciences
+
+2022;582:495â508.
+
+[11] Andersen PA, Goodwin M, Granmo OC. Towards safe reinforcement-learning in industrial grid-warehousing. Information
+
+Sciences 2020;537:467 â 484.
+
+[12] Albrecht SV, Stone P, Wellman MP. Special issue on autonomous agents modelling other agents: Guest editorial. Artiï¬cial
+
+Intelligence 2020;285:103292.
+
+[13] Brown GW. Iterative Solution of Games by Fictitious Play. New York, USA: Wiley; 1951.
+
+[14] Alessandro P, Piotr G. Interactive POMDPs with Finite-state Models of Other Agents. Autonomous Agents and Multi-
+
+Agent Systems 2017 Jul;31(4):861â904.
+
+[15] Gmytrasiewicz P, Doshi P. A Framework for Sequential Planning in Multiagent Settings. Journal of Artiï¬cial Intelligence
+
+Research (JAIR) 2005;24:49â79.
+
+[16] Bolander T, Andersen MB. Epistemic planning for single- and multi-agent systems. Journal of Applied Non-Classical
+
+Logics 2011;21(1):9â33.
+
+[17] Ma Y, Shen M, Zhao Y, Li Z, Tong X, Zhang Q, et al. Opponent portrait for multiagent reinforcement learning in compet-
+
+itive environment. International Journal of Intelligent Systems 2021;36:7461-7474.
+
+[18] Suryadi D, Gmytrasiewicz PJ. Learning models of other agents using inï¬uence diagrams. In: International Conference
+
+on User Modeling Springer; 1999. p. 223â232.
+
+[19] Koller D, Milch B. Multi-agent inï¬uence diagrams for representing and solving games. Games and Economic Behavior
+
+2003;45(1):181â221.
+
+[20] Gal Y, Pfeï¬er A. Networks of Inï¬uence Diagrams: A Formalism for Representing Agentsâ Beliefs and Decision-Making
+
+Processes. Journal of Artiï¬cial Intelligence Research 2008 sep;33(1):109â147.
+
+[21] Pynadath DV, Marsella S. Minimal Mental Models. In: Proceedings of the Twenty-Second AAAI Conference on Artiï¬cial
+
+Intelligence; 2007. p. 1038â1044.
+
+Pan et al.
+
+19
+
+[22] Rathnasabapathy B, Doshi P, Gmytrasiewicz PJ. Exact solutions of interactive POMDPs using behavioral equivalence. In:
+
+The Fifth International Joint Conference on Autonomous Agents and Multiagent Systems ACM; 2006. p. 1025â1032.
+
+[23] Zeng Y, Doshi P, Chen Y, Pan Y, Mao H, Chandrasekaran M. Approximating behavioral equivalence for scaling solutions
+
+of I-DIDs. Knowledge Information Systems 2016;49(2):511â552.
+
+[24] Conroy R, Zeng Y, Cavazza M, Tang J, Pan Y. A Value Equivalence Approach for Solving Interactive Dynamic Inï¬uence
+Diagrams. In: Proceedings of the 15th International Conference on Autonomous Agents& Multiagent Systems (AAMAS);
+2016. p. 1162â1170.
+
+[25] Pan Y, Tang J, Ma B, Zeng Y, Ming Z. Toward data-driven solutions to interactive dynamic inï¬uence diagrams. Knowl Inf
+
+Syst 2021;63(9):2431â2453.
+
+[26] Jensen FV, Nielsen TD. Bayesian Networks and Decision Graphs. 2nd ed. Springer; 2007.
+
+[27] Doshi P, Zeng Y, Chen Q. Graphical Models for Interactive POMDPs: Representations and Solutions. Journal of Au-
+
+tonomous Agents and Multi-Agent Systems (JAAMAS) 2009;18(3):376â416.
+
+[28] Cunningham JP, Ghahramani Z. Linear Dimensionality Reduction: Survey, Insights, and Generalizations. Journal of
+
+Machine Learning Research 2015;16(89):2859â2900.
+
+

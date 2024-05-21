@@ -1,0 +1,3271 @@
+Resilient Continuum Deformation Coordination (cid:63)
+
+Hossein Rastgoftar a Ella Atkins b
+
+aDepartment of Aerospace Engineering, University of Michigan, Ann Arbor, MI, 48109 USA
+
+bDepartment of Aerospace Engineering, University of Michigan, Ann Arbor, MI, 48109 USA
+
+9
+1
+0
+2
+
+p
+e
+S
+1
+2
+
+]
+
+Y
+S
+.
+s
+s
+e
+e
+[
+
+1
+v
+6
+6
+8
+9
+0
+.
+9
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+This paper applies the principles of continuum mechanics to safely and resiliently coordinate a multi-agent team. A hybrid
+automation with two operation modes, Homogeneous Deformation Mode (HDM) and Containment Exclusion Mode (CEM),
+are developed to robustly manage group coordination in the presence of unpredicted agent failures. HDM becomes active
+when all agents are healthy, where the group coordination is deï¬ned by homogeneous transformation coordination functions.
+By classifying agents as leaders and followers, a desired n-D homogeneous transformation is uniquely related to the desired
+trajectories of n + 1 leaders and acquired by the remaining followers in real-time through local communication. The paper oï¬ers
+a novel approach for leader selection as well as naturally establishing and reestablishing inter-agent communication whenever
+the agent team enters the HDM. CEM is activated when at least one agent fails to admit group coordination. This paper
+applies unique features of decentralized homogeneous transformation coordination to quickly detect each arising anomalous
+situation and excludes failed agent(s) from group coordination of healthy agents. In CEM, agent coordination is treated as an
+ideal ï¬uid ï¬ow where the desired agentsâ paths are deï¬ned along stream lines inspired by ï¬uid ï¬ow ï¬eld theory to circumvent
+exclusion spaces surrounding failed agent(s).
+
+Key words: Resilient Multi-agent Coordination, Physics-based Methods, Local Communication, Continuum Deformation,
+and Decentralized Control.
+
+1 Introduction
+
+Control of multi-agent systems has been widely inves-
+tigated over the past two decades. Formation and co-
+operative control can reduce cost and improve the ro-
+bustness and capability of reconï¬guration in a coopera-
+tive mission. Therefore, researchers have been motivated
+to explore diverse applications for the multi-agent coor-
+dination such as formation control [32], traï¬c conges-
+tion control [30], distributed sensing, [12], cooperative
+surveillance [31], and cooperative payload transport [18].
+
+1.1 Related Work
+
+Centralized and decentralized cooperative control ap-
+proaches have been previously proposed for multi-agent
+coordination. The virtual structure [25] [24] model treats
+agents as particles of a rigid body. Assuming the virtual
+body has an arbitrary translation and rigid body rota-
+tion in a 3-D motion space, the desired trajectory of ev-
+
+(cid:63) Authors are with the Department of Aerospace Engineer-
+ing, University of Michigan, Ann Arbor, MI, 48109 USA e-
+mail: hosseinr@umich.edu.
+
+ery agent is determined in a centralized fashion. Consen-
+sus [5] [14] [7] [3] [19] [1] [36] [15] [28] [34] and contain-
+ment control are the most common decentralized coordi-
+nation approaches. Multi-agent coordination using ï¬rst-
+order consensus [16] and second-order consensus [5] [14]
+has been extensively investigated by researchers in the
+past. Leader-based and leaderless consensus have been
+studied in Refs. [7] and [3]. Stability of the retarded
+consensus method was studies in Refs. [19] [1]. Finite-
+time multi-agent consensus of continuous time systems
+is studied in Refs. [36] [15]. Refs. [28] [34] evaluate con-
+sensus under a switching communication topology in the
+presence of disturbances.
+
+More recently, researchers have investigated the resilient
+consensus problem and provided guarantee conditions
+for reaching consensus in the presence of malicious
+agents [4, 9, 10, 26]. Weighted Mean Subsequence Re-
+duced (W-MSR) is commonly used to detect an adver-
+sary and remove malicious agent(s) from the communi-
+cation network of normal agents [4,10]. r-robustness and
+(r, s)-robustness conditions are used to prove network
+resilience under consensus. Particularly, ( f + 1, f + 1)-
+robustness is considered as the necessary and suï¬cient
+condition for resilience of the consensus protocol in the
+
+Preprint submitted to
+
+September 24, 2019
+
+ 
+ 
+ 
+ 
+ 
+ 
+presence of f malicious agents [4].
+
+Containment control is a decentralized leader-follower
+approach in which multi-agent coordination is guided
+by a ï¬nite number of leaders and acquired by followers
+through local communication. Necessary and suï¬cient
+conditions for the stability of continuum deformation co-
+ordination have been provided in Refs. [17]. Ref. [6] stud-
+ies the convergence of containment control and demon-
+strates that followers ultimately converge to the convex
+hull deï¬ned by leaders. Containment control under ï¬xed
+and switching communication protocols are studied in
+Refs. [2] and [11], respectively. Refs. [29,35] study ï¬nite-
+time containment stability and convergence. Contain-
+ment control stability in the presence of communication
+delay is studied in Refs. [27, 33].
+
+Continuum deformation for large-scale coordination
+of multi-agent systems is developed in [20]. Similar
+to containment control, continuum deformation is a
+leader-follower approach in which a group coordination
+is guided by a ï¬nite number of leaders and acquired
+by followers through local communication [22]. Because
+continuum deformation deï¬nes a non-singular mapping
+between reference and current agent conï¬gurations at
+any time t, follower communication weights are con-
+sistent with leader agentsâ reference positions in the
+continuum deformation coordination. The continuum
+deformation method advances containment control by
+formal characterization of safety in a large-scale coordi-
+nation. Assuming continuum deformation is given by a
+homogeneous transformation, inter-agent collision and
+agent follower containment are guaranteed in a con-
+tinuum deformation coordination by assigning a lower
+limit on the eigenvalues of the Jacobian matrix of the
+homogeneous transformation. Therefore, a large num-
+ber of agents participating in a continuum deformation
+coordination can safely and aggressively deform to pass
+through narrow passages in a cluttered environment.
+
+1.2 Contributions and Outline
+
+This paper proposes a physics-inspired approach to the
+resilient multi-agent coordination problem. In particu-
+lar, multi-agent coordination is modeled by a hybrid au-
+tomation with two physics-based coordination modes: (i)
+Homogeneous Deformation Mode (HDM) and (ii) Con-
+tainment Exclusion Mode (CEM).
+
+HDM is active when all agents are healthy and can ad-
+mit the desired coordination deï¬ned by a homogeneous
+deformation. In the HDM, agents are treated as parti-
+cles of an n-D deformable body and the desired coordi-
+nation, deï¬ned based on the trajectories of n + 1 leaders
+forming an n-D simplex at any time t, is acquired by the
+followers through local communication. 1 .
+
+1 This paper considers agents as particles of 2-D and 3-D
+
+CEM is activated once an adversarial situation is de-
+tected due to unpredicted vehicle or agent failure. The
+paper oï¬ers a novel approach for rapid detection of each
+anomalous or failed agent and excludes it from group
+coordination with the healthy vehicles. In CEM the de-
+sired coordination is treated as an irrotational ï¬uid ï¬ow
+and adversarial agents are excluded from the safe plan-
+ning space by combining ideal ï¬uid ï¬ow patterns in a
+computationally-eï¬cient manner.
+
+Compared to the existing literature and the authorsâ pre-
+vious work, this paper oï¬ers the following contributions:
+
+(1) The paper oï¬ers a novel distributed approach for
+detection of anomalous situations in which unex-
+pected vehicle failure(s) disrupt collective vehicle
+motion.
+
+(2) This paper advances the existing continuum defor-
+mation coordination theory by relaxing the follower
+containment constraint and oï¬ering a tetrahedral-
+ization approach to assign followersâ communica-
+tion weights in an unsupervised fashion.
+
+(3) The paper proposes a model-free guarantee condi-
+tion for convergence and inter-agent collision avoid-
+ance in a large-scale homogeneous transformation.
+(4) Compared to existing resilient coordination work
+[9] [26] [4] [10], this paper oï¬ers a computationally-
+eï¬cient safety recovery method. At CEM, every
+agent assigns its own desired trajectory without
+communication with other agents only by knowing
+the geometry of the unsafe domains enclosing the
+anomalous agents, as well as its own reference po-
+sition when the CEM is activated.
+
+(5) This paper proposes a tetrahedralization method to
+(i) naturally establish/reestablish inter-agent com-
+munication links and weights, (ii) classify agents as
+boundary and follower agents, (iii) determine lead-
+ers in an unsupervised fashion.
+
+(6) The authors believe this is the ï¬rst paper describing
+safe exclusion of a failed agent in a cooperative team
+with inspiration from ï¬uid ï¬ow models.
+
+This paper is organized as follows. Preliminaries in Sec-
+tion 2 are followed by a resilient continuum deformation
+formulation in Section 3. Physics-based models for the
+HDM and CEM are described in Section 4. Operation
+of the resilient continuum deformation coordination is
+modeled by a hybrid automation in Section 5. Simula-
+tion results presented in Section 6 are followed by con-
+cluding remarks in Section 7.
+
+deformable bodies where 2-D and 3-D homogeneous defor-
+mation deï¬nes the desired coordination at the HDM. There-
+fore, n is either 2 or 3.
+
+2
+
+2 Preliminaries
+
+2.1 Position Notations
+
+The following position notations are used throughout
+this paper: Reference position of vehicle i is denoted
+by ri,0 = (cid:2)xi,0 yi,0 zi,0
+(cid:3)T . In this paper, a reference
+conï¬guration is deï¬ned based on agentsâ current po-
+sitions once they enter the HDM. Actual position of
+vehicle i is denoted ri(t) = [xi(t) yi(t) zi(t)]T at time
+t. Local desired position of vehicle i
+is denoted by
+ri,d(t) = [xi,d(t) yi,d(t) zi,d(t)]T at time t. ri,d is up-
+dated through local communication and deï¬ned based
+on actual positions of the in-neighbor vehicles of agent
+i. Global desired position of vehicle i
+is denoted by
+ri,c(t) = [xi,c(t) yi,c(t) zi,c(t)]T at time t. The transient
+error is deï¬ned as the diï¬erence between actual position
+ri(t) and global desired position ri,c(t) for vehicle i at
+any time t.
+
+2.2 Motion Space Tetrahedralization and Î Operator
+
+Assume c â R3Ã1; p1, p2, Â· Â· Â· , pn+1 â R3Ã1 are n + 1
+arbitrary position vectors in a 3-D motion space. Then,
+rank operator (cid:60)n is deï¬ned as follows:
+
+n = 2, 3,
+
+(cid:60)n (p1, Â· Â· Â· , pn) = rank
+
+(cid:16) (cid:104)
+
+p2 â p1 Â· Â· Â· pn+1 â p1
+
+(cid:105) (cid:17)
+
+.
+
+(1)
+If p1, Â· Â· Â· , pn+1 are positioned at the vertices an n-D
+simplex, then (cid:60)n (p1, Â· Â· Â· , pn) = n. p1, p2, p3, and p4 form
+a tetrahedron for n = 3, if (cid:60)3 (p1, p2, p3, p4) = 3. p1, p2,
+and p3 form a triangle for n = 2, if (cid:60)2 (p1, p2, p3) = 2.
+Operator Î (n = 2, 3): Assume p1, p2, p3, and pn
+known points in a 3-D motion space, where
+
+4 are
+
+Figure 1. Graphical representation of the virtual agent p2
+4.
+
+and outside of the tetrahedron deï¬ned by vectors p1, p2,
+p3, and pn
+
+(cid:0)p1, p2, p3, pn
+4
+
+4, if (cid:60)3
+
+(cid:1) = 3.
+
+For n = 3, p1, p2, p3, p4, and c represent real points
+(agents) in a 3-D motion space, if (cid:60)3 (p1, p2, p3, p4) = 3.
+Therefore, p3
+4
+
+= p4 and c3 = c.
+
+For n = 2, p1, p2, and p3 are the real points forming a
+triangle in a 3-D motion space. Given p1, p2, and p3,
+virtual point
+
+p2
+4
+
+= p1 + Î (p3 â p1) Ã (p2 â p1) ,
+
+(4)
+
+where Î (cid:44) 0 is constant. Note that p2
+4, deï¬ned by Eq.
+(4), is perpendicular to the triangular plane made by
+agents p1, p2, and p3 (see Fig. 1). Consequently, virtual
+agent p2
+4 and in-neighbor agent p1, p2, and p3 form a
+tetrahedron. The projection of c on the triangular plane
+made by p1, p2, and p3 is denoted by Ëc2 and expressed
+as follows:
+
+c2 = c â (c Â· n1â4 (p1, p2, p3)) n1â4 (p1, p2, p3) ,
+
+(5)
+
+(cid:60)3
+
+(cid:0)p1, p2, p3, pn
+4
+
+(cid:1) = 3.
+
+(2)
+
+where unit vector
+
+Then, operator Î can be deï¬ned as follows:
+
+(cid:34)
+
+p1 p2 p3 p4
+
+(cid:35) â1 (cid:34)
+
+n
+
+(cid:35)
+
+cn
+
+n = 2, 3,
+
+Î (cid:0)p1, p2, p3, pn
+
+4, cn(cid:1) =
+
+1
+(3)
+where cn is the position of a point in a 3-D motion space.
+(cid:1) = 3, Î (p1, Â· Â· Â· , pn, cn) exists and has
+If (cid:60)3
+the following properties [23]:
+
+(cid:0)p1, p2, p3, pn
+4
+
+1 1 1
+
+1
+
+n1â4 (p1, p2, p3) =
+
+(p3 â p1) Ã (p2 â p1)
+(cid:107) (p3 â p1) Ã (p2 â p1) (cid:107)
+
+(6)
+
+,
+
+is normal to the triangular plane made by p1, p2, and p3.
+Proposition 1. Let Î be expressed in component-wise
+form:
+
+Î = (cid:104)
+(cid:0)p1, p2, p3, p2
+
+.
+Î»1 Î»2 Î»3 Î»4
+4, c2(cid:1) = 0 for any arbitrary posi-
+
+(cid:105)T
+
+If n = 2, Î»4
+tion c2.
+
+(1) The sum of the entries of Î is 1 for any conï¬guration
+
+of vectors p1, Â· Â· Â· , pn
+
+4 and cn for n = 2, 3.
+
+(2) If Î > 0, cn is inside the tetrahedron formed by p1,
+
+Â· Â· Â· , pn
+
+4. Otherwise, it is outside the tetrahedron.
+
+Proof. Given p1, p2, p3, and pn
+obtained as follows:
+
+4, Î»4
+
+(cid:0)p1, p2, p3, pn
+
+4, cn(cid:1) is
+
+Motion Space Tetrahedralization: A 3-D motion
+space can be divided into two subspaces that are inside
+
+Î»4
+
+(cid:0)p1, p2, p3, pn
+
+4, cn(cid:1) =
+
+(cid:107)cn â c2 (cid:107)
+(cid:107)pn
+4 â p1(cid:107)
+
+.
+
+(7)
+
+3
+
+For n = 2, the denominator of Eq. (7) is 0, thus
+4, cn(cid:1) = 0 for any arbitrary position of
+Î»4
+point c in the motion space. (cid:3)
+
+(cid:0)p1, p2, p3, pn
+
+Operator Î will be used to (i) determine boundary and
+interior agents, (ii) specify followersâ in-neighbor agents,
+(iii) assign followersâ communication weights in a 2-D
+and 3-D homogeneous deformation coordination, and
+(iv) detect anomalies in a group coordination.
+
+2.3 Homogeneous Deformation
+
+A homogeneous deformation is an aï¬ne transforma-
+tion 2 given by
+
+as a convex combination of the leadersâ positions at any
+time t.
+
+j â VF,
+
+rj,c =
+
+n+1
+(cid:213)
+
+k=1
+
+Î±j,ik rik,c(t).
+
+(12)
+
+3 Problem Formulation and Statement
+
+Consider a 3-D motion space containing M agents where
+every agent is uniquely identiï¬ed by a number i â M =
+{1, Â· Â· Â· , M }. It is assumed that N(t) (out of M) agents are
+enclosed by a rigid-size containment domain
+
+â¦con = â¦con(r, rcon(t)) â R3,
+
+(13)
+
+ri,c(t) = Q(t)ri,0 + d(t),
+
+(8)
+
+at time t. Let rcon(t) â R3Ã1 be the nominal position of
+the containment domain given by
+
+where Q(t) is the Jacobian matrix, d(t) is the rigid-body
+displacement vector, ri,0 is the reference position of agent
+i â VH (t), and VH (t) deï¬nes index numbers of healthy
+agents at time t.
+
+Î± parameters: Let VH (t) be expressed as
+
+VH = VL
+
+(cid:216)
+
+VF .
+
+(9)
+
+where VL = {i1, Â· Â· Â· , in+1} and VF (t) = {in+2, Â· Â· Â· , iNF }
+are disjoint sets deï¬ning leaders and followers at time
+t. Let ri1,0, Â· Â· Â· , rin+1,0 denote the reference positions of
+the leaders and ri j,0 denotes the reference position of
+follower ij â V, where reference positions are all assigned
+at the time agents ï¬rst enter HDM. Then, we can deï¬ne
+Î± parameters Î±i j,i1 through Î±i j,i4 as follows:
+
+(cid:104)
+
+Î±i j,i1 Â· Â· Â· Î±i j,i4
+
+(cid:105)T
+
+(cid:16)
+
+= Î
+
+where
+
+ri1,0, ri2,0, ri3,0, rn
+
+i4,0, rn
+
+i j,0
+
+(cid:17)
+
+,
+(10)
+
+rn
+i4,0
+
+=
+
+(cid:26)ri4,0
+ri1,0 + Î (cid:0)ri3,0 â ri1,0
+
+(cid:1) Ã (cid:0)ri2,0 â pi1,0
+
+(cid:1)
+
+rn
+i j,0
+
+=
+
+(cid:40)ri j,0
+ri j,0 â
+
+(cid:16)
+
+(cid:17)
+
+n = 3
+n = 2
+
+,
+
+and n1â4 = n1â4
+in (6). Note that Î±i1,i4
+
+ri j,0 Â· n1â4
+(cid:0)ri1,0, ri2,0, ri3,0
+
+n1â4
+(cid:1) was previously deï¬ned
+= 0, if n = 2 (See Proposition 1).
+
+Global Desired Position: Because homogeneous defor-
+mation is a linear transformation, global desired position
+of vehicle ij can be either given by Eq. (8) or expressed
+
+n = 3
+n = 2
+
+,
+
+(11a)
+
+(11b)
+
+rcon(t) =
+
+N (t)
+(cid:213)
+
+i=1
+
+Î²iri,c(t).
+
+(14)
+
+Note that 0 â¤ Î²i < 1 is a scaling factor, (cid:205)N (t)
+i=1 Î²i = 1, and
+the size of â¦con = â¦con(r, rcon(t)) â R3 does not change
+over time. Identiï¬cation numbers of the agents enclosed
+by â¦cont(t) are deï¬ned by set
+V(t) = (cid:8)i â M(cid:12)
+
+(cid:12)ri,c(t) â â¦con(r, rcon(t))(cid:9)
+
+(15)
+
+Agents enclosed by the containment region â¦con(r, rcon(t))
+can be classiï¬ed as healthy or anomalous agents, where
+healthy agents admit the group desired coordination
+while anomalous agents do not. Healthy and anoma-
+lous vehicles are deï¬ned by disjoint sets VH and VA,
+respectively, where V can be expressed as
+
+V = VH
+
+(cid:216)
+
+VA,
+
+(16)
+
+where VH = (cid:8)i1, Â· Â· Â· , iNF
+
+(cid:9) and VA = {iNF +1, Â· Â· Â· , iN }.
+
+This paper treats agents as particles of a deformable
+body where the desired trajectory of vehicle j â V is
+given by
+
+(cid:219)rj,c
+
+(cid:0)xj,c, yj,c, zj,c, t(cid:1) = Hj,Î³
+
+(cid:0)xj,c, yj,c, zj,c
+
+(cid:1) (cid:219)qÎ³(t),
+
+(17)
+
+where Î³ is a discrete variable deï¬ned by ï¬nite set Î =
+{CEM, HDM}. Set Î speciï¬es the collective motion oper-
+ation mode. rj,c(t) = [xj,c(t) yj,c(t) zj,c(t)]T is the global
+m,Î³(t)(cid:3)T ,
+desired trajectory of vehicle j, q = (cid:2)q1,Î³ Â· Â· Â· qÎ³
+q1,Î³(t) through qN,Î³(t) are the generalized coordinates
+specifying the temporal behavior of the group coordina-
+tion. Furthermore,
+
+2 The aï¬ne transformation (8) is called Homogeneous De-
+formation in continuum mechanics [8].
+
+j â V, Î³ â Î,
+
+Hj,Î³ = (cid:104)
+
+hj,1,Î³ Â· Â· Â· hj,m,Î³
+
+(cid:105)
+
+â R3Ãm
+
+4
+
+is the spatially-varying shape matrix . hj,1,Î³(xj,c, yj,c, zj,c) â
+R3Ã1 through hj,m,Î³(xj,c, yj,c, zj,c) â R3Ã1 are the shape
+functions.
+
+HDM (Î³ = HDM) is active when VA = â. Therefore,
+NF (t) = N(t) agents deï¬ned by set VH are all healthy.
+The HDM shape matrix Hj,HDM is time-invariant (con-
+stant), where j â VH . The HDM generalized coordinate
+vector qHDM â R3(n+1)Ã1 speciï¬es desired velocity com-
+ponents of all leaders guiding the group continuum defor-
+mation coordination. This paper develops a decentral-
+ized leader-follower approach using the tetrahdralization
+presented in Section 2.2. By classifying agents as lead-
+(cid:208) VF (See Eq. (9)). Lead-
+ers and followers, VH = VL
+ers, deï¬ned by VL = {i1, Â· Â· Â· , in+1}, move independently.
+Followers, deï¬ned by VF = {in+2, Â· Â· Â· , iN }, acquire the
+desired coordination through local communication with
+leaders and other followers. The paper oï¬ers a tetrahe-
+dralization method to determine leaders and followers
+and deï¬ne inter-agent communication among vehicles in
+an unsupervised fashion for an arbitrary reference con-
+ï¬guration of agents.
+
+CEM (Î³ = CEM) is activated once at least one anoma-
+lous agent is detected in which case VA (cid:44) â. The CEM
+shape matrix Hj,CEM ( j â VH ) is spatially varying. In
+particular, the desired vehicle coordination of healthy
+vehicle j â VH is deï¬ned by an ideal ï¬uid ï¬ow. For
+CEM, it is desired that (i) vehicle j â VH moves along
+(cid:0)xj,c, yj,c, t(cid:1) and (ii) x and y compo-
+the surface zj,c = zj
+nents of the agent coordination are deï¬ned by an irrota-
+tional ï¬ow. Mathematically speaking, we deï¬ne coordi-
+nate transformation
+
+Ï j,c = Ï (cid:0)xj,c, yj,c, t(cid:1)
+Ïj,c = Ï (cid:0)xj,c, yj,c, t(cid:1)
+(cid:0)xj,c, yj,c, t(cid:1)
+zj,c = zj
+
+,
+
+ï£±ï£´ï£´ï£²
+ï£´ï£´
+ï£³
+
+(18)
+
+where j â VH , Ï(xj,c, yj,c, t) and Ï(xj,c, yj,c, t) satisfy the
+Laplace equation:
+
+â2Ï (cid:0)xj,c, yj,c, t(cid:1)
+â x2
+j,c
+
++
+
+â2Ï (cid:0)xj,c, yj,c, t(cid:1)
+â y2
+j,c
+
+= 0
+
+(19a)
+
+Notice that stream and potential functions satisfy the
+Cauchy-Riemann condition. Therefore, the level curves
+Ï(x, y, t) = constant and Ï(x, y, t) = constant are per-
+pendicular at the intersection point. This paper deï¬nes
+Ï(x, y, t) and Ï(x, y, t) by combining ideal ï¬uid ï¬ow pat-
+terns so that an obstacle-free motion space is excluded
+from adversaries. This combination can split the x â y
+plane into a safe region deï¬ned by set S and unsafe re-
+gion deï¬ned by set U. A one-to-one mapping exists be-
+tween (xj, yj) and (Ï(xj, yj), Ï(xj, yj)) at every point in
+the safe set S. Thus, the Jacobian matrix
+
+(x, y) â S,
+
+j â VH
+
+J(xj, yj) =
+
+âÏ
+â xj
+âÏ
+â xj
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+âÏ
+â yj
+âÏ
+â yj
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+(21)
+
+is nonsigular. Potential and stream ï¬elds are generated
+by combining âUniformâ and âDoubletâ ï¬ow patterns.
+As a result, a single failed vehicle can be separated by a
+cylinder from the safe region S in the motion space.
+
+This paper also oï¬ers a novel distributed anomaly detec-
+tion approach by using the properties of leader-follower
+homogeneous transformation coordination. Particularly,
+the Î operator is used to characterize agent deviation of
+agents from the desired coordination to quickly identify
+failed agent(s) that are not admitting the desired con-
+tinuum deformation.
+
+4 Physics-based Modeling of HDM and CEM
+
+HDM and CEM are mathematically modeled in this sec-
+tion. A decentralized leader follower method for HDM is
+developed in Section 4.1 to acquire a desired continuum
+deformation in an unsupervised fashion. CEM coordina-
+tion is modeled in Section 4.2.
+
+4.1 Homogeneous Deformation Mode (HDM)
+
+In HDM, vehicles are healthy and cooperative. There-
+fore, |VA| = 0 (NF = N and VH = V). Set VH can be
+(cid:208) VF , where VL = {i1, Â· Â· Â· , in+1}
+expressed as VH = VL
+and VF = {in+2, Â· Â· Â· , iN } deï¬ne leaders and followers, re-
+spectively.
+
+â2Ï (cid:0)xj,c, yj,c, t(cid:1)
+â x2
+j,c
+
++
+
+â2Ï (cid:0)xj,c, yj,c, t(cid:1)
+â y2
+j,c
+
+= 0.
+
+(19b)
+
+4.1.1 Desired Homogeneous Deformation Deï¬nition
+
+For smooth âï¬owâ every agent j â VH slides along the
+Ï (cid:0)xj,c, yj,c, t(cid:1) =
+j-th streamline deï¬ned by j â VH,
+Ïj,0 = constant at any time t. This condition requires
+that the desired trajectory of vehicle j â VH satisfy the
+following equation at any time t:
+
+âÏ(xj,c, yj,c, t)
+â xj,c
+
+dxj,c
+dt
+
++
+
+âÏ(xj,c, yj,c, t)
+â yj,c
+
+dyj,c
+dt
+
+= 0.
+
+(20)
+
+A desired homogeneous transformation can be deï¬ned
+by m = 3(n + 1) generalized coordinates q1,HDM, Â· Â· Â· ,
+q3(n+1),HDM using relation (17), where
+
+qHDM(t) =
+
+q1,HDM(t)
+...
+q3(n+1),HDM(t)
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+= vec
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+(cid:169)
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:171)
+
+5
+
+xi1,c Â· Â· Â· xin+1,c
+yi1,c Â· Â· Â· yin+1,c
+zi1,c Â· Â· Â· zim+1,c
+
+T
+
+,
+
+ï£¹
+(cid:170)
+ï£º
+(cid:174)
+ï£º
+(cid:174)
+ï£º
+(cid:174)
+ï£º
+(cid:174)
+ï£º
+ï£º
+ï£»
+(cid:172)
+(22a)
+
+Hi j,HDM = (cid:104)
+
+hj,1 Â· Â· Â· hj,3(n+1)
+
+(cid:105) = I3 â
+
+(cid:104)
+
+Î±j,i1 Â· Â· Â· Î±j,in+1
+
+(cid:105)
+
+,
+
+(22b)
+
+and j â V. Note that vec(Â·) is the matrix vectoriza-
+tion operator. In Section 2.3, it was described how Î± pa-
+rameters Î±j,i1 through Î±j,in+1 are assigned based on the
+agentsâ reference positions.
+
+4.1.2 Unsupervised Acquisition of a Homogeneous De-
+
+formation Using Tetrahedralization
+
+A desired homogeneous deformation, deï¬ned by n + 1
+leaders in an n-D homogeneous deformation, is acquired
+by followers through local communication. Communica-
+tion among healthy agents is deï¬ned by coordination
+graph Gc (V, E) with nodes V (V = VH ) and edges
+E â V Ã V. In-neighbor agents of agent i â V are de-
+ï¬ned by
+
+(cid:12)( j, i) â E}.
+
+Ni = { j(cid:12)
+Assuming the reference formation of agents is known,
+n + 1 boundary agents are selected as leaders. Further-
+more, every follower i â VF communicates with n + 1 in-
+neighbor agents where the in-neighbor agents are placed
+at the vertices of an n-simplex containing follower i.
+
+i â V,
+
+Figure 2. Example reference formation used for collective
+motion simulation. A red arrow shows a unidirectional link
+to a follower from its in-neighbor agent. Blue arrows show
+bidirectional communication.
+
+4.1.3 Classiï¬cation of Agents as Leaders and Followers
+
+(cid:208) VI
+The node set V can be expressed as V = VB
+where VB = {i1, Â· Â· Â· , imB } and VI = {imB +1, Â· Â· Â· , iN } de-
+ï¬ne boundary and interior agents, respectively. Given
+agentsâ reference positions, the following true statements
+are used to assign agent i â V either as a leader or a
+follower:
+
+(1) An n-D homogeneous deformation is deï¬ned by n+1
+leaders [20, 21]. Assuming leaders are selected from
+the boundary agents, VL â VB.
+
+(2) Non-leader boundary agents are the followers spec-
+
+iï¬ed by (VB \ VL) â VF .
+
+(cid:16)
+
+j4,0 and rn
+
+rj1,0, rj2,0, rj3,0, rn
+
+(3) All interior agents are followers, thus, VI â VF .
+(4) Agent i is an interior agent and classiï¬ed as a fol-
+lower, if there exists a set of three agents j1 j2,
+and jn+1 such that Î
+> 0,
+where rn
+i,0 are assigned by Eq. (11) when
+subscripts i1, i2, i3, i4, and ij are substituted by j1,
+j2, j3, j4, and i, respectively [23].
+j4,0, rn
+
+has at least
+one negative entry for every j1, Â· Â· Â· , jn+1 â V form-
+ing an n-D simplex, where j1 (cid:44) i, Â· Â· Â· , and jn+1 (cid:44) i.
+Then, i â V is a boundary agent [23].
+
+rj1,0, rj2,0, rj3,0, rn
+
+(5) Assume Î
+
+j4,0, rn
+
+i,0
+
+i,0
+
+(cid:17)
+
+(cid:17)
+
+(cid:16)
+
+(6) If i â V is not a follower agent, it is a boundary
+
+agent.
+
+(7) Any n + 1 boundary agents j1, Â· Â· Â· , jn+1 can be se-
+lected as leaders. The remaining boundary agents
+are also considered as the followers.
+
+To better clarify the above statements, the reference
+formation shown in Fig. 2 is considered. The vehicle
+team consists of 22 agents (V = {1, Â· Â· Â· , 22}). Set VB =
+{i1, Â· Â· Â· , i10} deï¬ne the boundary agents, where i1 = 1,
+i2 = 2, i3 = 3, i4 = 10, i5 = 12, i6 = 14, i7 = 18, i8 = 20,
+i9 = 21, i10 = 22. While VL = {i1, i2, i3} speciï¬es the lead-
+ers, VB â VL deï¬nes the boundary followers. Boundary
+followers all communicate with leaders 1, 2, and 3. Note
+that links from leaders i1, i2, and i3 to boundary followers
+are not shown in Fig. 2. Additionally, VI = {i11, Â· Â· Â· , i22}
+deï¬nes interior agents, where i11 = 4, i12 = 5, i13 = 6,
+i14 = 7, i15 = 8, i16 = 9, i17 = 11, i18 = 13, i19 = 15,
+i20 = 16, i21 = 17, and i22 = 19 are the interior vehicles.
+Note that VI â VF are all followers.
+
+4.1.4 Followersâ In-Neighbors, Communication Weights,
+
+and HDM Desired Trajectories
+
+The agent-tetrahedralization is used in this section to
+determine in-neighbor agents of interior followers in
+a homogeneous deformation coordination. For every
+interior follower agent h â VI â VF , let
+
+(cid:16)
+
+(cid:124)
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+Î
+
+ï£±ï£´ï£´ï£´ï£²
+ï£´ï£´ï£´
+ï£³
+
+Fh =
+
+rj1,0, Â· Â· Â· , rn
+
+( j1, Â· Â· Â· , jn+1) â V Ã Â· Â· Â· Ã V
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+(cid:125)
+(cid:123)(cid:122)
+n+1 times
+
+ï£¼ï£´ï£´ï£´ï£½
+ï£´ï£´ï£´
+ï£¾(23)
+deï¬ne admissible n-D simplexes enclosing interior fol-
+lower h, where 14 â R4Ã1 is the one-entry vector and
+(cid:37) > 0 is constant.
+
+j4,0, rn
+
+> (cid:37)n14
+
+h,0
+
+(cid:17)
+
+Proposition 2. Positive parameter (cid:37)n must be less than
+n+1 in an n-D homogeneous deformation (n = 2, 3).
+
+1
+
+6
+
+Proof. For n â D homogeneous transformation,
+
+Matrix W can be partitioned as follows:
+
+(cid:16)
+
+1T
+4 Î
+
+rj1,0, Â· Â· Â· , rn
+
+j4,0, rn
+
+h,0
+
+4
+(cid:213)
+
+(cid:17) =
+
+(cid:16)
+
+Î»l
+
+rj1,0, Â· Â· Â· , rn
+
+j4,0, rn
+
+h,0
+
+rj1,0, Â· Â· Â· , rn
+
+j4,0, rn
+
+h,0
+
+l=1
+(cid:17) = 1
+
+(cid:16)
+
+Î»l
+
+n+1
+(cid:213)
+
+l=1
+
+and
+
+(cid:16)
+
+(cid:37)n â¤ Î»l
+
+rj1,0, Â· Â· Â· , rn
+
+j4,0, rn
+
+h,0
+
+(cid:17)
+
+for l = 1, Â· Â· Â· , n + 1, if ( j1, j2, j3, j4) â Fh. Thus,
+
+(n + 1)(cid:37)n <
+
+(cid:16)
+
+Î»l
+
+n+1
+(cid:213)
+
+l=1
+
+rj1,0, Â· Â· Â· , rn
+
+j4,0, rn
+
+h,0
+
+(cid:17) = 1
+
+which in turn implies that (cid:37)n < 1
+
+n+1 . (cid:3)
+
+(cid:17) =
+
+W = (cid:104)
+
+(cid:105)
+
+,
+
+B A
+
+(27)
+
+where B â R(N ânâ1)Ã(n+1) and A â R(N ânâ1)Ã(N ânâ1) are
+non-negative matrices.
+
+HDM Desired Trajectory: Local desired trajectory of
+agent i â V is deï¬ned as follows:
+
+ri,d(t) =
+
+(cid:26)ri,c
+(cid:205)
+
+h âNi wi,hrh
+
+i â VL
+i â VF
+
+.
+
+(28)
+
+Note that global and local desired positions of leader
+agent j â VL are the same at any time t. The component
+Âµ â {x, y, z} of the local desired positions of followers
+satisfy the following relation:
+
+In-neighbors of an interior follower h â VI is deï¬ned by
+set Nh = { jâ
+
+n+1}, where
+
+1, Â· Â· Â· jâ
+
+1, Â· Â· Â· , jâ
+( jâ
+
+n+1) =
+
+argmin
+(j1, Â·Â·Â· , jn+1)â Fh
+
+n+1
+(cid:213)
+
+k=1
+
+(cid:107)rjk,0 â rh,0 (cid:107).
+
+In other words, the n + 1 closest agents belonging to set
+Fh are considered as the in-neighbors of follower h â VF .
+
+Every boundary follower agent j â VB \ VL commu-
+nicates with n+1 leaders deï¬ned by VL. Therefore, Nj =
+VL deï¬nes in-neighbor agent of vehicle j â VL â VB.
+
+Followersâ Communication Weights: Each communica-
+tion weight wi, jk (k = 1, Â· Â· Â· , n + 1) is speciï¬ed based on
+reference positions of follower vehicle i â VF and in-
+neighbor vehicle jk â Ni = { j1, Â· Â· Â· , jn+1} as follows:
+
+(cid:104)
+
+wi, j1 Â· Â· Â· wi, j4
+
+(cid:105)T
+
+(cid:16)
+
+= Î
+
+where
+
+rj1,0, rj2,0, rj3,0, rn
+
+j4,0, rn
+
+i,0
+
+(cid:17)
+
+, (24)
+
+where
+
+rn
+j4,0
+
+=
+
+(cid:26)rj4,0
+rj1,0 + Î (cid:0)rj3,0 â rj1,0
+
+(cid:1) Ã (cid:0)rj2,0 â pj1,0
+
+(cid:1)
+
+rn
+i,0
+
+=
+
+(cid:26)ri,0
+ri,0 â (cid:0)ri,0 Â· n1â4
+
+(cid:1) n1â4
+
+n = 3
+n = 2
+
+,
+
+n = 3
+n = 2
+
+,
+
+(25a)
+
+(25b)
+
+and n1â4 = n1â4(rj1,0, rj2,0, rj3,0) is determined using Eq.
+(6) when n = 2. Given followersâ communication weights,
+the weight matrix W = [Wjh] â R(N ânâ1)ÃN is deï¬ned as
+follows:
+
+Âµ â {x, y, z}, ât,
+
+Âµ,d(t) =APF
+PF
+
+Âµ (t) + BPL
+
+Âµ (t),
+
+(29)
+
+(cid:3)T , and PF
+Âµ
+
+= (cid:2)Âµi1 Â· Â· Â· Âµin+1
+
+where A and B were previously introduced in Eq. (27).
+(cid:3)T as-
+PL
+Âµ
+sign the component Âµ â {x, y, z} of actual positions of
+=
+leaders and followers, respectively. Furthermore, PF
+(cid:3)T assigns component Âµ â {x, y, z} of
+(cid:2)Âµin+2,d Â· Â· Â· ÂµiN ,d
+the local desired positions for all followers.
+
+= (cid:2)Âµin+2 Â· Â· Â· ÂµiN
+
+Âµ,d
+
+Key Property of Homogeneous Deformation: If
+followersâ communication weights are consistent with
+agentsâ reference positions and obtained by Eq. (24),
+then, the following relation is true:
+
+WL = âDâ1B =
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+Î±in+2,i1 Â· Â· Â· Î±in+2,in+1
+. . .
+Â· Â· Â· Î±iN ,in+1
+
+...
+Î±iN ,i1
+
+...
+
+(30)
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+D = âI + A
+
+(cid:3)T and PF
+Âµ,c
+
+=
+is Hurwitz (See the proof in Ref. [20]). Let PL
+Âµ,c
+(cid:3)T spec-
+(cid:2)Âµi1,c Â· Â· Â· Âµin+1,c
+ify component Âµ â {x, y, z} of the global desired posi-
+tions of leaders and followers, respectively. Given the
+global desired position of followers deï¬ned by Eq. (12),
+PF
+Âµ,c by
+
+Âµ,c is deï¬ned based on PL
+
+= (cid:2)Âµin+2,c Â· Â· Â· ÂµiN ,c
+
+Âµ â {x, y, z}, ât,
+
+Âµ,c(t) = WLPL
+PF
+
+Âµ,c(t).
+
+(31)
+
+Lemma 1. Every entry of matrix Dâ1 is non-positive.
+
+Wjh =
+
+(cid:26)wi j,ih
+0
+
+ih â Nj â§ ij â VF
+otherwise
+
+(26)
+
+Proof. Diagonal entries of matrix D are all â1 while the
+oï¬-diagonal entries of D are either 0 or positive. Using
+the Gauss-Jordan elimination method, the augmented
+
+7
+
+matrix Da = (cid:2)D(cid:12)
+(cid:12)I(cid:3) â R(N ânâ1)Ã2(N ânâ1) can be converted
+to matrix ËDa = (cid:2)I(cid:12)
+(cid:12)Dâ1(cid:3) â R(N ânâ1)Ã2(N ânâ1) only by per-
+forming row algebraic operations. Entries of the lower
+triangle of matrix D can be all converted to 0, if a top
+row is multiplied by a negative scalar and the outcome
+is added to the other rows. Elements of the upper tri-
+angular submatrix of L can be similarly zeroed, if the
+bottom row is multiplied by a negative scalar and the
+outcome is added to the other rows. Therefore, Dâ1, ob-
+tained by performing these row operations on La, is non-
+negative. (cid:3)
+
+Âµ,d
+
+Lemma 2. Deï¬ne the local-desired error vec-
+(cid:3)T , and the
+= (cid:2)Âµin+2,d â Âµin+2 Â· Â· Â· ÂµiN ,d â ÂµiN
+tor EF
+= (cid:2)Âµi1,c â Âµi1 Â· Â· Â· Âµin+1,c â Âµin+1,d
+global-desired error vectors EL
+Âµ,c
+(cid:3)T where
+= (cid:2)Âµin+2,c â Âµin+2 Â· Â· Â· ÂµiN ,c â ÂµiN
+and EF
+Âµ,c
+Âµ â {x, y, z}. The following relations are true:
+
+Âµ â {x, y, z}, ât,
+
+Âµ,d(t) = DPF
+EF
+
+q (t) + BPL
+
+q (t), (32a)
+
+Âµ â {x, y, z}, ât,
+
+EF
+q,c
+
+= âDâ1EF
+q,d
+
++ BEL
+
+q,c,
+
+(32b)
+
+Proof. Let
+
+n+1
+(cid:213)
+
+j=1
++1
+(cid:213)
+
+j=1
+
+Âµ â {x, y, z}, ij â VF,
+
+Âµi j,d = (cid:213)
+k âNi j
+
+wi j,k Âµk,
+
+â¤âÂµ max
+
+l
+
+i; communication weight wj,h is obtained using Eq. (24).
+Then,
+
+(cid:113)
+
+(cid:0)xj â xj,c
+
+(cid:1) 2 + (cid:0)yj â yj,c
+
+(cid:1) 2 + (cid:0)yj â yj,c
+
+(cid:1) 2 â¤ â,
+
+(34)
+
+where
+
+â = Îmax
+
+(cid:113)
+
+â2
+
+x + â2
+
+y + â2
+z,
+
+Îmax = max
+
+l
+
+(cid:32)
+
+â
+
+N ânâ1
+(cid:213)
+
+j=1
+
+Dâ1
+l j
+
++
+
+(cid:33)
+
+Bl j
+
+n+1
+(cid:213)
+
+j=1
+
+(35a)
+
+(35b)
+
+Proof. Considering Eq. (32b), we can write
+
+(cid:3)T
+
+(cid:12)
+(cid:12)Âµi j,c â Âµi j
+
+N ânâ1
+(cid:213)
+
+(cid:12)
+(cid:12) =
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+â
+
+(cid:16)
+
+Dâ1
+l j
+
+Âµi j+n+1,c â Âµi j+n+1
+
+(cid:17) +
+
+(cid:16)
+
+Bl j
+
+Âµi j,c â Âµi j
+
+Dâ1
+l j
+
+(cid:12)
+(cid:12)Âµi j+n+1,c â Âµi j+n+1
+
+(cid:12)
+(cid:12) +
+
+j=1
+(cid:17) (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+N ânâ1
+(cid:213)
+
+â¤ â
+
+j=1
+N ânâ1
+(cid:213)
+
+Bl j
+
+(cid:12)
+(cid:12)qi j,c â qi j
+
+(cid:12)
+(cid:12) â¤ â
+
+Dâ1
+l j âÂµ +
+
+(cid:32)
+
+â
+
+N ânâ1
+(cid:213)
+
+j=1
+
+Dâ1
+l j
+
++
+
+j=1
+n+1
+(cid:213)
+
+j=1
+
+(cid:33)
+
+Bl j
+
+= ÎmaxâÂµ
+
++1
+(cid:213)
+
+j=1
+
+Bl jâÂµ
+
+then, row j of relation (32a) can be expressed as follows:
+
+for Âµ â {x, y, z}. Therefore, inequality (34) is satis-
+ï¬ed. (cid:3)
+
+Âµi j+n+1,d â Âµi j+n+1
+
+= âÂµi j+n+1
+
++ (cid:213)
+k âNi j
+
+wi j,k Âµk,
+
+where Âµ â {x, y, z}, ij â VF . Considering the key prop-
+erty of homogneous transformation, B = âDWL and
+PL
+
+Âµ,c, Eq. (32a) can be rewritten as
+
+EF
+Âµ,d
+
+=D
+
+Âµ â WL
+
+(cid:169)
+(cid:173)
+PF
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:173)
+(cid:171)
+
+(cid:16)
+
+Âµ,c â EL
+PL
+Âµ,c
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)(cid:32)
+(cid:123)(cid:122)
+PL
+Âµ
+
+(cid:124)
+
+(cid:17)
+
+(cid:170)
+(cid:174)
+(cid:174)
+(cid:174)
+(cid:174)
+(cid:125)
+(cid:174)
+(cid:172)
+
+(cid:16)
+
+= D
+
+âEF
+
+Âµ,c â BEL
+Âµ,c
+
+(cid:17)
+
+.
+
+Theorem 1 speciï¬es an upper limit for deviation of ac-
+tual position of vehicle i from the desired coordination
+deï¬ned at HDM. It is assumed that every vehicle is en-
+closed by a vertical cylinder of radius (cid:15), and dmin denotes
+the minimum separation distance between every vehi-
+cle pair in the reference conï¬guration. Then, inter-agent
+collision avoidance is guaranteed in a homogeneous de-
+formation coordination, if the following inequality con-
+straint is satisï¬ed at any time t [20]:
+
+ât,
+
+min{Ï1(t), Ï2(t), Ï3(t)} â¥
+
+â + (cid:15)
+dmi n 2 + (cid:15)
+
+.
+
+(36)
+
+where Âµ â {x, y}. Therefore, EF
+Âµ,c
+(cid:3)
+
+= âDâ1EF
+Âµ,d
+
++ BEL
+
+Âµ,c.
+
+4.1.5 HDM Control System
+
+Theorem 1. Assume control inputs UL and UF are de-
+signed so that
+
+â j â V, âÂµ â {x, y, z} ,
+
+(cid:12)
+(cid:12)Âµj â Âµj,d
+
+(cid:12)
+(cid:12) â¤ âÂµ,
+
+(33)
+
+where Âµj and Âµj,d = (cid:205)
+h âNj wj,h Âµh are components Âµ â
+{x, y, z} of the actual and local desired positions of vehicle
+
+8
+
+It is assumed that vehicle j â V has a nonlinear dynam-
+ics given by
+
+(cid:26) (cid:219)xj = fj(xj, uj)
+rj = [xj yj zj]T
+where xj â Rnx, j Ã1 and uj â Rnu, j Ã1 are the state and
+input vectors, and rj = [xj yj zj]T is the actual posi-
+tion of vehicle j considered as the output of vehicle j.
+
+(37)
+
+,
+
+As aforementioned, leaders move independently at the
+HDM. Therefore, Ni = â, if i â VL. Dynamics of the
+vehicle team is given by:
+
+Leaders :
+
+(cid:40) (cid:219)XL = FL (XL, UL)
+RL = vec
+
+(cid:16) (cid:2)ri1 Â· Â· Â· rin+1
+
+(cid:3)T (cid:17)
+
+Followers :
+
+(cid:40) (cid:219)XF = FF (XF, UF )
+RF = vec
+
+(cid:16) (cid:2)rin+2 Â· Â· Â· riN
+
+(cid:3)T (cid:17)
+
+in+2
+
+in+1
+
+Â· Â· Â· f T
+
+where vec([Â·]) vectorizes matrix [Â·], XF and XL are
+the state vectors representing leaders and follow-
+ers, respectively, UF and UL are the leadersâ and
+inputs. FL = [f T
+]T and
+followersâ control
+i1
+FF = [f T
+]T are smooth functions where fik
+Â· Â· Â· f T
+iN
+(k = 1, Â· Â· Â· , NF ) speciï¬es the dynamics of vehicle ik previ-
+]T (cid:17)
+ously given in (37). Also, RL = vec
+and
+]T (cid:17)
+RF = vec
+= [xik yik zik ]
+denotes actual position of vehicle ik (k = 1, Â· Â· Â· , NF ),
+XL = (cid:104)
+, UL = (cid:104)
+, XF =
+, and UL = (cid:104)
+(cid:104)
+uT
+xT
+in+2
+in+2
+
+[ri1 Â· Â· Â· riNL
+
+Â· Â· Â· xT
+(cid:105)T
+
++1 Â· Â· Â· riNF
+
+where rik
+
+Â· Â· Â· uT
+iN
+
+Â· Â· Â· xT
+iN
+
+. Fig. 3
+
+in+1
+(cid:105)T
+
+Â· Â· Â· uT
+
+[riNL
+
+uT
+i1
+
+xT
+i1
+
+in+1
+
+(cid:105)T
+
+(cid:105)T
+
+(cid:16)
+
+(cid:16)
+
+Figure 3. Functionality of the cooperative team when HDM
+is active.
+
+shows the functionality of the cooperative control sys-
+tem in HDM. As shown the system has the following
+inputs:
+
+(1) Global desired trajectories of all leaders speciï¬ed
+
+by vector RL(t) at any time t.
+
+(2) Matrix A and B assigned based on the cooperative
+team reference conï¬guration using relation (27).
+
+Leader global desired trajectories can be safely planned
+so that collision with obstacles and inter-agent collision
+are both avoided while the leadersâ distances between ini-
+tial and target states are minimized. Leader path plan-
+ning using A* search and particle swarm optimization
+were previously studied in Refs. [13, 21]. Control inputs
+UL and UF can be assigned using existing approaches
+so the actual trajectory rj is asymptotically tracked rj,c
+for every vehicle j â V; speciï¬c analysis of tracking is
+beyond the scope of this paper.
+
+4.2 Containment Exclusion Mode (CEM)
+
+CEM is activated when there exists at least one vehicle
+experiencing a failure or anomaly in containment domain
+â¦con. Failed agent(s) are wrapped with an exclusion zone
+and healthy agents must be routed or âï¬owâ around.
+Thus, NF (t) < N(t) and |VA(t)| > 0 at any time t when
+CEM is active. For CEM, the coordinate transformation
+deï¬ned in (18) is used to assign the desired agent coor-
+dination. In particular, potential function Ï and stream
+function Ï are determined by combining âUniformâ and
+âDoubletâ ï¬ows:
+
+Ï(x, y, t) =ÏU (x, y, t) + ÏD(x, y, t)
+Ï(x, y, t) =ÏU (x, y, t) + ÏD(x, y, t)
+
+where the subscripts U and D are associated with âUni-
+formâ and âDoubletâ, respectively. For the uniform ï¬ow
+pattern,
+
+ÏU (x, y, t) = uâ(t) (x cos Î¸â(t) + y sin Î¸â(t))
+
+(38a)
+
+ÏU (x, y, t) = uâ(t) (âx sin Î¸â(t) + y cos Î¸â(t)) ,
+
+(38b)
+
+deï¬ne the potential and stream ï¬elds, respectively,
+where uâ(t) and Î¸â(t) are design parameters. Further-
+more,
+
+ÏD = (cid:213)
+
+ÏD,i
+
+and
+
+ÏD = (cid:213)
+
+ÏD,i,
+
+i âVA
+
+i âVA
+
+deï¬ne potential and stream ï¬elds of the Doublet ï¬ow,
+respectively, where
+
+ÏD,i = Î´i(t) [cos Î³i(t) (x â ai(t)) + sin Î³i(t) (y â bi(t))]
+
+,
+
+(x â ai(t))2 + (y â bi(t))2
+
+(x â ai(t))2 + (y â bi(t))2
+
+(39a)
+ÏD,i = Î´i(t) [â sin Î³i(t) (x â ai(t)) + cos Î³i(t) (y â bi(t))]
+(39b)
+and âi, ai, bi are design parameters specifying the ge-
+ometry and location of anomalous/failed agent i â VA in
+the motion space. By treating agent coordination as ideal
+ï¬uid ï¬ow, we can exclude failed agent i â VA by wrap-
+ping them with a closed surface Ï(x, y, t) = Ïi,0, where
+Ïi,0 is constant. Furthermore, healthy vehicle j â VH
+moves along the global desired trajectories
+
+,
+
+Ïj,c(t) = Ï(xj,c(t), yj,c(t), t) = Ïj,0 (constant).
+
+(40)
+
+where Ïj,0 is assigned based on position of vehicle j â VH
+at the time the cooperative team enters the CEM.
+Theorem 2. Suppose J (cid:0)xj, yj
+(cid:1) is the Jacobian matrix
+deï¬ned by (21), and the desired trajectory of every agent
+
+9
+
+j â VH satisï¬es Eq. (20). Deï¬ne
+
+Hs, j = â
+
+1
+(cid:12)
+(cid:12)J (cid:0)xj, yj
+
+(cid:1)(cid:12)
+(cid:12)
+
+âÏ
+â yj,c
+âÏ
+â
+â xj,c
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+(cid:20) âÏ
+âuâ
+
+(cid:21)
+
+âÏ
+âÎ¸â
+
+(41a)
+
+Ha, j,il
+
+= â
+
+1
+(cid:12)
+(cid:12)J (cid:0)xj, yj
+
+(cid:1)(cid:12)
+(cid:12)
+
+âÏ
+â yj,c
+âÏ
+â
+â xj,c
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+(cid:20) âÏ
+âail
+
+âÏ
+âbil
+
+(cid:21)
+
+,
+
+âÏ
+ââil
+
+l = NF + 1, Â· Â· Â· , N,
+
+(cid:1)(cid:12)
+(cid:12)
+
+âÏ
+ï£®
+ï£¯
+â yj,c
+ï£¯
+ï£¯
+âÏ
+ï£¯
+â
+ï£¯
+â xj,c
+ï£¯
+ï£°
+(cid:105)T
+(cid:219)uâ (cid:219)Î¸â
+
+,
+
+,
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+(41b)
+
+(41c)
+
+(41d)
+
+HT, j =
+
+1
+(cid:12)
+(cid:12)J (cid:0)xj, yj
+
+(cid:219)qc,CEM = (cid:104)
+
+(cid:219)qu,CEM = (cid:104)
+
+(cid:219)biNF
+
++1
+
+(cid:219)aiNF
+
+,
+(41e)
+Then, the CEM global desired trajectory can be deï¬ned
+by Eq. (17), where Î³ = CEM,
+
++1 Â· Â· Â· (cid:219)aiN
+
++1
+
+(cid:219)biN
+
+(cid:219)âiN
+
+(cid:219)âiNF
+
+(cid:105)T
+
+Design parameters (cid:219)uâ, (cid:219)Î¸â, (cid:219)âi, (cid:219)ai, (cid:219)bi (i â VA), and vÏ,
+obtained by taking time derivative from the generalized
+coordinates, deï¬ne group desired coordination for CEM.
+Note that uâ and Î¸â can be designed so that the ideal
+ï¬uid ï¬ow coordination is optimized. However, the re-
+maining design parameters are uncontrolled.
+Remark 1. In general, design parameters (cid:219)uâ, (cid:219)Î¸â, (cid:219)âi,
+(cid:219)ai, (cid:219)bi (i â VA) can vary with time. However, this paper
+concentrates only on the steady-state CEM which will be
+achieved when (cid:219)uâ, (cid:219)Î¸â, (cid:219)âi, (cid:219)ai, (cid:219)bi (i â VA) are all zeros.
+Therefore, potential and stream functions are deï¬ned by
+Eqs. (38), and (39) simpliï¬es to
+
+j â VH,
+
+=
+
+(cid:219)xj,c
+(cid:219)yj,c
+(cid:219)zj,c
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+1
+
+0
+
+0
+âz j, c
+âx j, c
+
+1
+âz j, c
+âyj, c
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+HT, j vÏ.
+
+This requires an assumption for this work that the failed
+vehicle i â VA remains inside a predictable closed do-
+main, with time-invariant geometry, until the time the
+failed agent is no longer in containment domain â¦con
+deï¬ned per Eq. (13).
+
+â R3+3(N âNF )Ã1,
+
+(42a)
+
+ment
+
+5 Continuum Deformation Anomaly Manage-
+
+(cid:219)qCEM =
+
+(cid:219)qc,CEM
+(cid:219)qu,CEM
+vÏ
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+1
+
+0
+
+0
+âz j, c
+âx j, c
+
+1
+âz j, c
+âyj, c
+
+ï£®
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+Hj,CEM =
+
+(cid:104)
+
+Hs Ha,iNF
+
++1 Â· Â· Â· Ha,iN HT, j
+
+(cid:105)
+
+(42b)
+for every agent j â VH , where vÏ = âÏ
+is the desired
+ât
+sliding speed of healthy vehicles along their desired stream
+lines.
+
+Proof. Per the prescribed CEM protocol vehicle i slides
+along the stream line Ïj,c = Ïj,0 at any time t. Eq. (20)
+must be satisï¬ed at every point (xj,c, yj,c) and any time t.
+Given the sliding speed vÏ, the following relation holds:
+
+âÏ
+â xj,c
+
+(cid:213)
+
+â
+
+i âVA
+
+(cid:219)yj,c = â
+
+(cid:219)xj,c + âÏ
+â yj,c
+(cid:18) âÏ
+(cid:219)ai + âÏ
+âbi
+âai
+
+âÏ
+âuâ
+(cid:219)bi + âÏ
+ââi
+
+(cid:219)uâ â
+
+âÏ
+âÎ¸â
+
+(cid:219)Î¸â
+
+(cid:19)
+
+(cid:219)âi
+
++ vÏ,
+
+âÏ
+â xj,c
+
+(cid:219)xj,c + âÏ
+â yj,c
+
+(cid:219)yj,c = 0.
+
+(43a)
+
+(43b)
+
+Therefore, x and y components of agent j â VH global
+desired trajectory are updated by (17), where Hj,CEM
+and (cid:219)qCEM are given by Eq. (42) for agent j â VH at any
+time t. (cid:3)
+
+10
+
+This section develops a hybrid model to manage tran-
+sitions between CEM and HDM. Section 5.1 develops a
+distributed approach to detect a vehicle failure/anomaly
+followed by a supervisory control transition approach
+described in Section 5.2.
+
+5.1 Anomaly Detection
+
+In this sub-section, we present a distributed model to
+detect situations in which agents have failed or are
+no longer cooperative. We then consider these agents
+anomalous or failed and add them to anomalous agent
+set VA.
+
+Consider an n-D homogeneous deformation where fol-
+lower i knows its own position and positions of in-
+neighbor agents Ni = { j1, Â· Â· Â· jn+1} at any time t. Let
+actual position ri(t) be expressed as the convex combi-
+nation of agent iâs in-neighbors by
+
+i â VF,
+
+ri(t) =
+
+n+1
+(cid:213)
+
+k=1
+
+(cid:36)i, jk (t)rjk .
+
+(44a)
+
+i â VF,
+
+n+1
+(cid:213)
+
+(cid:36)i, jk (t) = 1,
+
+(44b)
+
+k=1
+where (cid:36)i, j1 through (cid:36)i, jn+1 are called transient weights.
+(cid:0)rj1(t), Â· Â· Â· , rjn+1 (t)(cid:1) = n, transient weights (cid:36)i, j1
+If (cid:60)n
+
+through (cid:36)i, jn+1 can be assigned based on agentsâ actual
+positions as follows:
+
+(cid:104)
+
+(cid:36)i, j1 (t) Â· Â· Â· (cid:36)i, j4 (t)
+
+(cid:105)T
+
+(cid:16)
+
+= Î
+
+rj1, rj2, rj3, rn
+j4
+
+, rn
+i
+
+(cid:17)
+
+,
+
+(45)
+
+where
+
+rn
+j4
+
+(t) =
+
+(cid:26)rj4 (t)
+rj1
+
++ Î (cid:0)rj3,0 â rj1,0
+
+(cid:1) Ã (cid:0)rj2,0 â pj1,0
+
+(cid:1)
+
+i,0 (t) =
+rn
+
+(cid:26)ri
+ri â (ri Â· n1â4) n1â4
+
+n = 3
+n = 2
+
+,
+
+n = 3
+n = 2
+
+,
+
+(46a)
+
+(46b)
+
+Î3
+
+(cid:0)rj1(t), rj2 (t), rj3(t), rj4 (t), (cid:1) = 3.
+(47)
+and n1â4 = n1â4(rj1, rj2, rj3) is determined based on
+agentsâ actual positions using Eq. (6) when n = 2.
+Geometric Interpretation of Transient Weights:
+Let di, j2, j3(t), di, j3, j1 (t), and di, j1, j2(t) denote distances of
+point i from the triangle sides j2 â j3, j3 â j1, and j1 â j2,
+respectively. Assume lj1, j2, j3 (t), lj2, j3, j1(t), lj3, j1, j2(t) de-
+termine distances of vertices j1,
+j2, and j3 from the
+triangle sides j2 â j3, j3 â j1, j1 â j2, respectively. Then,
+
+(cid:36)i, j1 (t) =
+
+(cid:36)i, j2(t) =
+
+(cid:36)i, j3(t) =
+
+di, j2, j3
+lj1, j2, j3
+
+,
+
+di, j3, j1
+lj2, j3, j1
+di, j1, j2
+lj3, j1, j2
+
+,
+
+.
+
+(48a)
+
+(48b)
+
+(48c)
+
+Geometric representations of di, j2 j3(t) and lj1, j2 j3(t) are
+shown in Fig. 4 (a) when n = 2.
+
+For n = 3, di, j2, j3, j4 (t), di, j3, j4 j1 (t), di, j4, j1, j2(t), and
+di, j1, j2, j3(t) denote distance of point i from the triangular
+surfaces j2 â j3 â j4, j3 â j4 â j1, j4 â j1 â j2, j1 â j2 â j3, re-
+spectively. Assume lj1, j2, j3, j4 (t), lj2, j3, j4, j1(t), lj3, j4, j1, j2 (t),
+and lj4, j1, j2, j3 determine distance of vertices j1, j2, j3,
+and j4, from the triangular surfaces j2â j3â j4, j3â j4â j1,
+j4 â j1 â j2, and j1 â j2 â j3 respectively. Then,
+
+(cid:36)i, j1 (t) =
+
+di, j2, j3, j4
+lj1, j2, j3, j4
+
+,
+
+(cid:36)i, j2(t) =
+
+(cid:36)i, j3(t) =
+
+(cid:36)i, j4(t) =
+
+di, j3, j4, j1(t)
+lj2, j3, j4, j1(t)
+di, j4, j1, j2(t)
+lj3, j4, j1, j1(t)
+di, j4, j1, j2(t)
+lj3, j4, j1, j1(t)
+
+,
+
+,
+
+.
+
+(49a)
+
+(49b)
+
+(49c)
+
+(49d)
+
+11
+
+Theorem 3. Assume HDM collective motion is guided
+by n + 1 leaders, deï¬ned by VL, every follower i â VF ,
+communicates with n + 1 in-neighbor agents, deï¬ned by
+Ni = { j1, Â· Â· Â· , jn+1}, where follower iâs in-neighbors form
+an n-D simplex at time t. If deviation of every agent i â V
+from the global desired position ri,c is less than â at time
+t ((cid:12)
+(cid:12) â¤ â), then followersâ communication
+weights satisfy the following inequality:
+
+(cid:12)ri(t) â ri,c(t)(cid:12)
+
+(cid:36)min
+i, j1
+
+(t) â¤ wi, j1 â¤ (cid:36)max
+i, j1
+
+(t),
+
+(50)
+
+where wi, j is constant communication wight of follower
+i â V with in-neighbor j1 assigned by Eq. (24), and
+
+(cid:36)min
+i, j1
+
+(t) =
+
+(cid:36)max
+i, j1
+
+(t) =
+
+di, j2, j3(t) â â
+lj1, j2, j3 (t) + 2â
+di, j2, j3, j4(t) â â
++ 2â
+lj1, j2, j3, j4
+
+ï£±ï£´ï£´ï£´ï£´ï£²
+ï£´ï£´ï£´ï£´
+ï£³
+di, j2, j3, j4 (t) + 2â
+lj1, j2, j3(t) â â
+di, j2, j3, j4 (t) + 2â
+lj1, j2, j3, j4 â â
+
+ï£±ï£´ï£´ï£´ï£´ï£²
+ï£´ï£´ï£´ï£´
+ï£³
+
+n = 2
+
+n = 3
+
+,
+
+n = 2
+
+n = 3
+
+.
+
+(51a)
+
+(51b)
+
+specify lower and upper bounds for transient weight
+(cid:36)i, j1(t) at time t.
+
+Proof. If ri(t) = ri,c(t) for every agent i â V at any
+time t, then (cid:36)i, jk (t) = wi, jk (k = 1, Â· Â· Â· , n + 1, jk â Ni).
+For n = 2, we deï¬ne a desired triangle j1 â j2 â j3 with
+vertices placed at rj1,c, rj2,c, and rj3,c. Di, j2, j3 denotes
+the distance between the global desired position of agent
+i and the triangle side j2, j3 while Lj1, j2, j3 denotes the
+distance between the desired position of agent j1 and the
+side j2 â j3 of the desired tetrahedron. We also deï¬ne
+an âactualâ triangle with vertices positioned at rj1, rj2,
+and rj3. When (cid:107)ri(t) â ri,c(t)(cid:107) â¤ â is satisï¬ed for agent
+i â V, then,
+
+di, j2, j3(t) â 2â â¤ Di, j2, j3(t) â¤ di, j2, j3(t) + 2â,
+
+(52a)
+
+(cid:21)
+
+,
+
+â
+
+=
+
+Di, j2, j3(t)
+Li, j2, j3(t)
+
+(cid:20) di, j2, j3 â 2â
++ 2â
+Li, j2, j3
+
+li, j2, j3(t) â 2â â¤ Li, j2, j3(t) â¤ li, j2, j3(t) + 2â.
+
+(52b)
++ 2â
+di, j2, j3
+Therefore, wi, j1
+Li, j2, j3 â 2â
+(See Fig. 4). For n = 3, vertices of the desired tetrahe-
+dron j1 â j2 â j3 â j4 are placed at rj1,c, rj2,c, rj3,c, and
+rj4,c; vertices of the âactualâ tetrahedron are positioned
+at rj1 , rj2, rj3, and rj3. Di, j1, j2, j3 denotes the distance
+between the global desired position of agent i and the
+tetrahedron surface j2, j3, j4. Lj1, j2, j3 denotes the dis-
+tance between the desired position of agent j and the
+surface j2 â j3 â j4 of the desired tetrahedron. Assuming
+every agent i â V satisï¬es safety constraint (34),
+
+di, j2, j3, j4(t) â 2â â¤ Di, j2, j3, j4 (t) â¤ di, j2, j3, j4 (t) + 2â, (53a)
+
+li, j2, j3, j4(t) â 2â â¤ Li, j2, j3, j4(t) â¤ li, j2, j3, j4 (t) + 2â, (53b)
+Therefore,
+
+wi, j1
+
+=
+
+Di, j2, j3, j4 (t)
+Li, j2, j3, j4 (t)
+
+â
+
+(cid:20) di, j2, j3, j4 â 2â
++ 2â
+Li, j2, j3, j4
+
+,
+
++ 2â
+di, j2, j3, j4
+Li, j2, j3, j4 â 2â
+
+(cid:21)
+
+.
+
+(cid:3)
+
+(a)
+
+(b)
+Figure 4. (a) âActualâ triangle constructed by the actual po-
+sitions of agents j1, j2, and j3 at time t. (b) Desired triangle
+given by the global desired positions of agents j1, j2, and j3
+at time t.
+
+Theorem 3 implies that HDM mode is active only if the
+following condition is satisï¬ed:
+
+Figure 5. Failed vehicle assignment and management by co-
+operative team leaders.
+
+(1) Deï¬ne containment domain â¦con (r, rcon(t)) using
+
+Eq. (13).
+
+(2) If there exists at least one failed agent inside the
+
+containment domain â¦con (r, rcon(t)), then
+
+N (t)
+(cid:219)
+
+n+1
+(cid:219)
+
+i=1
+
+k=1
+
+Î¨i, jk
+
+is not satisï¬ed and CEM is activated.
+
+(3) If agents contained by â¦con (r, rcon(t)) are all
+(cid:211)n+1
+healthy, then (cid:211)N (t)
+k=1 Î¨i, jk is satisï¬ed which in
+i=1
+turn implies that VA = â and HDM is active.
+
+6 Simulation Results
+
+Consider collective motion in a 2-D plane with invariant
+z components for all agents at all times t. Suppose a
+multi-agent team consisting of 22 vehicles is deployed
+with the initial formation shown in Fig. 2. Given global
+desired positions of all agents at time t, the containment
+domain â¦com is deï¬ned for this case study as:
+
+â¦con = (cid:107)r â rcon (cid:107)1 â¤ 40,
+
+(cid:36)min
+i, jk
+
+âi â V, k = 1, Â· Â· Â· , n + 1,
+
+(t) â¤ wi, jk â¤ (cid:36)max
+(t).,
+i, jk
+(Î¨i, jk )
+where Ni = { j1, Â· Â· Â· , jn+1} deï¬nes in-neighbors of agent
+(cid:211)n+1
+i â V. Therefore, if (cid:211)N (t)
+k=1 Î¨i, jk is satisï¬ed at time
+i=1
+t, HDM is active. Otherwise, an anomaly is detected.
+Additionally, disjoint sets VH and VA are deï¬ned as
+follows:
+
+VH (t) =
+
+(cid:40)
+
+(cid:12)
+(cid:12)
+j â V(t)
+(cid:12)
+(cid:12)
+
+(cid:219)
+
+h âNh
+
+(cid:41)
+
+Î¨i, jk is satisï¬ed.
+
+,
+
+(54a)
+
+where rcon = 1
+N(t)
+Therefore, â¦con is a box with side length 80m.
+
+i âVH and (cid:107) Â· (cid:107)1 denotes the 1-norm.
+
+(cid:205)
+
+Without loss of generality, assume that every agent is a
+single integrator. The position of each agent i is updated
+by
+
+i â V,
+
+(55)
+where g = 25 is constant, ri is the actual position of agent
+i, and local desired position ri,d was deï¬ned in Eq. (28).
+
+(cid:219)ri = g(ri,d â ri),
+
+VA(t) = V(t) \ VH (t).
+
+(54b)
+
+6.1 Motion Phase 1 (HDM)
+
+5.2 Vehicle Anomaly/Failure Management
+
+The Fig. 5 ï¬owchart illustrates how vehicle failure can
+be managed by transition between âHDMâ and âCEMâ.
+The following procedure is proposed:
+
+Team collective motion is deï¬ned by a homogeneous
+transformation over t â [0, 100], where agents are all
+healthy. Agents i1 = 1, i2 = 2, and i3 = 3 are the leaders
+deï¬ning the homogeneous transformation. Given lead-
+ersâ desired trajectories, eigenvalues of the desired homo-
+geneous deformation coordination, denoted by Ï1 and
+
+12
+
+(a)
+
+6.2 Motion Phase 2 (CEM)
+
+Suppose agent 11 fails at time t = 100. This failure is
+quickly detected by the team using the distributed fail-
+ure detection method developed in Section 5. As shown
+in Figs. 8 (a),(c),(d), conditions (cid:36)min
+11,13(t) â¤ w11,13 â¤
+11,8(t) â¤ w11,8 â¤ (cid:36)max
+(cid:36)max
+11,13(t), (cid:36)min
+11,6(t) â¤
+w11,6 â¤ (cid:36)max
+11,6 (t) (cid:36)11 are satisï¬ed over t â [0, 100]s.
+11,6(t) â¤ w11,6 â¤ (cid:36)max
+However, condition (cid:36)min
+11,6 (t) is vio-
+lated at t = 100.34 when (cid:36)min
+11,6(100.34) > w11,6. There-
+fore, CEM is activated, and healthy agent coordination
+is treated as an ideal ï¬uid ï¬ow after 100.35s. The ideal
+ï¬uid ï¬ow coordination is deï¬ned by combining âUni-
+formâ and âDoubletâ ï¬ow patterns. Anomalous agent
+11 is wrapped by a disk of radius a = 4m resulted from
+
+11,8 (t), and (cid:36)min
+
+choosing uâ = 10, and Î´ = 160, i.e. a =
+The remaining healthy vehicles slide along level curves
+Ïi,c(t) = Ïi,0, where each Ïi,0 is determined based on
+agent iâs position at t = 100.35s.
+
+= 4m.
+
+(cid:114) Î´
+uâ
+
+(b)
+Figure 6. (a,b) x and y components of actual positions of
+agents versus time for t â [0, 168.91]s. HDM is initially ac-
+tive over t â [0, 100]s. Agent 11 is ï¬agged anomalous at time
+t â [100, 100.35]s thus CEM is activated. At t = 118.92s,
+agent 11 is no longer inside the containment box â¦con. There-
+fore, HDM is activated.
+
+Figure 7. Homogeneous deformation eigenvalues Ï1 and Ï2
+versus time for t â [0, 100]s.
+
+Ï2, are plotted versus time in Fig. 7. Note that Ï3(t) = 1
+at any time t because agents are treated as particles of
+a 2-D continuum and the desired homogenous deforma-
+tion coordination is also two dimensional. Follower ve-
+hicles apply the communication graph shown in Fig. 2
+to acquire the desired coordination by local communi-
+cation. The communication graph is strictly 3-reachable
+per Section 4.1. Given initial positions of all agents, ev-
+ery follower chooses three in-neighbor agents using the
+approach described in Section 4.1. Consequently, the
+graph shown in Fig. 4.1 assigns inter-agent communica-
+tion, where followersâ communication weights are con-
+sistent with agentsâ positions at reference time t = 0 and
+obtained by (24). As shown Fig. 4, HDM is active before
+an anomaly situation arises at time t = 100s.
+
+13
+
+In Fig. 9, actual paths of the healthy agents, de-
+ï¬ned by VH = {1, Â· Â· Â· , 10, 12, Â· Â· Â· , 22} are shown for
+t â [100.35, 118.92]. Green markers show positions of
+healthy agents at t = 100.35s when they enter CEM;
+black markers show positions of healthy agents at
+t = 118.92s when CEM ends. Failed agent 11 is wrapped
+by a disk of radius 4m centered at (205.26, 55.62) in this
+example.
+
+6.3 Motion Phase 3 (HDM)
+
+CEM continues until switching time 118.92s when failed
+agent 11 leaves containment box â¦con. Fig. 10 shows the
+agentsâ conï¬guration at time t = 118.92. Followers use
+the method from Section 4.1 to ï¬nd their in-neighbors
+as well as communication weights. HDM remains active
+after t = 118.92 since no other agents fail in this sim-
+ulation. x and y components of actual agent positions
+were plotted versus time for t â [118.92, 168.92]s earlier
+in Fig. 6.
+
+7 Conclusion
+
+This paper develops a hybrid cooperative control strat-
+egy with two operational modes to manage large-scale
+coordination of agents in a resilient fashion. The ï¬rst
+mode (HDM) treats agents as particles of a deformable
+body and is active when all agents are healthy. HDM
+guarantees agents can safely initialize and coordinate
+their motions using the unique features of homogeneous
+deformation coordination. A new CEM cooperative
+paradigm was proposed to handle cases in which one or
+more vehicles in the shared motion space fail to admit
+the desired coordination. In CEM the desired vehicle
+coordination is treated as an ideal ï¬uid ï¬ow and failed
+
+(a)
+
+(b)
+
+(c)
+
+(d)
+
+Figure 9. Paths of healthy agents over t â [100.35, 118.92]
+when CEM is active. The green and block markers show
+positions of agents at times 100.35 and 118.92, respectively.
+Failed agent 11 is wrapped by a disk of radius 4m centered
+at (205.26, 55.62) when CEM is active.
+
+(e)
+
+(f)
+11,13(t), and (cid:36)max
+11,13(t)
+
+11,8(t), and (cid:36)max
+
+Figure 8. Weights w11,13, (cid:36)min
+for
+(a) t â [0, 100] and (b) t â [100.01, 100.35]. Weights
+w11,8, (cid:36)min
+11,8 (t) for (c) t â [0, 100] and (d)
+t â [100.01, 100.35]. Weights w11,6, (cid:36)min
+11,6 (t) for
+(e) t â [0, 100] and (f) t â [100.01, 100.35]. Anomalous motion
+in agent 11 is detected in 0.34s when (cid:36)min
+11,6(100.34) > w11,6.
+
+11,6(t), and (cid:36)max
+
+vehicles are excluded by closed curves. Therefore, de-
+sired trajectories for the remaining healthy vehicles can
+be planned and collective motion safety for healthy
+vehicles can still be guaranteed with low computation
+overhead. To automatically initiate transition to CEM,
+this paper contributes a strategy for quickly detecting
+agent failure using the unique properties of the ho-
+mogeneous deformation coordination. Future work is
+needed to relax motion constraints on failed vehicles
+and present simulation results with realistic vehicle
+dynamics and more complex environments.
+
+Acknowledgements
+
+This work has been supported by the National Science
+Foundation under Award Nos. 1739525 and 1914581.
+
+References
+
+[1] Rudy Cepeda-Gomez and Nejat Olgac. Exhaustive stability
+analysis in a consensus system with time delay and irregular
+
+Figure 10. Formation of agents at time t = 118.92s. Failed
+agent 11 is outside the containment region â¦con. HDM is
+activated and inter-agent communication is established using
+the procedure developed in Section 4.1.
+
+topologies. International Journal of Control, 84(4):746â757,
+2011.
+
+[2] Teng-Hu Cheng, Zhen Kan, Justin R Klotz, John M Shea,
+and Warren E Dixon. Event-triggered control of multiagent
+systems for ï¬xed and time-varying network topologies. IEEE
+Transactions on Automatic Control, 62(10):5365â5371, 2017.
+
+[3] Michael Defoort, Andrey Polyakov, Guillaume Demesure,
+Mohamed Djemai, and Kalyana Veluvolu. Leader-follower
+ï¬xed-time consensus for multi-agent systems with unknown
+IET Control Theory &
+non-linear inherent dynamics.
+Applications, 9(14):2165â2170, 2015.
+
+[4] Seyed Mehran Dibaji and Hideaki Ishii. Resilient consensus
+of second-order agent networks: Asynchronous update rules
+with delays. Automatica, 81:123â132, 2017.
+
+[5] Wenying Hou, Minyue Fu, Huanshui Zhang, and Zongze Wu.
+Consensus conditions for general second-order multi-agent
+systems with communication delay. Automatica, 75:293â298,
+2017.
+
+14
+
+[6] Meng Ji, Giancarlo Ferrari-Trecate, Magnus Egerstedt, and
+Annalisa Buï¬a. Containment control in mobile networks.
+IEEE Transactions on Automatic Control, 53(8):1972â1975,
+2008.
+
+[24] Wei Ren and Randal Beard. Virtual structure based
+spacecraft formation control with formation feedback.
+In
+AIAA Guidance, Navigation, and control conference and
+exhibit, page 4963, 2002.
+
+[7] Jae Man Kim, Jin Bae Park, and Yoon Ho Choi. Leaderless
+and leader-following consensus for heterogeneous multi-agent
+systems with random link failures. IET Control Theory &
+Applications, 8(1):51â60, 2014.
+
+[25] Wei Ren and Randal Beard.
+
+Decentralized scheme
+for spacecraft formation ï¬ying via the virtual structure
+approach. Journal of Guidance, Control, and Dynamics,
+27(1):73â82, 2004.
+
+[26] Yilun Shang. Resilient consensus of switched multi-agent
+systems. Systems & Control Letters, 122:12â18, 2018.
+
+[27] Jun Shen and James Lam.
+
+Containment control of
+multi-agent systems with unbounded communication delays.
+International Journal of Systems Science, 47(9):2048â2057,
+2016.
+
+[28] Housheng Su, Yanyan Ye, Yuan Qiu, Yang Cao, and
+Michael ZQ Chen. Semi-global output consensus for discrete-
+time switching networked systems subject to input saturation
+and external disturbances. IEEE transactions on cybernetics,
+2018.
+
+[29] Xiangyu Wang, Shihua Li, and Peng Shi. Distributed ï¬nite-
+time containment control for double-integrator multiagent
+systems.
+IEEE Transactions on Cybernetics, 44(9):1518â
+1528, 2013.
+
+[30] MA Wiering. Multi-agent reinforcement learning for traï¬c
+light control.
+In Machine Learning: Proceedings of the
+Seventeenth International Conference (ICMLâ2000), pages
+1151â1158, 2000.
+
+[31] Jian Wu, Shenfang Yuan, Sai Ji, Genyuan Zhou, Yang Wang,
+and Zilong Wang. Multi-agent system design and evaluation
+for collaborative wireless sensor network in large structure
+Expert Systems with Applications,
+health monitoring.
+37(3):2028â2036, 2010.
+
+[32] Feng Xiao, Long Wang, Jie Chen, and Yanping Gao. Finite-
+time formation control for multi-agent systems. Automatica,
+45(11):2605â2611, 2009.
+
+[33] Quan Xiong, Peng Lin, Wei Ren, Chunhua Yang, and Weihua
+Gui. Containment control
+for discrete-time multiagent
+systems with communication delays and switching topologies.
+IEEE transactions on cybernetics, 2018.
+
+[34] Shuanghe Yu and Xiaojun Long. Finite-time consensus
+for second-order multi-agent systems with disturbances by
+integral sliding mode. Automatica, 54:158â165, 2015.
+
+[35] Yu Zhao, Zhisheng Duan, Guanghui Wen, and Yanjiao
+Zhang. Distributed ï¬nite-time tracking control for multi-
+Systems &
+agent systems: an observer-based approach.
+Control Letters, 62(1):22â28, 2013.
+
+[36] Zongyu Zuo and Lin Tie.
+
+Distributed robust ï¬nite-
+time nonlinear consensus protocols for multi-agent systems.
+International Journal of Systems Science, 47(6):1366â1375,
+2016.
+
+[8] W Michael Lai, David H Rubin, Erhard Krempl, and David
+Rubin. Introduction to continuum mechanics. Butterworth-
+Heinemann, 2009.
+
+[9] Heath J LeBlanc. Resilient cooperative control of networked
+
+multi-agent systems. Vanderbilt University, 2012.
+
+[10] Heath J LeBlanc, Haotian Zhang, Xenofon Koutsoukos,
+and Shreyas Sundaram. Resilient asymptotic consensus
+IEEE Journal on Selected Areas in
+in robust networks.
+Communications, 31(4):766â781, 2013.
+
+[11] Wuquan Li, Lihua Xie, and Ji-Feng Zhang. Containment
+control
+systems with
+leader-following multi-agent
+markovian switching network topologies and measurement
+noises. Automatica, 51:263â267, 2015.
+
+of
+
+[12] Zhiqiang Li, F Richard Yu, and Minyi Huang.
+
+A
+distributed consensus-based cooperative spectrum-sensing
+scheme in cognitive radios. IEEE Transactions on Vehicular
+Technology, 59(1):383â393, 2009.
+
+[13] Zihao Liang, Hossein Rastgoftar, and Ella M Atkins. Multi-
+quadcopter team leader path planning using particle swarm
+optimization.
+In AIAA Aviation 2019 Forum, page 3258,
+2019.
+
+[14] Peng Lin and Yingmin Jia. Consensus of second-order
+discrete-time multi-agent systems with nonuniform time-
+delays and dynamically changing topologies. Automatica,
+45(9):2154â2158, 2009.
+
+[15] Xue Lin and Yuanshi Zheng. Finite-time consensus of
+IEEE Transactions on
+systems.
+switched multiagent
+Systems, Man, and Cybernetics: Systems, 47(7):1535â1545,
+2016.
+
+Stationary consensus
+[16] Cheng-Lin Liu and Fei Liu.
+of heterogeneous multi-agent
+systems with bounded
+communication delays. Automatica, 47(9):2130â2133, 2011.
+
+[17] Huiyang Liu, Guangming Xie, and Long Wang. Necessary
+and suï¬cient conditions for containment control of networked
+multi-agent systems. Automatica, 48(7):1415â1422, 2012.
+
+[18] Nathan Michael, Jonathan Fink, and Vijay Kumar.
+Cooperative manipulation and transportation with aerial
+robots. Autonomous Robots, 30(1):73â86, 2011.
+
+[19] Antonis Papachristodoulou, Ali Jadbabaie, and Ulrich Munz.
+Eï¬ects of delay in multi-agent consensus and oscillator
+synchronization.
+IEEE transactions on automatic control,
+55(6):1471â1477, 2010.
+
+[20] Hossein Rastgoftar. Continuum deformation of multi-agent
+
+systems. Springer, 2016.
+
+[21] Hossein Rastgoftar and Ella M Atkins.
+
+Multi-uav
+continuum deformation ï¬ight optimization in cluttered urban
+environments. In AIAA Scitech 2019 Forum, page 0914, 2019.
+
+[22] Hossein Rastgoftar and Suhada Jayasuriya. Evolution of
+Journal of Dynamic
+
+multi-agent systems as continua.
+Systems, Measurement, and Control, 136(4):041014, 2014.
+
+[23] Hossein Rastgoftar, Jean-Baptiste Jeannin, and Ella Atkins.
+Formal speciï¬cation of continuum deformation coordination.
+In 2019 American Control Conference (ACC), pages 3358â
+3363. IEEE, 2019.
+
+15
+
+

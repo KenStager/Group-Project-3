@@ -1,0 +1,1480 @@
+5
+1
+0
+2
+
+y
+a
+M
+5
+1
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+1
+v
+2
+4
+1
+4
+0
+.
+5
+0
+5
+1
+:
+v
+i
+X
+r
+a
+
+An informational study of the evolution of codes and of
+
+emerging concepts in populations of agents
+
+AndrÂ´es C. Burgos1
+
+Daniel Polani2
+
+1,2Adaptive Systems Research Group, University of Hertfordshire, Hatï¬eld, UK
+
+1Email address: a.c.burgos@herts.ac.uk, Tel: +44 1707 28 4490
+
+Abstract
+
+We consider the problem of the evolution of a code within a structured population of
+
+agents. The agents try to maximise their information about their environment by acquiring
+
+information from the outputs of other agents in the population. A naive use of information-
+
+theoretic methods would assume that every agent knows how to âinterpretâ the information
+
+oï¬ered by other agents. However, this assumes that one âknowsâ which other agents one
+
+observes, and thus which code they use. In our model, however, we wish to preclude that:
+
+it is not clear which other agents an agent is observing, and the resulting usable information
+
+is therefore inï¬uenced by the universality of the code used and by which agents an agent is
+
+âlisteningâ to. We further investigate whether an agent who does not directly perceive the
+
+environment can distinguish states by observing other agentsâ outputs. For this purpose, we
+
+consider a population of diï¬erent types of agents âtalkingâ about diï¬erent concepts, and try
+
+to extract new ones by considering their outputs only.
+
+Keywords: information theory, code evolution, semantics, emerging concepts
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+1
+
+Introduction
+
+If we consider organisms capable of processing information, then we can argue that they must
+
+be able to internally assign meaning to the symbols they perceive in a code-based manner [10].
+
+For instance, bacteria perceives chemical molecules in their environment and interprets them
+
+in order to better estimate environmental conditions and (stochastically) decide their phenotype
+
+[24, 1, 23, 27]. Plants detect airborne signals released by other plants, being able to interpret them
+
+as attacks of pathogens or herbivores [13, 29]. Therefore, a correspondence between environmental
+
+conditions and chemical molecules must be established. It is in this way that Barbieri characterises
+
+codes, and he proposes three fundamental characteristics for them: they connect two independent
+
+worlds; they add meaning to information; and they are community rules [2].
+
+Codes connect two independent worlds by establishing a correspondence or mapping between
+
+them. These worlds are independent and thus there are no material constraints for establishing
+
+arbitrary mappings. The meaning of information comes exclusively from the mapping: symbols by
+
+themselves are meaningless. Finally, the third property requires that the correspondence between
+
+the two worlds constitutes an integrated system.
+
+For instance, human languages establish a correspondence between words and objects [2];
+
+in bacteria it is between chemical molecules and environmental and social conditions [35, 36].
+
+Words (or chemical molecules) by themselves do not have any meaning, and each individual of
+
+a population can deï¬ne, arbitrarily to some extent, their own set with its mapping. However,
+
+populations of individuals sharing the same code are ubiquitous in nature. How is it that codes
+
+come to be shared by many individuals when their constitution involve arbitrary choices for each
+
+individual? This question is what we are investigating in the present paper.
+
+For this work, we assume a simple scenario where organisms live in a ï¬uctuating environment.
+
+If they can perfectly predict the future environmental conditions, they can prepare themselves
+
+by adopting a proper phenotype, and, therefore, survive. However, when uncertainty about the
+
+environment remains, organisms will follow a bet-hedging strategy [31, 28], where they try to
+
+maximise their long-term growth rate by adopting the phenotype that matches the environment
+
+in proportions based on the information they have about it. For example, seeds of annual plants
+
+germinate stochastically in diï¬erent periods in relation to the probability of rainfalls, and their
+
+chances of survival are maximised when they match this probability [6].
+
+The relation between information and long-term growth rate can be expressed elegantly in
+
+information theoretic terms, where an increase in the environmental information of an organism
+
+2
+
+is translated into an increase in its long-term growth rate [30, 17, 18, 8, 26]. Such models achieve
+
+the maximisation of the long-term growth rate by maximising an organismâs information about
+
+the environment.
+
+If we assume this behaviour in organisms, then those obtaining additional
+
+environmental information (other than that from their sensors, which we assume it does not
+
+completely eliminate environmental uncertainty) from other individuals will have an advantage
+
+over those that do not, since they would be able to better predict the future conditions. However,
+
+for individuals to be able to communicate with each other, they must be able to translate symbols
+
+into environmental conditions, where the output of these symbols results from an individualâs
+
+code. We consider the code of an individual as a stochastic mapping from its sensors states to a
+
+set of outputs.
+
+For this study, we consider outputs (or messages) of individuals (or agents) as conventional
+
+signs. In semiotics, the science of all processes in which signs are originated, stored, communicated,
+
+and being eï¬ective [10], two types of signs are traditionally recognised: conventional signs and
+
+natural signs [7]. In conventional signs there is no physical constraint on the possible mappings,
+
+they are established by conventions. Although in physical systems there can be limitations to the
+
+possible mappings that can be implemented, in this work we assume complete freedom of choice.
+
+On the other hand, in natural signs, there is always a physical link between the signiï¬er and
+
+signiï¬ed, such as smoke as a sign of ï¬re, odours as signs of food, etc. [3].
+
+In this work, we are not interested in the particular detailed mechanisms by which an agent
+
+implements its code, nor how the agent decodes the outputs of other agents. Instead, we focus on
+
+the theoretical limits on the amount of environmental information an agent can possibly acquire
+
+resulting from diï¬erent scenarios of population structure and codes distribution. The natural
+
+framework to analyse such quantities is information theory [30]. However, it does not take semantic
+
+aspects into account, it only deals with frequencies of symbols instead of what they symbolise.
+
+Codes, on the other hand, add meaning to information, which makes the integration of sciences
+
+such as semiotics with information theory non-trivial [9, 4]. In the following section, we present
+
+an information-theoretic model which incorporates the necessity of conventions by dropping from
+
+the model the usual implicit assumption of knowing the identity of the communicating units.
+
+2 Model
+
+To introduce the model in a progressive manner, let us ï¬rst consider three agents, Î¸1, Î¸2 and
+
+Î¸3. Each of these agents depend on the same environmental conditions for survival, which are
+
+3
+
+modelled by a random variable Âµ. Agents acquire information about the environment through
+
+their sensors, which are modelled by random variables YÎ¸1, YÎ¸2 and YÎ¸3 , all three conditioned on
+
+Âµ, for agents Î¸1, Î¸2 and Î¸3, respectively. We assume each agent acquires the same amount and
+
+aspects of environmental information from Âµ, i.e. p(YÎ¸1|Âµ) = p(YÎ¸2|Âµ) = p(YÎ¸3 |Âµ). Let us further
+
+assume that the information each agent acquires about the environment does not eliminate its
+
+uncertainty, i.e. H(Âµ|YÎ¸i) > 0 for 1 â¤ i â¤ 3. The code of an agent is a stochastic mapping
+
+from its sensor states into a set of outputs, and is represented by the conditional probabilities
+
+p(XÎ¸1 |YÎ¸1), p(XÎ¸2 |YÎ¸2) and p(XÎ¸3|YÎ¸3) for agents Î¸1, Î¸2 and Î¸3, respectively (see Fig. 1).
+
+Âµ
+
+YÎ¸1
+
+YÎ¸2
+
+YÎ¸3
+
+XÎ¸1
+
+XÎ¸2
+
+XÎ¸3
+
+Figure 1: Bayesian network representing the relantionship between the sensor and output variables of
+
+three agents.
+
+Let us assume that agent Î¸1 perceives only the outputs of agents Î¸2 and Î¸3. One possible
+
+way of computing the information about the environment agent Î¸1 has is to consider the mutual
+
+information between Âµ and the joint distribution of the sensor of Î¸1 and the outputs of Î¸2 and
+
+Î¸3: I(Âµ; YÎ¸1, XÎ¸2, XÎ¸3). However, by writing down this quantity, we are implicitly assuming that
+
+agent Î¸1 âknowsâ which output corresponds to Î¸2 and which output corresponds to Î¸3. Therefore,
+
+in this consideration, an agent can theoretically do the translations of the outputs according to
+
+some internal model of other agents and infer the mentioned amount of information about its
+
+environment.
+
+2.1 Indistinguishable sources of messages
+
+For this study, on the contrary, we consider an agent observing other agentsâ messages, but under
+
+the assumption that the originator of a message cannot be identiï¬ed. In this way, the total amount
+
+of information an agent can infer from the outputs of other agents will depend on to which extent
+
+it either can identify who the other agents are or can rely on them using a coding scheme that
+
+does not depend too much on their particular identity. For instance, if agents Î¸2 and Î¸3 both
+
+agree on the output for each of the environmental conditions, then agent Î¸1 should be able to infer
+
+4
+
+more environmental information than if they disagree on the output for each of the environmental
+
+conditions, given that agent Î¸1 does not know which of the agents it is observing.
+
+To model this idea, let us assume a random variable Î(cid:48) denoting the selected agent. This agent
+
+depends on the same environmental conditions for survival as Î¸1, which are modelled, as above,
+
+by a random variable Âµ. Agents acquire information about the environment through their sensors,
+
+which are modelled by a random variable YÎ(cid:48) conditioned on the index variable denoting the agent
+
+under consideration, Î(cid:48), and Âµ. The amount of acquired sensory information of a speciï¬c agent
+
+Î¸(cid:48) about Âµ is given by I(Âµ; YÎ¸(cid:48)). As above, the code of an agent is a stochastic mapping from its
+
+sensor states into a set of messages, and is represented by the conditional probability p(XÎ¸(cid:48)|YÎ¸(cid:48))
+
+for an agent Î¸(cid:48) (see Fig. 2).
+
+Âµ
+
+YÎ(cid:48)
+
+XÎ(cid:48)
+
+Î(cid:48)
+
+YÎ¸1
+
+XÎ¸1
+
+Figure 2: Bayesian network representing the relationships as described above (see text).
+
+However, now we want to model the fact that we do not know which agent is observed. In the
+
+case with maximum uncertainty, Î is uniformly distributed, and then this parametrisation of the
+
+codes considers the outputs of all agents in Î(cid:48) altogether, such that if we are not observing Î(cid:48), we
+
+cannot identify whose agentâs output we are observing. In Eq. 3 and Eq. 4 we show two examples
+
+of codes for agents Î¸2 and Î¸3, while their sensor states are deï¬ne by the Eq. 2 (Eq. 1 deï¬nes the
+
+sensors states of agent Î¸1). We compute how much information about the environment there is
+
+when the outputs of both agents (Î¸2 and Î¸3) are considered together by agent Î¸1.
+
+P r(YÎ¸1|Âµ) :=
+
+(cid:18)
+
+y1
+1 â (cid:15)
+(cid:15)
+
+Âµ1
+Âµ2
+
+y2
+(cid:15)
+1 â (cid:15)
+
+(cid:19)
+
+(1)
+
+P r(YÎ(cid:48)|Âµ, Î(cid:48)) :=
+
+ï£«
+
+ï£¬
+ï£¬
+ï£­
+
+y1
+1 â (cid:15)
+(cid:15)
+1 â (cid:15)
+(cid:15)
+
+Î¸2, Âµ1
+Î¸2, Âµ2
+Î¸3, Âµ1
+Î¸3, Âµ2
+
+y2
+(cid:15)
+1 â (cid:15)
+(cid:15)
+1 â (cid:15)
+
+ï£¶
+
+ï£·
+ï£·
+ï£¸
+
+(2)
+
+If we assume p(Î¸2) = p(Î¸3) = 1/2, and p(Âµ1) = p(Âµ2) = 1/2 and (cid:15) = 0.01, then if we consider
+
+the codes shown in Eq. 3, we have that I(Âµ; YÎ¸1 , XÎ(cid:48)) = 0.97872 bits, where Î(cid:48) consists of agents Î¸2
+
+and Î¸3. However, had Î¸2 and Î¸3 âoppositeâ codes as shown in Eq. 4, then I(Âµ; YÎ¸1 , XÎ(cid:48)) = 0.9192
+
+5
+
+P r(XÎ(cid:48)|YÎ(cid:48), Î(cid:48)) :=
+
+ï£«
+
+ï£¬
+ï£¬
+ï£­
+
+x1 x2
+0
+1
+1
+0
+0
+1
+1
+0
+
+ï£¶
+
+ï£·
+ï£·
+ï£¸
+
+Î¸2, y1
+Î¸2, y2
+Î¸3, y1
+Î¸3, y2
+
+(3)
+
+P r(XÎ(cid:48)|YÎ(cid:48), Î(cid:48)) :=
+
+ï£«
+
+ï£¬
+ï£¬
+ï£­
+
+x1 x2
+0
+1
+1
+0
+1
+0
+0
+1
+
+ï£¶
+
+ï£·
+ï£·
+ï£¸
+
+Î¸2, y1
+Î¸2, y2
+Î¸3, y1
+Î¸3, y2
+
+(4)
+
+bits, which is exactly I(Âµ; YÎ¸1), that is, I(Âµ; XÎ(cid:48)|YÎ¸1) = 0 bits (agent Î¸1 cannot acquire any side
+
+information from the outputs of agents Î¸2 and Î¸3). We should note here that the sensor states
+
+y1 and y2 of agents Î¸2 and Î¸3 in the conditional probability shown in Eq. 1 and 2 refer almost
+
+deterministically to the same environmental condition, and therefore the loss of side information
+
+is thus entirely due to the incompatible codes. The conditional probabilities of sensor states given
+
+the environmental conditions further deï¬ned throughout the paper are also assumed to be almost
+
+deterministically.
+
+2.2 Environmental information of a population
+
+The model shown in Fig. 2 considers the environmental information of agent Î¸1, ignoring its
+
+own output XÎ¸1. Nevertheless, agents ignoring their outputs is contrary to our assumption over
+
+the incapability of agents to identify the sources of the outputs. On the other hand, we are
+
+assuming a speciï¬c type of communication, one which could be classiï¬ed as persistent within
+
+the diï¬erent classiï¬cations of stigmergy ([37, 33, 22], see [14] for a summary). To incorporate
+
+this option in the model shown in Fig. 2, we could consider the state space of Î(cid:48) as the set
+
+{Î¸1, Î¸2, Î¸3}. Then, to express not only the environmental information of agent Î¸1, but the average
+
+environmental information of the whole population, we can parametrise the agent by a random
+
+variable Î (deï¬ned over the same state space, representing the same set of agents as Î(cid:48)), such
+
+that p(YÎ|Âµ, Î) = p(YÎ(cid:48)|Âµ, Î(cid:48)) (i.e., YÎ(cid:48) is i.i.d. to YÎ, and vice versa).
+
+Âµ
+
+YÎ
+
+YÎ(cid:48)
+
+Î
+
+XÎ(cid:48)
+
+Î(cid:48)
+
+Figure 3: Bayesian network representing the sensor variables of a set of agents indexed by the random
+
+variable Î, and the sensor and output variables of a copy of the set of agents indexed by Î named Î(cid:48).
+
+6
+
+In this way, the average environmental information of a population of the agents selected by
+
+Î is given by I(Âµ; YÎ, XÎ(cid:48)) (see Fig. 3). This measure can be consider as the objective function
+
+to maximise in our model. However, we would be making two important assumptions: ï¬rst,
+
+this objective function assumes agents have access to the environmental conditions Âµ, which they
+
+indirectly do but only through their sensors; and second, every agent would perceive the output of
+
+every other agent, including itself. In this work, instead, we propose that agents follow a behaviour
+
+such that it maximises the similarity of their outputs (via their codes) with those of which the
+
+agent perceives. A consequence of this behaviour is that the average information about Âµ is also
+
+maximised. In addition, we will introduce a potentially ï¬exible âpopulation structureâ, so that
+
+we can specify which agents interact with which.
+
+2.3 Code similarity
+
+First, we introduce a copy of the codes of the agents, such that when we instantiate the variables
+
+XÎ and XÎ(cid:48), the probabilities are the same. The structure of the population is then given by
+
+p(Î, Î(cid:48)) = p(Î)p(Î(cid:48)). However, the conditional independence of Î and Î(cid:48) restricts signiï¬cantly
+
+the diversity of the structures that can be represented.
+
+In such cases, the agents selected by
+
+Î perceive the outputs of all the agents selected by Î(cid:48) and vice versa.
+
+In order to model a
+
+general interaction structure between agents, we consider p(Î, Î(cid:48)) not independent, as shown in
+
+the Bayesian network in Fig. 4, where we introduce a helper variable Î. This allows diï¬erent
+
+agents selected by Î to perceive outputs from exclusive agents selected by Î(cid:48).
+
+Âµ
+
+YÎ
+
+YÎ(cid:48)
+
+Î
+
+XÎ
+
+XÎ(cid:48)
+
+Î(cid:48)
+
+Î
+
+Figure 4: Bayesian network representing the relantionship of the variables in the model of code evolution.
+
+YÎ(cid:48) is an i.i.d copy of YÎ and XÎ(cid:48) is an i.i.d. copy of XÎ. Î(cid:48) covers the same set of agents as Î, but its
+
+probability distribution is not necessary the same.
+
+7
+
+We deï¬ne the objective function as I(XÎ; XÎ(cid:48)), that is the average code similarity of a pop-
+
+ulation of agents according to the population structure p(Î, Î(cid:48)). For instance, if the interaction
+
+probability of two agents is zero, then the similarity of the codes of these two agents is irrelevant
+
+for the objective function. On the other hand, they interact with probability bigger than zero
+
+(p(Î¸, Î¸(cid:48)) > 0, for some agents Î¸ and Î¸(cid:48)), then how similar their codes are will inï¬uence I(XÎ; XÎ(cid:48)).
+
+If we consider our system as a process in time, then at each time-step two agents are chosen
+
+according to p(Î, Î(cid:48)). Agent Î reads the output of agent Î(cid:48) (generated via its code, which is i.i.d
+
+over time), and let us assume that it stores the pair (YÎ, XÎ(cid:48)), i.e. its current sensor state together
+
+with the perceived output. If this is repeated a large number of times, then the total amount of
+
+environmental information that can be inferred from the collected statistics by the population is
+
+bounded by I(Âµ; YÎ, XÎ(cid:48)). This is the theoretical limit to which we refer in the introduction, and
+
+for this study we are not interested in how the inference is computed. However, we implicitly
+
+assume that agents decode the perceived outputs according to their codes.
+
+2.4 Distance between two codes
+
+In order to visualise the evolution of codes, we deï¬ne the distance between the codes of two
+
+agents Î¸i and Î¸j as the square root of the Jensen-Shannon divergence [40, 19] between them. This
+
+measure has the property that 0 â¤ JSD(Î¸i, Î¸j) â¤ 1 when log2 is used, and the square root yields
+
+a metric. Let us note that this distance requires the sensor states Y to be named identically (for
+
+the corresponding states of Âµ) among agents in order to be meaningful. As we stated above, this
+
+is (closely) the case in all our experiments. This requirement over the sensor states discards the
+
+possibility of using other measures such as mutual information.
+
+dist(Î¸i, Î¸j) =
+
+(cid:113)
+
+JSD(cid:0)p(XÎ¸i|YÎ¸i)||p(XÎ¸j |YÎ¸j )(cid:1)
+
+(5)
+
+(cid:114) 1
+2
+
+=
+
+D(cid:0)p(XÎ¸i|YÎ¸i)||p(XÎ¸k |YÎ¸k )(cid:1) +
+
+D(cid:0)p(XÎ¸j |YÎ¸j )||p(XÎ¸k |YÎ¸k )(cid:1)
+
+1
+2
+
+where p(XÎ¸k |YÎ¸k ) = 1
+2
+
+(cid:0)p(XÎ¸i |YÎ¸i) + p(XÎ¸j |YÎ¸j )(cid:1).
+
+8
+
+3 Methods
+
+To illustrate the behaviour of our model, we consider four diï¬erent scenarios, which are described
+
+in Sec. 4. The common parameters for the ï¬rst two experiments are the following: the population
+
+consists of 25 agents; the amount and quality of the acquired sensory information is the same for
+
+every agent, that is p(YÎ|Âµ) = p(YÎ(cid:48)|Âµ). For the third scenario, the only diï¬erence is that we con-
+
+sider only 15 agents, since the dimensions to consider with a ï¬exible structure grows quadratically
+
+with the number of agents.
+
+The optimisation algorithm used in the following experiments is CMA-ES (Covariance Matrix
+
+Adaptation Evolution Strategy), which is a stochastic derivative-free method for non-linear op-
+
+timisation problems [12]. We utilised the implementation provided by the Shark library v3.0.0
+
+[15] with its default parameters, which implements the CMA-ES algorithm described in [11]. The
+
+evolutionary algorithm used for optimisation does not intend to represent the actual evolution
+
+of the codes. Instead, we are interested in the solutions of this optimisation process, which are
+
+representative of the possible outcomes of evolution.
+
+To visualise the evolution of the codes of the agents, we use the method of multidimensional
+
+scaling provided by R version 2.14.1 (2011-12-22). This method takes as input the distance matrix
+
+between codes, and plots them in a two-dimensional space preserving the distances as well as
+
+possible. To visualise, not only the distances between the resulting codes, but also how they relate
+
+to the distances between initial codes, we provide a distance matrix of both initial and resulting
+
+codes. The initial codes are randomly set by the evolutionary algorithm.
+
+4 Results
+
+In this section, we analyse the outcome of the four diï¬erent scenarios where code similarity is
+
+maximised. While the outcomes are particular for one simulation, they are illustrative of the
+
+richness that the model is able to capture, which is described for each scenario. The outcomes
+
+are typical solutions, and we cannot perform statistics over simulations since the many solutions
+
+are qualitatively diï¬erent. However, the outcome of each scenario is presented together with a
+
+description of alternative outcomes, giving indicators of achievement of local/global optimum.
+
+9
+
+4.1 Well-mixed population
+
+In the ï¬rst scenario, each agent Î¸i perceives the output of every other possible agent Î¸j with the
+
+same probability, that is p(Î¸i, Î¸j) = 1/252 for every i, j â [1, 25]. The maximum average code
+
+similarity is bounded by I(YÎ; YÎ(cid:48)) = 1.71908 bits, which is achieved under two conditions: ï¬rst,
+
+every code must be a one-to-one mapping; second, the code must be universal. This is indeed the
+
+outcome of the performed optimisation, as we show in Fig. 5: the optimised codes (blue points)
+
+converged into a universal code (the distance between any of them is zero). Each red (diamond)
+
+point correspond to an initial code.
+
+Figure 5: 2-dimensional plot of code distance: red points are codes at the beginning of the optimisation
+
+process; blue points are codes at the end of the optimisation process (where the distance between every
+
+pair of codes is zero).
+
+The resulting code adopted by the population is a one-to-one mapping between sensor states
+
+and outputs, and any of the 24 possible one-to-one mappings is a global maximum (there are
+
+4 sensor states and 4 possible outputs). However, it is still interesting to brieï¬y analyse the
+
+possible paths towards a universal and optimal code. In Fig. 6, we show the distribution of the
+
+adopted codes by the agents of the population in an iteration of the optimisation process where
+
+the average code similarity is I(XÎ; XÎ(cid:48)) = 1.18276 bits. Here, the most popular code is the
+
+suboptimal code shown in Fig. 6 (a). This results from the particular initialised codes, driving
+
+the agents temporarily towards a suboptimal code. However, once any of the many-to-one codes
+
+becomes (nearly) universally adopted, then any codeâs deviation improving the code similarity will
+
+eventually drive the convention towards optimality. The fact that it does not need simultaneous
+
+changes in the code increases the likeliness of improving the code similarity.
+
+10
+
+â0.6â0.4â0.20.00.20.40.6â0.4â0.20.00.20.4dimension 1dimension 2llllllllllllllllllllllllllinitial codesfinal codesFigure 6: Representation of the codes p(x|y) by a heat-map using inverse grayscale. For each evolved
+
+code, we output the number of agents adopting it. This code distribution was achieved with 25 agents in
+
+a well-mixed population.
+
+4.2 Spatially-structured population
+
+In another set-up, we assume the agents are structured in a 5 Ã 5 grid, where p(Î¸, Î¸(cid:48)) = 1/105
+
+if Î¸ and Î¸(cid:48) are neighbours or when Î¸ = Î¸(cid:48) (see Fig. 8 for a representation of the structure).
+
+After randomly initialising the codes, the performed optimisation plateaued on an average code
+
+similarity of I(XÎ; XÎ(cid:48)) = 1.13536 bits. As in the former scenario, here the optimal solution is
+
+also a universal code with a one-to-one mapping. However, in this case, the result is not a universal
+
+code, as can be appreciated in Fig. 7. Spatially structured populations are sensitive to the initial
+
+codes and how codes are updated.
+
+a
+
+a
+
+c
+
+e
+
+e
+
+a
+
+a
+
+c
+
+e
+
+e
+
+b
+
+b
+
+d
+
+f
+
+f
+
+b
+
+b
+
+b
+
+g
+
+h
+
+b
+
+b
+
+b
+
+b
+
+d
+
+Figure 7:
+
+2-dimensional plot of code distance:
+
+Figure 8: Representation of the spatial structure
+
+points in diamond shape represent codes at the be-
+
+utilised for the experiment. Agents are assumed to
+
+ginning of the optimisation process; rounded points
+
+be distributed in a grid: an edge from one agent to
+
+represent codes at the end of the optimisation pro-
+
+another means that one agent perceives the output
+
+cess. The points are coloured in order to be able to
+
+of the other. Agents are labelled (see Fig. 9) and
+
+relate this plot with the ï¬gure beside it.
+
+coloured according to their adopted code.
+
+The resulting code distribution among the population is shown in Fig. 9, with 8 diï¬erent codes
+
+11
+
+y1y2y3y4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4(a)20(b)1(c)2(d)1(e)1â0.6â0.4â0.20.00.20.40.6â0.4â0.20.00.20.4dimension 1dimension 2llllllllllllllllllllllllllinitial codesfinal codesin the population. Where well-mixed populations evolved the use of common codes, agreement
+
+on codes only occurred among neighbours in spatially structured populations. As a consequence,
+
+many local conventions are established within neighbourhoods, and, once this situation is reached,
+
+the improvement of the total code similarity requires simultaneous changes to the agentâs codes.
+
+For instance, the code shown in Fig. 9 (e) could increase the average similarity of the population if
+
+p(x2|y1) = 1, as it is in the rest of the codes. However, for this to happen (in this particular case),
+
+at least two agents need to change their code simultaneously (otherwise the average similarity
+
+decreases), which makes the deviation from the resulting code distribution unlikely.
+
+Figure 9: Representation of the codes p(x|y) by a heat-map using inverse grey scale. For each evolved
+
+code, we output the number of agents adopting it. This code distribution was achieved with 25 agents in
+
+a grid structure.
+
+4.3 Flexible population structure
+
+For the third scenario, we let the structure co-evolve with the codes without any constraint (the
+
+probability distribution of the interaction between agents, p(Î), is optimised together with the
+
+codes).
+
+In this case, the resulting average code similarity is nearly optimal, but the code is
+
+not necessarily universal. This is because, when the structure is not ï¬xed, agents form roughly
+
+disconnected clusters of related codes. In this process, the interaction probability of agents with
+
+unrelated codes will vanish. However, once the clusters are formed, if it is not a single isolated
+
+agent (such that no other agent perceives its output), then codes of agents are universal within
+
+each cluster. This is exempliï¬ed by the code distribution and population structure we obtained
+
+(see Fig. 10). Here, we have two clusters with universal codes, one optimal (in red) and the other
+
+suboptimal (in yellow). Agents with dissimilar codes from every other agent they interact with
+
+will become isolated in the optimisation process, as the example shows for two agents (light and
+
+dark blue).
+
+To summarise, the optimal code similarity equals I(YÎ; YÎ(cid:48)), and is achieved, for instance, when
+
+all agents adopt the same one-to-one mapping. Nevertheless, the interaction probability allows
+
+agents to form disconnected clusters of related codes, where several one-to-one mappings could
+
+12
+
+y1y2y3y4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4x1x2x3x4(a)4(b)9(c)2(d)2(e)4(f)2(g)1(h)1result while still achieving optimality. Theoretically, we could have as many one-to-one mappings
+
+as the minimum between the amount of agents and the total one-to-one mapping combinations
+
+(24 in this case).
+
+Figure 10: Each node in the graph corresponds to the code of an agent. There is a weighted edge between
+
+agent Î¸i and Î¸j if p(Î¸i, Î¸j) > 0 (which is the weight). We omit weights of edges in the graph since they
+
+all are roughly of similar value. The temperature colours on top of the nodes indicate the amount of
+
+environmental information they would contribute to any agent perceiving only that agents output.
+
+4.4 Emerging concepts in a well-mixed heterogeneous population
+
+So far, we have only considered populations of agents that acquired the same aspects of information
+
+from Âµ (i.e., p(YÎ¸i |Âµ) = p(YÎ¸j |Âµ) for any pair of agents Î¸i, Î¸j). The assumption was that the
+
+information that was relevant for the survival of the agents was the same among the agents
+
+of the population, and this was represented by Âµ. Now, we consider a more general scenario,
+
+where diï¬erent types of agents acquire diï¬erent aspects from the environmental conditions Âµ. We
+
+investigate whether it is possible for an agent that does not directly perceive the environment at
+
+13
+
+all (we call this type of agent âblindâ) to predict conditions based solely on the outputs of other
+
+agents. We consider a well-mixed population, such that diï¬erent types of agents are forced to
+
+talk to each other. Considerations with a ï¬exible population structure are not interesting for our
+
+purposes, since in these cases, each type of agent forms a cluster disconnected from clusters of
+
+other types. This was conï¬rmed by simulations which are not shown here.
+
+Let us illustrate the idea with a relatively simple scenario: we consider ï¬ve types of agents (we
+
+denote the i-th type Ïi), where each type can only distinguish whether the current state of the
+
+environment belongs to its coloured region or not. The environment consists of 9 states, and the
+
+probability of each state is uniformly distributed. We illustrate this environment by a 3Ã3 grid, as
+
+shown in Fig. 11, although the square does not denote the physical structure of the environment.
+
+Then, the outputs of each type of agent will be related to the regions they capture. For instance,
+
+for agents of type Ï2 with the same deterministic code, if P r(Âµ â {1, 2, 4, 5}|XÎ¸ = x) equals one
+
+(for all Î¸ of type Ï2), then x will signify that this agent is currently in the region coloured in
+
+red in Fig. 11. We say that a population of agents has a joint concept of the environment if
+
+by considering its representation of the environmental information they capture, we can obtain
+
+information about the environment, i.e. we require that I(Âµ; XÎ) > 0. For instance, the symbol
+
+x in the example above, assuming that it is only utilised by agents of the same type, can be
+
+understood as representing the concept âtop-leftâ of the grid.
+
+1 2 3
+4 5 6
+7 8 9
+
+states of Âµ
+
+type Ï1
+
+type Ï2
+
+type Ï3
+
+type Ï4
+
+type Ï5
+
+Figure 11: Representation of the conditional probabilities p(YÎ¸|Âµ) for an agent Î¸ of each type. These
+
+are deï¬ned such that each type of agent can only distinguish between the coloured region and the white
+
+region. For instance, the sensor of type Ï2 is deï¬ned as P r(Y = y1|Âµ) = 1 if Âµ â {1, 2, 4, 5}, and zero
+
+otherwise, and P r(Y = y2|Âµ) = 1 if Âµ /â {1, 2, 4, 5}, and zero otherwise. For type Ï1, P r(Y = y1|Âµ) = 0.5
+
+and P r(Y = y2|Âµ) = 0.5 (|Y | = 2 for all types of agents).
+
+The amount of environmental information that an agent Î¸ of type Ï1 (a blind agent) captures
+
+is I(Âµ; YÎ¸) = 0 bits, while all agents Î¸ of the other types capture I(Âµ; YÎ¸) = 0.991076 bits (note
+
+that the total entropy in Âµ to be resolved is H(Âµ) = 3.16993 bits). Throughout this study, we
+
+considered that agents predict the environment by considering their perceptions together with the
+
+outputs of other agents. The blind agent, instead, since it is not able to capture any direct cue
+
+14
+
+from Âµ, we consider capable of perceiving the outputs of both of the agents selected by Î and
+
+Î(cid:48). With this relaxed consideration, we say a blind agent has a concept of the environment if
+
+I(Âµ; XÎ, XÎ(cid:48)) > 0, i.e. we consider the maximum amount of information an agent can possibly
+
+infer from the joint outputs XÎ and XÎ(cid:48).
+
+Let us recall that the structure of the population is well-mixed, and thus the distribution of
+
+outputs of all agents is considered, including the blind ones, which are not able to express (via
+
+their outputs) any particular concept by themselves (for a blind agent Î¸, I(Âµ; XÎ¸) â¤ I(Âµ; YÎ¸) = 0,
+
+i.e. I(Âµ; XÎ) vanishes). Therefore, whether a blind agent has some concept of the environment
+
+will depend, ï¬rst, on the universality of the codes of each type of agent (agents representing the
+
+same information with diï¬erent symbols may create ambiguities). Second, on the cardinality of
+
+the alphabet of X (i.e.
+
+|X|) utilised by the population. A small alphabet will force agents to
+
+represent diï¬erent concepts of the environment with the same symbols, while a large alphabet is
+
+likely to result in exclusive representations of concepts for each type of agent.
+
+Taking this into account, we ask, is it possible for a blind agent to identify concepts of the
+
+environment? If so, how are these concepts related to the concepts of the individual agents (other
+
+than the blind ones)? Is the size of the available alphabet related to the quality of the concepts?
+
+To study these questions, we performed diï¬erent experiments varying the size of the alphabet
+
+|X|, where the rest of the parameters remained the same. In these experiments, we optimised the
+
+similarity of codes for a population composed of 20 agents, with 4 agents of each of the ï¬ve types.
+
+In Table 1 we show that the cardinality of the alphabet of X aï¬ects the limit of the amount of
+
+information a blind agent can possibly infer about the environment.
+
+Now, if we measure the uncertainty of the environment for a blind agent for each combination
+
+of outputs XÎ and XÎ(cid:48), we ï¬nd that for some of them, it is zero. For instance, with |X| = 7, we
+
+found that when P r(Âµ = 5|XÎ = 1, XÎ(cid:48) = 2) = 1.0 (see Fig. 12, where only combinations with
+
+XÎ â¤ XÎ(cid:48) are shown). These distributions are also valid when swapping the values of XÎ and
+
+XÎ(cid:48), since in the well-mixed population the structure is symmetric. Looking at the example of
+
+the conditional probability in Fig. 12, we can ï¬nd many other concepts, although none of them
+
+âapart from the one already discussedâ can uniquely identify a state of the environment. For
+
+instance, we have that P r(Âµ|XÎ = 3, XÎ(cid:48) = 6) = 0.33 when Âµ â {3, 5, 7}, which is a concept for
+
+being on a particular diagonal of the environment.
+
+In Fig. 13 we show the resulting codes (which are universal for each type, including the blind
+
+one) for this particular experiment. Here, the types Ï2 (red) and Ï5 (purple) utilise the same
+
+15
+
+|X|
+2
+3
+4
+5
+6
+7
+8
+9
+
+I(Âµ; XÎ, XÎ(cid:48))
+0.34621
+0.56555
+0.71620
+0.95467
+1.08139
+1.18362
+1.30919
+1.30919
+
+Table 1: Results of experiments where the size of the alpha-
+
+Figure 12:
+
+Conditional probabil-
+
+bet of a population varies. The maximum amount of environ-
+
+ity p(Âµ|XÎ, XÎ(cid:48) ) in inverse grey-scale.
+
+mental information that a blind agent can infer is achieved
+
+Each row represents a combination of
+
+with |X| = 8 and remains equal for bigger alphabets. As the
+
+values of XÎ and XÎ(cid:48) , and each column
+
+size of the alphabet decreases, this information also decreases.
+
+represents a state of Âµ.
+
+symbols to represent diï¬erent environmental conditions. By using a small size of the alphabet for
+
+X, we force ambiguities in the population, but these will be chosen (by evolution) such that they
+
+are minimal. In this way, we maximise the amount of information we can infer from the outputs
+
+(although this can be a local optimum). For instance, the outputs of the blind agents (type Ï1)
+
+for all the experiments never overlapped that of other types (unless we use |X| = 2, where there
+
+is no choice). In other words, blind agents always choose one symbol so that they minimise the
+
+amount of utilised symbols from the whole population.
+
+Figure 13: Representation of codes p(XÎ|YÎ, Î) by a heat-map using inverse grayscale for the experiment
+
+with |X| = 7. For each node, the rows represent a sensor state y, while the columns represent an output
+
+state x. The colours on top of the nodes are used to distinguish the type of agent to whom the code
+
+belongs, and colours are related to those shown in Fig. 11.
+
+In all the performed experiments, we found that for values of |X| â¥ 6, the blind agent can
+
+perfectly predict the environmental state Âµ = 5 for at least one combination of outputs XÎ and
+
+XÎ(cid:48). Interestingly, this new concept, which in this particular experiment can be called the âcentreâ
+
+16
+
+Âµ1Âµ2Âµ3Âµ4Âµ5Âµ6Âµ7Âµ8Âµ9XÎ=1,XÎ(cid:48)=1XÎ=1,XÎ(cid:48)=2XÎ=1,XÎ(cid:48)=3XÎ=1,XÎ(cid:48)=4XÎ=1,XÎ(cid:48)=5XÎ=1,XÎ(cid:48)=6XÎ=1,XÎ(cid:48)=7XÎ=2,XÎ(cid:48)=2XÎ=2,XÎ(cid:48)=3XÎ=2,XÎ(cid:48)=4XÎ=2,XÎ(cid:48)=5XÎ=2,XÎ(cid:48)=6XÎ=2,XÎ(cid:48)=7XÎ=3,XÎ(cid:48)=3XÎ=3,XÎ(cid:48)=4XÎ=3,XÎ(cid:48)=5XÎ=3,XÎ(cid:48)=6XÎ=3,XÎ(cid:48)=7XÎ=4,XÎ(cid:48)=4XÎ=4,XÎ(cid:48)=5XÎ=4,XÎ(cid:48)=6XÎ=4,XÎ(cid:48)=7XÎ=5,XÎ(cid:48)=5XÎ=5,XÎ(cid:48)=6XÎ=5,XÎ(cid:48)=7XÎ=6,XÎ(cid:48)=6XÎ=6,XÎ(cid:48)=7XÎ=7,XÎ(cid:48)=7of the world or environment, cannot be obtained by looking to individual concepts only.
+
+5 Discussion
+
+We considered four diï¬erent scenarios of code evolution: in the ï¬rst one, all agents perceived the
+
+outputs of all other agents, including itself. We argued that two main stages of evolution can be
+
+recognised: in the ï¬rst stage, a universal code is established, which can be optimal or not. If it
+
+is not optimal, then a second stage will achieve optimality. The same result was obtained in [34],
+
+in a model of the evolution of the genetic code (represented as a probabilistic mapping between
+
+codons and amino acids), although universality and optimality were simultaneously achieved.
+
+In the mentioned work, which developed further the ideas of [38, 39], the authors argue that
+
+the universality of the genetic code is a consequence of early communal evolution, mediated by
+
+horizontal gene transfer (HGT) between primitive cells. In this evolutionary process, they argue,
+
+larger communities will have access (through the exchange of genetic material) to more innovations,
+
+leading to faster evolution than smaller ones. Then, âit is not better genetic codes that give an
+
+advantage but more common onesâ [34]. Although their model does not explicitly show this
+
+property, it is captured in our model. We show that a more common, but not optimal code is
+
+widely adopted within a population (see Fig. 6). However, in our model, a code imposes itself
+
+as universal not because it provides access to more innovations (in our model there is no âcode
+
+exchangeâ, only the outputs are shared), but because the population structure forces the adoption
+
+of the most popular code. After this stage, further changes in the code of the agents eventually
+
+lead to optimality.
+
+In another related work, [21] explored the origins of language in a scenario consisting of artiï¬cial
+
+agents with a coupled perception and production of speech sounds. Although this work is focused
+
+on plausible mechanisms for the origin of language, it assumes the same similarity principle as we
+
+do (hearing a vocalisation increases the probability of producing similar vocalisations), arriving to
+
+the same outcome (a universal language, or code). Other works have considered similar principles
+
+in the evolution of languages:
+
+for instance, the naming game [32] and the imitation game [5].
+
+However, these models assume some common conventions in order to evolve new ones. In this
+
+study, our main assumption was that the population of agents depended on common environmental
+
+conditions.
+
+Our second scenario, where the structure of the population is a grid, showed how establishing
+
+local conventions in early stages of evolution constrains the outcome of the code distribution,
+
+17
+
+since to reconcile diï¬erent conventions, several simultaneous changes are needed. On the other
+
+hand, in our third scenario, where we let the structure of the population change simultaneously
+
+with the codes themselves, such situations are avoided by âdisconnectingâ clusters with dissimilar
+
+conventions. This property enhances evolution, and can potentially lead to the adoption of several
+
+diï¬erent conventions within an increasingly fragmenting, or âspeciatingâ population.
+
+Our last scenario assumed perceptual constraints on the environmental information of each
+
+agent, an we looked at emerging concepts within a well-mixed population. This scenario was
+
+studied in [20], where, as well as in our study, new conceptualisations of the world emerged as
+
+a result of considering together the concepts of every agent. In both studies, the new concept
+
+was not representable individually by any agent. Diï¬erently from the mentioned study, the new
+
+concepts obtained in our study were the result of a simple similarity maximisation principle, while
+
+in the work of [20], concepts were obtained through the modelling of an explicit ï¬tness function.
+
+The evolution of conventional codes could be interpreted, in the widest sense, as a form of
+
+cultural evolution. For instance, considering the deï¬nition of culture given by [25]: âCulture is
+
+information capable of aï¬ecting individualsâ behavior that they acquire from other members of their
+
+species through teaching, imitation, and other forms of social transmission.â, it could be argued
+
+that a form of cultural information is present in organisms, such as bacteria or plants. Although
+
+there is a dependence among the diï¬erent dimensions on which information is transmitted in
+
+organisms (if we assume the dimensions to be, for instance, genetic, epigenetic, behavioural and
+
+symbol-based, as proposed by [16]), our model assumes freedom of choice in one dimension, without
+
+direct inï¬uence on the others.
+
+Finally, communication between individuals of a population opens up the possibility of âsignal
+
+cheatersâ, which could be either individuals that do not produce signals themselves but still
+
+perceive those of the others, or individuals who exploit other individualâs learned responses to
+
+symbols to their advantage. However, our model does not allow such behaviour, since the code
+
+producing the outputs functions, implicitly, as the interpreter of the perceived signals.
+
+6 Conclusion
+
+In the proposed model, we introduced a key assumption which allowed us to evolve, for some
+
+structures, universal and optimal codes. This assumption states that an agent cannot distinguish
+
+the sources of the outputs it perceives from other agents. Following from this, a universal code will
+
+necessary introduce semantics by relating symbols to environmental conditions (via the internal
+
+18
+
+states of the agent). Our model proposes an information-theoretic way of measuring the similarity
+
+within a population of codes.
+
+In this work, we proposed, as an evolutionary principle, that agents try to maximise their side
+
+information about the environment indirectly by maximising their mutual code similarity. This be-
+
+haviour produces several interesting outcomes in the code distribution of a structured population.
+
+Depending on the population structure, it captures the evolution of a universal and optimal code
+
+(well-mixed population structure), while also the evolution of diï¬erent codes organised in clusters
+
+(in a freely evolving structure), which allows the establishment of optimal as well as suboptimal
+
+conventions.
+
+Finally, we considered a well-mixed heterogeneous population with perceptual constraints on
+
+the agents about the environment, and showed how, just by looking at the outputs of agents, it
+
+is possible to extract concepts that relate to the environment, concepts that none of the agents of
+
+the population could individually represent.
+
+References
+
+[1] GÂ´abor BalÂ´azsi, Alexander van Oudenaarden, and James J Collins. Cellular decision making
+
+and biological noise: from microbes to mammals. Cell, 144(6):910â25, March 2011.
+
+[2] Marcello Barbieri. The organic codes-An introduction to semantic biology. Genetics and
+
+Molecular Biology, 2003.
+
+[3] Marcello Barbieri. Biosemiotics: a new understanding of life. Die Naturwissenschaften,
+
+95(7):577â99, July 2008.
+
+[4] GÂ´erard Battail. Applying Semiotics and Information Theory to Biology: A Critical Compar-
+
+ison. Biosemiotics, 2(3):303â320, October 2009.
+
+[5] Bart De Boer. Self-organization in vowel systems. Journal of Phonetics, 2000.
+
+[6] Dan Cohen. Optimizing reproduction in a randomly varying environment. Journal of Theo-
+
+retical Biology, 12(1):119â129, September 1966.
+
+[7] J Deely. On âsemioticsâ as naming the doctrine of signs. Semiotica, 2006.
+
+[8] Matina C. Donaldson-Matasci, Carl T Bergstrom, and Michael Lachmann. The ï¬tness value
+
+of information. Oikos, 119(2):219â230, 2010.
+
+19
+
+[9] Donald Favareau. The evolutionary history of biosemiotics.
+
+Introduction to biosemiotics,
+
+pages 1â67, 2007.
+
+[10] Dennis GÂ¨orlich, Stefan Artmann, and Peter Dittrich. Cells as semantic systems. Biochimica
+
+et biophysica acta, 1810(10):914â23, October 2011.
+
+[11] Nikolaus Hansen and Stefan Kern. Evaluating the CMA evolution strategy on multimodal
+
+test functions. Parallel Problem Solving from Nature-PPSN VIII, 2004.
+
+[12] Nikolaus Hansen and A Ostermeier. Completely derandomized self-adaptation in evolution
+
+strategies. Evolutionary computation, 9(2):159â95, January 2001.
+
+[13] Martin Heil and Richard Karban. Explaining evolution of plant communication by airborne
+
+signals. Trends in ecology & evolution, 25(3):137â44, March 2010.
+
+[14] Francis Heylighen. Stigmergy as a generic mechanism for coordination: deï¬nition, varieties
+
+and aspects. Technical report, Working paper, 2011.
+
+[15] Christian Igel, Verena Heidrich-meisner, and Tobias Glasmachers. Shark. Journal of Machine
+
+Learning Research, 9:993â996, 2008.
+
+[16] Eva Jablonka, Marion J Lamb, and Anna Zeligowski. Evolution in four dimensions: Genetic,
+
+epigenetic, behavioral, and symbolic variation in the history of life, volume 5. MIT press
+
+Cambridge, MA, 2005.
+
+[17] J Kelly. A new interpretation of information rate. IEEE Transactions on Information Theory,
+
+2(3):185â189, 1956.
+
+[18] Edo Kussell and Stanislas Leibler. Phenotypic diversity, population growth, and information
+
+in ï¬uctuating environments. Science (New York, N.Y.), 309(5743):2075â8, September 2005.
+
+[19] J. Lin. Divergence measures based on the Shannon entropy. IEEE Transactions on Informa-
+
+tion Theory, 37(1):145â151, 1991.
+
+[20] Marco MÂ¨oller and Daniel Polani. Common concepts in agent groups, symmetries, and con-
+
+formity in a simple environment. Artiï¬cial Life XI, 2008.
+
+[21] PY Oudeyer. The self-organization of speech sounds. Journal of Theoretical Biology, 2005.
+
+[22] H Van Dyke Parunak. A survey of environments and mechanisms for human-human stigmergy.
+
+In Environments for Multi-Agent Systems II, pages 163â186. Springer, 2006.
+
+20
+
+[23] Theodore J Perkins and Peter S Swain. Strategies for cellular decision-making. Molecular
+
+systems biology, 5(326):326, January 2009.
+
+[24] Thomas G Platt and Clay Fuqua. Whatâs in a name? The semantics of quorum sensing.
+
+Trends in microbiology, 18(9):383â7, September 2010.
+
+[25] Peter J Richerson and Robert Boyd. Not by genes alone: How culture transformed human
+
+evolution. University of Chicago Press, 2005.
+
+[26] Olivier Rivoire and Stanislas Leibler. The Value of Information for Populations in Varying
+
+Environments. Journal of Statistical Physics, 142(6):1124â1166, March 2011.
+
+[27] Martin Schuster, D Joseph Sexton, Stephen P Diggle, and E Peter Greenberg. Acyl-
+
+homoserine lactone quorum sensing:
+
+from evolution to application. Annual review of mi-
+
+crobiology, 67:43â63, January 2013.
+
+[28] J Seger and H. Jane Brockmann. What is bet-hedging? Oxford surveys in evolutionary
+
+biology, 1987.
+
+[29] Jyoti Shah. Plants under attack: systemic signals in defence. Current opinion in plant biology,
+
+12(4):459â64, August 2009.
+
+[30] C.E. Shannon. A mathematical theory of communication. Bell Systems Technical Journal,
+
+27:379â423, 1948.
+
+[31] Montgomery Slatkin. Hedging oneâs evolutionary bets. Nature, 250:704â705, 1974.
+
+[32] L Steels. A self-organizing spatial vocabulary. Artiï¬cial life, 1995.
+
+[33] Guy Theraulaz and Eric Bonabeau. A brief history of stigmergy. Artiï¬cial life, 5(2):97â116,
+
+January 1999.
+
+[34] Kalin Vetsigian, Carl R Woese, and Nigel Goldenfeld. Collective evolution and the genetic
+
+code. Proceedings of the National Academy of Sciences of the United States of America,
+
+103(28):10696â10701, 2006.
+
+[35] Christopher M Waters and Bonnie L Bassler. Quorum sensing: cell-to-cell communication in
+
+bacteria. Annual review of cell and developmental biology, 21:319â46, January 2005.
+
+[36] Stuart a West, Ashleigh S Griï¬n, Andy Gardner, and Stephen P Diggle. Social evolution
+
+theory for microorganisms. Nature reviews. Microbiology, 4(8):597â607, August 2006.
+
+21
+
+[37] Edward O Wilson. Sociobiology. Harvard University Press, 2000.
+
+[38] Carl R Woese. On the evolution of cells. Proceedings of the National Academy of Sciences of
+
+the United States of America, 99(13):8742â7, June 2002.
+
+[39] Carl R Woese. A new biology for a new century. Microbiology and Molecular Biology Reviews,
+
+68(2):173â186, 2004.
+
+[40] a K Wong and M You. Entropy and distance of random graphs with application to struc-
+
+tural pattern recognition. IEEE transactions on pattern analysis and machine intelligence,
+
+7(5):599â609, May 1985.
+
+22
+
+

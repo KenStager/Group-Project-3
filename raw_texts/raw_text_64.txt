@@ -1,0 +1,1048 @@
+0
+2
+0
+2
+
+v
+o
+N
+2
+1
+
+]
+
+O
+R
+.
+s
+c
+[
+
+1
+v
+9
+1
+6
+6
+0
+.
+1
+1
+0
+2
+:
+v
+i
+X
+r
+a
+
+Learning Latent Representations
+to Inï¬uence Multi-Agent Interaction
+
+Annie Xie1, Dylan P. Losey2, Ryan Tolsma1, Chelsea Finn1, and Dorsa Sadigh1
+1Stanford University, 2Virginia Tech
+
+Abstract: Seamlessly interacting with humans or robots is hard because these
+agents are non-stationary. They update their policy in response to the ego agentâs
+behavior, and the ego agent must anticipate these changes to co-adapt. Inspired by
+humans, we recognize that robots do not need to explicitly model every low-level
+action another agent will make; instead, we can capture the latent strategy of other
+agents through high-level representations. We propose a reinforcement learning-
+based framework for learning latent representations of an agentâs policy, where
+the ego agent identiï¬es the relationship between its behavior and the other agentâs
+future strategy. The ego agent then leverages these latent dynamics to inï¬uence the
+other agent, purposely guiding them towards policies suitable for co-adaptation.
+Across several simulated domains and a real-world air hockey game, our approach
+outperforms the alternatives and learns to inï¬uence the other agent1.
+
+Keywords: multi-agent systems, human-robot interaction, reinforcement learning
+
+1
+
+Introduction
+
+Although robot learning has made signiï¬cant advances, most algorithms are designed for robots
+acting in isolation.
+In practice, interaction with humans and other learning agents is inevitable.
+Such interaction presents a signiï¬cant challenge for robot learning: the other agents will update
+their behavior in response to the robot, continually changing the robotâs learning environment. For
+example, imagine an autonomous car that is learning to regulate the speed of nearby human-driven
+cars so that it can safely slow those cars if there is trafï¬c or construction ahead. The ï¬rst time you
+encounter this autonomous car, your intention is to act cautiously: when the autonomous car slows,
+you also slow down. But when it slowed without any apparent reason, your strategy changes: the
+next time you interact with this autonomous car, you drive around it without any hesitation. The
+autonomous car â which originally thought it had learned the right policy to slow your car â is
+left confused and defeated by your updated behavior!
+
+To seamlessly co-adapt alongside other agents, the robot must anticipate how the behavior of these
+other agents will change, and model how its own actions affect the hidden intentions of others. Prior
+works that study these interactions make restrictive assumptions about the other agents: treating the
+other agents as stationary [1, 2, 3, 4, 5], sharing a learning procedure across other agents [6, 7, 8],
+directly accessing the underlying intentions and actions of other agents [4, 9, 10, 5, 11, 12], or
+simplifying the space of intentions with hand-crafted features [13, 14, 15, 16, 17, 18].
+
+By contrast, we focus on general settings where the ego agent (e.g., a robot) repeatedly interacts with
+non-stationary, separately-controlled, and partially-observable agents. People seamlessly deal with
+these scenarios on a daily basis (e.g., driving, walking), and they do so without explicitly modeling
+every low-level aspect of each otherâs policy [19]. Inspired by humans, we recognize that:
+The ego agent only observes the low-level actions of another agent, but â just as in human-human
+interaction â it is often sufï¬cient to maintain a high-level policy representation. We refer to this
+representation as the latent strategy, and recognize that latent strategies can change over time.
+Learning the other agentâs strategy allows the robot to anticipate how they will respond during the
+current interaction. Furthermore, modeling how the latent strategy changes over time â i.e., the
+latent dynamics â enables the robot to predict how its own behavior will inï¬uence the other agentâs
+
+1Videos of our results are available at our project webpage: https://sites.google.com/view/latent-strategies/.
+
+4th Conference on Robot Learning (CoRL 2020), Cambridge MA, USA.
+
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 1: Ego agent learning to play hockey against a non-stationary robot. The other robot updates its policy
+between interactions to exploit the ego agentâs weaknesses. Over repeated interactions, the ego agent learns to
+represent each opponent policy as a high-level latent strategy, z, and also recognizes that the opponent updates z
+to aim away from where the ego agent last blocked. The ego agent leverages these latent dynamics to inï¬uence
+the other robot, learning a policy that guides the opponent into aiming where the ego agent can block best.
+
+future intentions (see Fig. 1). Overall, we leverage latent representations of the other agentâs policy
+to make the following contributions towards learning in non-stationary multi-agent interaction:
+
+Learning Latent Representations. We introduce an RL-based framework for multi-agent interac-
+tion that learns both latent strategies and policies for responding to these strategies. Our framework
+implicitly models how another agentâs strategy changes in response to the ego agentâs behavior.
+
+Inï¬uencing Other Agents. Ego agents leveraging our proposed approach are encouraged to pur-
+posely change their policy to inï¬uence the latent strategies of other agents, particularly when some
+strategies are better suited for co-adaptation than other strategies.
+
+Testing in Multi-Agent Settings. We compare our approach to state-of-the-art methods across four
+simulated environments and a real robot experiment, where two 7-DoF robot arms play air hockey.
+Our approach outperforms the alternatives, and also learns to inï¬uence the other agent.
+
+2 Related Work
+
+Opponent Modeling. Several prior works in multi-agent RL (MARL) and human-robot interaction
+(HRI) handle non-stationary interactions by modeling the other agents. These approaches either
+model intention [20, 21], assume an assignment of roles [22], exploit opponent learning dynam-
+ics [11, 23], or incorporate features of opponent behavior, which can be modeled using a recursive
+reasoning paradigm [24], handcrafted [9], or learned [5, 25, 26]. Since explicitly modeling and
+reasoning over the opponentâs intentions or policy can quickly become computationally intractable,
+we sidestep this recursion by learning a low-dimensional representation of the other agentâs behav-
+ior. Unlike prior works with learned models, however, we recognize that this representation can
+dynamically change and be inï¬uenced by the ego agentâs policy.
+
+Multi-Agent RL. Alternate approaches have adopted a centralized training framework [7, 8, 27] or
+learned communication protocols between agents [28, 6, 29, 30]. We do not require either centraliza-
+tion or communication: hence, our approach can operate in more general multi-agent systems, such
+as those with humans or decentralized agents. Notably, our setting does make a different assump-
+tion â that other agents have predictable strategies which can be captured by latent representations.
+Although this is not always the case (e.g., when other agents are RL-based), our assumption is
+reasonable in a wide range of scenarios, especially when interacting with humans [19].
+
+Inï¬uence Through Interactions. Inï¬uential behaviors emerge in MARL by directly shaping other
+agentsâ policy updates [11] and maximizing the mutual information between agentsâ actions [31].
+While these works encourage inï¬uencing by modifying the learning objective, e.g., through auxil-
+iary rewards [31], in our approach inï¬uence arises without any explicit reward or encouragement.
+Within HRI, most prior work studies inï¬uence in the context of a single interaction. In particular,
+robots have demonstrated inï¬uence over humans by leveraging human trust [18, 32], generating legi-
+ble motions [33], and identifying and manipulating structures that underlie human-robot teams [34].
+Other works model the effects of robot actions on human behavior in driving [35, 36] and han-
+dover [37] scenarios in order to learn behavior that inï¬uences humans. Unlike these works, we learn
+to inï¬uence without recovering or accessing the other agentâs reward function.
+
+Partial Observability in RL. We can view our setting as an instantiation of the partially observable
+Markov Decision Process (POMDP) [38], where the other agentâs hidden strategy is the latent state.
+
+2
+
+Approximate POMDP solutions based on representation learning have scaled to high-dimensional
+state and action spaces [39] such as image observations [40, 41]. However, we assume the other
+agentâs latent strategy is constant throughout an episode, and then changes between episodes: we
+exploit this structure by modeling the ego agentâs environment as a sequence of hidden parameter
+MDPs (HiP-MDP) [42]. Recent work [43] similarly models non-stationary environments as a series
+of HiP-MDPs, but assumes that the hidden parameters evolve independently. Unlike this work, we
+recognize that the ego agentâs behavior can also inï¬uence the other agentâs latent strategy.
+
+Robotic Air Hockey. Finally, prior works have also developed robots that play air hockey, focusing
+on vision-based control for high-speed manipulation [44, 45, 46, 47]. Motivated by a similar objec-
+tive to ours, Namiki et al. [48] hand-design a system that switches strategies based on the opponent.
+However, we aim to autonomously learn both the opponentâs strategies and how to respond to them.
+
+3 Repeated Interactions with Non-Stationary Agents
+
+In this section we formalize our problem statement. Although our approach will extend to situations
+with N other agents, here we focus on dyads composed of the ego agent and one other agent. This
+other agent could be an opponent in competitive settings or a partner in collaborative settings.
+
+Recall our motivating example, where an autonomous car (the ego agent) is learning to regulate the
+speed of a human-driven car (the other agent) for safety in heavy trafï¬c or construction zones. This
+speciï¬c autonomous car and human-driven car have a similar commute, and encounter each other
+on a daily basis. Over these repeated interactions, the human continually updates their policy: e.g.,
+shifting from following to avoiding, and then back to following after the autonomous car establishes
+trust. The autonomous car has access to the history of interactions, including being able to sense the
+human-driven carâs speed and steering angles. Inspired by our insight, the autonomous car assumes
+that these low-level actions are the result of some high-level intention sufï¬cient for coordination:
+the human driverâs policy is therefore captured by the latent strategy z. During each interaction, z
+is constant â e.g., the humanâs strategy is to follow the autonomous car â but z changes between
+Importantly, the ego agent never
+interactions according to the human driverâs latent dynamics.
+explicitly observes the hidden intentions of the other agent, and therefore must learn both the latent
+strategies and their latent dynamics from local, low-level observations.
+
+Strategy Affects Transitions and Rewards During Interaction. Let i index the current interaction,
+and let latent strategy zi be the low-dimensional representation of the other agentâs policy during
+the i-th interaction. We formulate this interaction as a hidden parameter Markov decision process
+(HiP-MDP) [42]. Here the HiP-MDP is a tuple Mi = (cid:104)S, A, Z, T , R, H(cid:105), where s â S is the
+state of the ego agent and a â A is the ego agentâs action. From the ego agentâs perspective, the
+other agentâs policy affects the environment: if the humanâs strategy is to avoid the autonomous car,
+this may induce other cars to also pass (altering the system dynamics), or prevent the autonomous
+car from successfully blocking (changing the reward). Accordingly, we let the unknown transition
+function T (s(cid:48) | s, a, zi) and the reward function R(s, zi) depend upon the latent strategy zi â Z.
+The interaction ends after a ï¬xed number of timesteps H. Over the entire interaction, the ego agent
+experiences the trajectory Ï i = {(s1, a1, r1), . . . , (sH , aH , rH )} of states, actions, and rewards.
+Strategy Changes Between Interactions. In response to the ego agentâs behavior for the i-th inter-
+action, the other agent may update its policy for interaction i+1. For example, imagine following an
+autonomous car which brakes irrationally. The next time you encounter this car, it would be natural
+to switch lanes, speed up, and move away! We capture these differences in low-level policy through
+changes in the high-level strategy, such that z has Markovian latent dynamics: zi+1 â¼ f (Â· | zi, Ï i).
+
+Strategies are Inï¬uenced Across Repeated Interactions. Combining our formalism both during
+and between interactions, we arrive at the complete problem formulation. Over repeated interactions,
+the ego agent encounters a series of HiP-MDPs (M1, M2, M3, . . .), where the other agent has latent
+strategy zi in Mi. The ego agentâs objective is to maximize its cumulative discounted reward across
+interactions. Because the other agent changes its policy in response to the ego agent, our problem
+is not as simple as greedily maximizing rewards during each separate interaction. Instead, the ego
+agent should purposely inï¬uence the other agentâs strategy to achieve higher long-term rewards.
+For example, suddenly stopping during the current interaction may cause the human to immediately
+slow down, but in future interactions the human will likely avoid our autonomous car altogether!
+Thus, an intelligent agent should take actions that will lead to being able to slow the human when
+needed, such as in trafï¬c or near construction zones.
+
+3
+
+Figure 2: Our proposed approach for learning and leveraging latent intent. Left: Across repeated interactions,
+the ego agent uses their previous experience Ï iâ1 to predict the other agentâs current latent strategy zi, and then
+follows a policy Ï conditioned on this prediction. Right: The ego agent learns by sampling a pair of consecutive
+interactions, and (a) training the encoder E and decoder D to correctly predict experience Ï k given Ï kâ1, while
+simultaneously (b) using model-free RL to maximize the ego agentâs long-term reward.
+
+4 Learning and Inï¬uencing Latent Intent (LILI)
+
+In this section we present our proposed approach to learn and inï¬uence latent strategies in multi-
+agent interaction. Refer to Fig. 2 for an overview: the ego agent simultaneously learns an encoder â
+which captures the other agentâs latent strategy from low-level observations â and a policy â which
+is conditioned on the inferred latent strategy. During each interaction, the robot predicts what the
+other agentâs strategy will be based on their last interaction, and reacts using its strategy-conditioned
+policy. In what follows, we explain the different aspects of this approach.
+
+4.1 Learning Latent Strategies from Local Observations
+
+Our ï¬rst step is to learn to represent the behavior of other agents. Recall that during the i-th inter-
+action the ego agent experiences Ï i, a trajectory of local states, actions, and rewards. We leverage
+this local experience Ï i to anticipate zi+1, the latent strategy that the other agents will follow during
+the next interaction. More speciï¬cally, we introduce an encoder EÏ that embeds the experience Ï i
+and predicts the subsequent latent strategy zi+1. Hence, EÏ models f (zi+1 | Ï i), an approximation
+of the latent dynamics f (zi+1 | zi, Ï i). We use this approximation because the other agentâs current
+strategy zi can often be inferred from the ego agentâs experience Ï i, and we ï¬nd that this functional
+form works well across our experimental domains. However, the actual strategies of the other agents
+are never explicitly observed â how can we learn our encoder without these labels?
+
+To address this challenge, we recognize that the latent strategy of the other agent determines how
+they will react to the ego agentâs behavior, which in turn determines the dynamics and reward func-
+tions experienced by the ego agent during the current interaction. We therefore decode the latent
+strategy zi+1 using a decoder DÏ that reconstructs the transitions and rewards observed during in-
+teraction i + 1. Given a sequence of interactions Ï 1:N , we train our encoder EÏ and decoder DÏ with
+the following maximum likelihood objective Jrep:
+
+max
+Ï,Ï
+
+N
+(cid:88)
+
+H
+(cid:88)
+
+i=2
+
+t=1
+
+log pÏ,Ï(si
+
+t+1, ri
+
+t | si
+
+t, ai
+
+t, Ï iâ1)
+
+(1)
+
+where EÏ produces a deterministic embedding zi given Ï iâ1, and DÏ outputs a distribution over
+next state st+1 and reward rt given current state st, action at, and embedding zi. The encoder is
+particularly important here: we can use EÏ to anticipate the other agentâs next strategy.
+
+4.2 Reinforcement Learning with Latent Strategies
+
+Given a prediction of what latent strategy the other agent is following, the ego agent can intelligently
+react. Imagine that the autonomous car in our example knows that the humanâs strategy is to pass if
+
+4
+
+the autonomous car slows signiï¬cantly, and the autonomous car is approaching heavy trafï¬c. Under
+this belief, the autonomous car should slow gradually, keeping the human behind as long as possible
+to reduce their speed. But if â instead â the agent thinks that the human will also slow down with
+it, the agent can immediately brake and regulate the human to a safe speed. In other words, different
+latent strategies necessitate different policies. We accordingly learn an ego agent policy ÏÎ¸(a | s, zi),
+where the ego agent makes decisions conditioned on the latent strategy prediction zi = EÏ(Ï iâ1).
+
+4.3
+
+Inï¬uencing by Optimizing for Long-Term Rewards
+
+What we ultimately want is not for the ego agent to simply react to the predicted latent strategy;
+instead, an intelligent agent should proactively inï¬uence this strategy to maximize its reward over
+repeated interactions. The key to this proactive behavior is EÏ, the ego agentâs approximation of the
+latent dynamics. As the ego agent learns EÏ, it can purposely alter the interaction Ï i to inï¬uence the
+other agents towards a desired zi+1. Crucially, some latent strategies zi+1 may be better than others.
+
+Jumping back to our example, the autonomous car is rewarded for regulating the human-driven carâs
+speed near heavy trafï¬c and construction zones. The humanâs strategies {z1, z2} â Z include avoid-
+ing and passing the autonomous car (z1) or trusting and following the autonomous car (z2). From
+the ego agentâs perspective, z2 is a better latent strategy: if the autonomous car guides the human
+towards this strategy, it can safely reduce the humanâs speed when necessary. To learn inï¬uential
+behavior, we train the ego agent policy ÏÎ¸ to maximize rewards across multiple interactions:
+
+max
+Î¸
+
+â
+(cid:88)
+
+i=1
+
+Î³i EÏi
+ÏÎ¸
+
+(cid:34) H
+(cid:88)
+
+(cid:35)
+R(s, zi)
+
+t=1
+
+(2)
+
+where Î³ â [0, 1) is a discount factor and Ïi
+(Ï ) is the trajectory distribution induced by ÏÎ¸ under
+ÏÎ¸
+dynamics T (s(cid:48)|s, a, zi). Maximizing this RL objective naturally motivates the ego agent to inï¬uence
+the other agent. Speciï¬cally, the ego agent learns to generate interactions Ï i which lead the other
+agent to adopt future latent strategies that the ego agent can exploit for higher rewards. Within our
+example, the ego agent purposely establishes trust with the speeding human, guiding them towards
+the advantageous z2 before gradually reducing speed near trafï¬c or construction.
+
+4.4
+
+Implementation
+
+The encoder EÏ and decoder DÏ
+are implemented as fully-connected
+neural networks. The encoder out-
+puts the embedding zi+1 given tuples
+(s, a, s(cid:48), r) sampled from interaction
+Ï i, while the decoder reconstructs
+the transitions and rewards from Ï i+1
+given the embedding, states, and ac-
+tions taken. For the RL module, we
+use soft actor-critic (SAC) [49] as
+the base algorithm. The actor Ï and
+critic Q are both fully-connected net-
+works that are conditioned on state s
+and embedding z, and trained with
+losses JÏ and JQ from SAC. The
+pseudocode for our proposed method,
+Learning and Inï¬uencing Latent In-
+tent (LILI), is provided in Algorithm 1. Additional details can also be found in Appendix A.
+
+Algorithm 1 Learning and Inï¬uencing Latent Intent (LILI)
+Require: Learning rates Î±Q, Î±Ï, Î±Ï, Î±Ï
+1: Randomly initialize Î¸Q, Î¸Ï, Ï, and Ï
+2: Initialize empty replay buffer B
+3: Assign z1 â (cid:126)0
+4: for i = 1, 2, . . . do
+5:
+6:
+7:
+8:
+9:
+10:
+11:
+12:
+
+Sample batch of interaction pairs (Ï, Ï (cid:48)) â¼ B
+(cid:46) Critic update
+Î¸Q â Î¸Q â Î±QâÎ¸QJQ
+Î¸Ï â Î¸Ï â Î±ÏâÎ¸Ï JÏ
+(cid:46) Actor update
+Ï â Ï â Î±ÏâÏ (JQ â Jrep) (cid:46) Encoder update
+(cid:46) Decoder update
+Ï â Ï + Î±ÏâÏJrep
+
+Collect interaction Ï i with ÏÎ¸(a|s, zi)
+Update replay buffer B[i] â Ï i
+for j = 1, 2, . . . , N do
+
+Assign zi+1 â EÏ(Ï i)
+
+13:
+
+5 Experiments
+
+A key advantage of our approach is that it enables the ego agent to connect low-level experiences
+to high-level representations. However, it is not yet clear whether the ego agent can simultaneously
+learn these high-level representations and intelligently leverage them for decision making. Thus,
+we here compare our approach to state-of-the-art learning-based methods, some of which also uti-
+lize latent representations. We focus on whether the ego agent learns to inï¬uence the other agent,
+and whether this inï¬uence leads to greater overall performance. Videos of our results are in the
+supplementary video and our project webpage: https://sites.google.com/view/latent-strategies/.
+
+5
+
+Figure 3: Simulated environments where the ego agent learns alongside another non-stationary agent. Between
+interactions, this other agent updates its policy: e.g., moving a hidden target or switching the lane it will merge
+into. Our approach learns the high-level strategies guiding these policies so both agents seamlessly co-adapt.
+
+We select four different learning-based methods that cover a spectrum of latent representations:
+â¢ SAC [49]. At one extreme is soft actor critic (SAC), where the ego agent does not learn any latent
+
+representation. This is equivalent to our Algorithm 1 without latent strategies.
+
+â¢ SLAC [41]. In the middle of the spectrum is stochastic latent actor-critic (SLAC), which learns
+latent representations for a partially observable Markov decision process (POMDP). Within this
+formulation the other agentâs latent strategy could be captured by the POMDPâs hidden state.
+â¢ LILAC [43]. Similar to our approach, lifelong latent actor-critic (LILAC) learns a latent represen-
+tation of the ego agentâs environment. However, the latent dynamics in LILAC are only inï¬uenced
+by the environment and unaffected by the ego agentâs behavior, such that zi+1 â¼ f (Â· | zi).
+â¢ Oracle. At the other extreme is an oracle, which knows the other agentâs hidden intention.
+We also consider two versions of our approach (Algorithm 1). LILI (No Inï¬uence) is a simpliï¬ed
+variant where the ego agent is trained to make greedy decisions that maximize its expected return
+for the current interaction, without considering how these decisions may inï¬uence the other agentâs
+future behavior. Our full approach is referred to as LILI, where the ego agent tries to maximize
+its discounted sum of rewards across multiple interactions while taking into account how its own
+actions may inï¬uence the other agentâs downstream policy.
+
+5.1 Simulated Environments and Multi-Agent Experimental Setup
+
+Our simulated environments are visualized in Fig. 3, and our real robot experiment is shown in
+Fig. 1. All environments have continuous state-action spaces, with additional details in Appendix B.
+
+Point Mass. Similar to pursuit-evasion games [50], the ego agent is trying to reach the other agent
+(i.e., the target) in a 2D plane. This target moves one step clockwise or counterclockwise around
+a circle depending on where the ego agent ended the previous interaction (see Fig. 3). Importantly,
+the ego agent never observes the location of the target! Furthermore, because the ego agent starts
+off-center, some target locations can be reached more efï¬ciently than others.
+
+Lunar Lander. A modiï¬ed version of the continuous Lunar Lander environment from OpenAI Gym
+[51]. The ego agent is the lander, and the other agent picks the target it should reach. Similar to
+point mass, the ego agent never observes the location of the target, and must infer the target position
+from rewards it receives â but unlike point mass, the latent dynamics here do not depend on Ï i.
+
+Driving (2D and CARLA). The ego agent is trying to pass another driver. This other agent rec-
+ognizes that the lane in which the ego agent passes is faster â and will suddenly merge into this
+lane during the next interaction. Hence, the ego agent must anticipate how the other car will drive
+
+6
+
+Figure 4: Results for Point Mass. (Left) Reward that the ego agent receives at each interaction while learning.
+(Right) Heatmap of the target position during the ï¬nal 500 interactions. The ego agent causes the target to move
+clockwise or counterclockwise by ending the interaction in-or-out of the circle. Our approach LILI exploits
+these latent dynamics to trap the target close to the start location, decreasing the distance it must travel.
+
+Figure 5: Results for other simulations. Because each latent strategy was equally useful to the ego agent, here
+LILI (no inï¬uence) is the same as LILI. Shaded regions show standard error of the mean.
+
+to avoid a collision. We performed two separate simulations with these rules. In Driving (2D), we
+use a simple driving environment where the ego agent controls its lateral displacement. In Driving
+(CARLA), we use a 3D simulation where the ego agent must control the vehicle steering [52].
+
+Air Hockey. A real-world air hockey game played between two 7-DoF robots (and later between
+one robot and human). The ego agent is the blocker, while the other agent is the striker. The striker
+updates their policy to shoot away from where the ego agent last blocked. When blocking, the ego
+robot does not know where the striker is aiming, and only observes the vertical position of the puck.
+We give the ego robot a bonus reward if it blocks a shot on the left of the board â which should
+encourage the ego agent to inï¬uence the striker into aiming left. See Appendix C for more info.
+
+5.2 Simulation Results: Trapping the Other Agent in Point Mass
+
+The simulation results are summarized in Figs. 4 and 5. Across all domains, the proposed method
+achieves higher returns than existing RL-based algorithms, and nearly matches oracle performance.
+
+Point Mass. To better explain these results, we speciï¬cally focus on the Point Mass domain (Fig. 4).
+During each timestep the ego agent incurs a cost for its squared Euclidean distance from the hidden
+target. If the ego agent is confused by the changing environment â and unable to model the target
+dynamics â a safe play is simply to move to the center of the circle.
+Indeed, this behavior is
+exactly what we see in LILAC, the best-performing baseline. But what if the ego agent successfully
+models the latent dynamics? A greedy ego agent will try to get as close as it can to the target,
+without considering if it ends the interaction inside or outside of the circle. We observed this naÂ¨Ä±ve
+pursuit in LILI (no inï¬uence), where the ego agent accurately reached the target at each interaction.
+However, because the ego-agent starts closer to some target locations than others, precisely reaching
+the target is not always the best long-term plan; instead, it is better to purposely over- or under-shoot,
+inï¬uencing the target towards the start location. As depicted, LILI converges to this ï¬nal policy that
+traps the other agent. Here the ego agent exploits the latent dynamics, intentionally moving in-and-
+out of the circle to cause the target to oscillate near the start. Accordingly, LILI achieves higher
+rewards than LILI (no inï¬uence), and almost matches the gold standard of Oracle.
+
+Other Simulations. Learning results for our remaining domains are shown in Fig. 5. We emphasize
+that â because each of the other agentâs strategies in these settings is equally beneï¬cial for the ego
+agent â here LILI results in the same performance as LILI (no inï¬uence). Further analysis of
+these results is available in Appendix D.
+
+7
+
+Figure 6: Learning results for the air hockey experiment. (Left) Success rate across interactions. (Right) How
+frequently the opponent ï¬red left, middle, or right during the ï¬nal 200 interactions. Because the ego agent
+receives a bonus reward for blocking left, it should inï¬uence the opponent into ï¬ring left. At convergence,
+LILI (no inï¬uence) gets an average reward of 1.0 Â± 0.05 per interaction, while LILI gets 1.15 Â± 0.05.
+
+Complex Strategies. So far the other agentâs strategy has been relatively straightforward. To better
+understand the robustness of LILI, we next apply our approach to more complex settings. Speciï¬-
+cally, we introduce two different factors to the other agentâs strategy: i) noisy latent dynamics and
+ii) latent dynamics that depend on multiple previous interactions. Our results, presented in Ap-
+pendix E, demonstrate that LILI is robust to signiï¬cant levels of noise and is capable of modeling
+(and inï¬uencing) non-Markovian strategies that depend on reasonably long interaction histories.
+
+5.3 Air Hockey Results: Learning to Play Against Robot and Human Opponents
+
+Building on our simulation results, we perform a real-robot hockey experiment (see Supplementary
+Video). The ego agent learns alongside a robot opponent, and then plays against a human opponent.
+Both human and robot update their policy to aim for the ego agentâs weak side.
+
+Learning with a Robot Opponent. Our learning results are summarized in Fig. 6. When moving
+randomly, the ego agent blocks the puck 18% of the time. By contrast, SAC learns to specialize in
+blocking one half of the board â either right or left â and converges to a success rate of 44% over
+the ï¬nal 100 interactions. Only our proposed approach is able to co-adapt with all of the opponentâs
+changing intentions: LILI blocks the puck in 91% of the last 100 interactions.
+
+Next, recall that the ego agent receives a bonus for blocking on the left side of the board. LILI (no
+inï¬uence) fails to guide the opponent into taking advantage of this bonus: the distribution over the
+opponentâs strategies is uniform. However, LILI causes the opponent to strike left 41% of the time.
+By rule, the striker always changes where they ï¬re: so here the ego agent manipulates the striker
+into alternating between the left and middle strategies (see example in Fig. 1).
+
+Playing Against a Human Expert. We also deploy the converged policies for SAC and LILI (no
+inï¬uence) against an expert human. Like the robot striker, this human aims away from where the ego
+agent blocked during the previous interaction. The human was given 10 minutes to practice striking
+the puck, and then we recorded 40 consecutive interactions. Our proposed approach performs much
+better when playing alongside the non-stationary human: SAC blocks 45% of shots (18/40), while
+LILI (no inï¬uence) blocks 73% (29/40). Please see the supplementary video for examples.
+
+6 Discussion
+
+Summary. We proposed a framework for multi-agent interaction that represents the low-level poli-
+cies of non-stationary agents with high-level latent strategies, and incorporates these strategies into
+an RL algorithm. Robots with our approach were able to anticipate how their behavior would affect
+another agentâs latent strategy, and actively inï¬uenced that agent for more seamless co-adaptation.
+
+Limitations. We originally intended to test our approach LILI with human opponents, but we found
+that â although LILI worked well when playing against another robot â the learned policy was
+too brittle to interact alongside humans. Speciï¬cally, LILI learned to block the puck with the edges
+of its paddle, which led to more failures when humans shot imperfectly. Future work will therefore
+improve the robustness of our algorithm by learning under noisier conditions and ï¬ne-tuning the
+policy on humans. Finally, instead of training alongside artiï¬cial agents, we also hope to study the
+human-in-the-loop setting to adapt to the dynamic needs and preferences of people.
+
+8
+
+Acknowledgments
+
+This work was supported by NSF Award #1941722 and #2006388, ONR grant N00014-20-1-2675,
+and JPMorgan Chase & Co. Any views or opinions expressed herein are solely those of the authors
+listed, and may differ from the views and opinions expressed by JPMorgan Chase & Co. or its
+afï¬liates. This material is not a product of the Research Department of J.P. Morgan Securities LLC.
+This material should not be construed as an individual recommendation for any particular client and
+is not intended as a recommendation of particular securities, ï¬nancial instruments or strategies for a
+particular client. This material does not constitute a solicitation or offer in any jurisdiction.
+
+References
+
+[1] B. D. Davison and H. Hirsh. Predicting sequences of user actions. In Workshops at the AAAI Conference
+
+on Artiï¬cial Intelligence, 1998.
+
+[2] P. Stone, P. Riley, and M. Veloso. Deï¬ning and using ideal teammate and opponent agent models: A case
+study in robotic soccer. In Proceedings Fourth International Conference on MultiAgent Systems, 2000.
+[3] R. Mealing and J. L. Shapiro. Opponent modeling by expectationâmaximization and sequence prediction
+
+in simpliï¬ed poker. IEEE Transactions on Computational Intelligence and AI in Games, 2015.
+
+[4] S. V. Albrecht, J. W. Crandall, and S. Ramamoorthy. E-hba: Using action policies for expert advice and
+agent typiï¬cation. In Workshops at the Twenty-Ninth AAAI Conference on Artiï¬cial Intelligence, 2015.
+[5] A. Grover, M. Al-Shedivat, J. K. Gupta, Y. Burda, and H. Edwards. Learning policy representations in
+
+multiagent systems. arXiv preprint arXiv:1806.06464, 2018.
+
+[6] J. Foerster, I. A. Assael, N. De Freitas, and S. Whiteson. Learning to communicate with deep multi-agent
+reinforcement learning. In Advances in neural information processing systems, pages 2137â2145, 2016.
+[7] R. Lowe, Y. I. Wu, A. Tamar, J. Harb, O. P. Abbeel, and I. Mordatch. Multi-agent actor-critic for mixed
+cooperative-competitive environments. In Advances in neural information processing systems, 2017.
+[8] J. N. Foerster, G. Farquhar, T. Afouras, N. Nardelli, and S. Whiteson. Counterfactual multi-agent policy
+
+gradients. In Thirty-second AAAI conference on artiï¬cial intelligence, 2018.
+
+[9] H. He, J. Boyd-Graber, K. Kwok, and H. DaumÂ´e III. Opponent modeling in deep reinforcement learning.
+
+In International Conference on Machine Learning, pages 1804â1813, 2016.
+
+[10] P. Hernandez-Leal, Y. Zhan, M. E. Taylor, L. E. Sucar, and E. M. De Cote. Efï¬ciently detecting switches
+
+against non-stationary opponents. Autonomous Agents and Multi-Agent Systems, 31(4):767â789, 2017.
+
+[11] J. Foerster, R. Y. Chen, M. Al-Shedivat, S. Whiteson, P. Abbeel, and I. Mordatch. Learning with opponent-
+learning awareness. In International Conference on Autonomous Agents and MultiAgent Systems, 2018.
+[12] R. Everett and S. Roberts. Learning against non-stationary agents with opponent modelling and deep
+
+reinforcement learning. In 2018 AAAI Spring Symposium Series, 2018.
+
+[13] R. Kelley, A. Tavakkoli, C. King, M. Nicolescu, M. Nicolescu, and G. Bebis. Understanding human
+intentions via hidden markov models in autonomous mobile robots. In Proceedings of the 3rd ACM/IEEE
+international conference on Human robot interaction, pages 367â374, 2008.
+
+[14] T. Bandyopadhyay, K. S. Won, E. Frazzoli, D. Hsu, W. S. Lee, and D. Rus.
+
+Intention-aware motion
+
+planning. In Algorithmic foundations of robotics X, pages 475â491. Springer, 2013.
+
+[15] H. Bai, S. Cai, N. Ye, D. Hsu, and W. S. Lee. Intention-aware online pomdp planning for autonomous
+driving in a crowd. In 2015 ieee international conference on robotics and automation (icra). IEEE, 2015.
+[16] D. Sadigh, S. S. Sastry, S. A. Seshia, and A. Dragan. Information gathering actions over human internal
+state. In 2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2016.
+[17] C. Basu, E. Biyik, Z. He, M. Singhal, and D. Sadigh. Active learning of reward dynamics from hierarchi-
+cal queries. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2019.
+[18] D. P. Losey and D. Sadigh. Robots that take advantage of human trust. In International Conference on
+
+Intelligent Robots and Systems (IROS), 2019.
+
+[19] A. Rubinstein and C.-j. Dalgaard. Modeling bounded rationality. MIT press, 1998.
+[20] Z. Wang, K. MÂ¨ulling, M. P. Deisenroth, H. Ben Amor, D. Vogt, B. SchÂ¨olkopf, and J. Peters. Probabilistic
+movement modeling for intention inference in humanârobot interaction. The International Journal of
+Robotics Research, 32(7):841â858, 2013.
+
+[21] R. Raileanu, E. Denton, A. Szlam, and R. Fergus. Modeling others using oneself in multi-agent reinforce-
+
+ment learning. arXiv preprint arXiv:1802.09640, 2018.
+
+[22] D. P. Losey, M. Li, J. Bohg, and D. Sadigh. Learning from my partnerâs actions: Roles in decentralized
+
+robot teams. In Conference on Robot Learning, pages 752â765, 2020.
+
+[23] C. Zhang and V. Lesser. Multi-agent learning with policy prediction. In Twenty-fourth AAAI conference
+
+on artiï¬cial intelligence, 2010.
+
+[24] C. Baker, R. Saxe, and J. Tenenbaum. Bayesian theory of mind: Modeling joint belief-desire attribution.
+
+In Proceedings of the annual meeting of the cognitive science society, volume 33, 2011.
+
+9
+
+[25] N. C. Rabinowitz, F. Perbet, H. F. Song, C. Zhang, S. Eslami, and M. Botvinick. Machine theory of mind.
+
+arXiv preprint arXiv:1802.07740, 2018.
+
+[26] G. Papoudakis and S. V. Albrecht. Variational autoencoders for opponent modeling in multi-agent sys-
+
+tems. arXiv preprint arXiv:2001.10829, 2020.
+
+[27] M. Woodward, C. Finn, and K. Hausman. Learning to interactively learn and assist. In AAAI Conference
+
+on Artiï¬cial Intelligence, 2020.
+
+[28] A. Lazaridou, A. Peysakhovich, and M. Baroni. Multi-agent cooperation and the emergence of (natural)
+
+language. arXiv preprint arXiv:1612.07182, 2016.
+
+[29] S. Sukhbaatar, R. Fergus, et al. Learning multiagent communication with backpropagation. In Advances
+
+in neural information processing systems, pages 2244â2252, 2016.
+
+[30] I. Mordatch and P. Abbeel. Emergence of grounded compositional language in multi-agent populations.
+
+In Thirty-Second AAAI Conference on Artiï¬cial Intelligence, 2018.
+
+[31] N. Jaques, A. Lazaridou, E. Hughes, C. Gulcehre, P. Ortega, D. Strouse, J. Z. Leibo, and N. De Freitas.
+In International
+
+Social inï¬uence as intrinsic motivation for multi-agent deep reinforcement learning.
+Conference on Machine Learning, pages 3040â3049, 2019.
+
+[32] M. Chen, S. Nikolaidis, H. Soh, D. Hsu, and S. Srinivasa. Planning with trust for human-robot collabora-
+tion. In Proceedings of the ACM/IEEE International Conference on Human-Robot Interaction, 2018.
+[33] A. D. Dragan, K. C. Lee, and S. S. Srinivasa. Legibility and predictability of robot motion. In 2013 8th
+
+ACM/IEEE International Conference on Human-Robot Interaction (HRI), pages 301â308. IEEE, 2013.
+
+[34] M. Kwon, M. Li, A. Bucquet, and D. Sadigh. Inï¬uencing leading and following in human-robot teams.
+
+In Robotics: Science and Systems, 2019.
+
+[35] D. Sadigh, S. Sastry, S. A. Seshia, and A. D. Dragan. Planning for autonomous cars that leverage effects
+
+on human actions. In Robotics: Science and Systems, volume 2. Ann Arbor, MI, USA, 2016.
+
+[36] D. Sadigh, N. Landolï¬, S. S. Sastry, S. A. Seshia, and A. D. Dragan. Planning for cars that coordinate
+with people: Leveraging effects on human actions for planning and active information gathering over
+human internal state. Autonomous Robots (AURO), 42(7):1405â1426, October 2018. ISSN 1573-7527.
+
+[37] A. Bestick, R. Bajcsy, and A. D. Dragan. Implicitly assisting humans to choose good grasps in robot to
+
+human handovers. In International Symposium on Experimental Robotics. Springer, 2016.
+
+[38] L. P. Kaelbling, M. L. Littman, and A. R. Cassandra. Planning and acting in partially observable stochastic
+
+domains. Artiï¬cial intelligence, 101(1-2):99â134, 1998.
+
+[39] M. Igl, L. Zintgraf, T. A. Le, F. Wood, and S. Whiteson. Deep variational reinforcement learning for
+
+pomdps. arXiv preprint arXiv:1806.02426, 2018.
+
+[40] D. Hafner, T. Lillicrap, I. Fischer, R. Villegas, D. Ha, H. Lee, and J. Davidson. Learning latent dynamics
+for planning from pixels. In International Conference on Machine Learning, pages 2555â2565, 2019.
+[41] A. X. Lee, A. Nagabandi, P. Abbeel, and S. Levine. Stochastic latent actor-critic: Deep reinforcement
+
+learning with a latent variable model. arXiv preprint arXiv:1907.00953, 2019.
+
+[42] F. Doshi-Velez and G. Konidaris. Hidden parameter markov decision processes: A semiparametric re-
+
+gression approach for discovering latent task parametrizations. In IJCAI, 2016.
+
+[43] A. Xie, J. Harrison, and C. Finn. Deep reinforcement learning amidst lifelong non-stationarity. arXiv
+
+preprint arXiv:2006.10701, 2020.
+
+[44] B. E. Bishop and M. W. Spong. Vision-based control of an air hockey playing robot.
+
+IEEE Control
+
+Systems Magazine, 19(3):23â32, 1999.
+
+[45] W.-J. Wang, I.-D. Tsai, Z.-D. Chen, and G.-H. Wang. A vision based air hockey system with fuzzy
+
+control. In Proceedings of the International Conference on Control Applications. IEEE.
+
+[46] D. C. Bentivegna, A. Ude, C. G. Atkeson, and G. Cheng. Humanoid robot learning and game playing
+using pc-based vision. In IEEE/RSJ international conference on intelligent robots and systems, 2002.
+[47] M. Ogawa, S. Shimizu, T. Kadogawa, T. Hashizume, S. Kudoh, T. Suehiro, Y. Sato, and K. Ikeuchi. Devel-
+opment of air hockey robot improving with the human players. In IECON 2011-37th Annual Conference
+of the IEEE Industrial Electronics Society, pages 3364â3369. IEEE, 2011.
+
+[48] A. Namiki, S. Matsushita, T. Ozeki, and K. Nonami. Hierarchical processing architecture for an air-
+hockey robot system. In 2013 IEEE International Conference on Robotics and Automation. IEEE, 2013.
+[49] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine. Soft actor-critic: Off-policy maximum entropy deep
+
+reinforcement learning with a stochastic actor. arXiv preprint arXiv:1801.01290, 2018.
+
+[50] R. Vidal, O. Shakernia, H. J. Kim, D. H. Shim, and S. Sastry. Probabilistic pursuit-evasion games: theory,
+implementation, and experimental evaluation. IEEE transactions on robotics and automation, 2002.
+[51] G. Brockman, V. Cheung, L. Pettersson, J. Schneider, J. Schulman, J. Tang, and W. Zaremba. Openai
+
+gym. arXiv preprint arXiv:1606.01540, 2016.
+
+[52] A. Dosovitskiy, G. Ros, F. Codevilla, A. Lopez, and V. Koltun. Carla: An open urban driving simulator.
+
+arXiv preprint arXiv:1711.03938, 2017.
+
+[53] H. A. Simon. Models of bounded rationality: Empirically grounded economic reason, volume 3. MIT
+
+press, 1997.
+
+10
+
+Appendix
+
+COVID-19 Effects. We are fortunate to test our proposed approach on real world robots. However,
+the extent of our experiments is limited by the current COVID pandemic. We originally planned
+to conduct a full-scale user study, where 10+ human participants play hockey against our learning
+agent. This study would focus on how LILI enables a robot to interact alongside humans who change
+and update their policy in response to that robot. Unfortunately, local restrictions to lab access
+prevented us from starting with the robots until mid-June. After setting up the hockey environment
+and developing LILI & other algorithms, we performed a proof-of-concept pilot study right before
+the deadline. As described in Section 6, we here found that LILI was not sufï¬ciently robust for
+an immediate user study. However, we feel that the necessary changes are straightforward â e.g.,
+training against a noisier robot opponent â and therefore we believe that this user study will be
+successful given normal access to robots and human participants.
+
+A Implementation Details
+
+Our encoder and decoder networks are both multilayer perceptrons with 2 fully-connected layers
+of size 128 each, and we use a latent space size of 8. For the reinforcement learning module, the
+policy and critic networks are MLPs with 2 fully-connected layers of size 256. During training, the
+encoder network weights are updated with gradients from both the representation learning objective
+Jrep and the critic loss JQ from the soft actor-critic algorithm.
+
+B Experimental Details: Simulated Domains
+
+B.1 Point Mass
+
+In this environment, the ego agent must reach the target position, which is unknown to the ego.
+Between interactions, the target z moves along a ï¬xed-radius circle. In particular, if the ego agentâs
+position after 50 timesteps is inside of the circle, then the target moves 0.2 radians clockwise after the
+interaction. If the ego agent ends outside of the circle, the target moves 0.2 radians counterclockwise.
+The reward function in this environment is in terms of the distance between the ego and target,
+R(s, z) = â(cid:107)s â z(cid:107)2. For the oracle comparison, we augment the observation space with the target
+position z.
+
+B.2 Lunar Lander
+
+The ego agentâs goal is to land on the launchpad with 2 controls (main engine and left-right engine),
+the position z for which is unknown to the ego. The launchpad alternates between z = [0.4, 0.2] and
+z = [â0.4, 0.2] at every interaction. Hence, the latent dynamics in the environment are independent
+of the interactions, and evolve only as a function of time. At every time-step, the ego agent receives
+reward,
+
+R(s, a, z) = â(cid:107)spos â z(cid:107)2
+
+2 â (cid:107)svel(cid:107)2
+
+2 â |sÎ¸|
+
+â 0.0015 â (clip(a0, 0, 1) + 1) â 0.0003 â clip(abs(a1), 0.5, 1),
+
+where the spos denotes the landerâs x- and y-position, svel denotes the landerâs x- and y- velocities,
+and sÎ¸ is the landerâs angle with respect to the ground. When the interaction terminates, the terminal
+reward is
+
+R(s, a, z) =
+
+(cid:26)+1
+
+â(cid:107)spos â z(cid:107)2
+
+if (cid:107)spos â z(cid:107)2 < 0.1
+otherwise.
+
+For the oracle, we augment the observation space with the position of the launchpad z.
+
+B.3 Driving (2D)
+
+In this simpler driving domain, the ego agent needs to pass the other agent, which is also quickly
+switching lanes during the interaction. In interaction i, the other agent switches to the lane that the
+ego agent last selected in interaction i â 1. Switching to the same lane as the other agent may cause
+a collision, and the ego agent is given a reward of â1 if a collision occurs and 0 otherwise. The ego
+agent observes its own position and the other agentâs position at each time-step, and the interaction
+ends after 10 time-steps. The oracle agent is additionally given knowledge of the lane the other
+agent plans to switch to as a one-hot vector.
+
+11
+
+B.4 Driving (CARLA)
+
+In the CARLA simulations, our ego agentâs goal is to pass an opponent who alternates direction of
+aggressive lane switches in order to block the lane that the ego agent selected in interaction i â 1.
+Unlike the simpler Driving (2D) domain, the ego agent is exposed only to steering wheel angles
+which affect direction and magnitude of velocity and acceleration. Likewise, the complexity of
+the environment is increased by the inclusion of early termination for collisions or lane boundary
+violations, causing episode lengths to vary from 5 to 20 time-steps. The ego agent is given a reward
+of â1 for any collisions or lane violations and 0 otherwise. At each time-step, the ego agent observes
+both the opponentâs and its own position, directional velocity, and angular velocity. The oracle agent
+is given knowledge of the lane the opponent intends to veer towards as a one-hot vector.
+
+C Experimental Details: Robotic Air Hockey
+
+In this domain, we set up two Franka Emika Panda robot arms to play air hockey against one another.
+Speciï¬cally, we designate the ego agent as the blocking robot and the other agent as the striking
+opponent. The striking mode has three modes: aiming to the left, middle, and right, and switches
+between these modes as described in Table 1.
+
+Current Mode
+
+Left
+
+Middle
+
+Right
+
+Left of ego?
+Right of ego?
+Left of ego?
+Right of ego?
+Left of ego?
+Right of ego?
+
+Next Mode
+Middle
+Right
+Left
+Right
+Center
+Left
+
+Table 1: The opponent is designed to aim away from the ego agent, based on the ego agentâs ï¬nal
+position in the previous interaction. For example, if the opponent last shot down the middle and the
+ego agent moved slightly to the right to block it, then the puck ended up to the left of the ego agent
+and the opponent will select the left mode next.
+
+The ego agent controls its lateral displacement to block pucks along a horizontal axis. At every
+time-step, the ego agent observes its own end-effector position and the vertical position of the puck,
+and incurs a cost corresponding to the lateral distance of its end-effector to the puck. An interaction
+terminates when the puck reaches the ego agent; if the ego successfully blocks the puck, it receives
+a reward of +1 and otherwise 0. If the ego successfully blocks a left shot, it receives an additional
+reward of +1.
+
+D Experimental Results: Analysis of Simulation Results
+
+D.1 Lunar Lander
+
+In these experiments, we see near identical convergence rates for LILI (no inï¬uence) and the Oracle
+agents, with both successfully learning to land on the launchpad and model the opponentâs alternat-
+ing coordinates. Due to the simple dynamics of the other agent, baseline agents for SAC, SLAC,
+and LILAC all performed quite similarly, either randomizing directions or consistently choosing the
+same path, leading to landing rates near 50% as expected. Notably, LILAC did not perform better
+than SAC or SLAC, even though this environment adheres to the assumptions of LILAC. This may
+be due to optimization challenges in LILAC that are not present in our approach, i.e., regularizing
+the encoder to a learned prior.
+
+D.2 Driving (2D)
+
+In these simulated driving interactions, LILI (no inï¬uence) converged towards an optimal solution
+with near equivalent sample efï¬ciency as the Oracle, demonstrating its effectiveness. Both SAC
+and LILAC agents learned to avoid rear-end collisions with the opponent, attempting to randomize
+the choice of passing lane, yielding success rates closer towards the 50% upper bound. In contrast,
+the SLAC agent consistently attempted to pass from same lane, resulting in persistent failures.
+
+12
+
+Method
+
+Ours-0.0
+Ours-0.2
+Ours-0.4
+Ours-0.6
+Ours-0.8
+Ours-1.0
+
+SAC
+Oracle
+
+Final Rewards
+
+-0.7206 +/- 0.0061
+-0.8563 +/- 0.0539
+-1.039 +/- 0.0311
+-1.188 +/- 0.0520
+-1.726 +/- 0.1744
+-1.715 +/- 0.0535
+
+-5.047 +/- 0.0190
+-0.5434 +/- 0.0605
+
+Method
+
+Ours-1
+Ours-3
+Ours-5
+Ours-7
+Ours-9
+Ours-11
+
+SAC
+Oracle
+
+Final Rewards
+
+-0.7206 +/- 0.0061
+-0.8969 +/- 0.0276
+-1.736 +/- 0.1481
+-3.232 +/- 0.6576
+-3.046 +/- 0.2468
+-4.486 +/- 0.4979
+
+-5.162 +/- 0.0865
+-0.5605 +/- 0.0361
+
+Table 2: LILI evaluated in the Point Mass
+domain against agents with varying noise
+levels in their strategies. We add Gaussian
+noise to the other agentâs step size Ï =
+0.0v, 0.2v, 0.4v, 0.6v, 0.8v, 1.0v, with aver-
+age step size v.
+
+Table 3: LILI evaluated in the Point Mass
+domain against agents whose strategies de-
+pend on the previous N interactions, for
+N = 1, 3, 5, 7, 9, 11.
+
+D.3 Driving (CARLA)
+
+The increased complexity of the CARLA simulated environment combined with early interaction
+terminations provided several stages of learning challenges for agents â avoiding lane boundary vi-
+olations, rear-end collisions with the opponent vehicle, and successfully predicting opponent lane
+switches. Training visualizations indicate that the Oracle agent, after successfully learning to avoid
+lane boundary violations and rear-end collisions, quickly grasped the lane changing mechanisms
+and converged to an optimal solution. Both SLAC and LILAC agents suffered particularly from
+convergence towards repeated local minima â consistently choosing the same passing lane with only
+minor steering alterations to extend the episode length, but ultimately colliding with the opponent.
+Next, the SAC agent performed close to the theoretical no-information upper bound by successfully
+mixing its strategy. By randomizing which lane to pass from, the SAC agent succeeded nearly 50%
+of the time.) Lastly, LILI (no inï¬uence) eventually converged to an optimal solution, successfully
+passing on each interaction. We note that during training, LILI (no inï¬uence) successfully learned
+a pattern of alternation, but often failed to recover the correct alternating parity correctly from occa-
+sional rear-end collisions, leading to extended series of failed interactions. In contrast to our other
+simulated environments, LILI (no inï¬uence) converged much slower likely as a result of these early
+terminating episodes increasing the difï¬culty in inferring the latent strategy dynamics.
+
+E Experimental Results: More Complex Strategies
+
+E.1 Agent Strategies with Noise
+
+We next study the robustness of our approach by evaluating LILI against agents with noisy strate-
+gies. To do so, we modify the Point Mass domain: whereas the other agent in the original task took
+ï¬xed-size steps between interactions, in this experiment, we add a Gaussian noise to the step size v,
+for Ï = 0.2v, 0.4v, 0.6v, 0.8v, 1.0v.
+
+In Table 2, we report the ï¬nal average rewards and standard error obtained from 3 random seeds for
+each value of Ï. The Ï = 0.0 case corresponds to the original, noiseless Point Mass setting. While
+the performance of LILI slightly degrades as the magnitude of noise increases, LILI can still model
+the other agentâs strategies and signiï¬cantly outperforms the SAC baseline, even under very noisy
+conditions. We observe that SAC and the Oracle perform similarly across different noise levels, and
+report the aggregated results across all runs.
+
+E.2 Agent Strategies with History Dependence
+
+To understand whether LILI can learn to model more complex strategies, we evaluate our approach
+against agents whose strategies depend on a longer history of interactions. Concretely, we include
+an experiment in the Point Mass domain in which the other agentâs strategy now depends on the
+previous N interactions, instead of only the last interaction, for N = 3, 5, 7, 9, 11. Speciï¬cally, the
+
+13
+
+other agent moves counterclockwise if, in the majority of the last N interactions, the ego agentâs
+ï¬nal position is inside of the circle, and moves clockwise otherwise. We modify LILI so that its
+encoder takes the last N trajectories as input.
+
+We expect LILI to perform worse as N increases, because the opponentâs strategies become more
+complex and harder to model. However, we would like to emphasize that we generally expect N to
+be small when interacting with humans due to their bounded rationality [53], and in this work, we
+follow this assumption, and are motivated by scenarios where the strategy can be inferred from a
+short history of interactions.
+
+We report the ï¬nal average rewards and standard error from 3 random seeds in Table 3. The N = 1
+case corresponds to the original Point Mass setting. The ï¬nal performance of LILI degrades as the
+history length N increases and the other agentâs latent strategies become more difï¬cult to model.
+LILI still performs better than the SAC baseline for smaller values of N , but achieves similar
+rewards as the SAC baseline for N = 11. Because the SAC baseline and the Oracle do not model
+the other agentâs strategies, we ï¬nd that they perform similarly across different values of N > 1,
+and report the aggregated results across all runs.
+
+14
+
+

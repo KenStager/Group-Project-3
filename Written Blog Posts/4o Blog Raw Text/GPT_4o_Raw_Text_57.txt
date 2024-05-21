@@ -1,0 +1,78 @@
+## Subjective Knowledge and Reasoning About Agents in Multi-Agent Systems
+
+### Introduction
+
+In the realm of artificial intelligence (AI), multi-agent systems (MAS) are a crucial area of research. These systems involve multiple interacting agents, which can be anything from robots to software entities. Traditionally, much of the focus in MAS research has been on reasoning about the knowledge and beliefs of these agents. However, there's an often-overlooked aspect: the explicit representation and reasoning about the presence or absence of agents. This oversight becomes significant in scenarios where agents might be unaware of others joining or leaving the system, leading to partial or asymmetric knowledge. This blog post delves into how Kripke structure-based epistemic models can be extended to express these notions based on an agent's subjective knowledge, and the challenges involved in this endeavor.
+
+### Understanding the Basics
+
+#### Kripke Models and Epistemic Logic
+
+To set the stage, let's briefly revisit the fundamentals of epistemic logic and Kripke models. Epistemic logic, often called the logic of knowledge and beliefs, helps reason about what agents know about the world and each other. In this logic, `Kiφ` denotes that agent `i` knows `φ`. Kripke models provide a semantic foundation for epistemic logic. A Kripke model is a triple `M = (S, R, V)`, where:
+- `S` is a set of possible states.
+- `R` is an accessibility relation function, defining which states are accessible to which agents.
+- `V` is a valuation function indicating where propositions hold true.
+
+#### The Global Epistemic Structure
+
+In MAS, agents often operate within a global epistemic structure, where they access overlapping and non-overlapping local regions, resulting in subjective knowledge. This setup means an agent might be unaware of other agents existing in the system—a crucial aspect when developing robust MAS, especially in dynamic environments where agents frequently join or leave.
+
+### Expanding the Epistemic Models
+
+#### Motivational Example: Multi-Vehicle Search and Rescue
+
+Consider a multi-vehicle search and rescue mission involving three unmanned vehicles—V1, V2, and V3. Each vehicle surveys different points, looking for survivors and communicating findings. If V1 fails and goes offline, V2 and V3 must adapt their beliefs and strategies. Conversely, if new vehicles join or V1 comes back online, V2 and V3 must recognize the change and update their beliefs again. This scenario exemplifies the need for flexible epistemic models that can accommodate changing agent presence.
+
+#### Epistemic Logic and KD45 Kripke Structures
+
+The KD45 Kripke structures are typically used to model agent beliefs rather than knowledge. These structures assume agents are aware of all other agents, a premise that doesn't hold in dynamic MAS environments. By relaxing this assumption, we can model scenarios where agents might be ignorant of the presence of others.
+
+### Developing a Formalism for Subjective Knowledge
+
+Introducing subjective knowledge into Kripke models involves distinguishing between different levels of ignorance. One level is where an agent is uncertain about the truth of a proposition but knows it can be known. The other level, which we focus on, is where an agent is unaware of the existence of certain other agents.
+
+#### Extending the Language
+
+To capture these subtleties, we introduce two modal operators:
+- `Pi`: Possibly an agent for i.
+- `Ci`: Certainly an agent for i.
+
+These operators help formalize an agent's uncertainty about the presence of other agents. The full set of formulas can be defined using BNF notation:
+```
+φ = p | ¬φ | (φ ∧ ψ) | Kiφ | Cij | Pij
+```
+Here, `Cij` indicates that agent `i` is certain about the presence of agent `j`, while `Pij` is its dual, indicating the possibility.
+
+### Formalizing the Epistemic Models
+
+In the extended framework, we define local states corresponding to each agent and use these to model the agent's subjective knowledge. For example, consider a KD45 Kripke model with agents `m`, `f`, and `g` in a finite set of states `S`. If agent `m` is unaware of `g`, this model can express how `m`'s beliefs differ from the actual multi-agent scenario.
+
+### Ontological Updates
+
+#### Update_offline(j)
+
+When an agent `j` goes offline, the model is updated to reflect this absence. The steps involve:
+1. Replicating the initial model.
+2. Removing agent `j` from the agent set `AG`.
+3. Updating the accessibility relations and local states.
+
+#### Update_online(j, I(j))
+
+When a new agent `j` comes online, the model is updated to incorporate its presence. This involves:
+1. Replicating the initial model.
+2. Adding agent `j` to the agent set `AG`.
+3. Defining new local states for `j` and updating the accessibility relations.
+
+### Epistemic Lies vs. Ontological Lies
+
+Lies in MAS can be categorized into epistemological and ontological lies. The former involves misleading information about known facts, while the latter involves creating new, fictional agents or scenarios. For instance, misinforming agents about the presence of a non-existent agent falls under ontological lies.
+
+### Conclusion
+
+This exploration of subjective knowledge and reasoning in multi-agent systems highlights the importance of accommodating dynamic agent presence. By extending Kripke models to include subjective knowledge, we pave the way for more flexible and robust MAS. Future work could delve deeper into the practical applications of this formalism in planning-based AI settings and address the outstanding issues related to dynamic agent knowledge.
+
+**What are your thoughts on subjective knowledge in multi-agent systems? Have you encountered scenarios where this would be useful? Share your experiences in the comments below!**
+
+---
+
+This blog post provides a comprehensive overview of subjective knowledge and reasoning in multi-agent systems, offering insights into extending traditional epistemic models to account for dynamic agent presence. By incorporating relevant examples and formalizations, it aims to engage both AI enthusiasts and professionals in a meaningful discussion.

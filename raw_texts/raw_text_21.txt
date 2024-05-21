@@ -1,0 +1,5806 @@
+0
+2
+0
+2
+
+n
+a
+J
+
+7
+2
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+2
+2
+1
+0
+1
+.
+1
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+Regret Bounds for Decentralized Learning in Cooperative
+Multi-Agent Dynamical Systems
+
+Seyed Mohammad Asghari
+
+Yi Ouyang
+University of Southern California Preferred Networks America, Inc University of Southern California
+
+Ashutosh Nayyar
+
+Abstract
+
+1 Introduction
+
+Regret analysis is challenging in Multi-Agent
+Reinforcement Learning (MARL) primarily
+due to the dynamical environments and the
+decentralized information among agents. We
+attempt to solve this challenge in the con-
+text of decentralized learning in multi-agent
+linear-quadratic (LQ) dynamical systems.
+We begin with a simple setup consisting of
+two agents and two dynamically decoupled
+stochastic linear systems, each system con-
+trolled by an agent. The systems are coupled
+through a quadratic cost function. When
+both systemsâ dynamics are unknown and
+there is no communication among the agents,
+we show that no learning policy can generate
+sub-linear in T regret, where T is the time
+horizon. When only one systemâs dynam-
+ics are unknown and there is one-directional
+communication from the agent controlling
+the unknown system to the other agent, we
+propose a MARL algorithm based on the
+construction of an auxiliary single-agent LQ
+problem. The auxiliary single-agent problem
+in the proposed MARL algorithm serves as an
+implicit coordination mechanism among the
+two learning agents. This allows the agents to
+achieve a regret within O(
+T ) of the regret
+of the auxiliary single-agent problem. Conse-
+quently, using existing results for single-agent
+LQ regret, our algorithm provides a ËO(
+T )
+regret bound. (Here ËO(Â·) hides constants and
+logarithmic factors). Our numerical exper-
+iments indicate that this bound is matched
+in practice. From the two-agent problem, we
+extend our results to multi-agent LQ systems
+with certain communication patterns.
+
+â
+
+â
+
+Multi-agent systems arise in many diï¬erent domains,
+including multi-player card games (Bard et al., 2019),
+robot teams (Stone and Veloso, 1998), vehicle forma-
+tions (Fax and Murray, 2004), urban traï¬c control
+(De Oliveira and Camponogara, 2010), and power grid
+operations (Schneider et al., 1999). A multi-agent sys-
+tem consists of multiple autonomous agents operat-
+ing in a common environment. Each agent gets ob-
+servations from the environment (and possibly from
+some other agents) and, based on these observations,
+each agent chooses actions to collect rewards from
+the environment. The agentsâ actions may inï¬uence
+the environment dynamics and the reward of each
+agent. Multi-agent systems where the environment
+model is known to all agents have been considered un-
+der the frameworks of multi-agent planning (Oliehoek
+et al., 2016), decentralized optimal control (YÂ¨uksel and
+BaÂ¸sar, 2013), and non-cooperative game theory (Basar
+and Olsder, 1999).
+In realistic situations, however,
+the environment model is usually only partially known
+or even totally unknown. Multi-Agent Reinforcement
+Learning (MARL) aims to tackle the general situation
+of multi-agent sequential decision-making where the
+environment model is not completely known to the
+agents.
+In the absence of the environmental model,
+each agent needs to learn the environment while in-
+teracting with it to collect rewards. In this work, we
+focus on decentralized learning in a cooperative multi-
+agent setting where all agents share the same reward
+(or cost) function.
+
+A number of successful learning algorithms have been
+developed for Single-Agent Reinforcement Learning
+(SARL) in single-agent environment models such as
+ï¬nite Markov decision processes (MDPs) and linear
+quadratic (LQ) dynamical systems. To extend SARL
+algorithms to cooperative MARL problems, one key
+challenge is the coordination among agents (Panait
+and Luke, 2005; Hernandez-Leal et al., 2017). In gen-
+eral, agents have access to diï¬erent information and
+hence agents may have diï¬erent views about the envi-
+ronment from their diï¬erent learning processes. This
+
+ 
+ 
+ 
+ 
+ 
+ 
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+diï¬erence in perspectives makes it diï¬cult for agents
+to coordinate their actions for maximizing rewards.
+
+One popular method to resolve the coordination issue
+is to have a central entity collect information from all
+agents and determine the policies for each agent. Sev-
+eral works generalize SARL methods to multi-agent
+settings with such an approach by either assuming the
+existence of a central controller or by training a cen-
+tralized agent with information from all agents in the
+learning process, which is the idea of centralized train-
+ing with decentralized execution (Foerster et al., 2016;
+Dibangoye and Buï¬et, 2018; Hernandez-Leal et al.,
+2018). With centralized information, the learning
+problem reduces to a single-agent problem which can
+be readily solved by SARL algorithms. In many real-
+world scenarios, however, there does not exist a cen-
+tral controller or a centralized agent receiving all the
+information. Agents have to learn in a decentralized
+manner based on the observations they get from the
+environment and possibly from some other agents. In
+the absence of a centralized entity, an eï¬cient MARL
+algorithm should guide each agent to learn the envi-
+ronment while maintaining certain level of coordina-
+tion among agents.
+
+Moreover, in online learning scenarios, the trade-oï¬
+between exploration and exploitation is critical for the
+performance of a MARL algorithm during learning
+(Hernandez-Leal et al., 2017). Most existing SARL
+algorithms balance the exploration-exploitation trade
+oï¬ by controlling the posterior estimates/beliefs of the
+agent. Since multiple agents have decentralized in-
+formation in MARL, it is not possible to directly ex-
+tend SARL methods given the agentsâ distinct pos-
+terior estimates/beliefs. Furthermore, the fact that
+each agentâs estimates/beliefs may be private to itself
+prevents any direct imitation of SARL. These issues
+make it extremely challenging to design coordinated
+policies for multiple agents to learn the environment
+and maintain good performance during learning.
+In
+this work, we attempt to solve this challenge in on-
+line decentralized MARL in the context of multi-agent
+learning in linear-quadratic (LQ) dynamical systems.
+Learning in LQ systems is an ideal benchmark for
+studying MARL due to a combination of its theoretical
+tractability and its practical application in various en-
+gineering domains (AstrÂ¨om and Murray, 2010; Abbeel
+et al., 2007; Levine et al., 2016; Abeille et al., 2016;
+Lazic et al., 2018).
+
+We begin with a simple setup consisting of two agents
+and two stochastic linear systems as shown in Figure
+1. The systems are dynamically decoupled but cou-
+pled through a quadratic cost function. In spite of its
+simplicity, this setting illustrates some of the inherent
+challenges and potential results in MARL. When the
+
+parameters of both systems 1 and 2 are known to both
+agents, the optimal solution to this multi-agent con-
+trol problem can be computed in closed form (Ouyang
+et al., 2018). We consider the settings where the sys-
+tem parameters are completely or partially unknown
+and formulate an online MARL problem to minimize
+the agentsâ regret during learning. The regret is de-
+ï¬ned to be the diï¬erence between the cost incurred by
+the learning agents and the steady-state cost of the
+optimal policy computed using complete knowledge of
+the system parameters.
+
+We provide a ï¬nite-time regret analysis for a decentral-
+ized MARL problem with controlled dynamical sys-
+tems. In particular, we show that
+
+1. First, if all parameters of a system are unknown,
+then both agents should receive information about
+the state of this system; otherwise, there is no
+learning policy that can guarantee sub-linear re-
+gret for all instances of the decentralized MARL
+problem (Theorem 1 and Lemma 2).
+
+2. Further, when only one systemâs dynamics are un-
+known and there is one-directional communica-
+tion from the agent controlling the unknown sys-
+tem to the other agent, we propose a MARL algo-
+rithm with regret bounded by ËO(
+T ) (Theorem
+2 and Corollary 1).
+
+â
+
+The proposed MARL algorithm builds on an auxiliary
+SARL problem constructed from the MARL problem.
+Each agent constructs the auxiliary SARL problem by
+itself and applies a SARL algorithm A to it. Each
+agent chooses its action by modifying the output of
+the SARL algorithm A based on its information at
+each time.
+In our proposed algorithm, the auxiliary
+SARL problem serves as the critical coordination tool
+for the two agents to learn individually while jointly
+maintaining an exploration-exploitation balance.
+In
+fact, we will later show that the SARL dynamics can
+be seen as the ï¬ltering equation for the common state
+estimate of the agents.
+
+â
+
+We show that the regret achieved by our MARL al-
+gorithm is upper bounded by the regret of the SARL
+algorithm A in the auxiliary SARL problem plus an
+â
+T ). This implies that the
+overhead bounded by O(
+MARL regret can be bounded by ËO(
+T ) by letting A
+be one of the state-of-the-art SARL algorithms for LQ
+â
+systems which achieve ËO(
+T ) regret (Abbasi-Yadkori
+and SzepesvÂ´ari, 2011; Ibrahimi et al., 2012; Faradon-
+beh et al., 2017, 2019). Our numerical experiments
+indicate that this bound is matched in simulations.
+From the two-agent problem, we extend our results to
+multi-agent LQ systems with certain communication
+patterns.
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+Related work. There exists a rich and expanding
+body of work in the ï¬eld of MARL (Littman, 1994;
+Bu et al., 2008; NowÂ´e et al., 2012). Despite recent suc-
+cesses in empirical works including the adaptation of
+deep learning (Hernandez-Leal et al., 2018), many the-
+oretical aspects of MARL are still under-explored. As
+multiple agents learn and adapt their policies, the en-
+vironment is non-stationary from a single agentâs per-
+spective (Hernandez-Leal et al., 2017). Therefore, con-
+vergence guarantees of SARL algorithms are mostly
+invalid for MARL problems. Several works have ex-
+tended SARL algorithms to independent or cooper-
+ative agents and analyzed their convergence proper-
+ties (Tan, 1993; Greenwald et al., 2003; Matignon and
+Fort-Piat, 2012; Kar et al., 2013; Amato and Oliehoek,
+2015; Zhang et al., 2018; Gagrani and Nayyar, 2018;
+Wai et al., 2018). However, most of these works do not
+take into account the performance during learning ex-
+cept Bowling (2005). The algorithm of Bowling (2005)
+â
+T ), but the analysis is lim-
+has a regret bound of O(
+ited to repeated games. In contrast, we are interested
+in MARL in dynamical systems.
+
+Regret analysis in online learning has been mostly fo-
+cusing on multi-armed bandit (MAB) problems (Lai
+and Robbins, 1985). Upper-Conï¬dence-Bound (UCB)
+(Auer and Fischer, 2002; Bubeck and Cesa-Bianchi,
+2012; Dani et al., 2008) and Thompson Sampling
+(Thompson, 1933; Kaufmann et al., 2012; Agrawal
+and Goyal, 2013; Russo and Van Roy, 2014) are the
+two popular classes of algorithms that provide near-
+optimal regret guarantees in single-agent MAB. These
+ideas have been extended to certain multi-agent MAB
+settings (Liu and Zhao, 2010; Korda and Shuai, 2016;
+Nayyar and Jain, 2016). Multi-agent MAB can be
+viewed as a special class of MARL problems, but the
+lack of dynamics in MAB environments makes a dras-
+tic diï¬erence from the dynamical setting in this paper.
+
+In the learning of dynamical systems, recent works
+have adopted concepts from MAB to analyze the regret
+of SARL algorithms in MDP (Jaksch et al., 2010; Os-
+band et al., 2013; Gopalan and Mannor, 2015; Ouyang
+et al., 2017b) and LQ systems (Abbasi-Yadkori and
+SzepesvÂ´ari, 2011; Ibrahimi et al., 2012; Faradonbeh
+et al., 2017, 2019; Ouyang et al., 2017a; Faradon-
+beh et al., 2018; Abbasi-Yadkori and SzepesvÂ´ari, 2015;
+Abeille and Lazaric, 2018). Our MARL algorithm
+builds on these SARL algorithms by using the novel
+idea of constructing an auxiliary SARL problem for
+multi-agent coordination.
+
+Notation. The collection of matrices A1 and A2
+(resp. vectors x1 and x2) is denoted as A1,2 (resp.
+x1,2). Given column vectors x1 and x2, the notation
+vec(x1, x2) is used to denote the column vector formed
+by stacking x1 on top of x2. We use [P Â·,Â·]1,2 and
+
+System 1
+x1
+t
+
+x1
+t
+
+u1
+t
+
+Agent 1
+
+Î³1
+
+Î³2
+
+System 2
+x2
+t
+
+x2
+t
+
+u2
+t
+
+Agent 2
+
+Figure 1: Two-agent system model. Solid lines indicate
+communication links, dashed lines indicate control links,
+and dotted lines indicate the possibility of information
+sharing.
+
+diag(P 1, P 2) to denote the following block matrices,
+
+[P Â·,Â·]1,2 :=
+
+(cid:20)P 11 P 12
+P 21 P 22
+
+(cid:21)
+, diag(P 1, P 2) =
+
+(cid:20)P 1
+0
+
+(cid:21)
+.
+
+0
+P 2
+
+2 Problem Formulation
+
+Consider a multi-agent Linear-Quadratic (LQ) system
+consisting of two systems and two associated agents as
+shown in Figure 1. The linear dynamics of systems 1
+and 2 are given by
+
+x1
+t+1 = A1
+t+1 = A2
+x2
+
+âx1
+âx2
+
+t + B1
+t + B2
+
+âu1
+âu2
+
+t + w1
+t ,
+t + w2
+t ,
+
+(1)
+
+t â Rdn
+
+t â Rdn
+
+u is the action of agent n. A1,2
+
+where for n â {1, 2}, xn
+x is the state of system n
+and B1,2
+and un
+are system matrices with appropriate dimensions. We
+assume that for n â {1, 2}, wn
+t , t â¥ 0, are i.i.d with
+standard Gaussian distribution N (0, I). The initial
+states x1,2
+
+are assumed to be ï¬xed and known.
+
+â
+
+â
+
+0
+
+The overall system dynamics can be written as,
+
+xt+1 = Aâxt + Bâut + wt,
+
+(2)
+
+where we have deï¬ned xt = vec(x1
+t , u2
+vec(u1
+and Bâ = diag(B1
+
+t ), wt = vec(w1
+
+t , w2
+
+t ), Aâ = diag(A1
+
+t , x2
+
+t ), ut =
+â, A2
+â),
+
+â, B2
+
+â).
+
+At each time t, agent n, n â {1, 2}, perfectly observes
+the state xn
+t of its respective system. The pattern of in-
+formation sharing plays an important role in the anal-
+ysis of multi-agent systems. In order to capture diï¬er-
+ent information sharing patterns between the agents,
+let Î³n â {0, 1} be a ï¬xed binary variable indicating
+the availability of a communication link from agent n
+to the other agent. Then, in
+t which is the information
+sent by agent n to the other agent can be written as,
+
+(cid:40)
+
+xn
+t
+â
+
+in
+t =
+
+if Î³n = 1
+otherwise
+
+.
+
+(3)
+
+At each time t, agent nâs action is a function Ïn
+t ) where h1
+its information hn
+
+t , that is, un
+
+t = Ïn
+
+t (hn
+
+t of
+t =
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+0:t, u1
+
+0:t} and h2
+0:tâ1, i2
+{x1
+(Ï1, Ï2) where Ïn = (Ïn
+following information sharing patterns:1
+
+t = {x2
+0 , Ïn
+
+0:t}. Let Ï =
+1 , . . .). We will look at two
+
+0:tâ1, i1
+
+0:t, u2
+
+1. No information sharing (Î³1 = Î³2 = 0),
+
+2. One-way information sharing from agent 1 to
+
+agent 2 (Î³1 = 1, Î³2 = 0).
+
+At time t, the system incurs an instantaneous cost
+c(xt, ut), which is a quadratic function given by
+
+(cid:124)
+(cid:124)
+t Rut,
+t Qxt + u
+c(xt, ut) = x
+
+(4)
+
+where Q = [QÂ·,Â·]1,2 is a known symmetric positive
+semi-deï¬nite (PSD) matrix and R = [RÂ·,Â·]1,2 is a
+known symmetric positive deï¬nite (PD) matrix.
+
+2.1 The optimal multi-agent linear-quadratic
+
+problem
+
+â = [An
+
+â , Bn
+Let Î¸n
+â ] be the dynamics parameter of sys-
+tem n, n â {1, 2}. When Î¸1
+â are perfectly known
+to the agents, minimizing the inï¬nite horizon average
+cost is a multi-agent stochastic Linear Quadratic (LQ)
+control problem. Let J(Î¸1,2
+â ) be the optimal inï¬nite
+horizon average cost under Î¸1,2
+
+â and Î¸2
+
+â , that is,
+
+J(Î¸1,2
+
+â ) = inf
+Ï
+
+lim sup
+T ââ
+
+1
+T
+
+T â1
+(cid:88)
+
+t=0
+
+EÏ[c(xt, ut)|Î¸1,2
+â ].
+
+(5)
+
+where the gain matrices K 1(Î¸1,2
+and ËK 2(Î¸2
+â) can be computed oï¬ine4 and Ëxn
+{1, 2}, can be computed recursively according to
+
+â ), K 2(Î¸1,2
+
+â ), ËK 1(Î¸1
+
+â),
+t , n â
+
+Ëxn
+t+1 =
+
+Ëxn
+0 = xn
+0 ,
+(cid:40)
+xn
+An
+
+t+1
+â Ëxn
+
+t + Bn
+
+â K n(Î¸1,2
+
+â ) vec(Ëx1
+
+t , Ëx2
+
+if Î³n = 1
+t ) otherwise
+
+.
+
+(7)
+
+2.2 The multi-agent reinforcement learning
+
+problem
+
+The problem we are interested in is to minimize the
+inï¬nite horizon average cost when the matrices Aâ and
+Bâ of the system are unknown. In this case, the con-
+trol problem described by (1)-(4) can be seen as a
+Multi-Agent Reinforcement Learning (MARL) problem
+where both agents need to learn the system parameters
+â = [A1
+Î¸1
+â] in order to minimize
+the inï¬nite horizon average cost. The learning per-
+formance of policy Ï is measured by the cumulative
+regret over T steps deï¬ned as,
+
+â] and Î¸2
+
+â = [A2
+
+â, B2
+
+â, B1
+
+R(T, Ï) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(xt, ut) â J(Î¸1,2
+
+â )(cid:3) ,
+
+(8)
+
+which is the diï¬erence between the performance of the
+agents under policy Ï and the optimal inï¬nite horizon
+cost under full information about the system dynam-
+ics. Thus, the regret can be interpreted as a measure
+of the cost of not knowing the system dynamics.
+
+We make the following standard assumption about the
+multi-agent stochastic LQ problem.
+
+3 An Auxiliary Single-Agent LQ
+
+Problem
+
+Assumption
+(Aâ, Q1/2) is detectable3.
+
+1.
+
+(Aâ, Bâ)
+
+is
+
+stabilizable2
+
+and
+
+The above decentralized stochastic LQ problem has
+been studied by Ouyang et al. (2018). The following
+lemma summarizes this result.
+
+Lemma 1 (Ouyang et al. (2018)). Under Assumption
+1, the optimal control strategies are given by
+
+t = K 1(Î¸1,2
+u1
+â )
+
+t = K 2(Î¸1,2
+u2
+â )
+
+(cid:21)
+
+(cid:21)
+
+(cid:20)Ëx1
+t
+Ëx2
+t
+(cid:20)Ëx1
+t
+Ëx2
+t
+
++ ËK 1(Î¸1
+
+â)(x1
+
+t â Ëx1
+
+t ),
+
+In this section, we construct an auxiliary single-agent
+LQ control problem based on the MARL problem of Sec-
+tion 2. This auxiliary single-agent LQ control problem
+is inspired by the common information based coordina-
+tor (which has been developed in non-learning settings
+in Nayyar et al. (2013) and Asghari et al. (2018) and
+the references therein). We will later use the auxiliary
+problem as a coordination mechanism for our MARL al-
+gorithm.
+
+Consider a single-agent system with dynamics
+
++ ËK 2(Î¸2
+
+â)(x2
+
+t â Ëx2
+
+t ),
+
+(6)
+
+t+1 = Aâx(cid:5)
+x(cid:5)
+
+t + Bâu(cid:5)
+
+t +
+
+(cid:21)
+
+(cid:20)w1
+t
+0
+
+,
+
+(9)
+
+1The other possible pattern is two-way information
+sharing (Î³1 = Î³2 = 1). In this case, both agents observe
+the states of both systems. Due to the lack of space, we
+delegate this case to Appendix M.
+
+2(Aâ, Bâ) is stabilizable if there exists a gain matrix K
+
+such that Aâ + BâK is stable.
+
+3(Aâ, Q1/2) is detectable if there exists a gain matrix H
+
+such that Aâ + HQ1/2 is stable.
+
+x+d2
+
+t â Rd1
+
+x is the state of the system, u(cid:5)
+
+where x(cid:5)
+t â
+u+d2
+Rd1
+u is the action of the auxiliary agent, w1
+t is the
+noise vector of system 1 deï¬ned in (1), and matrices
+Aâ and Bâ are as deï¬ned in (2). The initial state x(cid:5)
+0
+
+4See Appendix J for the complete description of this
+
+result.
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+t (h(cid:5)
+is assumed to be equal to x0. The action u(cid:5)
+t )
+at time t is a function of the history of observations
+h(cid:5)
+0:t, u(cid:5)
+t = {x(cid:5)
+0:tâ1}. The auxiliary agentâs strategy is
+denoted by Ï(cid:5) = (Ï(cid:5)
+2, . . .). The instantaneous cost
+c(x(cid:5)
+t ) of the system is a quadratic function given
+by
+
+t = Ï(cid:5)
+
+1, Ï(cid:5)
+
+t , u(cid:5)
+
+c(x(cid:5)
+
+t , u(cid:5)
+
+t ) = (x(cid:5)
+
+t )(cid:124)Qx(cid:5)
+
+t + (u(cid:5)
+
+t )(cid:124)Ru(cid:5)
+t ,
+
+(10)
+
+Initialize parameters
+
+state x(cid:5)
+t
+time t
+
+L
+
+Î¸1
+t = [A1
+t = [A2
+Î¸2
+
+t , B1
+t ]
+t , B2
+t ]
+
+4 Main Results
+
+where matrices Q and R are as deï¬ned in (4).
+
+When the parameters Î¸1
+â and Î¸2
+â are unknown, we will
+have a Single-Agent Reinforcement Learning (SARL)
+In this problem, the regret of a policy Ï(cid:5)
+problem.
+over T steps is given by
+
+In this section, we start with the regret analysis for
+the case where the parameters of both systems are
+unknown (that is, Î¸1
+â are unknown) and there
+is no information sharing between the agents (that is,
+Î³1 = Î³2 = 0). The detailed proofs for all results are in
+the appendix.
+
+â and Î¸2
+
+R(cid:5)(T, Ï(cid:5)) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t ) â J (cid:5)(Î¸1,2
+
+â )(cid:3) ,
+
+(11)
+
+4.1 Unknown Î¸1
+
+â and Î¸2
+sharing (Î³1 = Î³2 = 0)
+
+â, no information
+
+where J (cid:5)(Î¸1,2
+â ) is the optimal inï¬nite horizon average
+cost under Î¸1,2
+â .
+
+Existing algorithms for the SARL problem are gener-
+ally based on the two following approaches: Optimism
+in the Face of Uncertainty (OFU) (Abbasi-Yadkori
+and SzepesvÂ´ari, 2011; Ibrahimi et al., 2012; Faradon-
+beh et al., 2017, 2019) and Thompson Sampling (TS)
+(also known as posterior sampling) (Faradonbeh et al.,
+2017; Abbasi-Yadkori and SzepesvÂ´ari, 2015; Abeille
+and Lazaric, 2018). In spite of the diï¬erences among
+these algorithms, all can be generally described as the
+AL-SARL algorithm (algorithm for the SARL problem).
+In this algorithm, at each time t, the agent interacts
+with a SARL learner (see Appendix I for a detailed de-
+scription the SARL learner) by feeding time t and the
+t , B1
+state x(cid:5)
+t ]
+t ] of the unknown parameters Î¸1,2
+and Î¸2
+â .
+Then, the agent uses Î¸1,2
+to calculate the gain matrix
+K(Î¸1,2
+) (see Appendix J for a detailed description of
+t
+)x(cid:5)
+this matrix) and executes the action u(cid:5)
+t .
+As a result, a new state x(cid:5)
+
+t to it and receiving estimates Î¸1
+t = [A2
+
+t = K(Î¸1,2
+
+t = [A1
+
+t+1 is observed.
+
+t , B2
+
+t
+
+t
+
+Among the existing algorithms, OFU-based algo-
+rithms of Abbasi-Yadkori and SzepesvÂ´ari (2011);
+Ibrahimi et al. (2012); Faradonbeh et al. (2017, 2019)
+and the TS-based algorithm of Faradonbeh et al.
+(2017) achieve a ËO(
+T ) regret for the SARL problem
+(Here ËO(Â·) hides constants and logarithmic factors).
+
+â
+
+Algorithm 1 AL-SARL
+Initialize L and x(cid:5)
+0
+for t = 0, 1, . . . do
+
+t to L and get Î¸1
+
+t and Î¸2
+t
+
+Feed time t and state x(cid:5)
+Compute K(Î¸1,2
+)
+t = K(Î¸1,2
+Execute u(cid:5)
+Observe new state x(cid:5)
+
+)x(cid:5)
+t
+
+t
+
+t
+
+t+1
+
+end for
+
+For the MARL problem of this section (it is called MARL1
+for future reference), we show that there is no learning
+algorithm with a sub-linear in T regret for all instances
+of the MARL1 problem. The following theorem states
+this result.
+
+Theorem 1. There is no algorithm that can achieve
+a lower-bound better than â¦(T ) on the regret of all
+instances of the MARL1 problem.
+
+A â¦(T ) regret implies that the average performance of
+the learning algorithm has at least a constant gap from
+the ideal performance of informed agents. This pre-
+vent eï¬cient learning performance even in the limit.
+Theorem 1 implies that in a MARL1 problem where the
+system dynamics are unknown, learning is not possi-
+ble without communication between the agents. The
+proof of Theorem 1 also provides the following result.
+
+Lemma 2. Consider a MARL problem where the pa-
+rameter of system 2 (that is, Î¸2
+â) is known to both
+agents and only the parameter of system 1 (that is,
+Î¸1
+â) is unknown. Further, there is no communication
+between the agents. Then, there is no algorithm that
+can achieve a lower-bound better than â¦(T ) on the re-
+gret of all instances of this MARL problem.
+
+The above results imply that if the parameter of a
+system is unknown, both agents should receive infor-
+mation about this unknown system; otherwise, there
+is no learning policy Ï that can guarantee a sub-linear
+in T regret for all instances of this MARL problem.
+
+In the next section, we assume that Î¸2
+â is known to both
+agents and only Î¸1
+â is unknown. Further, we assume
+the presence of a communication link from agent 1 to
+agent 2, that is, Î³1 = 1. This communication link
+allows agent 2 to receive feedback about the state x1
+t
+of system 1 and hence, remedies the impossibility of
+learning for agent 2.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+4.2 Unknown Î¸1
+
+â, one-way information
+
+sharing from agent 1 to agent 2 (Î³1 = 1,
+Î³2 = 0)
+
+In this section, we consider the case where only sys-
+tem 1 is unknown and there is one-way communica-
+tion from agent 1 to agent 2. Despite this one-way
+information sharing, the two agents still have diï¬erent
+information. In particular, at each time agent 2 ob-
+serves the state x2
+t of system 2 which is not available
+to agent 1. For the MARL of this section (it is called
+MARL2 for future reference), we propose the AL-MARL al-
+gorithm which builds on the auxiliary SARL problem of
+Section 3. AL-MARL algorithm is a decentralized multi-
+agent algorithm which is performed independently by
+the agents. Every agent independently constructs an
+auxiliary SARL problem where x(cid:5)
+t ) and
+applies an AL-SARL algorithm with its own learner L
+to it in order to learn the unknown parameter Î¸1
+â of sys-
+tem 1. In this algorithm, Ëx2
+t (described in the AL-MARL
+algorithm) is a proxy for Ëx2
+t of (7) updated using the
+estimate Î¸1
+
+t instead of the unknown parameter Î¸1
+â.
+
+t = vec(x1
+
+t , Ëx2
+
+t , Î¸2
+
+t , Ëx2
+
+t and Î¸2
+
+At time t, each agent feeds vec(x1
+t ) to its own SARL
+learner L and gets Î¸1
+t . Note that both agents al-
+ready know the true parameter Î¸2
+â, hence they only use
+t to compute their gain matrix K agent_ID(Î¸1
+Î¸1
+â) and
+t and u2
+use this gain matrix to compute their actions u1
+t
+according to the AL-MARL algorithm. Note that agent 2
+needs ËK 2(Î¸2
+â) to calculate its actions u2
+t . However, we
+know that ËK 2(Î¸2
+â) is independent of the unknown pa-
+rameter Î¸1
+â) can be calculated prior
+to the beginning of the algorithm. After the execution
+of the actions u1
+t and u2
+t by the agents, both agents ob-
+serve the new state x1
+t+1 and agent 2 further observes
+the new state x2
+t+1. Finally, each agent independently
+computes Ëx2
+t+1.
+
+â and hence, ËK 2(Î¸2
+
+Remark 1. The state x(cid:5)
+t of the auxiliary SARL can be
+interpreted as an estimate of the state xt of the over-
+all system (2) that each agent computes based on the
+common information between them. In fact, the SARL
+dynamics in (9) can be seen as the ï¬ltering equation
+for this common estimate.
+
+Remark 2. We want to emphasize that unlike the
+idea of centralized training with decentralized execution
+(Foerster et al., 2016; Dibangoye and Buï¬et, 2018;
+Hernandez-Leal et al., 2018), the AL-MARL algorithm is
+an online decentralized learning algorithm. This means
+that there is no centralized learning phase in the setup
+where agents can collect information or have access to
+a simulator. The agents are simultaneously learning
+and controlling the system.
+
+Algorithm 2 AL-MARL
+
+Input: agent_ID, learner L, x1
+Initialize L and Ëx2
+for t = 0, 1, . . . do
+
+0 = x2
+0
+
+0, and x2
+0
+
+get Î¸1
+
+Feed time t and state vec(x1
+t , B1
+
+t = [A1
+Compute K agent_ID(Î¸1
+if agent_ID = 1 then
+t = K 1(Î¸1
+
+Execute u1
+
+t , Ëx2
+t ] and Î¸2
+t = [A2
+t , Î¸2
+â)
+
+t , Î¸2
+
+â) vec(x1
+
+t , Ëx2
+t )
+
+t ) to L and
+t , B2
+t ]
+
+else
+
+Execute u2
+
+t = K 2(Î¸1
++ ËK 2(Î¸2
+
+t , Î¸2
+â)(x2
+
+â) vec(x1
+t â Ëx2
+t )
+
+t , Ëx2
+t )
+
+end if
+Observe new state x1
+t+1
+â Ëx2
+t+1 = A2
+Compute Ëx2
+t
+âK 2(Î¸1
++B2
+
+t , Î¸2
+
+â) vec(x1
+
+t , Ëx2
+t )
+
+if agent_ID = 2 then
+
+Observe new state x2
+
+t+1
+
+end if
+
+end for
+
+Remark 3. Since the SARL learner L can include tak-
+ing samples and solving optimization problems, due
+to the independent execution of the AL-MARL algo-
+rithm, agents might receive diï¬erent Î¸1,2
+from their
+own learner L.
+
+t
+
+In order to avoid the issue pointed out in Remark 3,
+we make an assumption about the output of the SARL
+learner L.
+
+Assumption 2. Given the same time and same state
+input to the SARL learner L, the outputs Î¸1,2
+from dif-
+ferent learners L are the same.
+
+t
+
+Note that Assumption 2 can be easily achieved by set-
+ting the same initial sampling seed (if the SARL learner
+L includes taking samples) or by setting the same tie-
+breaking rule among possible similar solutions of an
+optimization problem (if the SARL learner L include
+solving optimization problems). Now, we present the
+following result which is based on Assumption 2.
+
+Theorem 2. Under Assumption 2, let R(T, AL-MARL)
+be the regret for the MARL2 problem under the policy
+of the AL-MARL algorithm and R(cid:5)(T, AL-SARL) be the
+regret for the auxiliary SARL problem under the policy
+of the AL-SARL algorithm. Then for any Î´ â (0, 1/e),
+with probability at least 1 â Î´,
+
+R(T, AL-MARL) â¤ R(cid:5)(T, AL-SARL) + log(
+
+1
+Î´
+
+â
+
+T .
+
+) ËK
+
+(12)
+
+This result shows that under the policy of the AL-MARL
+algorithm, the regret for the MARL2 problem is upper-
+bounded by the regret for the auxiliary SARL prob-
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+â
+
+lem constructed in Section 3 under the policy of the
+AL-SARL algorithm plus a term bounded by O(
+Corollary 1. AL-MARL algorithm with the OFU-based
+SARL learner L of Abbasi-Yadkori and SzepesvÂ´ari
+(2011); Ibrahimi et al. (2012); Faradonbeh et al. (2017,
+2019) or the TS-based SARL learner L of Faradonbeh
+et al. (2017) achieves a ËO(
+T ) regret for the MARL2
+problem.
+
+T ).
+
+â
+
+Remark 4. The idea of constructing a centralized
+problem for MARL is similar in spirit to the centralized
+algorithm perspective adopted in Dibangoye and Buf-
+fet (2018). However, we would like to emphasize that
+the auxiliary SARL problem is diï¬erent from the cen-
+tralized oMDP in Dibangoye and Buï¬et (2018). The
+oMDP is a deterministic MDP with no observations
+of the belief state. Our single agent problem is inspired
+by the common information based coordinator devel-
+oped in non-learning settings in Nayyar et al. (2013)
+and Asghari et al. (2018). The diï¬erence from oMDP
+is reï¬ected in the fact that the state evolution in the
+SARL is stochastic (see (9)). As discussed in Remark
+1, the state of the auxiliary SARL can be interpreted
+as the common information based state estimate. In
+our AL-MARL algorithm, both agents use this randomly
+evolving, common information based state estimate to
+learn the unknown parameters in an identical manner.
+This removes the potential mis-coordination among
+agents due to diï¬erence in information and allows for
+eï¬cient learning.
+
+4.3 Extension to MARL problems with more
+
+than 2 systems and 2 agents
+
+While the results of Sections 4.1 and 4.2 are for MARL
+problems with 2 systems and 2 agents, these results
+can be extended to MARL problems with an arbitrary
+number N of agents and systems in the following sense.
+
+Lemma 3. Consider a MARL problem with N agents
+and systems (N â¥ 2). Suppose there is a system n
+and an agent m, m (cid:54)= n, such that system n is un-
+known and there is no communication from agent n to
+agent m. Then, there is no algorithm that can achieve
+a lower-bound better than â¦(T ) on the regret of all in-
+stances of this MARL problem.
+
+The above lemma follows from the proof of Theorem
+1.
+
+Theorem 3. Consider a MARL problem with N agents
+and systems (N â¥ 2) where the ï¬rst N1 systems are
+unknown and the rest N â N1 systems are known.
+Further, for any 1 â¤ i â¤ N1, there is communi-
+cation from agent i to all other agents and for any
+N1 + 1 â¤ j â¤ N , there is no communication from
+
+agent j to any other agent. Then, there is a learning
+algorithm that achieves a ËO(
+T ) regret for this MARL
+problem.
+
+â
+
+The proof of above theorem requires constructing an
+auxiliary SARL problem and following the same steps
+as in the proof of Theorem 2.
+
+5 Key Steps in the Proof of Theorem
+
+2
+
+Step 1: Showing the connection between the
+auxiliary SARL problem and the MARL2 problem
+
+First, we present the following lemma that connects
+the optimal inï¬nite horizon average cost J (cid:5)(Î¸1,2
+â ) of
+the auxiliary SARL problem when Î¸1,2
+â are known (that
+is, the auxiliary single-agent LQ problem of Section 3)
+and the optimal inï¬nite horizon average cost J(Î¸1,2
+â )
+of the MARL2 problem when Î¸1,2
+are known (that is,
+the multi-agent LQ problem of Section 2.1).
+Lemma 4. J(Î¸1,2
+have deï¬ned D := Q22 + ( ËK 2(Î¸2
+is as deï¬ned in Lemma 10 in the appendix.
+
+â ) + tr(DÎ£), where we
+â) and Î£
+
+â))(cid:124)R22 ËK 2(Î¸2
+
+â ) = J (cid:5)(Î¸1,2
+
+â
+
+Next, we provide the following lemma that shows the
+connection between the cost c(xt, ut) in the MARL2
+problem under the policy of the AL-MARL algorithm
+and the cost c(x(cid:5)
+t ) in the auxiliary SARL problem
+under the policy of the AL-SARL algorithm.
+Lemma 5. c(xt, ut)|AL-MARL= c(x(cid:5)
+t â Ëx2
+where et = x2
+
+(cid:124)
+t , u(cid:5)
+t Det,
+t and D is as deï¬ned in Lemma 4.
+
+t )|AL-SARL+e
+
+t , u(cid:5)
+
+Step 2: Using the SARL problem to bound the
+regret of the MARL2 problem
+
+In this step, we use the connection between the auxil-
+iary SARL problem and our MARL2 problem, which was
+established in Step 1, to prove Theorem 2. Note that
+from the deï¬nition of the regret in the MARL problem
+given by (8), we have,
+
+R(T, AL-MARL) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(xt, ut)|AL-MARLâJ(Î¸1,2
+
+â )(cid:3)
+
+=
+
++
+
+T â1
+(cid:88)
+
+t=0
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARLâJ (cid:5)(Î¸1,2
+
+â )(cid:3)
+
+(cid:124)
+t Det â tr(DÎ£)]
+[e
+
+â¤ R(cid:5)(T, AL-SARL) + log(
+
+â
+
+T ,
+
+) ËK
+
+1
+Î´
+
+(13)
+
+where the second equality is correct because of Lemma
+4 and Lemma 5. Further, the last inequality is cor-
+rect because of the deï¬nition of the regret in the
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+agent linear-quadratic (LQ) dynamical systems. First,
+we showed that if a system is unknown, then all the
+agents should receive information about the state of
+this system; otherwise, there is no learning policy that
+can guarantee sub-linear regret for all instances of the
+decentralized MARL problem. Further, when a sys-
+tem is unknown but there is one-directional communi-
+cation from the agent controlling the unknown system
+to the other agents, we proposed a MARL algorithm
+â
+with regret bounded by ËO(
+
+T ).
+
+The MARL algorithm is based on the construction of
+an auxiliary single-agent LQ problem. The auxiliary
+single-agent problem serves as an implicit coordination
+mechanism among the learning agents. The state of
+the auxiliary SARL can be interpreted as an estimate
+of the state of the overall system that each agent com-
+putes based on the common information among them.
+While there is a strong connection between the MARL
+and auxiliary SARL problems, the MARL problem is
+not reduced to a SARL problem. In particular, Lemma
+5 shows that the costs of the two problems actually dif-
+fer by a term that depends on the random process et,
+which is dynamically controlled by the MARL algo-
+rithm. Therefore, the auxiliary SARL problem is not
+equivalent to the MARL problem. Nevertheless, the
+proposed MARL algorithm can bound the additional
+regret due to the process et and achieve the same re-
+gret order as a SARL algorithm.
+
+The use of the common state estimate plays a key
+role in the MARL algorithm. The current theoret-
+ical analysis uses this common state estimate along
+with some properties of LQ structure (e.g. certainty
+equivalence which connects estimates to optimal con-
+trol (Kumar and Varaiya, 2015)) to quantify the re-
+gret bound. However, certainty equivalence is often
+used in general systems with continuous state and ac-
+tion spaces as a heuristic with some good empirical
+performance. This suggests that our algorithm com-
+bined with linear approximation of dynamics could po-
+tentially be applied to non-LQ systems as a heuristic.
+That is, each agent constructs an auxiliary SARL with
+the common estimate as the state, solves this SARL
+problem heuristically using approximate linear dynam-
+ics and/or certainty equivalence, and then modiï¬es the
+SARL outputs according to the agentâs private infor-
+mation.
+
+Figure 2: AL-MARL algorithm with the SARL learner of
+Faradonbeh et al. (2017)
+
+the SARL problem given by (11) and the fact that
+(cid:80)T â1
+T
+
+is bounded by log( 1
+
+(cid:124)
+t Det â tr(DÎ£)]
+from Lemma 11 in the appendix.
+
+t=0 [e
+
+Î´ ) ËK
+
+â
+
+6 Experiments
+
+In this section, we illustrate the performance of the
+AL-MARL algorithm through numerical experiments.
+Our proposed algorithm requires a SARL learner. As
+the TS-based algorithm of Faradonbeh et al. (2017)
+achieves a ËO(
+T ) regret for a SARL problem, we use
+the SARL learner of this algorithm (The details for this
+SARL learner are presented in Appendix I).
+
+â
+
+We consider an instance of the MARL2 problem (See
+Appendix K for the details). The theoretical result of
+Theorem 2 holds when Assumption 2 is true. Since we
+use the TS-based learner of Faradonbeh et al. (2017),
+this assumption can be satisï¬ed by setting the same
+sampling seed between the agents. Here, we consider
+both cases of same sampling seed and arbitrary sam-
+pling seed for the experiments. We ran 100 simulations
+and show the mean of regret with the 95% conï¬dence
+interval for each scenario.
+
+As it can be seen from Figure 2, for both of the-
+ses cases, our proposed algorithm with the TS-based
+learner L of Faradonbeh et al. (2017) achieves a ËO(
+T )
+regret for our MARL2 problem, which matches the the-
+oretical results of Corollary 1.
+
+â
+
+7 Conclusion
+
+In this paper, we tackled the challenging problem of
+regret analysis in Multi-Agent Reinforcement Learn-
+ing (MARL). We attempted to solve this challenge in
+the context of online decentralized learning in multi-
+
+010002000300040005000Time horizon (t)050100150200250RegretSame sampling seedArbitrary sampling seed3ptSeyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+Bibliography
+
+Abbasi-Yadkori, Y., Lazic, N., and SzepesvÂ´ari, C.
+(2018).
+for model-free linear
+quadratic control. arXiv preprint arXiv:1804.06021.
+
+Regret bounds
+
+Abbasi-Yadkori, Y. and SzepesvÂ´ari, C. (2011). Regret
+bounds for the adaptive control of linear quadratic
+systems. In Proceedings of the 24th Annual Confer-
+ence on Learning Theory, pages 1â26.
+
+Abbasi-Yadkori, Y. and SzepesvÂ´ari, C.
+
+(2015).
+Bayesian optimal control of smoothly parameterized
+systems. In Proceedings of the Thirty-First Confer-
+ence on Uncertainty in Artiï¬cial Intelligence, pages
+2â11. AUAI Press.
+
+Abbeel, P., Coates, A., Quigley, M., and Ng, A. Y.
+(2007). An application of reinforcement learning to
+In Advances in neural
+aerobatic helicopter ï¬ight.
+information processing systems, pages 1â8.
+
+Abeille, M. and Lazaric, A. (2018). Improved regret
+bounds for thompson sampling in linear quadratic
+In International Conference on
+control problems.
+Machine Learning, pages 1â9.
+
+Abeille, M., Serie, E., Lazaric, A., and Brokmann,
+X. (2016). LQG for portfolio optimization. Papers
+1611.00997, arXiv.org.
+
+Agrawal, S. and Goyal, N. (2013). Thompson sampling
+for contextual bandits with linear payoï¬s. In ICML
+(3), pages 127â135.
+
+Amato, C. and Oliehoek, F. A. (2015).
+
+Scalable
+planning and learning for multiagent pomdps.
+In
+Twenty-Ninth AAAI Conference on Artiï¬cial Intel-
+ligence.
+
+Asghari, S. M., Ouyang, Y., and Nayyar, A. (2018).
+Optimal local and remote controllers with unreliable
+uplink channels. IEEE Transactions on Automatic
+Control, 64(5):1816â1831.
+
+AstrÂ¨om, K. J. and Murray, R. M. (2010). Feedback sys-
+tems: an introduction for scientists and engineers.
+Princeton university press.
+
+Auer, Peter, N. C.-B. and Fischer, P. (2002). Finite-
+time analysis of the multiarmed bandit problem.
+Machine learning, 47:235â256.
+
+Bard, N., Foerster, J. N., Chandar, S., Burch, N.,
+Lanctot, M., Song, H. F., Parisotto, E., Dumoulin,
+V., Moitra, S., Hughes, E., et al. (2019). The han-
+abi challenge: A new frontier for ai research. arXiv
+preprint arXiv:1902.00506.
+
+Basar, T. and Olsder, G. J. (1999). Dynamic nonco-
+
+operative game theory, volume 23. Siam.
+
+and optimal control, volume 1. Athena scientiï¬c Bel-
+mont, MA.
+
+Bowling, M. (2005). Convergence and no-regret in
+In Advances in neural infor-
+
+multiagent learning.
+mation processing systems, pages 209â216.
+
+Bu, L., Babu, R., De Schutter, B., et al. (2008). A
+comprehensive survey of multiagent reinforcement
+learning. IEEE Transactions on Systems, Man, and
+Cybernetics, Part C (Applications and Reviews),
+38(2):156â172.
+
+Bubeck, S. and Cesa-Bianchi, N. (2012). Regret analy-
+sis of stochastic and nonstochastic multi-armed ban-
+dit problems. Foundations and Trends in Machine
+Learning, 5(1):1â122.
+
+Costa, O. L. V., Fragoso, M. D., and Marques, R. P.
+(2006). Discrete-time Markov jump linear systems.
+Springer Science & Business Media.
+
+Dani, V., Hayes, T. P., and Kakade, S. M. (2008).
+Stochastic linear optimization under bandit feed-
+back. In COLT, pages 355â366.
+
+De Oliveira, L. B. and Camponogara, E. (2010). Multi-
+agent model predictive control of signaling split in
+urban traï¬c networks. Transportation Research
+Part C: Emerging Technologies, 18(1):120â139.
+
+Dean, S., Mania, H., Matni, N., Recht, B., and
+Tu, S. (2017). On the sample complexity of
+the linear quadratic regulator.
+arXiv preprint
+arXiv:1710.01688.
+
+Dibangoye, J. S. and Buï¬et, O. (2018). Learning to
+
+act in decentralized partially observable mdps.
+
+Faradonbeh, M. K. S., Tewari, A., and Michai-
+lidis, G. (2017). Optimism-based adaptive regu-
+lation of linear-quadratic systems. arXiv preprint
+arXiv:1711.07230.
+
+Faradonbeh, M. K. S., Tewari, A., and Michailidis, G.
+(2018). On optimality of adaptive linear-quadratic
+regulators. arXiv preprint arXiv:1806.10749.
+
+Faradonbeh, M. K. S., Tewari, A., and Michailidis,
+G. (2019). On applications of bootstrap in contin-
+uous space reinforcement learning. arXiv preprint
+arXiv:1903.05803.
+
+Fax, J. A. and Murray, R. M. (2004). Information ï¬ow
+and cooperative control of vehicle formations. IEEE
+Transactions on Automatic Control, 49(9):1465.
+
+Foerster, J., Assael, I. A., de Freitas, N., and White-
+son, S. (2016). Learning to communicate with deep
+In Advances
+multi-agent reinforcement learning.
+in Neural Information Processing Systems, pages
+2137â2145.
+
+Bertsekas, D. P., Bertsekas, D. P., Bertsekas, D. P.,
+and Bertsekas, D. P. (1995). Dynamic programming
+
+Gagrani, M. and Nayyar, A. (2018). Thompson sam-
+In
+pling for some decentralized control problems.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+2018 IEEE Conference on Decision and Control
+(CDC), pages 1053â1058. IEEE.
+
+Golub, G. and Van Loan, C. (1996). Matrix Computa-
+tions. Johns Hopkins Studies in the Mathematical
+Sciences. Johns Hopkins University Press.
+
+Gopalan, A. and Mannor, S. (2015). Thompson sam-
+pling for learning parameterized markov decision
+processes. In COLT.
+
+Greenwald, A., Hall, K., and Serrano, R. (2003). Cor-
+related q-learning. In ICML, volume 3, pages 242â
+249.
+
+Hanson, D. L. and Wright, F. T. (1971). A bound
+on tail probabilities for quadratic forms in indepen-
+dent random variables. The Annals of Mathematical
+Statistics, 42(3):1079â1083.
+
+Hernandez-Leal, P., Kaisers, M., Baarslag, T., and
+de Cote, E. M. (2017). A survey of learning in multi-
+agent environments: Dealing with non-stationarity.
+arXiv preprint arXiv:1707.09183.
+
+Hernandez-Leal, P., Kartal, B., and Taylor, M. E.
+(2018).
+Is multiagent deep reinforcement learning
+the answer or the question? a brief survey. arXiv
+preprint arXiv:1810.05587.
+
+Horn, R. A. and Johnson, C. R. (1990). Matrix Anal-
+
+ysis. Cambridge University Press.
+
+Hsu, D., Kakade, S., Zhang, T., et al. (2012). A tail in-
+equality for quadratic forms of subgaussian random
+vectors. Electronic Communications in Probability,
+17.
+
+Ibrahimi, M., Javanmard, A., and Roy, B. V. (2012).
+Eï¬cient reinforcement learning for high dimensional
+linear quadratic systems. In Advances in Neural In-
+formation Processing Systems, pages 2636â2644.
+
+Jaksch, T., Ortner, R., and Auer, P. (2010). Near-
+optimal regret bounds for reinforcement learn-
+ing.
+Journal of Machine Learning Research,
+11(Apr):1563â1600.
+
+Kar, S., Moura, J. M. F., and Poor, H. V. (2013).
+Qd-learning: A collaborative distributed strategy
+for multi-agent reinforcement learning through con-
+sensus innovations.
+IEEE Transactions on Signal
+Processing, 61(7):1848â1862.
+
+Kaufmann, E., Korda, N., and Munos, R. (2012).
+Thompson sampling: An asymptotically optimal
+ï¬nite-time analysis.
+In International Conference
+on Algorithmic Learning Theory, pages 199â213.
+Springer.
+
+Korda, Nathan, B. S. and Shuai, L. (2016). Dis-
+tributed clustering of linear bandits in peer to peer
+networks. In ICML, pages 1301â1309.
+
+Kumar, P. R. and Varaiya, P. (2015). Stochastic sys-
+tems: Estimation, identiï¬cation, and adaptive con-
+trol, volume 75. SIAM.
+
+Lai, T. L. and Robbins, H. (1985). Asymptotically ef-
+ï¬cient adaptive allocation rules. Advances in applied
+mathematics, 6(1):4â22.
+
+Lazic, N., Boutilier, C., Lu, T., Wong, E., Roy, B.,
+Ryu, M., and Imwalle, G. (2018). Data center cool-
+In Advances
+ing using model-predictive control.
+in Neural Information Processing Systems, pages
+3814â3823.
+
+Levine, S., Finn, C., Darrell, T., and Abbeel, P.
+(2016). End-to-end training of deep visuomotor poli-
+cies. The Journal of Machine Learning Research,
+17(1):1334â1373.
+
+Littman, M. L. (1994). Markov games as a framework
+for multi-agent reinforcement learning. In Machine
+learning proceedings 1994, pages 157â163. Elsevier.
+
+Liu, K. and Zhao, Q. (2010). Distributed learning in
+IEEE
+multi-armed bandit with multiple players.
+Transactions on Signal Processing, 58(11):5667â
+5681.
+
+Matignon, Laetitia, G. J. L. and Fort-Piat, N. L.
+(2012). Independent reinforcement learners in coop-
+erative markov games: a survey regarding coordina-
+tion problems. The Knowledge Engineering Review,
+27(1):1â31.
+
+Nayyar, A., Mahajan, A., and Teneketzis, D. (2013).
+Decentralized stochastic control with partial history
+sharing: A common information approach.
+IEEE
+Transactions on Automatic Control, 58(7):1644â
+1658.
+
+Nayyar, Naumaan, D. K. and Jain, R. (2016). On
+regret-optimal learning in decentralized multiplayer
+multiarmed bandits. IEEE Transactions on Control
+of Network Systems, 5(1):597â606.
+
+NowÂ´e, A., Vrancx, P., and De Hauwere, Y.-M. (2012).
+Game theory and multi-agent reinforcement learn-
+ing.
+In Reinforcement Learning, pages 441â470.
+Springer.
+
+Oliehoek, F. A., Amato, C., et al. (2016). A concise
+introduction to decentralized POMDPs, volume 1.
+Springer.
+
+Osband, I., Russo, D., and Van Roy, B. (2013). (more)
+eï¬cient reinforcement learning via posterior sam-
+pling. In Advances in Neural Information Processing
+Systems, pages 3003â3011.
+
+Ouyang, Y., Asghari, S. M., and Nayyar, A. (2018).
+Optimal local and remote controllers with unreliable
+communication: the inï¬nite horizon case. In 2018
+Annual American Control Conference (ACC), pages
+6634â6639. IEEE.
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+Ouyang, Y., Gagrani, M., and Jain, R. (2017a). Con-
+trol of unknown linear systems with thompson sam-
+pling.
+In 2017 55th Annual Allerton Conference
+on Communication, Control, and Computing (Aller-
+ton), pages 1198â1205. IEEE.
+
+Ouyang, Y., Gagrani, M., Nayyar, A., and Jain, R.
+(2017b). Learning unknown markov decision pro-
+cesses: A thompson sampling approach.
+In Ad-
+vances in Neural Information Processing Systems,
+pages 1333â1342.
+
+Panait, L. and Luke, S. (2005). Cooperative multi-
+agent learning: The state of the art. Autonomous
+agents and multi-agent systems, 11(3):387â434.
+
+Russo, D. and Van Roy, B. (2014). Learning to opti-
+mize via posterior sampling. Mathematics of Oper-
+ations Research, 39(4):1221â1243.
+
+Schneider, J., Wong, W. K., Moore, A., and Ried-
+miller, M. (1999). Distributed value functions. In
+ICML, pages 371â378.
+
+Stone, P. and Veloso, M. (1998). Team-partitioned,
+opaque-transition reinforcement learning. Robot
+Soccer World Cup, pages 261â272.
+
+Tan, M. (1993). Multi-agent reinforcement learning:
+Independent vs. cooperative agents. In Proceedings
+of the tenth international conference on machine
+learning, pages 330â337.
+
+Thompson, W. R. (1933). On the likelihood that one
+unknown probability exceeds another in view of the
+evidence of two samples. Biometrika, 25(3/4):285â
+294.
+
+Tu, S. and Recht, B. (2017). Least-squares temporal
+diï¬erence learning for the linear quadratic regulator.
+arXiv preprint arXiv:1712.08642.
+
+Wai, H.-T., Yang, Z., Wang, P. Z., and Hong, M.
+(2018). Multi-agent reinforcement learning via dou-
+ble averaging primal-dual optimization. In Advances
+in Neural Information Processing Systems, pages
+9649â9660.
+
+YÂ¨uksel, S. and BaÂ¸sar, T. (2013). Stochastic networked
+control systems: Stabilization and optimization un-
+der information constraints. Springer Science &
+Business Media.
+
+Zhang, K., Yang, Z., Liu, H., Zhang, T., and Basar,
+T. (2018). Fully decentralized multi-agent rein-
+forcement learning with networked agents.
+In In-
+ternational Conference on Machine Learning, pages
+5867â5876.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+Regret Bounds for Decentralized Learning in Cooperative
+Multi-Agent Dynamical Systems
+(Supplementary File)
+
+Outline. The supplementary material of this paper is organized as follows.
+
+â¢ Appendix A presents the notation which is used throughout this Supplementary File.
+
+â¢ Appendix B presents a set of preliminary results, which are useful in proving the main results of this paper.
+
+â¢ Appendix C provides the proof of Theorem 1.
+
+â¢ Appendix D provides the proof of Theorem 2.
+
+â¢ Appendix E provides the proof of Lemma 10. Note that this lemma has been stated in Appendix D and is
+
+required for the proof of Theorem 2.
+
+â¢ Appendix F provides the proof of Lemma 11. Note that this lemma has been stated in Appendix D and is
+
+required for the proof of Theorem 2.
+
+â¢ Appendix G provides the proof of Lemma 12. Note that this lemma, which has been stated in Appendix D,
+
+is the rephrased version of Lemma 4 in the main submission.
+
+â¢ Appendix H provides the proof of Lemma 13. Note that this lemma, which has been stated in Appendix D,
+
+is the rephrased version of Lemma 5 in the main submission.
+
+â¢ Appendix I describes the SARL learner L of some of existing algorithms for the SARL problems in details.
+
+â¢ Appendix J provides two lemmas. The ï¬rst lemma (Lemma 15) is the complete version of Lemma 1 which
+describes optimal strategies for the optimal multi-agent LQ problem of Section 2.1. The second lemma
+(Lemma 16) describes optimal strategies for the optimal single-agent LQ problem of Section 3.
+
+â¢ Appendix K provides the details of the experiments in the main submission (Section 6).
+
+â¢ Appendix L provides the proof of Theorem 3 which extends Theorem 2 to the case with more than 2 agents.
+
+â¢ Appendix M provides the analysis and the results for unknown Î¸1
+
+â and Î¸2
+
+â, two-way information sharing
+
+(Î³1 = Î³2 = 1).
+
+A Notation
+
+In general, subscripts are used as time indices while superscripts are used to index agents. The collection of
+matrices A1, . . . , An (resp. vectors x1, . . . , xn) is denoted as A1:n (resp. x1:n). Given column vectors x1, . . . , xn,
+the notation vec(x1:n) is used to denote the column vector formed by stacking vectors x1, . . . , xn on top of each
+other. For two symmetric matrices A and B, A (cid:23) B (resp. A (cid:31) B) means that (A â B) is positive semi-deï¬nite
+(PSD) (resp. positive deï¬nite (PD)). The trace of matrix A is denoted by tr(A).
+
+We use (cid:107)Â·(cid:107)â¢ to denote the operator norm of matrices. We use (cid:107)Â·(cid:107)2 to denote the spectral norm, that is,
+(cid:107)M (cid:107)2 is the maximum singular value of a matrix M . We use (cid:107)Â·(cid:107)1 and (cid:107)Â·(cid:107)â to denote maximum column sum
+matrix norm and maximum row sum matrix norm, respectively. More speciï¬cally, if M â RmÃn, then (cid:107)M (cid:107)1 =
+j=1|mij| where mij is the entry at the i-th row and j-th column
+max1â¤jâ¤n
+(cid:113)(cid:80)m
+j=1|mij|2 = (cid:112)tr(M (cid:124)M ).
+of M . We further use (cid:107)Â·(cid:107)F to denote the Frobenius norm, that is, (cid:107)M (cid:107)F =
+i=1
+The notation Ï(M ) refers to the spectral radius of a matrix M , i.e., Ï(M ) is the largest absolute value of its
+eigenvalues.
+
+i=1|mij| and (cid:107)M (cid:107)â = max1â¤iâ¤m
+
+(cid:80)m
+
+(cid:80)n
+
+(cid:80)n
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+Consider matrices P, Q, R, A, B of appropriate dimensions with P, Q being PSD matrices and R being a PD
+matrix. We deï¬ne R(P, Q, R, A, B) and K(P, R, A, B) as follows:
+
+R(P, Q, R, A, B) :=Q + A(cid:124)P A â A(cid:124)P B(R + B(cid:124)P B)â1B(cid:124)P A.
+
+K(P, R, A, B) := â (R + B(cid:124)P B)â1B(cid:124)P A.
+
+Note that P = R(P, Q, R, A, B) is the discrete time algebraic Riccati equation.
+
+We use [P Â·,Â·]1:4 and diag(P 1, . . . , P 4) to denote the following block matrices,
+
+[P Â·,Â·]1:4 :=
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+P 11
+...
+...
+P 41
+
+. . .
+. . .
+
+. . .
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+. . . P 14
+...
+...
+. . .
+. . . P 44
+
+, diag(P 1, . . . , P 4) =
+
+ï£®
+
+P 1
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+0
+...
+0
+
+0
+. . .
+. . .
+. . .
+
+. . .
+. . .
+. . .
+0
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+0
+...
+0
+P 4
+
+Further, we use [P ]i,i to denote the block matrix located at the i-th row partition and i-th column partition of
+P . For example, [diag(P 1, . . . , P 4)]2,2 = P 2 and [[P Â·,Â·]1:4]1,1 = P 11.
+
+B Preliminaries
+
+First, we state a variant of the Hanson-Wright inequality (Hanson and Wright, 1971) which can be found in Hsu
+et al. (2012).
+Theorem 4 (Hsu et al. (2012)). Let X â¼ N (0, I) be a Gaussian random vector and let A â RmÃn and â := A(cid:124)A.
+For all z > 0,
+
+P ( (cid:107)AX(cid:107)2
+
+2 â E[(cid:107)AX(cid:107)2
+
+2] > 2 (cid:107)â(cid:107)F
+
+â
+
+z + 2 (cid:107)â(cid:107)2 z) â¤ exp(âz).
+
+Lemma 6. Let A â RlÃm, B â RmÃn. Then, (cid:107)AB(cid:107)F â¤ (cid:107)A(cid:107)2 (cid:107)B(cid:107)F.
+
+Proof. Let B = [b1, . . . , bn] be the column partitioning of B. Then,
+
+(cid:107)AB(cid:107)2
+
+F =
+
+n
+(cid:88)
+
+i=1
+
+(cid:107)Abi(cid:107)2
+
+2 â¤ (cid:107)A(cid:107)2
+
+2
+
+n
+(cid:88)
+
+i=1
+
+(cid:107)bi(cid:107)2
+
+2 = (cid:107)A(cid:107)2
+
+2 (cid:107)B(cid:107)2
+F ,
+
+(14)
+
+(15)
+
+where the ï¬rst equality follows from the deï¬nition of Frobenius norm, the ï¬rst inequality is correct because the
+operator norm is a sub-multiplicative matrix norm, and the last equality follows from the deï¬nition of Frobenius
+norm.
+
+Using Theorem 4 and Lemma 6, we can state the following result.
+Lemma 7. Let X â¼ N (0, I) be a Gaussian random vector and let A â RmÃn. Then for any Î´ â (0, 1/e), we
+have
+
+with probability at least 1 â Î´.
+
+(cid:107)AX(cid:107)2
+
+2 â tr(A(cid:124)A) â¤ 4 (cid:107)A(cid:107)2 (cid:107)A(cid:107)F log(
+
+1
+Î´
+
+),
+
+Proof. Since X â¼ N (0, I), from Theorem 4, for any z > 1, we have with probability at least 1 â exp(âz),
+
+(cid:107)AX(cid:107)2
+
+2 â tr(A(cid:124)A) â¤ 2 (cid:107)â(cid:107)F
+
+â
+
+z + 2 (cid:107)â(cid:107)2 z â¤ 2 (cid:107)A(cid:107)2 (cid:107)A(cid:107)F
+â¤ 2 (cid:107)A(cid:107)2 (cid:107)A(cid:107)F z + 2 (cid:107)A(cid:107)2 (cid:107)A(cid:107)F z â¤ 4 (cid:107)A(cid:107)2 (cid:107)A(cid:107)F z,
+
+z + 2 (cid:107)A(cid:107)2 (cid:107)A(cid:107)2 z
+
+â
+
+(16)
+
+(17)
+
+where the second inequality is correct because of Lemma 6 and the third inequality is correct because z > 1 and
+(cid:107)A(cid:107)2 â¤ (cid:107)A(cid:107)F. Now by choosing z = log( 1
+Lemma 8 (Lemma 5.6.10 (Horn and Johnson, 1990)). Let A â RnÃn and (cid:15) > 0 be given. There is a matrix
+norm (cid:107)Â·(cid:107)â¢ such that Ï(A) â¤ (cid:107)A(cid:107)â¢ â¤ Ï(A) + (cid:15).
+
+Î´ ) where Î´ â (0, 1/e) the correctness of Lemma 7 is obtained.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+The above lemma implies the following results.
+Corollary 2. Let A â RnÃn and Ï(A) < 1. Then, there exists some matrix norm (cid:107)Â·(cid:107)â¢ such that (cid:107)A(cid:107)â¢ < 1.
+Lemma 9. Let A be a d Ã d block matrix where Ai,j â RnÃn denotes the block matrix at the i-th row partition
+and j-th column partition. Then,
+
+(cid:107)A(cid:107)â = max
+j=1,...,d
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+
+d
+(cid:88)
+
+i=1
+
+ËAi,j
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)â
+
+,
+
+(cid:107)A(cid:107)1 = max
+i=1,...,d
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+
+d
+(cid:88)
+
+j=1
+
+ËAi,j
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)1
+
+,
+
+(18)
+
+where matrix ËAi,j is the entry-wise absolute value of matrix Ai,j.
+
+Proof. We prove the equality for (cid:107)A(cid:107)â. The proof for (cid:107)A(cid:107)1 can be obtained in a similar way. Note that,
+
+max
+i=1,...,d
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+
+d
+(cid:88)
+
+j=1
+
+ËAi,j
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)â
+
+= max
+
+i=1,...,d
+
+max
+ki=1,...,n
+
+d
+(cid:88)
+
+n
+(cid:88)
+
+j=1
+
+kj =1
+
+|Ëakikj |= max
+1â¤iâ¤nd
+
+nd
+(cid:88)
+
+j=1
+
+|aij|= (cid:107)A(cid:107)â
+
+(19)
+
+where Ëaij is the entry at the i-th row and j-th column of ËA.
+
+C Proof of Theorem 1
+
+We want to show that there is no algorithm that can achieve a lower-bound better than â¦(T ) on the regret of
+all instances of the MARL1 problem. Equivalently, we can show that for any algorithm, there is an instance of the
+MARL1 problem whose regret is at least â¦(T ). To this end, consider an instance of the MARL1 problem where the
+systems dynamics and the cost function are described as follows5,
+
+t+1 = a2
+x2
+t+1 = u1
+x1
+t ,
+t â x2
+c(xt, ut) = (x1
+
+âx2
+t ,
+t )2 + (u1
+
+0 = x2
+x1
+t )2.
+t â 0.5u2
+â. Note that for any a2
+
+0 = 1,
+
+We assume that the only unknown parameter is a2
+Assumption 1. By using (20), the cost function of (21) can be rewritten as,
+t )2.
+t â 0.5u2
+
+c(xt, ut) = (u1
+
+â)t)2 + (u1
+
+tâ1 â (a2
+
+â â (â1, 1), the above problem satisï¬es
+
+(20)
+
+(21)
+
+(22)
+
+â is known to the both controllers, one can easily show that the optimal inï¬nite horizon average cost is 0 and
+
+If a2
+it is achieved by setting u1
+
+t = (a2
+
+â)t+1 and u2
+
+t = 2(a2
+
+â)t+1.
+
+If a2
+
+â in unknown, the regret of any policy Ï can be written as6,
+
+R(T, Ï) =
+
+T â1
+(cid:88)
+
+t=0
+
+c(xt, ut) = (u1
+
+0 â 0.5u2
+
+0)2 +
+
+T â1
+(cid:88)
+
+t=1
+
+T â1
+(cid:88)
+
+(u1
+
+tâ1 â (a2
+
+â)t)2,
+
+â¥
+
+(cid:2)(u1
+
+tâ1 â (a2
+
+â)t)2 + (u1
+
+t â 0.5u2
+
+t )2(cid:3)
+
+(23)
+
+t=1
+
+where the ï¬rst equality is correct due to the fact that the optimal inï¬nite horizon average cost is 0, the second
+equality is correct because of (22) and the fact that x1
+0 = 1, and the ï¬rst inequality is correct because
+(u1
+â such that R(T, Ï) â¥ â¦(T ). This
+is equivalent to show that supa2
+
+t )2 â¥ 0. Now, we show that for any policy Ï, there is a value for a2
+
+ââ(â1,1) R(T, Ï) â¥ â¦(T ). This can be shown as follows,
+
+t â 0.5u2
+
+0 = x2
+
+sup
+ââ(â1,1)
+
+a2
+
+R(T, Ï) â¥ sup
+
+(u1
+
+tâ1 â (a2
+
+â)t)2 â¥
+
+T â1
+(cid:88)
+
+a2
+
+ââ(â1,1)
+
+t=1
+
+1
+2
+
+T â1
+(cid:88)
+
+(u1
+
+tâ1 â 0)2 +
+
+t=1
+
+1
+2
+
+T â1
+(cid:88)
+
+(u1
+
+tâ1 â Î±t)2
+
+t=1
+
+=
+
+T â1
+(cid:88)
+
+t=1
+
+(cid:20)
+(u1
+
+tâ1 â
+
+Î±t
+2
+
+)2 +
+
+Î±2t
+2
+
+â
+
+(cid:21)
+
+Î±2t
+4
+
+â¥
+
+T â1
+(cid:88)
+
+t=1
+
+Î±2t
+4
+
+=
+
+Î±2(1 â Î±2T )
+4(1 â Î±2)
+
+,
+
+âÎ± â (â1, 1),
+
+(24)
+
+5Note that for simplicity, we have assumed here that there is no noise in the both systems.
+6Note that at each time t, what agent 1 observes is its previous action (that is, x1
+
+t = u1
+
+tâ1) and what agent 2 observes is
+â)t). In other words, agents do not get any new feedback about their respective systems.
+
+a ï¬xed number (that is, x2
+Therefore, any policy Ï is indeed an open-loop policy.
+
+t = (a2
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+where the ï¬rst inequality is correct because supremum over a set is greater than or equal to expectation with
+respect to any distribution over that set. Further, the second equality is correct because (u1
+2 )2 â¥ 0. Since
+(25) is true for any Î± â (â1, 1), it holds also for limit when Î± â 1â. By taking the limit, we can obtain
+
+tâ1 â 1
+
+sup
+ââ(â1,1)
+
+a2
+
+R(T, Ï) â¥ lim
+Î±â1â
+
+Î±2(1 â Î±2T )
+4(1 â Î±2)
+
+=
+
+T
+4
+
+= â¦(T ).
+
+(25)
+
+This completes the proof.
+
+D Proof of Theorem 2
+
+We ï¬rst state some preliminary results in the following lemmas which will be used in the proof of Theorem 2.
+Lemma 10. Let st be a random process that evolves as follows,
+
+st+1 = Cst + vt,
+
+s0 = 0,
+
+(26)
+
+where vt, t â¥ 0, are independent Gaussian random vectors with zero-mean and covariance matrix cov(vt) = I.
+â) and deï¬ne Î£t = cov(st), then the sequence of matrices Î£t, t â¥ 0, is increasing7
+Further, let C = A2
+and it converges to a PSD matrix Î£ as t â â. Further, C is a stable matrix, that is, Ï(C) < 1.
+
+â + B2
+â
+
+ËK 2(Î¸2
+
+Proof. See Appendix E for a proof.
+
+Lemma 11. Let st be a random process deï¬ned as in Lemma 10. Let D be a positive semi-deï¬nite (PSD)
+matrix. Then for any Î´ â (0, 1/e), with probability at least 1 â Î´,
+
+T
+(cid:88)
+
+(cid:124)
+t Dst â tr(DÎ£)] â¤ log(
+[s
+
+t=1
+
+â
+
+T .
+
+) ËK
+
+1
+Î´
+
+(27)
+
+Proof. See Appendix F for a proof.
+
+We now proceed in two steps:
+
+â¢ Step 1: Showing the connection between the auxiliary SARL problem and the MARL2 problem
+
+â¢ Step 2: Using the SARL problem to bound the regret of the MARL2 problem
+
+Step 1: Showing the connection between the auxiliary SARL problem and the MARL2 problem
+
+First, we present the following lemma that connects the optimal inï¬nite horizon average cost J (cid:5)(Î¸1,2
+auxiliary SARL problem when Î¸1,2
+the optimal inï¬nite horizon average cost J(Î¸1,2
+agent LQ problem of Section 2.1).
+Lemma 12 (rephrased version of Lemma 4). Let J (cid:5)(Î¸1,2
+auxiliary SARL problem, J(Î¸1,2
+deï¬ned in Lemma 10. Then,
+
+â ) of the
+are known (that is, the auxiliary single-agent LQ problem of Section 3) and
+are known (that is, the multi-
+
+â ) be the optimal inï¬nite horizon average cost of the
+â ) be the optimal inï¬nite horizon average cost of the MARL2 problem, and Î£ be as
+
+â ) of the MARL2 problem when Î¸1,2
+â
+
+â
+
+J(Î¸1,2
+
+â ) = J (cid:5)(Î¸1,2
+
+â ) + tr(DÎ£),
+
+(28)
+
+where we have deï¬ned D := Q22 + ( ËK 2(Î¸2
+
+â))(cid:124)R22 ËK 2(Î¸2
+
+â).
+
+Proof. See Appendix G for a proof.
+
+Next, we provide the following lemma that shows the connection between the cost c(xt, ut) in the MARL2 problem
+under the policy of the AL-MARL algorithm and the cost c(x(cid:5)
+t ) in the auxiliary SARL problem under the policy
+of the AL-SARL algorithm.
+
+t , u(cid:5)
+
+7Note that increasing is in the sense of partial order (cid:23), that is, Î£0 (cid:22) Î£1 (cid:22) Î£2 (cid:22) . . .
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+Lemma 13 (rephrased version of Lemma 5). At each time t, the following equality holds between the cost under
+the policies of the AL-SARL and the AL-MARL algorithms,
+
+c(xt, ut)|AL-MARL = c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARL+e
+
+(cid:124)
+t Det,
+
+(29)
+
+where et = x2
+
+t â Ëx2
+
+t and D = Q22 + ( ËK 2(Î¸2
+
+â))(cid:124)R22 ËK 2(Î¸2
+
+â).
+
+Proof. See Appendix H for a proof.
+
+Step 2: Using the SARL problem to bound the regret of the MARL2 problem
+
+In this step, we use the connection between the auxiliary SARL problem and our MARL2 problem, which was
+established in Step 1, to prove Theorem 2. Note that from the deï¬nition of the regret in the MARL problem given
+by (8), we have,
+
+R(T, AL-MARL) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(xt, ut)|AL-MARLâJ(Î¸1,2
+
+â )(cid:3)
+
+=
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARLâJ (cid:5)(Î¸1,2
+
+â )(cid:3) +
+
+T â1
+(cid:88)
+
+t=0
+
+[e
+
+(cid:124)
+t Det â tr(DÎ£)] â¤ R(cid:5)(T, AL-SARL) + log(
+
+â
+
+T
+
+) ËK
+
+1
+Î´
+
+(30)
+
+where the second equality is correct because of Lemma 12 and Lemma 13. Further, if we deï¬ne vt := w2
+t , et
+has the same dynamics as st in Lemma 11. Then, the last inequality is correct because of Lemma 11 and the
+deï¬nition of the regret in the SARL problem given by in (11). This proves the statement of Theorem 2.
+
+E Proof of Lemma 10
+
+First, note that Î£t can be sequentially calculated as Î£t+1 = I + CÎ£tC (cid:124) with Î£0 = 0. Now, we use induction to
+show that the sequence of matrices Î£t, t â¥ 0, is increasing. First, we can write Î£t+1 â Î£t = C(Î£t â Î£tâ1)C (cid:124).
+Then, since Î£0 = 0 and Î£1 = I (cid:23) 0, we have Î£1 â Î£0 (cid:23) 0. Now, assume that Î£t â Î£tâ1 (cid:23) 0. Then, it is easy
+to see that Î£t+1 â Î£t = C(Î£t â Î£tâ1)C (cid:124) (cid:23) 0.
+
+To show that the sequence of matrices Î£t, t â¥ 0, converges to Î£ as t â â, ï¬rst we show that C is stable, that
+is, Ï(C) < 1. Note that C = A2
+â) where from (66), we have
+
+â + B2
+â
+
+ËK 2(Î¸2
+
+ËK 2(Î¸2
+ËP 2(Î¸2
+
+â) = K( ËP 2(Î¸2
+â) = R( ËP 2(Î¸2
+
+â), R22, A2
+â, B2
+â),
+â, B2
+â), Q22, R22, A2
+
+â).
+
+(31)
+
+â, B2
+
+Then, from Assumption 1, (Aâ, Bâ) is stabilizable and since both of Aâ and Bâ are block diagonal matrices,
+(A2
+â) is stabilizable. Hence, we know from Costa et al. (2006, Theorem 2.21) that Ï(C) < 1. Since C is
+stable, the converges of the sequence of matrices Î£t, t â¥ 0, can be concluded from Kumar and Varaiya (2015,
+Chapter 3.3).
+
+F Proof of Lemma 11
+
+In this proof, we use superscripts to denote exponents.
+
+Step 1:
+
+Lemma 14. Let st be as deï¬ned in (26). Then,
+
+T
+(cid:88)
+
+(cid:124)
+t Dst â tr(DÎ£t)] = Â¯v(cid:124)L(cid:124)LÂ¯v â tr(L(cid:124)L),
+[s
+
+t=1
+
+(32)
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+where L = Â¯D1/2 Â¯C and
+
+ï£®
+
+Â¯v =
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+,
+
+Â¯C =
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+v0
+v1
+...
+vT â1
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+I
+
+C
+
+C 2
+...
+
+0
+
+I
+
+C
+...
+
+C T â1 C T â2
+
+0
+
+. . .
+
+. . . 0
+...
+...
+. . .
+I
+. . .
+. . . 0
+. . . C I
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+,
+
+Â¯D =
+
+ï£®
+
+D 0
+
+. . .
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+0 D 0
+
+0
+...
+0
+
+0 D
+...
+. . .
+. . .
+0
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+. . .
+
+0
+...
+...
+. . .
+. . .
+0
+0 D
+
+.
+
+(33)
+
+Proof. First note that from (26), st can be written as,
+
+st =
+
+tâ1
+(cid:88)
+
+i=0
+
+C tâ1âivi +
+
+T â1
+(cid:88)
+
+i=t
+
+0 Ã vi = (cid:2)C tâ1 C tâ2
+
+. . . C I 0 . . . 0(cid:3) Â¯v.
+
+(34)
+
+Furthermore, since D and consequently, Â¯D are PSD matrices, there exists Â¯D1/2 such that Â¯D = ( Â¯D1/2)(cid:124) Â¯D1/2
+(similarly, D = (D1/2)(cid:124)D1/2). Then, the correctness of (32) is obtained through straightforward algebraic
+manipulations.
+
+Step 2:
+
+Since from Lemma 14, Â¯v in is Gaussian, we can apply Lemma 7 to bound Â¯v(cid:124)L(cid:124)LÂ¯v â tr(L(cid:124)L) as follows. For any
+Î´ â (0, 1/e), we have with probability at least 1 â Î´,
+
+Â¯v(cid:124)L(cid:124)LÂ¯v â tr(L(cid:124)L) â¤ 4 (cid:107)L(cid:107)2 (cid:107)L(cid:107)F log(
+
+1
+Î´
+
+).
+
+(35)
+
+Step 3:
+
+In this step, we ï¬nd an upper-bound for (cid:107)L(cid:107)F. To this end, ï¬rst note that by deï¬nition, we have (cid:107)L(cid:107)F =
+(cid:112)tr(L(cid:124)L). From (33), we can write L as follows,
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+D1/2
+
+D1/2C
+
+D1/2C 2
+...
+
+L =
+
+0
+
+D1/2
+
+D1/2C
+...
+
+D1/2C T â1 D1/2C T â2
+
+Then, using (36), we have
+
+. . .
+
+. . .
+
+0
+
+. . .
+D1/2
+. . .
+. . .
+. . . D1/2C D1/2
+
+0
+...
+...
+0
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+.
+
+ï£®
+
+(cid:80)T â1
+
+i=0 (C i)(cid:124)DC i
+Ã
+
+L(cid:124)L =
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+Ã
+...
+Ã
+
+(cid:80)T â2
+
+Ã
+i=0 (C i)(cid:124)DC i
+Ã
+...
+Ã
+
+. . .
+
+(cid:80)T â3
+
+Ã
+i=0 (C i)(cid:124)DC i
+. . .
+. . .
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+. . . Ã
+...
+...
+. . .
+. . . Ã
+Ã D
+
+.
+
+Now, from (37) and the fact that trace is a linear operator, we can write,
+
+tr(L(cid:124)L) =
+
+T â1
+(cid:88)
+
+j
+(cid:88)
+
+j=0
+
+i=0
+
+tr ((C i)(cid:124)DC i).
+
+(36)
+
+(37)
+
+(38)
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+In the following, we ï¬nd an upper-bound for tr ((C i)(cid:124)DC i). Since D is a PSD matrix, we can write it as
+D = (cid:80)r
+
+l where r is rank of matrix D. By using this, we can have,
+
+l=1 dldT
+
+tr ((C i)(cid:124)DC i) = tr ((C i)(cid:124)
+
+r
+(cid:88)
+
+l=1
+
+dldT
+
+l C i)
+
+(â1)
+=
+
+r
+(cid:88)
+
+l=1
+
+tr ((C i)(cid:124)dldT
+
+l C i)
+
+(â2)
+=
+
+r
+(cid:88)
+
+l=1
+
+(cid:13)
+(cid:13)(C i)(cid:124)dl
+
+(cid:13)
+2
+(cid:13)
+2
+
+â¤
+
+r
+(cid:88)
+
+l=1
+
+(cid:13)(C i)(cid:124)(cid:13)
+(cid:13)
+2
+2 (cid:107)dl(cid:107)2
+(cid:13)
+
+2 â¤ (cid:107)C(cid:107)2i
+
+2
+
+r
+(cid:88)
+
+l=1
+
+(cid:107)dl(cid:107)2
+
+2 = (cid:107)C(cid:107)2i
+
+2 tr(D)
+
+(â3)
+â¤ Î² (cid:107)C(cid:107)2i
+
+â¢ tr(D)
+
+(â4)
+= Î²Î±2i tr(D),
+
+(39)
+
+where (â1) is correct because tr(Â·) is a linear operator and (â2) is correct because if v is a column vector, then
+tr(vv(cid:124)) = (cid:107)v(cid:107)2
+2. Further, (â3) is correct because any two norms on a ï¬nite dimensional space are equivalent. In
+other words, for any norm (cid:107)Â·(cid:107)â¢, there is a number Î² such that (cid:107)C(cid:107)2 â¤ Î² (cid:107)C(cid:107)â¢. Note that Î² is independent of T .
+Now, let the second norm (that is, (cid:107)Â·(cid:107)â¢) be the norm for which (cid:107)C(cid:107)â¢ < 1 (note that since Ï(C) < 1, the existence
+of this norm follows form Corollary 2). Then, the correctness of (â4) is resulted by deï¬ning Î± := (cid:107)C(cid:107)â¢ < 1.
+From (39), we can write,
+
+j
+(cid:88)
+
+i=0
+
+tr ((C i)(cid:124)DC i) â¤ Î² tr(D)
+
+j
+(cid:88)
+
+i=0
+
+Î±2i â¤ Î² tr(D)
+
+â
+(cid:88)
+
+i=0
+
+Î±2i = Î²
+
+tr(D)
+1 â Î±2 .
+
+Finally, using (38) and (40), we have tr(L(cid:124)L) â¤ T Î² tr(D)
+
+1âÎ±2 which means that
+
+(cid:107)L(cid:107)F = (cid:112)tr(L(cid:124)L) â¤
+
+(cid:114)
+
+T Î²
+
+tr(D)
+1 â Î±2 .
+
+(40)
+
+(41)
+
+Step 4:
+In this step, we ï¬nd an upper-bound for (cid:107)L(cid:107)2. We use (cid:107)L(cid:107)2 â¤ (cid:112)(cid:107)L(cid:107)1 (cid:107)L(cid:107)â to bound (cid:107)L(cid:107)2 (Golub and
+Van Loan, 1996). To this end, we calculate (cid:107)L(cid:107)1 and (cid:107)L(cid:107)â.
+Scalar case:
+
+Because of the special structure of matrix L in (36), these two matrix norms are the same and they are equal to
+sum of the entries of the ï¬rst column,
+
+(cid:107)L(cid:107)1 = (cid:107)L(cid:107)â =
+
+T â1
+(cid:88)
+
+|D1/2C i|â¤ D1/2
+
+T â1
+(cid:88)
+
+|C i|â¤ D1/2
+
+i=0
+
+i=0
+
+T â1
+(cid:88)
+
+i=0
+
+|C|iâ¤ D1/2
+
+â
+(cid:88)
+
+i=0
+
+Î±i =
+
+D1/2
+1 â Î±
+
+.
+
+Using (42), we can bound (cid:107)L(cid:107)2 as follows,
+
+(cid:107)L(cid:107)2 â¤
+
+D1/2
+1 â Î±
+
+.
+
+Matrix case:
+
+Since L is a T Ã T block matrix, we can write
+
+(cid:107)L(cid:107)â = max
+i=1,...,T
+
+T
+(cid:88)
+
+j=1
+
+ËLi,j
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)â
+
+(â1)
+=
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+
+T
+(cid:88)
+
+j=1
+
+ËLi,1
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)â
+
+(â2)
+â¤
+
+T 1
+(cid:88)
+
+j=1
+
+(cid:13)
+ËLi,1
+(cid:13)
+(cid:13)
+
+(cid:13)
+(cid:13)
+(cid:13)â
+
+(â3)
+â¤
+
+â
+
+K
+
+T
+(cid:88)
+
+j=1
+
+(cid:13)
+ËLi,1
+(cid:13)
+(cid:13)
+
+(cid:13)
+(cid:13)
+(cid:13)2
+
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+(cid:13)
+T
+(cid:88)
+
+j=1
+
+T â1
+(cid:88)
+
+i=0
+
+T â1
+(cid:88)
+
+i=0
+
+(â4)
+â¤
+
+â
+
+K
+
+(â7)
+=
+
+â
+
+K
+
+(â8)
+â¤
+
+â
+
+K
+
+(cid:13)
+ËLi,1
+(cid:13)
+(cid:13)
+
+(cid:13)
+(cid:13)
+(cid:13)F
+
+(â5)
+=
+
+â
+
+K
+
+T
+(cid:88)
+
+j=1
+
+(cid:107)Li,1(cid:107)F
+
+(â6)
+=
+
+â
+
+K
+
+T â1
+(cid:88)
+
+i=0
+
+(cid:13)
+(cid:13)
+
+(cid:13)D1/2C i(cid:13)
+(cid:13)
+(cid:13)F
+
+(cid:112)tr ((C i)(cid:124)DC i)
+
+Î±i(cid:112)Î² tr(D) â¤ (cid:112)KÎ² tr(D)
+
+Î±i =
+
+(cid:112)KÎ² tr(D)
+1 â Î±
+
+,
+
+â
+(cid:88)
+
+i=0
+
+(42)
+
+(43)
+
+(44)
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+where matrix ËLi,j is the entry-wise absolute value of matrix Li,j. Note that (â1) is correct because the maximum
+is achieved by setting j = 1 (i.e, the ï¬rst column partition) and (â2) is correct because of the sub-additive
+property of the norm. For (â3), ï¬rst note that for any matrix M â RnÃn, we have (cid:107)M (cid:107)â â¤
+n (cid:107)M (cid:107)2. If we
+deï¬ne K to be maximum of size of matrices ËLi,j, then the correctness of (â3) is resulted. Further, (â4) is correct
+because for any matrix M , (cid:107)M (cid:107)2 â¤ (cid:107)M (cid:107)F, (â5) is correct because the Frobenius norm of a matrix and its
+entry-wise absolute value is the same, (â6) is correct because Li,1 = D1/2C i, and (â7) follows from the deï¬nition
+KÎ² tr(D)
+
+of the Frobenius norm. Finally, (â8) is correct because of (39). Similarly, we can show that (cid:107)L(cid:107)1 â¤
+Hence, we can bound (cid:107)L(cid:107)2 as follows,
+
+1âÎ±
+
+â
+
+â
+
+.
+
+(cid:107)L(cid:107)2 â¤
+
+(cid:112)KÎ² tr(D)
+1 â Î±
+
+.
+
+(45)
+
+Step 5:
+
+By combining the results of Steps 1 to 4, we have with probability at least 1 â Î´,
+
+T
+(cid:88)
+
+t=1
+
+(cid:124)
+t Dst â tr(DÎ£)] =
+[s
+
+â¤
+
+T
+(cid:88)
+
+t=1
+
+T
+(cid:88)
+
+t=1
+
+(cid:124)
+t Dst â tr(DÎ£t)] +
+[s
+
+T
+(cid:88)
+
+[tr(DÎ£t) â tr(DÎ£)]
+
+t=1
+
+(cid:124)
+t Dst â tr(DÎ£t)] â¤ 4
+[s
+
+(cid:114)
+
+(cid:112)KÎ² tr(D)
+1 â Î±
+
+T Î²
+
+tr(D)
+1 â Î±2 log(
+
+1
+Î´
+
+),
+
+(46)
+
+where the ï¬rst inequality is correct because from Lemma 10, the sequence of matrices Î£t is increasing, that is,
+Î£ â Î£t (cid:23) 0 and D is positive semi-deï¬nite, and consequently, tr(D(Î£t â Î£)) â¤ 0. Deï¬ne ËK := 4Î²
+1âÎ±2 , then
+the correctness of Lemma 11 is obtained.
+
+K tr(D)
+
+(1âÎ±)
+
+â
+
+â
+
+G Proof of Lemma 12 (Lemma 4)
+
+Let Ï(cid:5)â be optimal policy for the auxiliary SARL problem when Î¸1,2
+average cost under Î¸1,2
+
+of this auxiliary SARL problem can be written as,
+
+â
+
+â are known. Then, the optimal inï¬nite horizon
+
+J (cid:5)(Î¸1,2
+
+â ) = lim sup
+T ââ
+
+1
+T
+
+T â1
+(cid:88)
+
+t=0
+
+EÏ(cid:5)â
+
+[c(x(cid:5)
+
+t , u(cid:5)
+
+t )|Î¸1,2
+â ].
+
+(47)
+
+Under the optimal policy Ï(cid:5)â (see Lemma 16 in Appendix J), u(cid:5)
+(9) can be written as,
+
+t = K(Î¸1,2
+
+â )x(cid:5)
+
+t and hence, the dynamics of x(cid:5)
+
+t in
+
+(cid:16)
+
+x(cid:5)
+t+1 =
+
+Aâ + BâK(Î¸1,2
+â )
+
+(cid:17)
+
+t + vec(w1
+x(cid:5)
+
+t , 0).
+
+Further, let Ïâ be optimal policy for the MARL problem when Î¸1,2
+
+â
+
+is known. Then, from (5) we have,
+
+J(Î¸1,2
+
+â ) = lim sup
+T ââ
+
+1
+T
+
+T â1
+(cid:88)
+
+t=0
+
+EÏâ
+
+[c(xt, ut)|Î¸1,2
+â ].
+
+From Lemma 1, we know that under the optimal policy Ïâ,
+
+ut = K(Î¸1,2
+
+â )Â¯xt + vec(0, ËK 2(Î¸2
+
+â)et),
+
+(48)
+
+(49)
+
+(50)
+
+where we have deï¬ned Â¯xt := vec(x1
+
+t , Ëx2
+
+t ), et := x2
+
+t â Ëx2
+
+t , and we have K(Î¸1,2
+
+â ) =
+
+the Appendix J. Then, from the dynamics of xt in (2) and update equation for Ëx2
+
+(cid:21)
+
+(cid:20)K 1(Î¸1,2
+â )
+K 2(Î¸1,2
+â )
+t in (7), we can write
+
+from Lemma 15 in
+
+xt+1 = Â¯xt+1 + vec(0, et+1),
+
+(51)
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+where
+
+(cid:16)
+
+Â¯xt+1 =
+
+Aâ + BâK(Î¸1,2
+â )
+
+(cid:17)
+Â¯xt + vec(w1
+
+t , 0),
+
+et+1 = Cet + w2
+t .
+
+(52)
+
+Note that we have deï¬ned C = A2
+Â¯x1 are equal, we can see that for any time t,
+
+â + B2
+â
+
+ËK 2(Î¸2
+
+â). Now by comparing (48) and (52) and the fact that both x(cid:5)
+
+1 and
+
+Now, we can use the above results to write EÏâ
+
+[c(xt, ut)|Î¸1,2
+
+â ] as follows,
+
+Â¯xt+1 = x(cid:5)
+
+t+1.
+
+EÏâ
+â ] = EÏâ
+[c(xt, ut)|Î¸1,2
+(cid:124)
+= EÏâ
+t QÂ¯xt + (K(Î¸1,2
+[Â¯x
+= EÏ(cid:5)â
+[(x(cid:5)
+= EÏ(cid:5)â
+[c(x(cid:5)
+
+t )(cid:124)Qx(cid:5)
+t , u(cid:5)
+
+t )|Î¸1,2
+
+(cid:124)
+
+[x
+
+t Qxt + (ut)(cid:124)Rut|Î¸1,2
+â ]
+â ] + E[e
+t |Î¸1,2
+
+â )Â¯xt|Î¸1,2
+â )x(cid:5)
+
+â )Â¯xt)(cid:124)RK(Î¸1,2
+â )x(cid:5)
+
+t )(cid:124)RK(Î¸1,2
+
+(cid:124)
+t Det|Î¸1,2
+â ]
+(cid:124)
+t Det|Î¸1,2
+â ]
+
+â ] + E[e
+
+t + (K(Î¸1,2
+
+â ] + tr(DÎ£t),
+
+(53)
+
+(54)
+
+where D2 = Q22 + ( ËK 2(Î¸2
+â). Note that the ï¬rst equality is correct from (4), the second equality
+is correct because of (50) and (51), and the third equality is correct because of (53). Finally the last equality
+is correct because if we deï¬ne vt := w2
+t , then et has the same dynamics as st in Lemma 10, and consequently,
+cov(et) = Î£t.
+
+â))(cid:124)R22 ËK 2(Î¸2
+
+Now, by substituting (54) in (49), considering (47) and the fact from Lemma 10, Î£t converges to Î£ as t â â,
+the statement of the lemma follows.
+
+H Proof of Lemma 13 (Lemma 5)
+
+First note that under the policy of the AL-SARL algorithm, u(cid:5)
+(9) can be written as,
+
+t = K(Î¸1
+
+t , Î¸2
+
+â)x(cid:5)
+
+t and hence, the dynamics of x(cid:5)
+
+t in
+
+(cid:16)
+
+x(cid:5)
+t+1 =
+
+Aâ + BâK(Î¸1
+
+t , Î¸2
+â)
+
+(cid:17)
+
+t + vec(w1
+x(cid:5)
+
+t , 0).
+
+Further, note that under the policy of the AL-MARL algorithm,
+
+ut = K(Î¸1
+
+t , Î¸2
+
+â)Â¯xt + vec(0, ËK 2(Î¸2
+
+â)et),
+
+where we have deï¬ned Â¯xt := vec(x1
+
+t , Ëx2
+
+t ), et := x2
+
+t â Ëx2
+
+t , and we have K(Î¸1
+
+t , Î¸2
+
+â) =
+
+(55)
+
+(56)
+
+from Lemma 15 in
+
+(cid:20)K 1(Î¸1
+K 2(Î¸1
+
+(cid:21)
+t , Î¸2
+â)
+t , Î¸2
+â)
+
+the Appendix J. Note that Â¯xt here is diï¬erent from the one in the proof of Lemma 12. Then, from the dynamics
+of xt in (2) and update equation for Ëx2
+
+t in the AL-MARL algorithm, we can write
+
+xt+1 = Â¯xt+1 + vec(0, et+1),
+
+where
+
+(cid:16)
+
+Â¯xt+1 =
+
+Aâ + BâK(Î¸1
+
+t , Î¸2
+â)
+
+(cid:17)
+
+Â¯xt + vec(w1
+
+t , 0),
+
+et+1 = Cet + w2
+t .
+
+(57)
+
+(58)
+
+Now by comparing (55) and (58) and the fact that both x(cid:5)
+
+1 and Â¯x1 are equal, we can see that for any time t,
+
+Now, we can use the above results to write c(xt, ut) under the AL-MARL algorithm as follows,
+
+Â¯xt+1 = x(cid:5)
+
+t+1.
+
+(cid:124)
+
+c(xt, ut)|AL-MARL = [x
+= (x(cid:5)
+= c(x(cid:5)
+
+t Qxt + (ut)(cid:124)Rut] |AL-MARL= Â¯x
+t )(cid:124)Qx(cid:5)
+t , u(cid:5)
+
+t , Î¸2
+t + (K(Î¸1
+â)x(cid:5)
+(cid:124)
+t Det,
+t )|AL-SARL+e
+
+t )(cid:124)RK(Î¸1
+
+(cid:124)
+t QÂ¯xt + (K(Î¸1
+t , Î¸2
+(cid:124)
+â)x(cid:5)
+t Det
+t + e
+
+t , Î¸2
+
+â)Â¯xt)(cid:124)RK(Î¸1,2
+
+t
+
+)Â¯xt + e
+
+(cid:124)
+t Det
+
+(59)
+
+(60)
+
+where the ï¬rst equality is correct from (4), the second equality is correct because of (56) and (57), and the third
+equality is correct because of (59).
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+I Detailed description of the SARL learner L
+
+In this section, we describe the SARL learner L of some of existing algorithms for the SARL problems in details.
+
+I.1 TS-based algorithm of Faradonbeh et al. (2017)
+
+Let p := d1
+
+x + d2
+
+x and q := d1
+
+x + d2
+
+x + d1
+
+u + d2
+
+u. Further, let Â¯K(Î¸1,2
+
+t
+
+) :=
+
+(cid:20)
+Ip
+K(Î¸1,2
+t
+
+(cid:21)
+
+)
+
+â RqÃp.
+
+Initialize parameters
+
+Initialize
+Parameters: V0 â RqÃq (a PD matrix), Âµ0 â RpÃq, Î· > 1 (reinforcement rate)
+
+Input/Output
+
+Input: t and x(cid:5)
+t
+
+if t = (cid:98)Î·m(cid:99) for some m = 0, 1, . . . then
+
+Sample ËÎ¸t from a Gaussian with mean Âµm and covariance V â1
+m
+
+t = [A1
+Î¸1
+t = [A2
+Î¸2
+
+t , B1
+t ]
+t , B2
+t ]
+
+state x(cid:5)
+t
+time t
+
+Âµm = arg min Âµ
+Vm = V0 + (cid:80)tâ1
+
+s=0
+
+(cid:80)tâ1
+s=0
+
+(cid:13)
+(cid:13)x(cid:5)
+
+s+1 â Âµ Â¯K(Î¸1,2
+
+t
+
+)x(cid:5)
+s
+
+(cid:13)
+2
+(cid:13)
+2
+
+Â¯K(Î¸1,2
+t
+
+)x(cid:5)
+
+s(x(cid:5)
+
+s)(cid:124) Â¯K(Î¸1,2
+
+t
+
+)(cid:124)
+
+else
+
+ËÎ¸t = ËÎ¸tâ1
+
+end if
+Partition ËÎ¸t to ï¬nd Î¸1
+(cid:20)A1
+
+ËÎ¸t =
+
+t Ã B1
+Ã A2
+
+t Ã
+t Ã B2
+t
+) and store x(cid:5)
+
+t = [A1
+
+t ] and Î¸2
+
+t = [A2
+
+t , B2
+t ]
+
+t , B1
+(cid:21)
+
+Calculate K(Î¸1,2
+
+t
+
+t and K(Î¸1,2
+
+t
+
+) for next steps
+
+Output: Î¸1
+
+t and Î¸2
+t
+
+Figure 3: SARL learner of TS-based algorithm of Faradonbeh et al. (2017)
+
+I.2 TS-based algorithm of Abbasi-Yadkori and SzepesvÂ´ari (2015)
+
+Let p := d1
+
+x + d2
+
+x and q := d1
+
+x + d2
+
+x + d1
+
+u + d2
+u.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+Initialize parameters
+
+Initialize
+Parameters: V0 â RqÃq (a PD matrix), Âµ0 â RpÃq, Î· > 1 (reinforcement rate)
+
+Input/Output
+
+Input: t and x(cid:5)
+t
+
+state x(cid:5)
+t
+time t
+
+if t > 0 then
+
+Update Ptâ1 with (x(cid:5)
+Vt = Vtâ1 + vec(x(cid:5)
+
+tâ1, u(cid:5)
+
+tâ1, x(cid:5)
+tâ1) vec(x(cid:5)
+
+tâ1, u(cid:5)
+
+t ) to obtain Pt
+
+tâ1, u(cid:5)
+
+tâ1)(cid:124)
+
+end if
+if det(Vt) > g det(Vlast) or t = 0 then
+
+Sample ËÎ¸t from Pt
+Vlast = Vt
+
+else
+
+ËÎ¸t = ËÎ¸tâ1
+
+end if
+Partition ËÎ¸t to ï¬nd Î¸1
+(cid:20)A1
+
+ËÎ¸t =
+
+t Ã B1
+Ã A2
+
+t Ã
+t Ã B2
+t
+) and store x(cid:5)
+
+t = [A1
+
+t ] and Î¸2
+
+t = [A2
+
+t , B2
+t ]
+
+t , B1
+(cid:21)
+
+Calculate K(Î¸1,2
+
+t
+
+t and u(cid:5)
+
+t = K(Î¸1,2
+
+t
+
+)x(cid:5)
+
+t for next steps
+
+Î¸1
+t = [A1
+t = [A2
+Î¸2
+
+t , B1
+t ]
+t , B2
+t ]
+
+Output: Î¸1
+
+t and Î¸2
+t
+
+Figure 4: SARL learner of TS-based algorithm of Abbasi-Yadkori and SzepesvÂ´ari (2015)
+
+J Optimal strategies for the optimal multi-agent LQ problem and the optimal
+
+single-agent LQ problem
+
+In this section, we provide the following two lemmas. The ï¬rst lemma (Lemma 15) is the complete version of
+Lemma 1 which describes optimal strategies for the optimal multi-agent LQ problem of Section 2.1. The second
+lemma (Lemma 16) describes optimal strategies for the optimal single-agent LQ problem of Section 3.
+
+Lemma 15 (Ouyang et al. (2018), complete version of Lemma 1). Under Assumption 1, the optimal inï¬nite
+horizon cost J(Î¸1,2
+
+â ) is given by
+
+J(Î¸1,2
+
+â ) =
+
+2
+(cid:88)
+
+n=1
+
+tr
+
+(cid:16)
+
+Î³nP nn(Î¸1,2
+
+â ) + (1 â Î³n) ËP n(Î¸n
+â )
+
+(cid:17)
+
+,
+
+(61)
+
+where P (Î¸1,2
+tions:
+
+â ) = [P Â·,Â·(Î¸1,2
+
+â )]1,2, ËP 1(Î¸1
+
+â), and ËP 2(Î¸2
+
+â) are the unique PSD solutions to the following Ricatti equa-
+
+P (Î¸1,2
+ËP 1(Î¸1
+
+â ) = R(P (Î¸1,2
+â) = R( ËP 1(Î¸1
+
+â ), Q, R, Aâ, Bâ),
+â), Q11, R11, A1
+
+â, B1
+
+â),
+
+The optimal control strategies are given by
+
+ËP 2(Î¸2
+
+â) = R( ËP 2(Î¸2
+
+â), Q22, R22, A2
+
+â, B2
+
+â).
+
+t = K 1(Î¸1,2
+u1
+â )
+
+(cid:21)
+
+(cid:20)Ëx1
+t
+Ëx2
+t
+
+where the gain matrices K(Î¸1,2
+
+â ) :=
+
++ ËK 1(Î¸1
+
+â)(x1
+
+t â Ëx1
+
+t ),
+
+t = K 2(Î¸1,2
+u2
+â )
+
+(cid:21)
+
+(cid:20)Ëx1
+t
+Ëx2
+t
+
++ ËK 2(Î¸2
+
+â)(x2
+
+t â Ëx2
+
+t ),
+
+(cid:21)
+(cid:20)K 1(Î¸1,2
+â )
+, ËK 1(Î¸1
+K 2(Î¸1,2
+â )
+
+â), and ËK 2(Î¸2
+
+â) are given by
+
+K(Î¸1,2
+ËK 1(Î¸1
+
+â ) = K(P (Î¸1,2
+â) = K( ËP 1(Î¸1
+
+â ), R, Aâ, Bâ),
+â, B1
+â), R11, A1
+
+â),
+
+ËK 2(Î¸2
+
+â) = K( ËP 1(Î¸2
+
+â), R22, A2
+
+â, B2
+
+â).
+
+(62)
+
+(63)
+
+(64)
+
+(65)
+
+(66)
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+t |hc
+
+t , Î¸1,2
+
+â ], n â {1, 2}, is the estimate (conditional expectation) of xn
+
+t which is common among the agents, that is, hc
+
+t = h1
+
+t â© h2
+
+t . The estimates Ëxn
+
+t based on the informa-
+t , n â {1, 2}, can be computed
+
+t = E[xn
+
+Furthermore Ëxn
+tion hc
+recursively according to
+
+0 = xn
+Ëxn
+0 ,
+
+Ëxn
+t+1 =
+
+(cid:40)
+
+xn
+An
+
+t+1
+â Ëxn
+
+t + Bn
+
+â K n(Î¸1,2
+
+â ) vec(Ëx1
+
+t , Ëx2
+
+if Î³n = 1
+t ) otherwise
+
+.
+
+(67)
+
+Lemma 16 (Kumar and Varaiya (2015); Bertsekas et al. (1995)). Under Assumption 1, the optimal inï¬nite
+horizon cost J (cid:5)(Î¸1,2
+â ) is as deï¬ned in (62). Furthermore,
+the optimal strategy Ï(cid:5)â is given by u(cid:5)
+
+â ) is given by J (cid:5)(Î¸1,2
+
+â )]1,1) where P (Î¸1,2
+
+â ) = tr([P (Î¸1,2
+t = K(Î¸1,2
+
+â ) is as deï¬ned in (65).
+
+t where K(Î¸1,2
+
+â )x(cid:5)
+
+K Details of Experiments
+
+â
+
+In this section, we illustrate the performance of the AL-MARL algorithm through numerical experiments. Our
+proposed algorithm requires a SARL learner. As the TS-based algorithm of Faradonbeh et al. (2017) achieves a
+ËO(
+T ) regret for a SARL problem, we use the SARL learner of this algorithm (The details for this SARL learner
+are presented in Appendix I).
+
+We consider an instance of the MARL2 problem where system 1 (which is unknown to the agents), system 2 (which
+is known to the agents), and matrices of the cost funtion have the following parameters (note that the unknown
+system and the strcuture of the matrices of the cost function are similar to the model studied in Tu and Recht
+(2017); Abbasi-Yadkori et al. (2018); Dean et al. (2017)) with d1
+
+x = d2
+
+x = d1
+
+u = d2
+
+u = 3,
+
+A11 =
+
+ï£®
+
+ï£°
+
+0
+
+1.01 0.01
+0.01 1.01 0.01
+0.01 1.01
+
+0
+
+ï£¹
+ï£» , A22 = B11 = B22 = I3, Q = 10â3I6, R = I6.
+
+(68)
+
+We use the following parameters for the TS-based learner L of Faradonbeh et al. (2017) as described in Appendix
+I: V0 to be a 12 Ã 12 identity matrix, Âµ0 to be a 6 Ã 12 zero matrix, Î· to be equal to 1.1.
+
+The theoretical result of Theorem 2 holds when Assumption 2 is true. Since we use the TS-based learner of
+Faradonbeh et al. (2017), this assumption can be satisï¬ed by setting the same sampling seed between the agents.
+Here, we consider both cases of same sampling seed and arbitrary sampling seed for the experiments. We ran
+100 simulations and show the mean of regret with the 95% conï¬dence interval for each scenario.
+
+As it can be seen from Figure 2, for both of theses cases, our proposed algorithm with the TS-based learner L of
+Faradonbeh et al. (2017) achieves a ËO(
+T ) regret for our MARL2 problem, which matches the theoretical results
+of Corollary 1.
+
+â
+
+L Proof of Theorem 3
+
+We prove this theorem in the case where N1 = 2 systems (systems 1 and 2) are unknown and N â N1 = 2
+systems (systems 3 and 4) are known for ease of presentation. The case with general N and N1 will follow by
+the same arguments. We assume that there exist communication links from agents 1 and 2 to all other agents,
+but there is no communication link from agents 3 and 4 to the other agents. Let [N ] := {1, 2, 3, 4}.
+
+In this problem, the linear dynamics of system n â [N ] are given by
+
+t+1 = An
+xn
+
+â xn
+
+t + Bn
+
+â un
+
+t + wn
+t
+
+(69)
+
+where for n â N , xn
+are system matrices with appropriate dimensions. We assume that for n â [N ], wn
+Gaussian distribution N (0, I). The initial states xn
+
+x is the state of system n and un
+
+t â Rdn
+
+t â Rdn
+
+u is the action of agent n. An
+
+â and Bn
+â , n â [N ],
+t , t â¥ 0, are i.i.d with standard
+
+0 , n â [N ], are assumed to be ï¬xed and known.
+
+The overall system dynamics can be written as,
+
+xt+1 = Aâxt + Bâut + wt,
+
+(70)
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+t , . . . , x4
+
+â, . . . , B4
+
+where we have deï¬ned xt = vec(x1
+and Bâ = diag(B1
+â).
+At each time t, agent nâs action is a function Ïn
+{x1
+0:tâ1}, h2
+0:t, u2
+where Ïn = (Ïn
+
+t = {x2
+0 , Ïn
+1 , . . .).
+
+0:tâ1}, h3
+
+t = {x3
+
+0:t, u1
+
+0:t, u3
+
+t ), ut = vec(u1
+
+t , . . . , u4
+
+t ), wt = vec(w1
+
+t , . . . , w4
+
+t ), Aâ = diag(A1
+
+â, . . . , A4
+
+â),
+
+t of its information hn
+t = {x4
+0:t }, and h3
+
+0:tâ1, x1,2
+
+t , that is, un
+0:tâ1, x1,2
+0:t, u4
+
+t (hn
+
+t = Ïn
+t =
+0:t }. Let Ï = (Ï1, . . . , Ï4)
+
+t ) where h1
+
+At time t, the system incurs an instantaneous cost c(xt, ut), which is a quadratic function given by
+
+c(xt, ut) = x
+
+(cid:124)
+t Qxt + u
+
+(cid:124)
+t Rut,
+
+(71)
+
+where Q = [QÂ·,Â·]1:4 is a known symmetric positive semi-deï¬nite (PSD) matrix and R = [RÂ·,Â·]1:4 is a known
+symmetric positive deï¬nite (PD) matrix.
+
+L.1 The optimal multi-agent linear-quadratic problem
+
+â , Bn
+
+â = [An
+
+Let Î¸n
+are perfectly known to the
+agents, minimizing the inï¬nite horizon average cost is a multi-agent stochastic Linear Quadratic (LQ) control
+problem. Let J(Î¸1:4
+
+â ] be the dynamics parameter of system n, n â [N ]. When Î¸1:4
+â
+
+â ) be the optimal inï¬nite horizon average cost under Î¸1:4
+
+â , that is,
+
+J(Î¸1:4
+
+â ) = inf
+Ï
+
+lim sup
+T ââ
+
+1
+T
+
+T â1
+(cid:88)
+
+t=0
+
+EÏ[c(xt, ut)|Î¸1:4
+â ].
+
+(72)
+
+The above decentralized stochastic LQ problem has been studied by Ouyang et al. (2018). The following lemma
+summarizes this result.
+Lemma 17. Under Assumption 1, the optimal inï¬nite horizon cost J(Î¸1:4
+
+â ) is given by
+
+J(Î¸1:4
+
+â ) =
+
+2
+(cid:88)
+
+n=1
+
+(cid:16)
+
+tr
+
+(cid:17)
+
+P nn(Î¸1:4
+â )
+
++
+
+4
+(cid:88)
+
+n=3
+
+(cid:16) ËP n(Î¸n
+â )
+
+(cid:17)
+
+,
+
+tr
+
+(73)
+
+where P (Î¸1:4
+tions:
+
+â ) = [P Â·,Â·(Î¸1:4
+
+â )]1:4, ËP 3(Î¸3
+
+â), and ËP 4(Î¸4
+
+â) are the unique PSD solutions to the following Ricatti equa-
+
+P (Î¸1:4
+ËP 3(Î¸4
+
+â ) = R(P (Î¸1:4
+â) = R( ËP 3(Î¸3
+
+â ), Q, R, Aâ, Bâ),
+â), Q33, R33, A3
+
+â, B3
+
+â),
+
+The optimal control strategies are given by
+
+ËP 4(Î¸4
+
+â) = R( ËP 4(Î¸4
+
+â), Q44, R44, A4
+
+â, B4
+
+â).
+
+t = K 1(Î¸1:4
+u1
+â )
+
+t = K 3(Î¸1:4
+u3
+â )
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+x1
+t
+x2
+t
+Ëx3
+t
+Ëx4
+t
+x1
+t
+x2
+t
+Ëx3
+t
+Ëx4
+t
+
+,
+
+t = K 2(Î¸1:4
+u2
+â )
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+x1
+t
+x2
+t
+Ëx3
+t
+Ëx4
+t
+
++ ËK 3(Î¸3
+
+â)(x3
+
+t â Ëx3
+
+t ),
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
+,
+
+u4
+t
+
+= K 4(Î¸1:4
+â )
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
++ ËK 4(Î¸4
+
+â)(x4
+
+t â Ëx4
+
+t ),
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+x1
+t
+x2
+t
+Ëx3
+t
+Ëx4
+t
+
+where the gain matrices K(Î¸1:4
+
+â ) :=
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+K 1(Î¸1:4
+â )
+K 2(Î¸1:4
+â )
+K 3(Î¸1:4
+â )
+K 4(Î¸1:4
+â )
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
+, ËK 3(Î¸3
+
+â), and ËK 4(Î¸4
+
+â) are given by
+
+K(Î¸1:4
+ËK 3(Î¸3
+
+â ) = K(P (Î¸1:4
+â) = K( ËP 3(Î¸3
+t , Î¸1:4
+
+t = E[xn
+
+t |hc
+
+â ), R, Aâ, Bâ),
+â, B3
+â), R33, A3
+
+â).
+â ], n â {3, 4}, is the estimate (conditional expectation) of xn
+
+â) = K( ËP 4(Î¸4
+
+â), R44, A4
+
+ËK 4(Î¸4
+
+â, B4
+
+â),
+
+t which is common among all the agents. The estimates Ëxn
+
+t based on the infor-
+t , n â {3, 4}, can be computed recursively
+
+Furthermore Ëxn
+mation hc
+according to
+
+0 = xn
+Ëxn
+0 ,
+
+t+1 = An
+Ëxn
+
+â Ëxn
+
+t + Bn
+
+â K n(Î¸1:4
+
+â ) vec(x1
+
+t , x2
+
+t , Ëx3
+
+t , Ëx4
+
+t ).
+
+(79)
+
+(74)
+
+(75)
+
+(76)
+
+(77)
+
+(78)
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+L.2 The multi-agent reinforcement learning problem
+
+The problem we are interested in is to minimize the inï¬nite horizon average cost when the system parameters
+Î¸1
+â = [A1
+â] are known. For future
+reference, we call this problem MARL3. In this case, the learning performance of policy Ï is measured by the
+cumulative regret over T steps deï¬ned as,
+
+â] are unknown and Î¸3
+
+â] and Î¸2
+
+â] and Î¸4
+
+â = [A4
+
+â = [A3
+
+â = [A2
+
+â, B2
+
+â, B1
+
+â, B3
+
+â, B4
+
+R(T, Ï) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(xt, ut) â J(Î¸1:4
+
+â )(cid:3) .
+
+(80)
+
+L.3 A single-agent LQ problem
+
+In this section, we construct an auxiliary single-agent LQ control problem. This auxiliary single-agent LQ control
+problem will be used later as a coordination mechanism for our MARL algorithm.
+
+Consider a single-agent system with dynamics
+
+t+1 = Aâx(cid:5)
+x(cid:5)
+
+t + Bâu(cid:5)
+
+t +
+
+ï£¹
+
+ï£º
+ï£º
+ï£»
+
+,
+
+(81)
+
+ï£®
+
+ï£¯
+ï£¯
+ï£°
+
+w1
+t
+w2
+t
+0
+0
+
+t â Rd1
+
+x+d2
+
+x+d3
+
+x+d4
+
+x is the state of the system, u(cid:5)
+
+where x(cid:5)
+wn
+(70). The initial state x(cid:5)
+history of observations h(cid:5)
+t , u(cid:5)
+instantaneous cost c(x(cid:5)
+
+u is the action of the auxiliary agent,
+t , n â {1, 2}, is the noise vector of system n deï¬ned in (69), and matrices Aâ and Bâ are as deï¬ned in
+t ) at time t is a function of the
+2, . . .). The
+
+0:tâ1}. The auxiliary agentâs strategy is denoted by Ï(cid:5) = (Ï(cid:5)
+
+0 is assumed to be equal to x0. The action u(cid:5)
+t = {x(cid:5)
+t ) of the system is a quadratic function given by
+
+t = Ï(cid:5)
+
+0:t, u(cid:5)
+
+1, Ï(cid:5)
+
+t (h(cid:5)
+
+t â Rd1
+
+u+d2
+
+u+d3
+
+u+d4
+
+c(x(cid:5)
+
+t , u(cid:5)
+
+t ) = (x(cid:5)
+
+t )(cid:124)Qx(cid:5)
+
+t + (u(cid:5)
+
+t )(cid:124)Ru(cid:5)
+t ,
+
+(82)
+
+where matrices Q and R are as deï¬ned in (71).
+
+â
+
+When Î¸1:4
+stochastic Linear-Quadratic (LQ) control problem. Let J (cid:5)(Î¸1:4
+under Î¸1:4
+
+are known to the auxiliary agent, minimizing the inï¬nite horizon average cost is a single-agent
+â ) be the optimal inï¬nite horizon average cost
+
+â , that is,
+
+J (cid:5)(Î¸1:4
+
+â ) = inf
+Ï(cid:5)
+
+lim sup
+T ââ
+
+1
+T
+
+T â1
+(cid:88)
+
+t=0
+
+EÏ(cid:5)
+
+[c(x(cid:5)
+
+t , u(cid:5)
+
+t )|Î¸1:4
+â ].
+
+(83)
+
+Then, the following lemma summarizes the result for the optimal inï¬nite horizon single-agent LQ control problem.
+
+Lemma 18 (Kumar and Varaiya (2015); Bertsekas et al. (1995)). Under Assumption 1, the optimal inï¬nite
+â ) = tr([P (Î¸1:4
+horizon cost J (cid:5)(Î¸1:4
+â ) is as deï¬ned in (74).
+Furthermore, the optimal strategy Ï(cid:5)â is given by u(cid:5)
+
+â ) is given by J (cid:5)(Î¸1,2
+
+â )]1,1) + tr([P (Î¸1:4
+â )x(cid:5)
+t = K(Î¸1:4
+
+â ) is as deï¬ned in (77).
+
+â )]2,2) where P (Î¸1:4
+
+t where K(Î¸1:4
+
+When the actual parameters Î¸1:4
+â are unknown, this single-agent stochastic LQ control problem becomes a Single-
+Agent Reinforcement Learning (SARL2) problem. We deï¬ne the regret of a policy Ï(cid:5) over T steps compared with
+the optimal inï¬nite horizon cost J (cid:5)(Î¸1:4
+
+â ) to be
+
+R(cid:5)(T, Ï(cid:5)) =
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t ) â J (cid:5)(Î¸1:4
+
+â )(cid:3) .
+
+(84)
+
+Similar to Section 3, we can generally describe the existing proposed algorithms for the SARL2 problem as
+AL-SARL2 algorithm with the SARL2 learner L of Figure 5.
+
+L.4 An algorithm for the MARL3 problem
+
+In this Section, we propose the AL-MARL2 algorithm based on the AL-SARL2 algorithm.
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+Initialize parameters
+
+state x(cid:5)
+t
+time t
+
+L
+
+t , Î¸2
+Î¸1
+
+t , Î¸3
+
+t , Î¸4
+t
+
+Figure 5: SARL2 learner as a block box.
+
+Algorithm 3 AL-SARL2
+Initialize L and x(cid:5)
+0
+for t = 0, 1, . . . do
+
+Feed time t and state x(cid:5)
+Compute K(Î¸1:4
+Observe new state x(cid:5)
+
+t
+
+t+1
+
+t to L and get Î¸1:4
+) from (77) and execute u(cid:5)
+
+t
+
+t = K(Î¸1:4
+
+t
+
+)x(cid:5)
+t
+
+end for
+
+Algorithm 4 AL-MARL2
+Input: agent_ID, x1
+Initialize L, Ëx3
+0 = x3
+for t = 0, 1, . . . do
+
+0, x2
+0, x3
+0 and Ëx4
+
+0, and x4
+0
+0 = x4
+0
+
+t , Ëx4
+
+t ) to L and get Î¸1:4
+
+t
+
+Feed time t and state vec(x1
+t , Î¸3
+t , Î¸2
+Compute K agent_ID(Î¸1
+if agent_ID = 1, 2 then
+Execute uagent_ID
+
+t , x2
+t , Ëx3
+â, Î¸4
+â)
+
+else
+
+Execute uagent_ID
+
+t
+
+t
+
+= K agent_ID(Î¸1
+
+t , Î¸2
+
+t , Î¸3
+
+â, Î¸4
+
+â) vec(x1
+
+t , x2
+
+t , Ëx3
+
+t , Ëx4
+t )
+
+= K agent_ID(Î¸1
+t , Î¸3
++ ËK agent_ID(Î¸agent_ID
+
+t , Î¸2
+â
+
+â, Î¸4
+â) vec(x1
+)(xagent_ID
+t
+
+t , Ëx4
+t , x2
+t , Ëx3
+t )
+â Ëxagent_ID
+)
+t
+
+end if
+Observe new states x1
+â Ëx3
+Compute Ëx3
+Compute Ëx4
+â Ëx4
+if agent_ID = 3 then
+
+t+1 = A3
+t+1 = A4
+
+t+1 and x2
+t + B3
+t + B4
+
+t+1
+âK 3(Î¸1
+âK 4(Î¸1
+
+t , Î¸2
+t , Î¸2
+
+t , Î¸3
+t , Î¸3
+
+â, Î¸4
+â, Î¸4
+
+â) vec(x1
+â) vec(x1
+
+t , x2
+t , x2
+
+t , Ëx3
+t , Ëx3
+
+t , Ëx4
+t )
+t , Ëx4
+t )
+
+Observe new state x3
+
+t+1
+
+end if
+if agent_ID = 4 then
+
+Observe new state x4
+
+t+1
+
+end if
+
+end for
+
+L.5 The regret bound for the AL-MARL2 algorithm
+
+As in the proof of Theorem 2 in Appendix D, we ï¬rst state some preliminary results in the following lemmas
+which will be used in the proof of Theorem 2. Note that these lemmas are essentially the same as Lemma 10
+and Lemma 11. They have been rewritten below to be compatible with the notation of the MARL3 problem.
+
+Lemma 19. Let sn
+
+t be a random process that evolves as follows,
+
+t+1 = C nsn
+sn
+
+t + vn
+t ,
+
+s0 = 0,
+
+(85)
+
+where vn
+t ) = I.
+Further, let C n = An
+t , t â¥ 0, is
+increasing and it converges to a PSD matrix Î£n as t â â. Further, C n is a stable matrix, that is, Ï(C n) < 1.
+
+t , t â¥ 0, are independent Gaussian random vectors with zero-mean and covariance matrix cov(vn
+t = cov(sn
+
+t ), then the sequence of matrices Î£n
+
+â ) and deï¬ne Î£n
+
+â + Bn
+â
+
+ËK n(Î¸n
+
+Lemma 20. Let sn
+
+t be a random process deï¬ned as in Lemma 19. Let Dn be a positive semi-deï¬nite (PSD)
+
+Seyed Mohammad Asghari, Yi Ouyang, Ashutosh Nayyar
+
+matrix. Then for any Î´ â (0, 1/e), with probability at least 1 â Î´,
+
+T
+(cid:88)
+
+[(sn
+
+t )(cid:124)Dnsn
+
+t â tr(DnÎ£n)] â¤ log(
+
+t=1
+
+We now proceed in two steps:
+
+â
+
+T .
+
+) ËK
+
+1
+Î´
+
+(86)
+
+â¢ Step 1: Showing the connection between the auxiliary SARL2 problem and the MARL3 problem
+
+â¢ Step 2: Using the SARL2 problem to bound the regret of the MARL3 problem
+
+Step 1: Showing the connection between the auxiliary SAR2 problem and the MARL3 problem
+
+Similar to Lemma 12, we ï¬rst state the following result.
+
+Lemma 21. Let J (cid:5)(Î¸1:4
+optimal inï¬nite horizon cost of the MARL3 problem, and Î£3 and Î£4 be as deï¬ned in Lemma 19. Then,
+
+â ) be the optimal inï¬nite horizon cost of the auxiliary SARL2 problem, J(Î¸1:4
+
+â ) be the
+
+J(Î¸1:4
+
+â ) = J (cid:5)(Î¸1:4
+
+â ) + tr(D3Î£3) + tr(D4Î£4),
+
+(87)
+
+where we have deï¬ned Dn := Qnn + ( ËK n(Î¸n
+
+â ))(cid:124)Rnn ËK n(Î¸n
+
+â ), n â {3, 4}.
+
+Next, similar to Lemma 13, we provide the following result.
+
+Lemma 22. At each time t, the following equality holds between the cost under the policies of the AL-SARL2 and
+the AL-MARL2 algorithms,
+
+c(xt, ut)|AL-MARL2 = c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARL2+(e3
+
+t )(cid:124)D3e3
+
+t + (e4
+
+t )(cid:124)D4e4
+t ,
+
+(88)
+
+where en
+
+t = xn
+
+t â Ëxn
+
+t and Dn = Qnn + ( ËK n(Î¸n
+
+â ))(cid:124)Rnn ËK n(Î¸n
+
+â ), n â {3, 4}.
+
+Step 2: Using the SARL2 problem to bound the regret of the MARL3 problem
+
+In this step, we use the connection between the auxiliary SARL2 problem and our MARL3 problem, which was
+established in Step 1, to prove Theorem 3. Similar to (13),
+
+R(T, AL-MARL2) =
+
+T
+(cid:88)
+
+t=1
+
+(cid:2)c(xt, ut)|AL-MARL2âJ(Î¸1:4
+
+â )(cid:3)
+
+=
+
+=
+
+T
+(cid:88)
+
+t=1
+
+T
+(cid:88)
+
+t=1
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARL2+(e3
+
+t )(cid:124)D3e3
+
+t + (e4
+
+t )(cid:124)D4e4
+
+t
+
+(cid:3) â
+
+T
+(cid:88)
+
+t=1
+
+(cid:2)J (cid:5)(Î¸1:4
+
+â ) + tr(D3Î£3) + tr(D4Î£4)(cid:3)
+
+(cid:2)c(x(cid:5)
+
+t , u(cid:5)
+
+t )|AL-SARL2âJ (cid:5)(Î¸1:4
+
+â )(cid:3) +
+
+â¤ R(cid:5)(T, AL-SARL2) + 2 log(
+
+â
+
+T
+
+) ËK
+
+1
+Î´
+
+4
+(cid:88)
+
+T
+(cid:88)
+
+n=3
+
+t=1
+
+[(en
+
+t )(cid:124)Dnen
+
+t â tr(DnÎ£n)]
+
+(89)
+
+where the second equality is correct because of Lemma 21 and Lemma 22. Further, if we deï¬ne vn
+t
+n â {3, 4}, then en
+Lemma 20.
+
+:= wn
+t ,
+in Lemma 20. Then, the last inequality is correct because of
+
+t has the same dynamics as sn
+t
+
+Now similar to Corollary 1, by letting the AL-SARL2 algorithm be the OFU-based algorithm of Abbasi-Yadkori
+and SzepesvÂ´ari (2011); Ibrahimi et al. (2012); Faradonbeh et al. (2017, 2019) or the TS-based algorithm of
+Faradonbeh et al. (2017), AL-MARL2 algorithm achieves a ËO(
+T ) regret for the MARL3 problem. This completes
+the proof.
+
+â
+
+Regret Bounds for Decentralized Learning in Cooperative Multi-Agent Dynamical Systems
+
+Algorithm 5 AL-MARL3
+Input: agent_ID, x1
+Initialize L
+for t = 0, 1, . . . do
+
+0, and x2
+0
+
+t , x2
+
+t ) to L and get Î¸1
+
+t = [A1
+
+t , B1
+
+t ] and Î¸2
+
+t = [A2
+
+t , B2
+t ]
+
+Feed time t and state vec(x1
+Compute K(Î¸1,2
+if agent_ID = 1 then
+
+)
+
+t
+
+Execute u1
+
+t = K 1(Î¸1,2
+
+t
+
+else
+
+Execute u2
+
+t = K 2(Î¸1,2
+
+t
+
+) vec(x1
+
+t , x2
+t )
+
+) vec(x1
+
+t , x2
+t )
+
+end if
+Observe new states x1
+
+t+1 and x2
+
+t+1
+
+end for
+
+M Analysis and the results for unknown Î¸1
+
+â and Î¸2
+
+â, two-way information sharing
+
+(Î³1 = Î³2 = 1)
+
+For the MARL of this section (it is called MARL4 for future reference), we propose the AL-MARL3 algorithm based
+on the AL-SARL algorithm. AL-MARL3 algorithm is a multi-agent algorithm which is performed independently
+by the agents. In the AL-MARL3 algorithm, each agent has its own learner L and uses it to learn the unknown
+parameters Î¸1,2
+
+of system 1.
+
+â
+
+In this algorithm, at time t, agent n feeds vec(x1
+each agent n uses Î¸1,2
+actions u1
+agents, both agents observe the new state x1
+
+t ) to its own SARL learner L and gets Î¸1
+t
+t according to the AL-MARL3 algorithm. After the execution of the actions u1
+t+1.
+
+t . Then,
+) from (65) and use this gain matrix to compute their
+t by the
+
+t+1 and agent 2 further observes the new states x2
+
+to compute the gain matrix K(Î¸1,2
+
+t and u2
+
+t and u2
+
+t and Î¸2
+
+t , x2
+
+t
+
+Theorem 5. Under Assumption 2, let R(T, AL-MARL3) be the regret for the MARL4 problem under the policy of
+the AL-MARL3 algorithm and R(cid:5)(T, AL-SARL) be the regret for the auxiliary SARL problem under the policy of the
+AL-SARL algorithm. Then,
+
+R(T, AL-MARL3) = R(cid:5)(T, AL-SARL).
+
+(90)
+
+Proof. The proof simply results from the fact that under Assumption 2, the information that both agents have
+is the same, which reduces this problem to a SARL problem where an auxiliary agent plays the role of both
+agents.
+
+

@@ -1,0 +1,1954 @@
+Heterogeneous Stochastic Interactions for Multiple Agents in a
+Multi-armed Bandit Problem
+
+Udari Madhushani and Naomi Ehrich Leonard
+
+9
+1
+0
+2
+
+y
+a
+M
+1
+2
+
+]
+
+C
+O
+.
+h
+t
+a
+m
+
+[
+
+1
+v
+1
+3
+7
+8
+0
+.
+5
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+Abstractâ We deï¬ne and analyze a multi-agent multi-armed
+bandit problem in which decision-making agents can observe
+the choices and rewards of their neighbors. Neighbors are
+deï¬ned by a network graph with heterogeneous and stochastic
+interconnections. These interactions are determined by the so-
+ciability of each agent, which corresponds to the probability that
+the agent observes its neighbors. We design an algorithm for
+each agent to maximize its own expected cumulative reward and
+prove performance bounds that depend on the sociability of the
+agents and the network structure. We use the bounds to predict
+the rank ordering of agents according to their performance and
+verify the accuracy analytically and computationally.
+
+I. INTRODUCTION
+
+Animal and robotic foraging problems that involve search-
+ing over spatially distributed patches with uncertain dis-
+tribution of resource (reward) result in the explore-exploit
+dilemma. Each animal or robotic forager chooses which
+patch to sample, sequentially in time. The dilemma at every
+time in the sequence is whether to choose a well sampled
+patch that is expected to reap the highest reward (exploit) or
+to choose a poorly sampled patch that is expected to reduce
+uncertainty and possibly identify an option with an even
+higher reward (explore). Choices to explore can be costly or
+risky since they may not return much reward, but successful
+exploiting requires sufï¬cient information that comes from
+exploration. The challenge is sorting out protocols for when
+and where to explore versus when and where to exploit.
+
+In decision theory, multi-armed bandit (MAB) problems
+serve as models that capture the salient features of the
+explore-exploit
+trade-off [1], [2]. Thus, advances in ad-
+dressing MAB problems directly beneï¬t understanding and
+solving foraging and search problems. The MAB problem
+is analogous to a scenario in which an agent is repeatedly
+faced with several different options, each returning uncertain
+reward, and aims to make a sequence of choices to maximize
+the cumulative reward [3]. This is equivalent to minimizing
+the cumulative regret [4].
+
+In their seminal work, Lai and Robbins [4] established a
+lower bound for the expected cumulative regret in the ï¬nite
+time horizon case. Speciï¬cally, they derived a logarithmic
+lower bound for the expected number of times a sub-optimal
+option needs to be sampled by an optimal sampling rule.
+They also established a conï¬dence bound and a sampling rule
+to achieve logarithmic cumulative regret. These results were
+further simpliï¬ed in [5] by introducing a conï¬dence bound
+
+This research has been supported in part by ARO grant W911NF-
+18-1-0325 and ONR grant N00014-14-1-0635. Department of Mechan-
+ical and Aerospace Engineering, Princeton University, NJ 08544, USA.
+{udarim,naomi}@princeton.edu
+
+using a sample mean based method. Improving on these re-
+sults, a family of Upper Conï¬dence Bound (UCB) algorithms
+for achieving asymptotic and uniform logarithmic cumulative
+regret were proposed in [6]. These UCB algorithms are based
+on the notion that minimizing the expected cumulative regret
+is realized by choosing an appropriate uncertainty model,
+which results in an optimal trade-off between reward gain
+and information gain through uncertainty.
+
+in the frequentist setting,
+
+For the standard MAB problem the reward associated
+with an option is considered to be an iid stochastic process.
+the natural way of
+Therefore,
+estimating the expectation of the reward is to consider the
+sample average [4], [5], [6]. The papers [7], [8] present how
+to incorporate prior knowledge about reward expectation in
+the estimation step by leveraging the theory of conditional
+expectation in the Bayesian setting.
+
+The papers [9], [10] extend this work to the multi-agent
+setting where the explore-exploit problem is deï¬ned for a
+group of agents. The objective is to understand how the
+performance of individuals or the group can beneï¬t from
+inter-agent observations. A centralized multi-agent setting is
+considered in [9] and a decentralized setting is considered in
+[11]. The papers [12], [10] use a running consensus algorithm
+in which agents observe the estimates of their neighbors. A
+multi-agent multi-armed bandit (MAMAB) problem, where
+agents observe instantaneous rewards and actions in a leader-
+follower setting, is considered in [13], [14].
+
+In the above works, agents observe their neighbors, de-
+ï¬ned according to a static network graph. In this paper
+we consider a MAMAB problem where agents observe
+instantaneous rewards and actions of their neighbors through
+stochastic interactions. Observing rewards and actions rather
+than estimates is motivated by the foraging success of social
+groups where agents can observe neighbors even when their
+neighbors donât necessarily want to share what they know
+[15]. Further, we assume that each agent k only observes its
+neighbors with some probability pk. This provides a frame-
+work for evaluating efï¬ciency and robustness to changes in
+communication in terms of the pk.
+
+The setting is formulated by deï¬ning an underlying undi-
+rected network graph and imposing directed observation
+probabilities on each edge. The underlying graph models
+the inherent observation constraints present in the network.
+Imposed observation probabilities capture the heterogeneous
+social effort of agents in observing neighbors. We introduce
+the notion of sociability of each agent k as the likelihood pk
+that the agent observes its neighbors. We derive analytical
+upper bounds for expected cumulative regret and propose
+
+ 
+ 
+ 
+ 
+ 
+ 
+a measure to rank agents according to their relative per-
+formance as a function of each agentâs sociability and the
+sociability of its neighbors. We show that our model predicts
+how high performance requires an agent to have both high
+sociability and neighbors with low sociability. This is an
+important result: it implies that making an investment to
+observe neighbors may be worthwhile only if those neighbors
+are sufï¬ciently explorative.
+
+In Section II we introduce the MAMAB problem with
+time-varying (stochastic) observation structure. We propose
+an efï¬cient sampling rule for an agent to maximize cumu-
+lative expected reward. We analyze the performance of the
+proposed sampling rule in Section III. In Section III-A we
+analytically upper bound the expected cumulative regret and
+in Section III-B we propose a measure to predict the ranks of
+agents according to their relative performance. In Section IV
+we provide numerical simulation results and computationally
+validate the analytical results. We conclude in Section V and
+provide additional mathematical details in the Appendix.
+
+II. MULTI-AGENT MULTI-ARMED BANDIT PROBLEM
+
+Consider a MAMAB with K agents and N arms, which
+represent N options (patches). Let Xi be a sub-Gaussian
+i)2 that denotes the
+random variable with variance proxy (Ï(cid:48)
+reward associated with option i â I (cid:44) {1, 2, . . . , N }. Deï¬ne
+Âµi as the expected reward E(Xi) of option i. Let iâ be
+the optimal option such that Âµiâ = max{Âµ1, . . . , ÂµN }. Each
+agent k â {1, . . . , K} chooses one option at each time step
+with the goal of maximizing its cumulative reward, which is
+equivalent to minimizing its cumulative regret. We assume
+that the Âµi are unknown and the Ï(cid:48)
+i are known to the agents
+(e.g., if Ï(cid:48)
+
+i is the magnitude of sensor noise).
+
+Let G(V, E) be an undirected graph that encodes the
+observation structure of the system. If there exists an ob-
+servation link ekj from agent k to agent j, j, k â V, then
+{k, j}, {j, k} â E, ekj = ejk = 1, and we say agents k and
+j are neighbors. For social or robotic groups searching over
+physical space, observation links may exist between pairs
+of agents when they are sufï¬ciently close to be visible (or
+otherwise observable) to each other. Let dk be the number
+of neighbors and Vdk the set of neighbors of agent k.
+
+KÏ(cid:48)
+
+Let Ït
+
+k â I and X t
+
+i be random variables that denote
+the option chosen and reward received by agent k at time
+t, respectively. Let X t
+i , ât, be i.i.d copies of Xi. Deï¬ne
+i. Consider the probability space (â¦, U, P) and
+Ïi =
+the increasing sequence of subalgebras F0 â F1 Â· Â· Â· â
+Ft Â· Â· Â· â FT â1 â U for t = 0, 1, Â· Â· Â· , T , where P is the
+probability measure on the sigma algebra U of â¦. Here Ft
+is the sigma algebra generated by information available at
+time t. Let I{Ït
+k=i} be a Ftâ1 measurable indicator random
+variable that takes the value one if option i is chosen by
+agent k at time t and is zero otherwise. Deï¬ne It
+{k,j} to be
+an Ftâ1 measurable indicator random variable that takes the
+value one if agent k can observe agent j at time t and is
+zero otherwise.
+
+â
+
+Let pk be the probability that agent k observes the
+instantaneous actions and rewards of its neighbors. Then we
+
+(cid:16)
+
+(cid:17)
+
+have E
+It
+= pk, âj (cid:54)= k such that {k, j} â E. We let
+{k,j}
+It
+{k,k} = 1 and It
+{k,j} = 0, âj (cid:54)= k such that {k, j} /â E. An
+agent k that has high probability pk is more likely to obtain
+observations from its neighbors. We introduce the notion of
+an agentâs sociability to refer to its value of pk: we interpret
+agents with high pk values to be more sociable and agents
+with low pk values to be less sociable.
+
+In order to maximize the cumulative reward in the long
+run, agents need to both identify the best options through
+exploring and sample the best options through exploiting.
+Since agents with high sociability values are more likely to
+obtain a greater number of observations, they can identify
+the best options with less exploring. However the usefulness
+of their observations is affected by the sociability values of
+their neighbors. Better performance can be obtained by an
+agent when it observes neighbors that do a lot of exploring
+(because they are less sociable), as compared to when it
+observes agents that do a lot of exploiting (because they are
+more sociable). This is, the agent will be able to exploit more,
+without compromising performance, when it has neighbors
+that are less sociable.
+
+Let the number of times agent k samples option i in T
+trials be given by the FT â1 measurable random variable
+i (T ) (cid:44) (cid:80)T
+nk
+k=i}. And let the total number of times
+that agent k observes rewards from option i be the FT â1
+measurable random variable N k
+
+i (T ), given as
+
+I{Ït
+
+t=1
+
+N k
+
+i (T ) =
+
+T
+(cid:88)
+
+K
+(cid:88)
+
+t=1
+
+j=1
+
+I{Ït
+
+j =i}It
+
+{k,j}.
+
+We deï¬ne a sampling rule for agent k as follows. Let the Ft
+measurable random variable ËÂµk
+i (T ) be the estimate of option
+i by agent k at time t. We deï¬ne
+
+ËÂµk
+
+i (T ) =
+
+,
+
+Sk
+N k
+
+i (T )
+i (T )
+I{Ït
+
+i (T ) = (cid:80)T
+
+where Sk
+reward observed by agent k from option i in T trials.
+
+j=1 X t
+i
+
+j =i}It
+
+{k,j} is the total
+
+(cid:80)K
+
+t=1
+
+Deï¬nition 1: The sampling rule {Ït
+
+k}T
+
+1 for agent k at time
+
+t â {1, . . . , T } is deï¬ned as
+
+i (t) = max{Qk
+
+1(t), Â· Â· Â· , Qk
+
+N (t)}
+
+, Qk
+, o.w.
+
+I
+{Ït+1
+
+k =i} =
+
+(cid:26) 1
+0
+
+with
+
+Qk
+
+i (t) (cid:44) ËÂµk
+
+C k
+
+i (t) (cid:44) Ïi
+
+i (t) + C k
+(cid:115)
+
+i (t)
+2(Î¾ + 1) (cid:0)N k
+N k
+
+i (t) + f (t)(cid:1)
+i (t)
+
+(1)
+
+(2)
+
+(3)
+
+log t
+N k
+i (t)
+
+where Î¾ > 1 and f (t) a sublogarithmic nondecreasing
+nonnegative function.
+
+III. PERFORMANCE ANALYSIS
+
+In this section we proceed to analyze the performance
+of the proposed sampling rule by analyzing the expected
+cumulative regret of the agents. Recall that the expected
+
+cumulative regret depends on the expected number of times
+the agents sample suboptimal options and the goal of each
+agent is to maximize its individual cumulative reward.
+
+A. Regret Analysis
+
+Let i be a suboptimal option. The total number of times
+agent k samples from option i can be upper bounded as
+follows:
+
+nk
+
+i (T ) =
+
+T
+(cid:88)
+
+t=1
+
+I{Ït
+
+k=i} â¤
+
+T
+(cid:88)
+
+t=1
+
+I
+{Qk
+
+i (t)â¥Qk
+
+iâ (t)}.
+
+{Qk
+
+i (t)>Qk
+
+Here I
+iâ (t)} is an indicator function that takes value
+one if the objective function of option i is greater than
+the objective function of the optimal option iâ and zero
+otherwise, i.e.,
+
+I
+{Qk
+
+i (t)>Qk
+
+iâ (t)} =
+
+(cid:26) 1
+0
+
+i (t) â¥ Qk
+
+iâ (t)
+
+, Qk
+, o.w.
+
+Thus we have
+
+E (cid:0)nk
+
+i (T )(cid:1) â¤
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)Qk
+
+i (t) â¥ Qk
+
+iâ (t)(cid:1) .
+
+Let Rk
+
+i (T ) be the cumulative regret of agent k from option
+
+i. Deï¬ne âi (cid:44) Âµiâ â Âµi. Then we have, from [16],
+
+E (cid:0)Rk
+
+i (T )(cid:1) = âiE (cid:0)nk
+We proceed to analyze the expected number of samples from
+suboptimal options as follows.
+
+i (T )(cid:1) .
+
+(4)
+
+First we note that âi, k, t we have
+
+(cid:8)Qk
+
+i (t) â¥ Qk
+âª (cid:8)ËÂµk
+
+iâ (t)(cid:9) â (cid:8)Âµiâ < Âµi + 2C k
+iâ (t)(cid:9) âª (cid:8)ËÂµk
+iâ â¤ Âµiâ â C k
+
+i (t)(cid:9)
+i â¥ Âµi + C k
+
+i (t)(cid:9)
+
+(5)
+
+E (cid:0)nk
+
+i (T )(cid:1) â¤
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)Âµiâ < Âµi + 2C k
+
+i (t)(cid:1)
+
+Lemma 1: For Ï = 2Ï2
+
+i (Î´(Î¾) + Î´(cid:48)((cid:15))) log t, with (cid:15) >
+0, Î´(Î¾) > 0, Î´(cid:48)((cid:15)) = Î´(Î¾)(cid:15)/4, there exists a Î¶ > 1 such
+that
+(cid:32)
+(cid:12)
+2 (Î´(Î¾) + Î´(cid:48)((cid:15))) log t
+(cid:12)ËÂµk
+(cid:12)
+i (t)
+Proof of Lemma 1: Deï¬ne Î(Î¶) =
+
+Î½ log Kt
+tÎ´(Î¾)
+(cid:17)2 where
+
+(cid:12)
+(cid:12)
+(cid:12) > Ïi
+
+i (t) â Âµi
+
+N k
+
+(cid:115)
+
+(cid:33)
+
+â¤
+
+P
+
+(cid:16)
+
+.
+
+1
+
+1
+4 +Î¶â 1
+
+4
+
+Î¶
+
+Î¶ > 1. Î(Î¶) is a monotonically decreasing function and
+4 . This implies that Îº < 1
+limÎ¶â1 Î(Î¶) = 1
+since Îº =
+4Ï2
+i
+1
+Î(Î¶)/Ï2
+, where (cid:15) > 0.
+i . Choose Î¶ > 1 such that Îº =
+(4+(cid:15))Ï2
+i
+Then âÎ´(cid:48)((cid:15)) > 0 such that 4Îº(Î´(Î¾) + Î´(cid:48)((cid:15)))Ï2
+i = Î´(Î¾). This
+proves that âÎ¶ > 1 such that 2ÎºÏ = Î´(Î¾) log t. The lemma
+follows from Theorem 1.
+
+We proceed to upper bound the summation of
+
+the
+probabilities of the events (cid:8)Âµiâ < Âµi + 2C k
+i (t)(cid:9) for t â
+{1, 2, . . . , T } as follows. Using the equation (3) we have
+that the inequality Âµiâ < Âµi + 2C k
+
+i (t) implies
+
+â2
+i
+4Ï2
+i
+
+(cid:0)N k
+
+i (t)(cid:1)2
+
+â 2(Î¾ + 1) log t (cid:0)N k
+
+i (t) + f (t)(cid:1) < 0.
+
+This inequality does not hold for N k
+
+i (t) > Î·i(t), where
+
+Î·i(t) =
+
+4Ï2
+
+i (Î¾ + 1)
+â2
+i
+
+(cid:32)
+
+(cid:115)
+
+1 +
+
+1 +
+
+â2
+i
+i (Î¾ + 1)
+
+2Ï2
+
+f (t)
+log t
+
+(cid:33)
+
+log t.
+
+Thus we have
+T
+(cid:88)
+
+P (cid:0)Qk
+
+i (t) â¥ Qk
+
+iâ (t), N k
+
+i (t) < Î·i(t)(cid:1) â¤ Î·i(T ).
+
+(7)
+
+t=1
+
+Using probability bounds given in Lemma 1 and equation
+
+(7) we prove our main result on performance bounds.
+
+Theorem 2: The total expected number of times agent k
+samples suboptimal option i until time T is upper bounded
+as
+E (cid:0)nk
+
++
+
+(cid:19)
+
+1
+T Î¾â1 log Î¶
+
+(cid:18) log K
+T Î¾
+
+1
+Î¾ â 1
+
+i (T )(cid:1) â¤ Î(Î¶, Î¾, K) +
+(cid:32)
+
+(cid:115)
+
+1 +
+
+1 +
+
+â2
+i
+i (Î¾ + 1)
+
+2Ï2
+
+f (T )
+log T
+
+(cid:33)
+
+log T
+
++
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)ËÂµk
+
+iâ (t) â¤ Âµiâ â C k
+
+iâ (t)(cid:1) +
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)ËÂµk
+
+i (t) â¥ Âµi + C k
+
+i (t)(cid:1) .
+
++
+
+(6)
+
+4Ï2
+
+i (Î¾ + 1)
+â2
+i
+
+Next we proceed to analyze concentration probability
+
+bounds on the estimates of options.
+
+Theorem 1: For any Î¶ > 1 and for Ïi > 0 there exists a
+
+Ï > 0 such that
+
+(cid:32)
+
+P
+
+ËÂµk
+
+i (t) â Âµi >
+
+(cid:115)
+
+(cid:33)
+
+Ï
+N k
+i (t)
+
+â¤
+
+Î½ log Kt
+exp(2ÎºÏ)
+
+where
+
+Î½ =
+
+1
+log Î¶
+
+, Îº =
+
+1
+
+(cid:16)
+
+4 + Î¶ â 1
+
+4
+
+(cid:17)2 .
+
+Î¶ 1
+Proof of Theorem 1: See Appendix.
+Using symmetry we conclude that
+
+Ï2
+i
+
+(cid:32)
+(cid:12)
+(cid:12)ËÂµk
+(cid:12)
+
+i (t) â Âµi
+
+P
+
+(cid:33)
+
+(cid:115)
+
+(cid:12)
+(cid:12)
+(cid:12) >
+
+Ï
+N k
+i (t)
+
+â¤
+
+Î½ log Kt
+exp(2ÎºÏ)
+
+.
+
+where Î(Î¶, Î¾, K) = 1
+and Î¶, Î¾ > 1.
+
+log Î¶ (1+log K)+ 1
+
+2Î¾ log Î¶
+
+(cid:16) log K
+
+Î¾ + 2
+
+Î¾â1
+
+(cid:17)
+
+Proof of Theorem 2: See Appendix.
+Since f (T ) is a sublogarithmic function, the expected
+number of suboptimal samples are logarithmically bounded.
+
+B. Performance Measure
+
+In this section we provide a measure to rank the agents
+according to their relative performance. We motivate with
+the following two cases for a set of four agents where there
+is an underlying all-to-all observation structure:
+
+Case 1
+Case 2
+
+k
+pk
+pk
+
+1
+0.5
+0.5
+
+2
+0
+1
+
+3
+0
+1
+
+4
+0
+1
+
+.
+
+In Case 1, neighbors of agent 1 are not at all sociable and
+in Case 2 they are maximally sociable. Therefore neighbors
+
+of agent 1 explore more in Case 1 than in Case 2. As
+a result, in Case 1, agent 1 tends to obtain observations
+from neighbors about lesser known options and this allows
+agent 1 to exploit more. In Case 2, agent 1 tends to obtain
+observations from neighbors about well sampled options, and
+this forces agent 1 to explore more. As a result agent 1
+performs better in Case 1 as illustrated in Figure 1.
+
+Fig. 1. Expected cumulative regret of agent 1 in Cases 1 and 2.
+
+With this intuition we propose a measure as follows. First
+we restrict our attention to a class of problems where the
+underlying observation structure of the agents is a symmetric
+dâregular graph. This means that dk = d, âk, i.e., every
+agent has the same number of neighbors. The all-to-all graph
+is a special case of the class of dâregular graphs with d =
+K â 1. We also assume pk â {.05, .10, .15, . . . , 1}, âk.
+
+We deï¬ne performance measure (cid:15)k
+
+p â (0, 1] for agent k as
+
+(cid:15)k
+p
+
+(cid:44) 1
+
+pk + 1
+
+(cid:118)
+(cid:117)
+(cid:117)
+(cid:116)
+
+1
+dk
+
+K
+(cid:88)
+
+j=1,jâVdk
+
+pj .
+
+(8)
+
+Our goal is to show that a lower (cid:15)k
+p implies a lower cumu-
+lative regret and therefore higher performance for agent k.
+The measure (cid:15)k
+p is inversely related to agent kâs sociability pk
+and directly related to the sociability pj of the neighbors j of
+agent k. It then makes sense intuitively that lower (cid:15)k
+p implies
+higher performance for agent k, since the higher the pk the
+more agent k observes and the lower the pj the more its
+neighbors explore and the more valuable is their information.
+We next design a protocol for each agent k that depends
+on (cid:15)k
+p and show in Corollary 1 that the bound on agent kâs
+cumulative regret is directly related to (cid:15)k
+p, which suggests that
+the ordering of agents by (cid:15)k
+p predicts the ordering of agents
+by performance. We plan to prove in a future publication
+that the same ordering is predicted even when the protocol
+does not depend on (cid:15)k
+p. Simulations in Section IV provide
+validation of these assertions.
+
+Let f (t) = (cid:15)k
+
+p. Then the objective function becomes
+
+Qk
+
+i (t) (cid:44) ËÂµk
+
+i (t) + Ïi
+
+(cid:115)
+
+2(Î¾ + 1) (cid:0)N k
+i (t)
+
+N k
+
+i (t) + (cid:15)k
+p
+
+(cid:1)
+
+log t
+N k
+i (t)
+
+.
+
+This assumes that each agent k knows the pj of each of its
+neighbors j. From Theorem 2, the expected number of times
+agent k samples the suboptimal option i is bounded as
+
+E (cid:0)nk
+
+i (T )(cid:1) â¤ Î(Î¶, Î¾, K) +
+ï£«
+
+(cid:115)
+
++
+
+4Ï2
+
+i (Î¾ + 1)
+â2
+i
+
+ï£­1 +
+
+1 +
+
+1
+T Î¾â1 log Î¶
+
+(cid:18) log K
+T Î¾
+
++
+
+1
+Î¾ â 1
+
+(cid:19)
+
+â2
+i
+i (Î¾ + 1)
+
+2Ï2
+
+(cid:15)k
+p
+log T
+
+ï£¶
+
+ï£¸log T.
+
+lower (cid:15)k
+
+This suggests that
+p values correspond to lower
+cumulative expected regret and hence better performance.
+i (T )(cid:1) and equation (4) we upper
+Using the bound on E (cid:0)nk
+bound the cumulative expected regret of agent k as follows.
+Corollary 1: Let Rk(T ) be the regret of agent k up to
+
+time T . Then we have
+
+E (cid:0)Rk(T )(cid:1) â¤
+
+N
+(cid:88)
+
+i=1
+
+âiÎ(Î¶, Î¾, K)
+
+N
+(cid:88)
+
+(cid:18)
+
+âi
+T Î¾â1 log Î¶
+
+(cid:18) log K
+T Î¾
+
++
+
+1
+Î¾ â 1
+
+(cid:19)(cid:19)
+
+4Ï2
+
+i (Î¾ + 1)
+âi
+
+ï£«
+
+(cid:115)
+
+ï£­1 +
+
+1 +
+
+â2
+i
+i (Î¾ + 1)
+
+2Ï2
+
+(cid:15)k
+p
+log T
+
+ï£¶
+
+ï£¸ log T.
+
++
+
++
+
+i=1
+
+N
+(cid:88)
+
+i=1
+
+Expected cumulative regret is then logarithmically bounded.
+
+(cid:15)k
+p â¤
+
+The performance measure (cid:15)k
+
+p can be bounded as
+1
+pk + 1
+Accounting for the sociability of neighbors, as we have
+done, provides a more accurate and tighter bound than only
+considering individual sociability values. However, for an all-
+to-all observation structure the rank order can be predicted
+using only individual sociability values as shown next.
+
+, âk.
+
+sociability of agents k, k(cid:48) such that pk > pk(cid:48). Then (cid:15)k
+
+Lemma 2: Let G be an all-to-all graph. Let pk, pk(cid:48) be the
+p < (cid:15)k(cid:48)
+p .
+Proof of Lemma 2: Since pk > pk(cid:48) and dk = dk(cid:48) = K â1
+
+we have
+
+1
+pk + 1
+
+<
+
+1
+pk(cid:48) + 1
+
+;
+
+(cid:118)
+(cid:117)
+(cid:117)
+(cid:116)
+
+1
+dk
+
+K
+(cid:88)
+
+pj <
+
+j=1,jâVdk
+
+(cid:118)
+(cid:117)
+(cid:117)
+(cid:117)
+(cid:116)
+
+1
+dk(cid:48)
+
+K
+(cid:88)
+
+pj
+
+j=1,jâVd
+
+k(cid:48)
+
+By equation (8), this proves that (cid:15)k
+
+p < (cid:15)k(cid:48)
+p .
+
+IV. NUMERICAL SIMULATIONS
+
+We ran numerical simulations to evaluate the performance
+of sampling rule (1)â(2) with f (t) = (cid:15)k
+p for agent k and with
+f (t) = log log t. The results in both cases verify the accuracy
+of agent ranks predicted by the performance measure (cid:15)k
+p:
+lower (cid:15)k
+p corresponds to lower cumulative regret, hence
+higher performance. We show plots in the case f (t) = (cid:15)k
+p.
+
+We consider 6 agents playing 10-armed bandit problems
+with two distinct observation structures: A) an all-to-all
+graph and B) a cyclic graph. In all simulations we let the
+reward distributions be Gaussian with variance (Ï(cid:48)
+i)2 = 25,
+i = 1, . . . , 10, mean values given by
+
+Fig. 2.
+Expected cumulative regret of the 6 agents using the sampling
+rule given in (1)â(2) and performance measure deï¬ned in (8) with distinct
+observation probabilities pk and underlying all-to-all observation structure.
+
+Fig. 3.
+Expected cumulative regret of the 6 agents using the sampling
+rule given in (1)â(2) and performance measure deï¬ned in (8) with distinct
+observation probabilities pk and underlying cyclic observation structure.
+
+i
+Âµi
+
+1
+40
+
+2
+50
+
+3
+50
+
+4
+60
+
+5
+70
+
+6
+70
+
+7
+80
+
+8
+90
+
+9
+92
+
+10
+95
+
+,
+
+and sociability values given by
+
+k
+pk
+
+1
+0.50
+
+2
+0.85
+
+3
+0.05
+
+4
+0.50
+
+5
+1.00
+
+6
+0.90
+
+.
+
+We provide results for 500 time steps with 1000 Monte Carlo
+simulations. We set the sampling rule parameter Î¾ = 1.1.
+
+A. All-to-all observation
+
+The underlying observation graph structure is all-to-all,
+equivalently a 5-regular graph. We calculate the performance
+measure (cid:15)k
+p for each agent k using equation (8):
+
+k
+(cid:15)k
+p
+
+1
+0.542
+
+2
+0.415
+
+3
+0.825
+
+4
+0.542
+
+5
+0.374
+
+6
+0.401
+
+.
+
+The best predicted performer is agent 5 with lowest
+performance measure (cid:15)5
+p = 0.374 and highest sociability
+value p5 = 1.0. Second and third best predicted performers
+are agent 6 and agent 2, respectively, with second and third
+highest sociability. Agents 1 and 4 are ranked next with
+equal sociability and (cid:15)1
+p. The worst predicted performer
+is agent 3, with lowest sociability and highest performance
+measure (cid:15)3
+p. These predictions on performance ranking are
+veriï¬ed in the simulation results of Figure 2. The results also
+verify that for an underlying all-to-all graph, the performance
+rank ordering is predicted by the sociability rank ordering.
+
+p = (cid:15)4
+
+B. Cyclic observation
+
+The underlying observation graph structure is a cycle,
+equivalently a 2-regular graph, deï¬ned as {k, j} â E, where
+|(k â j) mod 6| = 1. We calculate the (cid:15)k
+
+p using (8):
+
+k
+(cid:15)k
+p
+
+1
+0.624
+
+2
+0.284
+
+3
+0.783
+
+4
+0.483
+
+5
+0.418
+
+6
+0.456
+
+.
+
+The best predicted performer is agent 2 with the lowest
+performance measure (cid:15)2
+the highest
+sociability. In fact, agents 5 and 6 have higher sociability than
+agent 2. However, while all three agents 2, 5, and 6 have one
+
+p = 0.284, but not
+
+neighbor with sociability 0.5, the other neighbor of agents
+5 and 6 has sociability 0.9 and 1, respectively, whereas the
+other neighbor of agent 2 has sociability 0.05. The very low
+sociability of one of agent 2âs neighbors improves agent 2âs
+performance signiï¬cantly enough that it outperforms agents 5
+and 6. This result illustrates the important role of sociability
+of neighbors in an agentâs performance. Further, while agents
+1 and 4 are indistinguishable by their own sociability, agent
+4 has a neighbor with sociability 0.05 whereas agent 1
+has neighbors with relatively high sociability. Therefore as
+predicted by the performance measure, agent 4 outperforms
+agent 1. Figure 3 validates the predicted rankings.
+
+V. CONCLUSIONS
+We studied a MAMAB problem where agents observe
+instantaneous actions and rewards of their neighbors ac-
+cording to a stochastic network graph in which agents are
+distinguished by their sociability, deï¬ned as the probability
+of observing their neighbors. We derived an upper bound
+for expected cumulative regret of agents. We proposed a
+measure to predict relative performance ranking of the agents
+as a function of sociability of agents and their neighbors.
+We veriï¬ed that having less sociable neighbors improves
+the performance of agents. Accuracy of the measure has
+been veriï¬ed analytically through expected cumulative regret
+bounds and computationally through numerical simulations.
+
+ACKNOWLEDGMENT
+
+The ï¬rst author wishes to thank Peter Landgren for helpful
+
+comments during the preparation of this paper.
+
+APPENDIX
+Proof of Theorem 1: Since Xi is a sub-Gaussian random
+
+variable with variance proxy (Ï(cid:48)
+
+E (exp(Î»(Xi â Âµi))) â¤ exp
+
+i)2, we have
+(cid:18) Î»2(Ï(cid:48)
+2
+
+i)2
+
+(cid:19)
+
+.
+
+Deï¬ne a new random variable such that
+K
+(cid:88)
+
+Y k
+i (Ï ) =
+
+(X Ï
+
+i â Âµi) I{ÏÏ
+
+j =i}IÏ
+
+{k,j}.
+
+j=1
+
+Note that E(Y k
+(cid:80)t
+
+Ï =1 Y k
+
+i (Ï ). Let T k
+
+i (Ï )) = E(Y k
+i (Ï ) = (cid:80)K
+
+i (Ï )|FÏ â1) = 0. Let Z k
+j =i}IÏ
+
+i (t) =
+{k,j} For any Î» >
+
+I{ÏÏ
+
+j=1
+
+0
+
+E (cid:0)exp(Î»Y k
+
+i (Ï ))|FÏ â1
+
+(cid:1) â¤ exp
+
+(cid:18) Î»2Ï2
+i
+2
+
+(cid:19)
+
+.
+
+T k
+i (Ï )
+
+I{ÏÏ
+
+j =i} is an FÏ â1 measurable random variable, and so
+Î»2Ï2
+i
+2
+
+(cid:19) (cid:12)
+(cid:12)
+(cid:12)FÏ â1
+
+i (Ï ) â
+
+T k
+i (Ï )
+
+Î»Y k
+
+â¤ 1.
+
+exp
+
+E
+
+(cid:19)
+
+(cid:18)
+
+(cid:18)
+
+Further, using the properties of conditional expectations
+
+ï£«
+
+ï£«
+
+E
+
+ï£­exp
+
+ï£­
+
+(cid:88)
+
+Î»Y k
+
+i (Ï ) â
+
+ï£¶
+
+T k
+i (Ï )
+
+ï£¸
+
+ï£¶
+
+ï£¸
+
+(cid:12)
+(cid:12)
+(cid:12)Ftâ1
+
+Î»2Ï2
+i
+2
+
+1â¤Ï â¤t
+
+(cid:88)
+
+ï£«
+
+ï£­
+
+1â¤Ï â¤tâ1
+
+â¤ exp
+
+Î»Y k
+
+i (Ï ) â
+
+ï£¶
+
+T k
+i (Ï )
+
+ï£¸ .
+
+Î»2Ï2
+i
+2
+
+Thus we see that
+
+(cid:18)
+
+(cid:18)
+
+E
+
+exp
+
+Î»Z k
+
+i (t) â
+
+Î»2Ï2
+i
+2
+
+(cid:19)(cid:19)
+
+N k
+
+i (t)
+
+â¤ 1.
+
+The rest of the proof closely follows the papers [17], [18].
+For clarity and completeness we include the main steps. Let
+Î¶ > 1. Then 1 â¤ N k
+log Î¶ . For
+(cid:113) ÎºÏ
+Î»j = 2
+Ïi
+
+i (t) â¤ Î¶ Dt where Dt = log Kt
+
+i (t) â¤ Î¶ j we have
+
+Î¶jâ1/2 and Î¶ jâ1 â¤ N k
+(cid:113)
+
+2ÎºÏ
+(cid:112)N k
+
+i (t)
+
+Î»j
+
++
+
+Ï2
+i
+2
+
+Î»j
+
+N k
+
+i (t) â¤
+
+â
+
+Ï,
+
+where Îº =
+
+(cid:16)
+
+Î¶
+
+Ï2
+i
+
+1
+4 +Î¶â 1
+
+4
+
+1
+
+(cid:17)2 .
+
+Recall from the Markov inequality that P(Y â¥ a) â¤
+
+for any random variable Y . Thus,
+
+E(Y )
+a
+
+(cid:32)
+
+P
+
+Z k
+i (t)
+(cid:112)N k
+i (t)
+
+(cid:33)
+
+â
+
+Ï
+
+â¥
+
+â¤ âªDT
+
+j=1 exp(â2ÎºÏ).
+
+Proof of Theorem 2: From equations (6)â(7) we have
+
+E (cid:0)nk
+
+i (T )(cid:1) â¤
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)ËÂµk
+
+iâ â¤ Âµiâ â C k
+
+iâ (t), N k
+
+i (t) > Î·i(t)(cid:1)
+
++ Î·i(T ) +
+
+T
+(cid:88)
+
+t=1
+
+P (cid:0)ËÂµk
+
+i â¥ Âµi + C k
+
+i (t), N k
+
+i (t) > Î·i(t)(cid:1) .
+
+Note that N k
+i (t)+f (t)
+N k
+i (t)
+Î´(Î¾) = Î¾ + 1 â Î´(cid:48)((cid:15)) we have
+
+â¥ 1, ât â¥ 1. Using Lemma 1 and
+
+E (cid:0)nk
+
+i (T )(cid:1) â¤ Î·i(T ) + 2Î½
+
+T
+(cid:88)
+
+t=1
+
+log Kt
+tÎ´(Î¾)
+
+.
+
+Since Î´(cid:48)((cid:15)) can be made arbitrarily small, the summation
+term can be evaluated as follows:
+T
+(cid:88)
+
+T
+(cid:88)
+
+T
+(cid:88)
+
+log Kt
+tÎ´(Î¾)
+
+â¤
+
+t=1
+
+t=1
+
+log K
+tÎ¾+1 +
+(cid:32)
+
+1
+tÎ¾
+
+â¤ log K
+
+1 +
+
+t=1
+(cid:90) T
+
+2
+
+(cid:33)
+1
+tÎ¾+1 dt
+
++ 1 +
+
+(cid:90) T
+
+2
+
+1
+tÎ¾ dt
+
+= 1 + log K +
+
+1
+2Î¾
+(cid:18) log K
+Î¾
+
++
+
+(cid:18) log K
+Î¾
+T
+Î¾ â 1
+
+(cid:19)
+
++
+
+1
+T Î¾
+
+(cid:19)
+
++
+
+2
+Î¾ â 1
+
+.
+
+(cid:18) log K
+Î¾
+
++
+
+2
+Î¾ â 1
+
+(cid:19)
+
+Thus we have
+i (T )(cid:1) â¤
+
+E (cid:0)nk
+
+1
+log Î¶
+
+(1 + log K) +
+
+1
+2Î¾ log Î¶
+(cid:19)
+
+1
+T Î¾â1 log Î¶
+
+(cid:18) log K
+T Î¾
+
++
+
+1
+Î¾ â 1
+
++
+
++
+
+4Ï2
+
+i (Î¾ + 1)
+â2
+i
+
+(cid:32)
+
+(cid:115)
+
+1 +
+
+1 +
+
+â2
+i
+i (Î¾ + 1)
+
+2Ï2
+
+f (T )
+log T
+
+(cid:33)
+
+log T.
+
+REFERENCES
+
+[1] R. S. Sutton and A. G. Barto, Introduction to Reinforcement Learning.
+
+MIT Press Cambridge, MA, USA, 1998.
+
+[2] H. Robbins, Some Aspects of the Sequential Design of Experiments.
+
+Springer New York, 1985.
+
+[3] J. C. Gittins, âBandit processes and dynamic allocation indices,â
+Journal of the Royal Statistical Society. Series B (Methodological),
+vol. 41, pp. 148â177, 1979.
+
+[4] T. L. Lai and H. Robbins, âAsymptotically efï¬cient adaptive allocation
+rules,â Advances in Applied Mathematics, vol. 6, no. 1, pp. 4â22, 1985.
+[5] R. Agrawal, âSample mean based index policies with o(log n) regret
+for the multi-armed bandit problem.â Advances in Applied Probability,
+vol. 27, pp. 1054â1078, 1995.
+
+[6] P. Auer, N. Cesa-Bianchi, and P. Fisher, âFinite-time analysis of the
+multi-armed bandit problem.â Machine Learning, vol. 47, pp. 235â
+256, 2002.
+
+[7] E. Kauffman, O. Cappe, and A. Garivier, âOn Bayesian upper con-
+ï¬dence bounds for bandit problem,â in International Conference on
+Artiï¬cial Intelligence and Statistics,, April 2012, pp. 592â600.
+[8] P. Reverdy, V. Srivastava, and N. E. Leonard, âModeling human
+decision-making in generalized Gaussian multi-armed bandits,â in
+Proceedings of the IEEE, vol. 102, no. 4, 2014, pp. 544â571.
+
+[9] V. Anantharam, P. Varaiya, and J. Walrand, âAsymptotically efï¬cient
+allocation rules for the multiarmed bandit problem with multiple
+plays-part i: I.i.d. rewards,â IEEE Transactions on Automatic Control,
+vol. 32, no. 11, pp. 968â976, 1987.
+
+[10] P. Landgren, V. Srivastava, and N. E. Leonard, âDistributed cooperative
+decision-making in multiarmed bandits: Frequentist and Bayesian
+algorithms,â in IEEE Conference on Decision and Control, December
+2016, pp. 167â172.
+
+[11] D. Kalathil, N. Nayyar, and R. Jain, âDecentralized learning for
+multiplayer multiarmed bandits,â IEEE Transactions on Information
+Theory, vol. 60, no. 4, pp. 2331â2345, 2014.
+
+[12] P. Landgren, V. Srivastava, and N. E. Leonard, âOn distributed coop-
+erative decision-making in multiarmed bandits,â in European Control
+Conference, June 2016, pp. 243â248.
+
+[13] R. K. Kolla, K. Jagannathan, and A. Gopalan, âCollaborative learning
+of stochastic bandits over a social network,â arXiv:1602.08886v2,
+2016.
+
+[14] P. Landgren, V. Srivastava, and N. E. Leonard, âSocial
+
+imitation
+in cooperative multiarmed bandits: partition-based algorithms with
+information,â in IEEE Conference on Decision and
+strictly local
+Control, December 2018, pp. 5239â5244.
+
+[15] A. R. Tilman, J. R. Watson, and S. Levin, âMaintaining cooperation in
+social-ecological systems:,â Theoretical Ecology, vol. 10, pp. 155â165,
+2016.
+
+[16] T. L. Lai, âAdaptive treatment allocation and the multi-armed bandit
+problem,â Ann. Statist., vol. 15, no. 3, pp. 1091â1114, 09 1987.
+[Online]. Available: https://doi.org/10.1214/aos/1176350495
+
+[17] A. Garivier and E. Moulines, On Upper-Conï¬dence Bound Policies
+for Switching Bandit Problems. Berlin, Heidelberg: Springer Berlin
+Heidelberg, 2011, pp. 174â188.
+
+[18] ââ, âOn upper-conï¬dence bound policies for non-stationary bandit
+
+problems,â arXiv:0805.3415v1, 2008.
+
+

@@ -1,0 +1,66 @@
+# Learning Latent Representations to Enhance Multi-Agent Interaction
+
+Seamless human-robot interaction is a challenging task. Unlike static environments, humans and robots constantly update their behaviors based on their interactions, creating a dynamic, non-stationary learning environment. Understanding and anticipating these changes are crucial for effective co-adaptation. Inspired by human interaction, this blog post delves into a reinforcement learning-based framework that captures the latent strategies of other agents through high-level representations, allowing robots to influence and adapt more effectively.
+
+## Introduction
+
+Imagine an autonomous car navigating through traffic. To ensure safety, it needs to regulate the speed of nearby human-driven cars. The challenge arises because human drivers continuously adapt their strategies based on the car's behavior. For instance, if the autonomous car suddenly slows down, a cautious driver might initially slow down too. However, if the slowing seems unnecessary, the driver might decide to overtake the car in future encounters. This dynamic interplay makes it imperative for the autonomous car to anticipate these strategy shifts and adapt accordingly.
+
+This scenario exemplifies the broader challenge of multi-agent interaction, where robots must learn to interact with non-stationary and independently controlled agents, such as humans. This blog post explores how robots can leverage latent representations of other agents' policies to anticipate and influence their future behaviors, improving co-adaptation.
+
+## Understanding Latent Representations in Multi-Agent Systems
+
+### The Concept of Latent Strategies
+
+Latent strategies are high-level representations of an agent's behavior that can change over time. Unlike traditional methods that explicitly model every low-level action, latent strategies capture the essence of an agent's policy, making it easier to predict and influence. 
+
+For example, in human-human interaction, we don't need to model every step a person might take while walking. Instead, we understand their overall intention—whether they plan to cross the street or continue walking straight. Similarly, robots can benefit from maintaining high-level representations of other agents' strategies to anticipate their responses during interactions.
+
+### Reinforcement Learning Framework
+
+The proposed framework employs reinforcement learning (RL) to learn these latent representations. The ego agent (e.g., a robot) interacts with other non-stationary agents and identifies the relationship between its actions and the other agents' future strategies. By modeling these latent dynamics, the ego agent can influence the other agents, guiding them towards behaviors that are more conducive to co-adaptation.
+
+## Influencing Multi-Agent Behavior
+
+### Learning Latent Strategies
+
+The first step is learning to represent other agents' behaviors. During each interaction, the ego agent experiences a trajectory of states, actions, and rewards. This local experience is used to anticipate the other agent's subsequent latent strategy. An encoder-decoder network architecture is employed, where the encoder predicts the latent strategy based on the ego agent's experience, and the decoder reconstructs the transitions and rewards observed during the next interaction.
+
+### Reinforcement Learning with Latent Strategies
+
+Once the latent strategy is predicted, the ego agent can intelligently react. For example, if an autonomous car anticipates that a human driver will follow it closely, it might slow down gradually to reduce the human's speed. Conversely, if it predicts that the driver will overtake, it might adjust its speed to facilitate a smooth overtaking maneuver.
+
+### Proactive Influence for Long-Term Rewards
+
+The ultimate goal is not just to react but to proactively influence the other agent's strategy for long-term benefits. By understanding how its actions influence the latent strategies of others, the ego agent can guide them towards more favorable behaviors. For instance, the autonomous car might establish trust with a human driver, encouraging the driver to adopt a following strategy that allows for safer speed regulation in heavy traffic.
+
+## Experimental Validation
+
+### Simulated Environments
+
+The framework was tested in four simulated environments and a real-world air hockey experiment:
+
+1. **Point Mass**: The ego agent learns to trap a moving target by influencing its movement.
+2. **Lunar Lander**: The ego agent learns to land on a launchpad with varying positions.
+3. **Driving (2D and CARLA)**: The ego agent learns to pass another car that switches lanes based on previous interactions.
+4. **Air Hockey**: The ego agent learns to block shots from an opponent that adapts its aim based on the ego agent's previous positions.
+
+### Results and Insights
+
+The proposed method outperformed state-of-the-art RL algorithms in all environments. Notably, in the Point Mass domain, the ego agent effectively trapped the target near its starting position by exploiting the latent dynamics. In the air hockey experiment, the ego agent influenced the opponent to aim where it could block most effectively.
+
+## Playing Against Humans
+
+The final test involved deploying the framework to play against a human opponent in air hockey. While the ego agent performed well against a robot, it faced challenges against humans due to the unpredictability and noise in human actions. This highlighted the need for further robustness in the learned policies to handle real-world human interactions effectively.
+
+## Conclusion
+
+This framework represents a significant step towards more adaptive and intelligent multi-agent interactions. By learning and leveraging high-level latent strategies, robots can anticipate and influence the behaviors of other agents, leading to more seamless co-adaptation. Future work will focus on enhancing the robustness of the framework and exploring its application in more complex and varied real-world scenarios.
+
+## Call to Action
+
+What are your thoughts on using latent representations in multi-agent systems? Have you encountered similar challenges in your projects? Share your experiences and insights in the comments below. And if you're interested in seeing this framework in action, check out the videos of our experiments on our [project webpage](https://sites.google.com/view/latent-strategies/).
+
+---
+
+By integrating high-level latent strategies into multi-agent systems, we can pave the way for more intuitive and efficient human-robot interactions. Stay tuned for more updates on this exciting field!

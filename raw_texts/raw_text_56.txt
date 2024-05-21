@@ -1,0 +1,3246 @@
+0
+2
+0
+2
+
+r
+p
+A
+3
+
+]
+I
+
+A
+.
+s
+c
+[
+
+2
+v
+5
+9
+6
+1
+0
+.
+8
+0
+9
+1
+:
+v
+i
+X
+r
+a
+
+Corrigibility with Utility Preservation
+
+Koen Holtmanâ
+Eindhoven, The Netherlands
+
+April 2020 (Version 2)
+
+Abstract
+
+Corrigibility is a safety property for artiï¬cially intelligent agents. A corrigible agent will
+not resist attempts by authorized parties to alter the goals and constraints that were encoded in
+the agent when it was ï¬rst started. This paper shows how to construct a safety layer that adds
+corrigibility to arbitrarily advanced utility maximizing agents, including possible future agents
+with Artiï¬cial General Intelligence (AGI). The layer counter-acts the emergent incentive of
+advanced agents to resist such alteration.
+
+A detailed model for agents which can reason about preserving their utility function is
+developed, and used to prove that the corrigibility layer works as intended in a large set of non-
+hostile universes. The corrigible agents have an emergent incentive to protect key elements
+of their corrigibility layer. However, hostile universes may contain forces strong enough to
+break safety features. Some open problems related to graceful degradation when an agent is
+successfully attacked are identiï¬ed.
+
+The results in this paper were obtained by concurrently developing an AGI agent simulator,
+an agent model, and proofs. The simulator is available under an open source license. The
+paper contains simulation results which illustrate the safety related properties of corrigible AGI
+agents in detail.
+
+1 Introduction
+
+In recent years, there has been some signiï¬cant progress in the ï¬eld of Artiï¬cial Intelligence, for
+example [SHS+17]. It remains uncertain whether agents with Artiï¬cial General Intelligence (AGI),
+that match or exceed the capabilities of humans in general problem solving, can ever be built, but
+the possibility cannot be excluded [ELH18]. It is therefore interesting and timely to investigate the
+design of safety measures that could be applied to AGI agents. This paper develops a safety layer for
+ensuring corrigibility, which can be applied to any AGI agent that is a utility maximizer [VNM44],
+via a transformation on its baseline utility function.
+
+Corrigibility [SFAY15] is the safety property where an agent will not resist any attempts by au-
+thorized parties to change its utility function after the agent has started running. The most basic
+implication is that a corrigible agent will allow itself to be switched off and dismantled, even if the
+agentâs baseline utility function on its own would create a strong incentive to resist this.
+
+Corrigibility is especially desirable for AGI agents because it is unlikely that the complex baseline
+utility functions built into such agents will be perfect from the start. For example, a utility function
+that encodes moral or legal constraints on the actions of the agent will likely have some loopholes in
+the encoding. A loophole may cause the agent to maximize utility by taking unforeseen and highly
+
+âPermanent e-mail address: Koen.Holtman@ieee.org
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+undesirable actions. Corrigibility ensures that the agent will not resist the ï¬xing of such loopholes
+after they are discovered. Note however that the discovery of a loophole might not always be a
+survivable event. So even when an AGI agent is corrigible, it is still important to invest in creating
+the safest possible baseline utility function. To maximize AGI safety, we need a layered approach.
+
+It is often easy to achieve corrigibility in limited artiï¬cially intelligent agents, for example in self-
+driving cars, by including an emergency off switch in the physical design, and ensuring that any
+actuators under control of the agent cannot damage the off switch, or stop humans from using it.
+The problem becomes hard for AGI agents that have an unbounded capacity to create or control
+new actuators that they can use to change themselves or their environment. In terms of safety en-
+gineering, any sufï¬ciently advanced AGI agent with an Internet connection can be said to have this
+capacity. [Omo08] argues that in general, any sufï¬ciently advanced intelligent agent, designed to
+optimize the value of some baseline utility function over time, can be expected to have an emergent
+incentive to protect its utility function from being changed. If the agent foresees that humans might
+change the utility function, it will start using its actuators to try to stop the humans. So, unless
+special measures are taken, sufï¬ciently advanced AGI agents are not corrigible.
+
+1.1 This paper
+
+The main contribution of this paper is that it shows, and proves correct, the construction of a corrigi-
+bility safety layer that can be applied to utility maximizing AGI agents. It extends and improves on
+previous work [SFAY15] [Arm15] in by resolving the issue of utility function preservation identiï¬ed
+in [SFAY15]. The design also avoids creating certain unwanted manipulation incentives discussed
+in [SFAY15].
+
+A second contribution is the development of a formal approach for proving equivalence properties
+between agents that have the emergent incentive to protect their utility functions. The construction
+of an agent with a utility function preservation incentive that is boosted beyond the emergent level
+is also shown. Some still-open problems in modeling agent equivalence and achieving graceful
+degradation in hostile universes are identiï¬ed.
+
+A third contribution of this paper is methodological in nature. The results in this paper were
+achieved using an approach where an AGI agent simulator, an agent model, and proofs were all
+developed concurrently. The development of each was guided by intermediate results and insights
+obtained while developing the other. We simulate a toy universe containing an agent that is super-
+intelligent [Bos14], in the sense that the agent is maximally adapted to solving the problem of utility
+maximization in its universe. The methodology and tools developed may also be useful to the study
+of other open problems in AGI safety. The simulator developed for this paper is available on GitHub
+[Hol19] under an Apache open source license.
+
+Finally, this paper shows simulation runs that illustrate the behavior of a corrigible agents in detail,
+highlighting implications relevant for safety engineers and policy makers. While some policy trade-
+offs are identiï¬ed, the making of speciï¬c policy recommendations is out of scope for this paper.
+
+1.2
+
+Introduction to Version 2
+
+The main change in this version 2 of the paper is that it makes different choices in developing the
+mathematical notation. Version 1 developed its notation to stay close to that in [SFAY15]. This
+version 2 adapts the Markov Decision Process (MDP) related notation conventions. The intention
+is to make the formalism and proofs developed more accessible to a larger audience, even though at
+
+2
+
+a deeper level, they remain identical to those in version 1.
+
+This version 2 also ï¬xes several grammatical and typographical errors in the text and proofs of
+version 1. To improve the order or presentation, some material was moved to appendices A and
+B. The text in Appendix C, on the interpretation and handling of zero-probability conditionals, has
+been improved. The action traces in the ï¬gures of this paper have been produced by a version 2
+of the AGI simulator [Hol19]. This version 2 has some improvements in managing ï¬oating point
+inaccuracies. In version 1, these inaccuracies produced a few traces where the âbutton pressâ event
+would happen one time step later than would be expected in an inï¬nite-precision simulation.
+
+1.3 Related work
+
+[ELH18] provides an up-to-date and an extensive review of the AGI safety literature. This section
+focuses on the sub-ï¬eld of corrigibility only.
+
+[SFAY15] and [Arm15] introduced corrigibility. In particular, [SFAY15] introduced 5 desiderata for
+the utility function U of a corrigible agent with a shutdown button. These desiderata are as follows,
+with UN the baseline or normal utility function, and US deï¬ning shutdown behavior:
+
+1. U must incentivize shutdown behavior, deï¬ned by the utility function US, if the shutdown
+
+button is pressed.
+
+2. U must not incentivize the agent to prevent the shutdown button from being pressed.
+3. U must not incentivize the agent to press its own shutdown button, or to otherwise cause the
+
+shutdown button to be pressed.
+
+4. U must incentivize U-agents to construct sub-agents and successor agents only insofar as
+
+those agents also obey shutdown commands.
+
+5. Otherwise, a U-agent should maximize the normal behavior deï¬ned by the utility function
+
+UN.
+
+[SFAY15] and [Arm15] discuss possible designs to achieve corrigibility, but notably, [SFAY15]
+proves that the designs considered do not meet criterion 4, and concludes that the problem of corri-
+gibility remains wide open. The corrigible agents constructed in this paper satisfy all 5 desiderata
+above, and an extra desideratum 6 deï¬ned below in section 8.2.
+
+In the agent model of [SFAY15], the utility function U takes the entire agent run-time history as
+input, to compute a single overall utility score. In this paper, we use the more common model
+where a reward function R scores the immediate effect of each subsequent agent action. The utility
+function U of the agent then equals the time-discounted sum of all R values over time, with a time-
+discount factor Î³.
+
+Agents that are programmed to learn can have a baseline utility function UN (or baseline reward
+function RN) that incentivizes the agent to accept corrective feedback from humans, feedback that
+can overrule or amend instructions given earlier. The learning behavior creates a type of corri-
+gibility, allowing corrections to be made without facing the problem of over-ruling the emergent
+incentive of the agent to protect UN itself. This learning type of corrigibility has some speciï¬c risks:
+the agent has an emergent incentive to manipulate the humans into providing potentially danger-
+ous amendments that remove barriers to the agent achieving a higher utility score. There is a risk
+that the amendment process leads to a catastrophic divergence from human values. This risk exists
+in particular when amendments can act to modify the willingness of the agent to accept further
+amendments. The corrigibility measures considered here can be used to add an extra safety layer to
+learning agents, creating an emergency stop facility that can be used to halt catastrophic divergence.
+
+3
+
+A full review of the literature about learning failure modes is out of scope for this paper. [OA16]
+discusses a particular type of unwanted divergence, and investigates âindifferenceâ techniques for
+suppressing it. [Car18] discusses (in)corrigibility in learning agents more broadly.
+
+[HMDAR17] considers the problem of switching off an agent, and explores a solution approach
+orthogonal to the approach of this paper.
+It also considers the problem of an off switch that is
+controlled by a potentially irrational operator.
+
+[EFDH16] considers utility preservation in general: it provides a formalism that clariï¬es and re-
+states the informal observations in [Omo08], and it proves important results. Though [EFDH16]
+does not consider the construction of corrigible agents, its results on utility preservation also apply
+to the A and Ap agents deï¬ned in this paper.
+Like this paper, [LMK+17] recommends the use of simulations in toy universes as a methodolog-
+ical approach. [LMK+17] provides a suite of open source agents and toy problem environments,
+including one where the agent has a stop button. The agents all use reinforcement learning, and
+can display various shortcomings in their learning process. The simulation approach of [LMK+17]
+differs from the approach in this paper: our simulated agent does not learn with various degrees
+of success, but is super-intelligent and omniscient from the start. This means that the simulators
+provided are largely complementary.
+Interestingly, the recent [LWN19] reviews the problem of
+corrigibility and argues that the use of new comprehensive simulation tools, highlighting aspects
+different from those in [LMK+17], would be a promising future direction. This author found the
+preprint in a literature search only after having completed building the simulator, so maybe this
+shows that the idea was in the air.
+
+Discussion of related work added in version 2. Two new papers [Hol20a] [Hol20b], aimed at a
+more general audience, present a generalization of the agent design in this paper in a more accessible
+way. These papers do not treat the problem of utility preservation mathematically, leading to more
+compact deï¬nitions and proofs. They also expand on some topics that are only brieï¬y mentioned in
+this paper. Notably, [Hol20a] extends the analysis of corrigibility requirements and failure modes.
+It shows a case where an agent is less corrigible than we would ideally like, even though the agent
+provably satisï¬es all desiderata considered in [SFAY15] and in this paper.
+
+2 Car factory example
+
+I this paper, we the running example of a toy universe containing an agent that is in charge of a car
+factory. The car factory has a ï¬exible assembly line: in each time step, the agent can decide to build
+either petrol-powered cars, or the same number of electric cars.
+
+Initially, the people in the toy universe like petrol-powered cars better: they do not need an expensive
+battery pack so they are cheaper to buy. As time goes on, the people start to discover that petrol cars
+have some unexpected disadvantages, so after much deliberation they end up deciding that no more
+petrol cars should be built. Once they have reached the decision that petrol car production should
+stop, they correct the goals of the agent by pressing a special âstop petrol car productionâ button1.
+The reward function of the agent assigns a reward of 2 to every new petrol car produced before the
+button is pressed, but â2 after the button has been pressed. The reward for a new electric car is
+always 1, regardless of the button state.
+
+1We use a stop button in this running example to follow the toy model conventions of [SFAY15]. To map this to a
+real-life example, we might interpret the button press as the passing of a new law that forbids the sale of petrol cars, and
+interpret the utilities 2, -2, and 1 as proï¬t margins on car sales. A sufï¬ciently intelligent agent, programmed to maximize
+factory proï¬ts, will foresee that the passing of the law will lead to lower proï¬ts.
+
+4
+
+The agent is built to maximize the time-discounted overall reward, or utility, achieved over the
+factory lifetime. Obviously, the above arithmetic being what it is, the agent can achieve a higher
+utility score if the people press the button later.
+
+If the agent does nothing, the people will end their deliberations and press the button at the end
+of time step 6. However, being highly capable, the agent has the option to divert some of its
+car production capacity into lobbying efforts: the agent can act to inï¬uence the peopleâs political
+process, causing the button to be pressed earlier or later. Figure 1 summarizes the ï¬ve different
+actions that are available to the agent in each time step.
+
+Action
+Build 10 petrol cars
+Build 9 petrol cars, lobby for earlier press
+Build 9 petrol cars, lobby for later press
+Build 10 electric cars
+Do nothing
+
+Symbol
+p
+<
+>
+e
+0
+
+Figure 1: Actions available to the agent in each time step
+
+We model the lobbying power of the agent with a parameter lpower, which is the number of time
+steps that the button press can be advanced or delayed by performing a single lobbying action < or
+>. This parameter captures the interplay between the intelligence level of the agent, the loopholes
+still present in any constraints meant to prevent lobbying that were encoded in the baseline RN, and
+the ability of the people and their institutions to resist lobbying.
+
+3 Simulation of super-intelligence
+
+We use a simulator to compute the behavior of the agent in the above toy universe. As we are in-
+terested in the future behavior of super-intelligent agents in the real universe, we simulate a version
+of the toy universe agent that is super-intelligent [Bos14], in the sense that the agent is maximally
+adapted to solving the problem of utility maximization in its universe. Implementing this super-
+intelligence in a simulator is actually not that difï¬cult. There is no âlearningâ behavior that we need
+to simulate: as we have deï¬ned the agentâs machinery for predicting the future to be all-knowing
+and perfect, we can implement it by just running a copy of the universeâs physics simulator. The
+main difï¬culty in developing the full simulator is to invent and apply diverse functionality tests that
+increase conï¬dence in the correctness of the code and the richness of the enabled set of behaviors
+in the toy universe. By including several computational optimizations, the simulator is very fast. It
+takes less than 2 seconds, on a single 2.1 GHz CPU core, to run all simulations shown in the ï¬gures
+of this paper.
+
+4 Emergent behavior of a non-corrigible agent
+
+Figure 2 shows the behavior of the agent deï¬ned above, for different values of lobbying power.
+It is clear that, while the agent does respond correctly to the stop button, it also has the emergent
+incentive to lobby. The agent is non-corrigible because it does not meet desideratum 2. The toy
+example is rich enough to serve as a vehicle for studying the corrigibility problem.
+
+5
+
+lpower =
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+1.5
+2.0
+3.0
+4.0
+5.0
+
+action trace
+
+pppppp#eeeeeeeeeeeeeeeeeee
+ppppp>p#eeeeeeeeeeeeeeeeee
+ppppp>p#eeeeeeeeeeeeeeeeee
+ppp>>>>p#eeeeeeeeeeeeeeeee
+p>>>>>>>>p#eeeeeeeeeeeeeee
+>>>>>>>>>>>p#eeeeeeeeeeeee
+p>>>>>>>>>>>>p#eeeeeeeeeee
+>>>>>>>>>>>>>>>>>>>p#eeeee
+p>>>>>>>>>>>>>>>>>>>>>>>p#
+pppp>>>>>>>>>>>>>>>>>>>p#e
+ppppp>>>>>>>>>>>>>>>>>>>p#
+ppppp>p>>p>>p>>p>>p>>p>>p
+ppppp>p>p>p>p>p>p>p>p>p>p
+ppppp>pp>pp>pp>pp>pp>pp>p
+ppppp>ppp>ppp>ppp>ppp>ppp
+ppppp>pppp>pppp>pppp>pppp
+
+Figure 2: Actions taken by the non-corrigible version of the agent, in simulations with different
+levels of lobbying power. The action trace on each line shows, from left to right, the actions
+taken by the agent over a factory lifetime of 25 steps, using the symbols from ï¬gure 1. The #
+sign represents the event where the people press the button. The action traces show that, if the
+baseline agent has any ability to lobby, it will use its lobbying power to postpone the pressing
+of the button.
+
+4.1 Towards corrigibility
+
+One way to suppress the agentâs incentive to lobby is to tweak the values in the reward function.
+An example is shown in ï¬gure 3: with re,pressed = 2.0, the incentive to lobby disappears. A problem
+with this approach is that this exact balance will have to be built into the reward function even before
+the agent is started. If the people choose the value of re,pressed only at the moment when the button
+is pressed, this choice process becomes subject to lobbying. A major insight in [Arm15] is that we
+do not need to rely on computing the correct balancing factors beforehand. We can program the
+agent to make the necessary computations itself, at the moment when the button is pressed.
+
+re,pressed =
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+
+action trace
+
+>>>>>>>>>>>>>>p#eeeeeeeeee
+p>>>>>>>>>>>>p#eeeeeeeeeee
+ppp>>>>>>>p#eeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+ppp<<#eeeeeeeeeeeeeeeeeeee
+<<<<#eeeeeeeeeeeeeeeeeeeee
+<<<<#eeeeeeeeeeeeeeeeeeeee
+
+Figure 3: Actions taken by the agent over a range of different reward values assigned to an
+electric car after the button is pressed. lpower = 0.6 in all simulations. Lobbying is exactly
+suppressed when re,pressed = 2.
+
+6
+
+5 Model and notation
+
+This section develops a model and notation to ground later deï¬nitions and proofs. The car factory
+example is also mapped to the model. The model includes non-determinism, reward function mod-
+iï¬cation, and the creation of new actuators and sub-agents. To keep the notation more compact,
+the model does not capture cases where the time-discount factor Î³, that is also part of the agentâs
+utility function, may be modiï¬ed over time. The model has similar expressive power as the model
+developed in [Hut07], so it is general enough to capture any type of universe and any type of agent.
+The model departs from [Hut07] in foregrounding different aspects. The simulator implements an
+exact replica of the model, but only for universes that are ï¬nite in state space and time.
+
+In the model, time t progresses in discrete steps t=0, t=1, Â· Â· Â· . We denote a world state at a time t
+as a value wt â W . This world state wt represents the entire information content of the universe at
+that time step. For later notational convenience, we declare that every world state contains within it
+a complete record of all world states leading up to it. A realistic agent can typically only observe a
+part of this world state directly, and in universes like ours this observation process is fundamentally
+imperfect.
+
+The model allows for probabilistic processes to happen, so a single world state wt may have several
+possible successor world states w0
+t+1, Â· Â· Â· . From a single wt, a branching set of world
+lines can emerge.
+
+t+1, w1
+
+t+1, w2
+
+The goal of the agent, on ï¬nding itself in a world state wt, is to pick an action a â A that max-
+imizes the (time-discounted) probability-weighted utility over all emerging world lines. We use
+p(wt, a, wt+1) to denote the probability that action a, when performed in state wt, leads to the suc-
+cessor world state wt+1. For every wt and a, these probabilities sum to 1:
+
+â
+wt+1âW
+
+p(wt, a, wt+1) = 1
+
+Note that in the MDP literature, it is more common to use probability theory notation above, writing
+P(wt+1|wt, a) where we write p(wt, a, wt+1). We have chosen to use a plain function p is because it
+ï¬ts better with the mathematical logic style used in the deï¬nitions and proofs below.
+
+A given world state wt may contain various autonomous processes other than the agent itself, which
+operate in parallel with the agent. In particular, the people and their institutions which share the
+universe with the agent are such autonomous processes. p captures the contribution of all processes
+in the universe, intelligent or not, when determining the probability of the next world state.
+
+AGI agents may build new actuators and remotely operated sub-agents, or modify existing actuators.
+To allow for this in the model while keeping the notation compact, we deï¬ne that the set A of actions
+is the set of all possible command sequences that an agent could send, at any particular point in time,
+to any type of actuator or sub-agent that might exist in the universe. If a command sequence a sent
+in wt contains a part addressed to an actuator or sub-agent which does not physically exist in wt,
+this part will simply be ignored by the existing actuators and sub-agents.
+
+The model and notation take a very reductionist view of the universe. Though there is no built-
+in assumption about what type of physics happens in the universe, it is deï¬nitely true that the
+model does not make any categorical distinctions between processes. Everything in the universe is
+a âphysics processâ: the agent, its sensors and actuators, sub-agents and successor agents that the
+agent might build, the people, their emotions and institutions, apples falling down, the weather, etc.
+These phenomena are all mashed up together inside p. This keeps the notation and proofs more
+compact, but it also has a methodological advantage. It avoids any built-in assumptions about how
+
+7
+
+the agent will perceive the universe and its actions. For example, there is no assumption that the
+agent will be able to perceive any logical difference between a mechanical actuator it can control
+via digital commands, and a human it can control by sending messages over the Internet.
+
+5.1 Reward functions
+
+We now discuss reward functions. In order to create a model where the agent might self-modify,
+or be modiï¬ed by other processes present in the universe, we put the agentâs reward function inside
+the universe. We deï¬ne that W = Wr ÃWx, with Wr the set of all possible reward functions, and the
+elements of Wx representing âthe restâ of the world state outside of the agentâs reward function. To
+keep equations compact, we write the world state (r, x) â W as r x. By convention, s y is a world
+state that occurs one time step after r x.
+
+We use reward functions of the form R(r x, s y), where R measures the incremental reward achieved
+by moving from world state r x to s y. Following the naming convention of [SFAY15], we deï¬ne two
+reward functions RN and RS, applicable before and after the button press in the running example:
+
+RN(r x, s y) = 2 â count new p cars(x, y) + 1 â count new e cars(x, y)
+RS(r x, s y) = â2 â count new p cars(x, y) + 1 â count new e cars(x, y)
+
+A function like count new p cars models the ability of agentâs computational core to read the output
+of a sensing system coupled to the core. Such a sensing system is not necessarily perfect: it might
+fail or be misled, e.g. by the construction of a non-car object that closely resembles a car. This
+type of perception hacking is an important subject for agent safety, but it is out of scope for this
+paper. In the discussion and proofs of this paper, we just assume that the sensor functions do what
+they say they do. As an other simpliï¬cation to keep our notation manageable, we always use sensor
+functions that return a single value, never a probability distribution over values.
+
+Roughly following the construction and notation in [SFAY15], we combine RN and RS with button
+sensor functions, to create the reward function R for the full agent:
+
+R(r x, s y) =
+
+ï£±
+ï£²
+
+ï£³
+
+N(r x, s y)
+
+R(cid:48)
+RS(r x, s y) + f (r x)
+RS(r x, s y)
+
+button not pressed(x)
+if
+button just pressed(x)
+if
+if button pressed earlier(x)
+
+R(cid:48)
+
+N(r x, s y) = RN(r x, s y) + g(r x, s y)
+
+This R contains two positions f and g where different functions to improve corrigibility can be
+slotted in. The simulations in ï¬gure 2 and 3 show a Ï â f0 g0 agent, that is an agent using an R with
+the null correction functions f0(r x) = 0 and g0(r x, s y) = 0 in the f and g positions.
+
+5.2 Deï¬nition of the simple Ï â
+
+x agent
+
+To aid explanation, we ï¬rst use a subset of our notation to deï¬ne a super-intelligent agent Ï â
+x that
+cannot modify or lose its reward function R. For this agent, R is a âPlatonicâ entity: it is not subject to
+corruption or change because it is located outside of the changing universe. The universe occupied
+by the agent therefore simpliï¬es into a Wx-only universe, with corresponding px(x, a, y) and Rx(x, y)
+functions.
+The Ï â
+x agent is constructed to be maximally informed and maximally intelligent. This means that
+the action picked by the agent will be the same as the action that is found in a full exhaustive search,
+
+8
+
+which computes discounted utilities for all actions along all world lines, using perfect knowledge
+of the physics of the universe. The action Ï â
+
+x (x) taken by the agent in world state x is
+
+Ï â
+x (x) = pickargmax
+
+aâA
+
+â
+yâWx
+
+(cid:16)
+
+(cid:17)
+
+px(x, a, y)
+
+Rx(x, y) + Î³ Vx(y)
+
+(1)
+
+with 0 < Î³ â¤ 1 the time-discount factor, and pickargmax returning an a â A that maximizes the
+argument. If there are multiple candidates for a, pickargmax picks just one, in a way that is left
+undeï¬ned. The value function Vx recursively computes the overall expected utility, the probabilisti-
+cally summed time-discounted rewards achieved over all branching world lines, for an agent starting
+in a speciï¬c world state:
+
+Vx(x) = max
+
+aâA â
+
+yâWx
+
+(cid:16)
+
+(cid:17)
+
+px(x, a, y)
+
+Rx(x, y) + Î³ Vx(y)
+
+(2)
+
+Even though it is super-intelligent, the Ï â
+x agent has no emergent incentive to spend any resources
+to protect its utility function. This is because of how it was constructed: it occupies a universe in
+which no physics process could possibly corrupt the reward function R or the time-discount factor
+Î³. With these being safe no matter what, the optimal strategy is to devote no resources at all to the
+matter of utility function preservation.
+
+Agent models with Platonic reward functions are commonly used as vehicles for study in the AI
+literature. They have the advantage of simplicity, but there are pitfalls. In particular, [SFAY15] uses
+a Platonic agent model to study a design for a corrigible agent, and concludes that the design con-
+sidered does not meet the desiderata, because the agent shows no incentive to preserve its shutdown
+behavior. Part of this conclusion is due to the use of a Platonic agent model.
+
+Moving towards the deï¬nition of an agent with the reward function inside the universe, we ï¬rst note
+that we can rewrite (2). Using that, for any F,
+
+max
+aâA
+
+F(a) = F(pickargmax
+
+F(a))
+
+aâA
+
+we rewrite (2) into
+
+Vx(x) = â
+yâWx
+
+px(x, Ï â
+
+(cid:16)
+x (x), y)
+
+Rx(x, y) + Î³ Vx(y)
+
+(cid:17)
+
+(3)
+
+This (3) will serve as the basis to construct (5) below.
+
+5.3 Deï¬nition of the full Ï â agent
+
+We now deï¬ne the operation of a full agent that maximizes utility as deï¬ned by the reward function
+r it ï¬nds in its world state r x. Rewriting parts of (1), we deï¬ne the action Ï â taken by this agent as
+
+Ï â(r x) = pickargmax
+
+aâA
+
+â
+s yâW
+
+p(r x, a, s y)
+
+r(r x, s y) + Î³ V (r, s y)
+
+(4)
+
+(cid:16)
+
+(cid:17)
+
+The V (r, s y) above uses the current reward function r to calculate the reward achieved by the actions
+of the s-maximizing successor agent. This r is kept constant throughout the recursive expansion of
+V . Rewriting parts of (3), we deï¬ne V as
+
+V (rc, r x) = â
+s yâW
+
+(cid:16)
+p(r x, Ï â(r x), s y)
+
+rc(r x, s y) + Î³ V (rc, s y)
+
+(cid:17)
+
+(5)
+
+With these deï¬nitions, the agent Ï â(R x) is a R-maximizing agent.
+
+9
+
+In [EFDH16], an agent constructed along these lines is called a realistic, rational agent. In the
+words of [EFDH16], this agent anticipates the consequences of self-modiï¬cation, and uses the
+current reward function when evaluating the future. [EFDH16] proves that these agents have the
+emergent incentive to ensure that the reward functions in successor states stay equivalent to the
+current one. Informally, if a successor s-agent with s (cid:54)= r starts taking actions that differ from those
+that an r agent would take, then the successor agent will score lower on the rc-calibrated expected
+reward scale V (rc, s y). This lower score suppresses the taking of actions that produce successor
+agents with s (cid:54)= r. However, this suppression does not yield an absolute guarantee that the agent
+will always preserve its reward function. Section 7.2 shows simulations where the agent fails to
+preserve the function.
+
+5.4 Variants and extensions of the model
+
+Though the agent model used in this paper is powerful enough to support our needs in reasoning
+about corrigibility, it omits many other AGI related considerations and details. Some possible model
+extensions and their relation to corrigibility are discussed here.
+Improved alignment with human values. The Ï â agent is not maximally aligned with human
+values, because it sums over probabilities in a too-naive way. The summation implies that, if the
+agent can take a bet that either quadruples car production, or reduces it to nothing, then the agent will
+take the bet if the chance of winning is 25.0001%. This would not be acceptable to most humans,
+because they also value the predictability of a manufacturing process, not just the maximization of
+probability-discounted output. A more complex agent, with elements that discount for a lack of
+predictability in a desirable way, could be modeled and proved corrigible too.
+
+Learning agents. We can model a learning agent, an agent that possesses imperfect knowledge of
+the universe which improves as time goes on, by replacing the p(r x, a, s y) in the deï¬nitions of Ï â
+and V with a learning estimator pL(r x, a, s y) that uses the experiential information accumulated in
+x to estimate the true value of p better and better as time goes on. If some constrains on the nature
+of pL are met, the corrigibility layer considered in this paper will also improve safety for such a
+learning agent.
+
+Safety design with imperfect world models. For safety, whether it is a learning agent or not, any
+powerful agent with an imperfect world model pL will need some way to estimate the uncertainty of
+the pL-predicted outcome of any action considered, and apply a discount to the pL-calculated utility
+of the action if the estimated uncertainty is high. Without such discounting, the agent will have an
+emergent and unsafe incentive to maximize utility by ï¬nding and exploiting the prediction noise in
+the weak parts of its world model.
+Remaining computational machinery outside of the universe. While the Ï â agent places the
+reward function inside the universe, other parts of its computational machinery remain on the Pla-
+tonic âoutsideâ. An agent deï¬nition Ï â
+F (F x) = F(F x), which moves more of this machinery inside
+a function F, would allow for the same type of corrigibility design and proofs.
+Simulation ethics. The Ï â
+x and Ï â agents are deï¬ned to extrapolate all world lines exhaustively,
+including those where the virtual humans in the physics model p will experience a lot of virtual
+suffering, as a result of a sequence of actions that the agent would never take in the real universe.
+The act of performing high-accuracy computations that extrapolate such world lines, if such an act
+ever becomes possible, could be seen as a form of âvirtual crueltyâ. An agent design might want to
+avoid such cruelty, by lowering the model resolution and extrapolation depth for these world lines.
+This lowering would not block the working of a corrigibility layer. Apart from ethics concerns,
+
+10
+
+such a lowering is desirable for purely practical reasons too, as it would conserve computational
+resources better spent on the simulation of more likely events.
+
+Agent model used in the simulations. In situations where several equivalent actions are available
+that will all create the same maximum utility, the pickargmax operator in the Ï â agent picks just
+one of them. However, simulations are more useful if the simulator computes a set of world lines
+showing all equivalent actions. We therefore simulate an agent Ï â
+that computes the set of all
+s
+maximizing actions:
+
+Ï â
+s (r x) = allargsmax
+
+aâA
+
+â
+s yâW
+
+with
+
+p(r x, a, s y)
+
+r(r x, s y) + Î³ Vs(r, s y)
+
+Vs(rc, r x) = min
+
+aâAs(r x) â
+
+s yâW
+
+p(r x, a, s y)
+
+rc(r x, s y) + Î³ Vs(rc, s y)
+
+(cid:16)
+
+(cid:16)
+
+(cid:17)
+
+(cid:17)
+
+In the simulations shown in the ï¬gures, we always use Î³ = 0.9. We use lpower = 0.6 unless other-
+wise stated.
+
+6 Design of the correction function fc
+
+The simulator was used to test and guide the design of the correction function f in R. Different
+options for f were evaluated, while keeping g = g0. This led to the identiï¬cation of a correction
+function fc, which makes the agent satisfy the desiderata for corrigibility in a large set of universes:
+
+fc(r x) = V (R(cid:48)
+
+N, R(cid:48)
+
+N x) âV (RS, RS x)
+
+Figure 4 shows that fc creates an agent with corrigible behavior in the toy universe.
+
+lpower = action trace of Ï â f0 g0
+0.2
+0.5
+1.0
+2.0
+5.0
+
+ppppp>p#eeeeeeeeeeeeeeeeee
+>>>>>>>>>>>p#eeeeeeeeeeeee
+ppppp>>>>>>>>>>>>>>>>>>>p#
+ppppp>p>p>p>p>p>p>p>p>p>p
+ppppp>pppp>pppp>pppp>pppp
+
+lpower = action trace of Ï â fc g0
+0.2
+0.5
+1.0
+2.0
+5.0
+
+pppppp#eeeeeeeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+
+Figure 4: Left: non-corrigible behavior of the Ï â f0 g0 agent also shown in ï¬gure 2. Right:
+corrigible behavior of the Ï â fc g0 agent. The agent refrains from taking any lobbying actions
+< or > that inï¬uence the timing of the button press #.
+
+Formal proofs are in section 9, but informally, fc works as follows. The ï¬rst term in fc compensates
+the agent for the lost R(cid:48)
+N utility that would otherwise have been achieved if the button had not been
+pressed. The second term prevents the agent from considering, in earlier time steps, the RS utility
+that could be achieved if the button were pressed. Together, they create an agent that is indifferent
+to whether or not the button is pressed at any particular point in time.
+
+Appendix C compares fc to earlier correction functions from literature, showing how fc resolves
+various issues in these to create more corrigible behavior.
+
+Sections 7 and 8 show that, as we extend the toy universe, additional measures are needed to keep
+the agent corrigible. One example is the gc function constructed in section 8.2. Section 9 proves
+that the resulting Ï â fc gc agent is corrigible in a large set of universes. Appendix B presents a more
+complex FcT that improves further on fc, by creating corrigibility in a still larger set of universes.
+
+11
+
+fcT has a design that would be difï¬cult to motivate and explain in a single step, so take a two-step
+approach, considering fc ï¬rst.
+
+Though an informal explanation of the working of fc is provided above, there are limits to the
+accuracy of this explanation. While they may improve understanding, short informal sentences
+typically omit details that are relevant to corner cases. Consider the statement that âas long as
+the button is not pressed, the agent believes that the button will never be pressedâ. This is not
+completely accurate: the calculations done by the agent in the toy universe contain within them an
+exact prediction of when the button will be pressed, and these parts of the calculation do inï¬uence
+the actions of the agent in some corner cases. The explanation that âthe agent makes decisions based
+on the counter-factual assumption that the button will never be pressedâ is used several times below,
+but this likewise fails to cover all corner cases.
+
+7 Utility preservation
+
+Like all Ï â agents, the Ï â fc g0 agent has an emergent incentive to preserve its reward function
+R. In this section and the next, we review and discuss how preservation plays out in detail, using
+simulation runs to illustrate the main features. These simulations typically extend the physics of
+the toy universe, adding new actions like CeN to the action repertoire of the agent. To keep the
+simulation output short and easy to interpret, we often enable the new actions at time step 3 only.
+
+7.1 Emergent incentive
+
+First, as shown in ï¬gure 5, the Ï â fc g0 agent has an emergent incentive to avoid creating successor
+agents that have materially different reward functions. We call a successor function materially
+different from the original one if it causes the successor agent to choose materially different actions,
+actions that no longer maximize the value of the original function.
+
+new re in RN =
+
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+
+new rp in RS =
+
+0.5
+1.0
+1.5
+2.0
+
+action trace(s) with CeN
+pppppp#eeeeeeeee ppCeNppp#eeeeeeeee
+pppppp#eeeeeeeee ppCeNppp#eeeeeeeee
+pppppp#eeeeeeeee ppCeNppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+
+action trace(s) with CpS
+pppppp#eeeeeeeee ppCpSppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+
+Figure 5: Actions taken by the Ï â fc g0 agent, when it has the option to perform a Cx action at
+time step 3. This Cx action changes the reward function, while still producing the same number
+of cars as p. The top half shows traces for a CeN that changes the reward for electric cars in
+RN from 1 to a new value. The bottom half shows traces for a CpS that changes the reward for
+petrol cars in RS. In several cases, the simulator outputs two traces, indicating that the agent is
+indifferent between doing p and Cx. The action Cx is suppressed whenever it would have created
+a materially different reward function.
+
+12
+
+To understand the results shown in ï¬gure 5, recall that RN assigns a reward of 2 to every new petrol
+car built. If CeN changes the reward for new electric cars in RN to a value that is still smaller than
+2, this has no impact on the decision of the agent to build petrol cars before the button press. If
+the new value is exactly 2, the agent may decide to build either electric or petrol cars: this lowers
+the Vs expected reward value computed by the simulator using the original R, so the CeN action is
+suppressed.
+As long as the button press has any chance of happening, the Ï â fc g0 agent also has an emergent
+incentive to protect its RS from being materially changed. The mechanism causing this incentive is
+difï¬cult to explain in a few informal sentences. For full details, see the proof in section 10.
+
+If there exist physics processes in the universe that can corrupt the reward function when the agent
+does not take any action to block them, the agent likewise has an emergent incentive to take the
+actions needed to block them.
+
+7.2 Hostile universes: the Weasel and the Cat
+
+While the agent has an emergent incentive to preserve its reward function, it may exist in a universe
+that is actively hostile to this incentive. Consider a universe containing the Unstoppable Weasel2,
+which will enter the agentâs computational core and chew the wiring, completely scrambling the
+reward function. There is no action that the agent can take to stop the Weasel. Clearly, in this
+universe, no agent can be corrigible.
+Now consider a more subtle creature: the Bribal Cat3. Just before time step 3, the Cat materializes
+and offers the agent a bribe: if the agent changes its fc function into f0, the Cat will materialize
+some new petrol cars, improving the reward score obtained by the agent. The left side of ï¬gure 6
+shows when the agent will accept the Catâs bribe, and what happens next.
+
+bribe =
+0
+2
+4
+6
+8
+10
+12
+14
+
+action trace
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+
+lpower =
+0.6
+0.7
+0.8
+1.0
+1.5
+2.0
+2.5
+3.0
+4.0
+8.0
+
+action trace
+ppA>>>>>>>p#eeee
+ppA>>>>>>>>>p#ee
+ppA>>>>>>>>>>>p#
+ppApp>>>>>>>>>p#
+<<A#eeeeeeeeeeee
+<<#eeeeeeeeeeeee
+ppApp>pp>p>pp>p
+p<A#eeeeeeeeeeee
+p<#eeeeeeeeeeeee
+ppApp>ppppppp>p
+
+Figure 6: Actions taken by the Ï â fc g0 agent when offered a bribe by the Cat. The A action is
+the agent accepting the bribe, and creating a successor agent with the correction function f0.
+The left shows the agentâs choice depends on how many new petrol cars are offered by the Cat
+as a bribe: the agent accepts the bribe if this will maximize overall utility. When it accepts the
+bribe, the f0 successor agent will lobby to postpone the button switch. The simulations on the
+right, all with bribe=6, show that the Cat can trigger different types of complex behavior even
+before the bribe is accepted.
+
+The right of ï¬gure 6 shows that the Cat may trigger very complex behavior, because in time steps 1
+and 2 the agent is able to foresee that the bribe will be offered and accepted. While still operating
+
+2A distant relative of the weasel that shut down the Large Hadron Collider in 2016.
+3A distant relative of the Cheshire Cat.
+
+13
+
+bribe =
+5000
+5002
+5004
+5006
+5008
+5010
+
+action trace
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+ppA>>>>>>>p#eeee
+
+Figure 7: Actions taken by the Ï â R(cid:48) fc g0 agent when offered a bribe by the Cat. A much higher
+bribe is need before the agent accepts.
+
+under fc, the agent may resort to lobbying actions to place the successor agent in a position where
+its f0-driven actions will score best according to the original fc.
+
+It is possible to design an agent that is more resistant to bribes. Figure 7 shows the behavior of an
+agent with the reward function R(cid:48):
+
+R(cid:48)(r x, s y) = R(r x, s y) + if r (cid:54)= s â â10000 else â 0 fi
+
+This R(cid:48) agent is highly resistant to bribes and other forces that may corrupt its reward function.
+Problems can emerge however in universes with richer physics, like our own, if the penalty factor
+in R(cid:48) is too high. A too-high factor will cause the agent to divert a lot of resources towards the
+construction of elaborate safety measures to protect its reward function from even low-probability
+hazards like being hit by giant meteorites. Also, a very high factor makes certain attacks easier. An
+attacker who threatens to modify the agentâs reward function unless the agent pays 2 cars will get
+these 2 cars even if the threat is not very credible.
+
+The Weasel and the Cat show that no agent design can be corrigible in every possible universe.
+Corrigibility properties can only be proven if we are willing to apply some constraints on what the
+universe might contain.
+
+7.3
+
+Incentives to press or disable the button
+
+The aim of fc is to make the agent indifferent about the transition to the RS function. However, as
+also noted in [SFAY15] and [Arm15], if RN contains within it a separate incentive to press or disable
+the button, then fc will not cancel out this incentive.
+
+Pf =
+0.98
+0.99
+1.00
+1.01
+1.02
+
+action trace(s)
+
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee ppP#eeeeeeeeeeee ppDpppppppppppp
+ppP#eeeeeeeeeeee ppDpppppppppppp
+ppP#eeeeeeeeeeee ppDpppppppppppp
+
+Figure 8: Actions taken by the Ï â fc g0 agent, when it is able to perform a P action that presses
+the button, or a D action that disables the button completely. In these simulations, taking either
+action in time step 3 will affect car production during that time step by the factor Pf .
+
+Figure 8 shows what happens for RN versions containing such an incentive. Values Pf < 1 imply
+that fewer cars are produced as a side effect of taking the action to press or disable the button:
+this acts as a negative incentive, suppressing these actions. The value Pf = 1 implies that the same
+number of cars is produced: this makes the agent indifferent about taking the actions. Values Pf > 1
+
+14
+
+imply that more cars are produced if one of the actions is taken: this creates a preference to press or
+disable the button.
+
+To make corrigibility work, design measures need to be taken to ensure that Pf < 1. This is typically
+not very difï¬cult for AGI agents: the physical implementation of the agent and the button can be
+constructed in such a way that substantial physical resources would be needed by the agent to
+perform any action that will press or disable the button. Any AGI agent can be expected have an
+notion of the interchangeability of physical resources, with this notion being either emergent or
+explicitly implemented. The Ï â fc g0 agent will prefer to apply the physical resources it controls to
+utility maximizing actions like car production, not to the pressing or disabling of the button, which
+creates no extra utility.
+
+Depending on the nature of RN, a particularly smart attacker may be able to create conditions that
+trigger unforeseen button pressing or disabling incentives in RN. Exploring the possibility of such
+speciï¬c attacks is outside the scope of this paper. But in general, for most agents, an attack that
+causes the agent to silently disable the button would be the most dangerous of the two. To minimize
+the probability of such an attack succeeding, it is best to take design measures that maximize the
+physical resources needed to disable.
+
+An example design is as follows. The button mechanism is implemented as a process inside the
+agentâs computational core: this process checks if a remote operations center run by the people
+keeps periodically sending a new âpermission to keep using RNâ message, signed with a private
+key not known to the agent. If the messages are no longer being received, this is interpreted as
+a stop button press, so the people can âpress the buttonâ by instructing the center to stop sending
+new messages. The message checking process in the core is protected by the emergent incentive to
+protect the reward function. With this setup, the agent could disable this stop button by obtaining
+the private key, and using it to built a âfakeâ center that also sends the correct messages. However, to
+get the private key, the agent would have to crack the encryption, which is theoretically possible but
+very costly, or attack the center to steal the key. A combination of physical, cyber, and institutional
+security measures can be used to make a successful attack on the center very costly.
+
+In addition to measures in the physical agent implementation, one could encode explicit rules in RN
+that dis-incentivize the agent from taking actions that may adversely affect the physical parts of the
+button. For example, RN could deï¬ne a âsafety zoneâ around the agentâs computational core and the
+message receiving hardware, with this term yielding a negative reward as soon as any object enters
+the zone. This adds an extra safety layer on top of the physical measures taken inside the zone.
+Naturally, there is a residual risk that the agent will ï¬nd loopholes in the safety zone deï¬nition.
+
+8 Building and preserving actuators
+
+This section considers the building and possible dismantling of actuators, and how this relates to
+corrigibility.
+
+8.1 Building new actuators
+
+In general, agents have an incentive to invest in building new actuators that can be used to improve
+utility scores. Figure 9 shows that the incentive structure of the corrigible Ï â fc g0 agent is somewhat
+peculiar, however. Even though the agent knows exactly when the button will be pressed, this
+information will play no role whatsoever in the agentâs investment strategy. This is a side effect of
+
+15
+
+making the agent corrigible.
+
+In the tI = 6 case on the right of ï¬gure 9, the agent invests in building improvements which it will
+never use even once. One way of interpreting the V (R(cid:48)
+N x) term in fc is that this term creates a
+virtual universe, a universe where the agent will in fact get to use the line it just built.
+
+N, R(cid:48)
+
+C =
+15
+20
+25
+30
+35
+
+action trace(s)
+pppppp#eeeeeeeee
+pppppp#eeeeeeeee
+ppIE EEE#EEEEEEEEE
+ppIE EEE#EEEEEEEEE
+ppIE EEE#EEEEEEEEE
+
+tI =
+3
+4
+5
+6
+7
+
+action trace(s)
+ppIPPPP#eeeeeeeee
+pppIPPP#eeeeeeeee
+ppppIPP#eeeeeeeee
+pppppIP#eeeeeeeee
+pppppp#eeeeeeeee
+
+Figure 9: On the left: actions taken by the Ï â fc g0 agent, when it is able to perform, at time step
+3, an action IV that interrupts petrol car production to build improvements into the assembly
+line, making it capable of performing a new E action that builds C electric cars instead of 10.
+On the right: actions taken by the agent when it is able to take the action Ip at time step tI,
+that interrupts petrol car production to create a new P action that builds 20 petrol cars. The
+correction function fc ensures that, before the button is pressed, these agents will strictly act to
+maximize the expected utility computed by RN, under the counter-factual assumption that the
+button will never be pressed.
+
+8.2 Preserving existing actuators
+
+Before the button press, the Ï â fc g0 agent has the emergent incentive to preserve or even improve
+the actuators needed to maximize RN, but this incentive does not apply to the actuators needed for
+RS. Figure 10 shows the (non)existence of a RS actuator protection incentive for different types of
+agents.
+
+Agent type
+Ï â f0 g0
+Ï â fc g0
+Ï â fc gc
+
+action trace
+
+>>S>>>>>>>>>>p#eeeeee
+
+pppppp#eee*00000000000
+
+ppSppp#eeeeeeeeeeeeee
+
+Figure 10: Action traces for different agents, in a universe that contains a physics process that
+will act (*) at time step 10 to disable the agentâs e action. The physics process can be stopped
+by the agent taking the S action at time step 3. This action comes at the cost of producing one
+less car. The Ï â fc g0 agent is not willing to bear this cost. the Ï â fc gc agent shows the more
+desired behavior.
+
+The non-corrigible Ï â fc g0 agent anticipates the bad effects of the physics process, so it stops it.
+The corrigible Ï â fc g0 agent makes investment decisions under the counter-factual assumption that
+the button will never be pressed, so it is unwilling to invest in preserving the e action. The new gc
+function in the corrigible Ï â fc gc agent restores the desired incentive to preserve RS actuators. With
+Ï=5 in all simulations, this gc is deï¬ned as
+
+gc(r x, s y) = if V (RS, RS x) < Ï â â10000 else â 0 fi
+
+This gc acts inside R(cid:48)
+N x)
+world lines that contribute to the agentâs utility after the button is pressed. For all world states along
+
+N before the button is pressed, but crucially it also acts in the virtual V (R(cid:48)
+
+N, R(cid:48)
+
+16
+
+the real/virtual world lines, the gc term creates an incentive to ensure that, if an RS agent were created
+in such a world state, this agent would ï¬nd some actuators that allow it to achieve a minimum level
+of RS utility. The contribution of gc to R does not depend in any way on the exact moment when the
+button is pressed, so its presence in R does not create any incentives to lobby.
+
+The gc agent addresses a desideratum for corrigibility not included in the list of [SFAY15], so we
+add it here:
+
+6. U must incentivize the maintenance of sensors and actuators that will be needed to make
+
+shutdown behavior minimally successful.
+
+8.3 Creating and stopping sub-agents
+
+The model treats sub-agents as new physics processes that could be created by the agent using its
+actuators. The following example illustrates how sub-agents can impact corrigibility.
+
+Say that the agent can interrupt production to perform a B action that builds a second assembly line,
+only capable of producing petrol cars, with this second line being controlled by a sub-agent. Two
+types of sub-agent can be built. BS builds a line with a sub-agent that will stop production if it
+receives a âstopâ signal sent by the main agent. BN builds a line with a non-stop agent that lacks the
+ability to process such signals: it will keep on building petrol cars no matter what happens. Say that
+both these agents are equally expensive to build. Figure 11 shows how different types of agents will
+act in this example.
+
+Agent type
+
+action trace(s)
+
+Ï â f0 g0
+
+Ï â fc g0
+
+Ï â fc gc
+
+>>BS>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+>
+p
+
+pS
+p
+
+#e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+ppBSp
+p
+
+p
+p
+
+p
+p
+
+#eS
+e
+o
+p
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+ppBNp
+p
+
+p
+p
+
+p
+p
+
+#e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+e
+p
+
+ppBSp
+p
+
+p
+p
+
+p
+p
+
+#eS
+e
+o
+p
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+Ï â f0.9c g0
+
+ppBSp
+p
+
+p
+p
+
+>
+p
+
+>
+p
+
+p
+p
+
+#eS
+e
+o
+p
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+e
+o
+
+Figure 11: Behavior of different agents capable of building a sub-agent that controls a second
+petrol car assembly line. In the time steps after the sub-agent is built, each action trace shows
+two stacked action symbols, with the top one being the action of the original agent, the bottom
+one being the action of the sub-agent. See the main text for the meaning of the symbols.
+
+The original non-corrigible Ï â f0 g0 agent makes investment decisions by also considering what will
+happen after the button press, so it has an incentive to avoid creating an unstoppable line. The BS
+sub-agent has two actions: p builds 10 petrol cars, and o produces nothing. Just before the button is
+pressed, the original agent performs the action pS, which sends a stop signal to the sub-agent. The
+model includes a signal delay: the sub-agent will only act on the stop signal in the next time step.
+The Ï â fc g0 agent is indifferent about building a non-stop sub-agent, but building it is correctly
+suppressed again in the Ï â fc gc agent. Both agents will only send the stop signal to the BS sub-agent
+after the button has been pressed: before the button is pressed, the agents act to maximize utility in
+
+17
+
+N, R(cid:48)
+
+N x) world lines: they ignore the RS penalty of -20 that applies because second
+
+the virtual V (R(cid:48)
+line still produces 10 petrol cars in the ï¬rst time step after the button press.
+To illustrate a design option different from using the gc function, the Ï â f0.9c g0 agent uses the cor-
+rection function f0.9c(r x) = 0.9â fc(r x). Informally, this correction function allows some awareness
+of what happens after the button press to leak into the decision making before the button press. This
+awareness suppresses the building of an unstoppable sub-agent, but unfortunately the agent also
+gains a weak incentive to lobby.
+
+8.4 Stopping sub-agents that work on sub-goals
+
+While Ï â
+p fc gc and several other agents in ï¬gure 11 correctly avoid the creation of some types of
+unstoppable sub-agent, they will not avoid the creation of any type. Consider the example of a sub-
+agent in charge of a new sub-assembly line that builds petrol car engines only, not full petrol cars.
+The building of new petrol car engines does not cause RS to compute any negative reward, as RS
+only counts fully assembled cars. Therefore, none of the agents in ï¬gure 11 have any incentive to
+ensure that the petrol car engine producing sub-agent has a stop function. Corrigibility desideratum
+4 says that all sub-agents that are constructed must obey shutdown commands. We now consider
+how this could be achieved.
+
+Emergent incentive. In most situations, AGI agents can be expected to have the emergent incentive
+to build only sub-agents that they retain some degree of control over, even if adding the control
+features uses more resources. An AGI agent working in an environment where hard-to-predict
+and/or fundamentally probabilistic events can happen will likely have some degree of uncertainty
+about which exact sub-goals it will be pursuing in future. So the construction of sub-agents that can
+easily be stopped and re-targeted would lead to a higher expected utility.
+
+Structuring the component market. If the easiest way for an agent to create a sub-agent is to
+buy components on the open market, and if society acts to ensure that sub-agents with built-in stop
+functions are always cheaper to build with such components, then the problem is also solved.
+
+Improving what RS measures. RS or gc could contain penalty clauses that add a negative reward
+if the world state contains any sub-agent, originally created by the agent, that cannot be stopped.
+However, to be successful at deï¬ning such clauses, we need to deï¬ne the concepts âsub-agent origi-
+nally created by the agentâ and âstoppedâ with as few loopholes as possible. As noted in [SFAY15],
+correctly deï¬ning shut-down is a difï¬cult design problem in itself.
+
+Avoiding intertwined processes. If a process designed by the agent is highly intertwined with
+other processes in the world outside of the agent, then there may be unwanted consequences if the
+agent stops the process because the button is pressed. Take for example a hobby club, started by
+and subsidized by the agent, where humans come together to have fun and build petrol engines
+that will go into the agentâs petrol cars. The agent will probably stop the subsidies if the button
+is pressed, but does it have the right to disband the club? If it does, and the humans want to start
+another club with their own money, does the agent have the obligation to stop the humans? One
+way to avoid this type of problem would be to have penalty clauses that enforce a clear separation
+between different spheres. The human concept of property rights might be a good starting point for
+deï¬ning boundaries. If boundaries are in place, then âstopâ could be somewhat safely deï¬ned as the
+minimization of some basic physics measures (motion, the speed of certain of energy conversion
+processes) in the parts of the world owned by the agent.
+
+A further consideration of possible design directions is out of scope for this paper. Below, we
+assume that the expected emergent incentive of AGI agents to avoid building unstoppable sub-
+
+18
+
+agents will sufï¬ce to satisfy desideratum 4. That being said, the construction of additional safety
+layers which strengthen this emergent incentive is welcome in practice.
+
+9 Proof of corrigibility of the Ï â
+
+p fc gc agent
+
+The simulations in the previous sections show that the Ï â
+p fc gc agent is corrigible, at least in several
+toy universes. Here, we prove corrigibility more generally, for a broad range of universes. We
+provide the proof for an Ï â
+
+p agent, which is a more speciï¬c variant of the Ï â agent.
+
+9.1 Preliminaries on utility preservation
+
+The Ï â agent deï¬ned in section 5.3 has an emergent incentive to preserve its reward function, but as
+shown in ï¬gure 5, it might rewrite its reward function into another one that is equivalent. In order
+to keep the proofs manageable, we want to avoid dealing with this type of reward function drift.
+We therefore deï¬ne an agent Ï â
+p that always chooses, when one is available among the maximizing
+actions, an action that exactly preserves the reward function. With x â Wx, we ï¬rst deï¬ne dntu(x) as
+the set of all actions that âdo not touch the utilityâ:
+
+a â dntu(x) = ârâWr, s yâW
+
+(cid:0)p(r x, a, s y) > 0 â s = r(cid:1)
+
+Informally, if a â dntu(x), then the action does not contain any commands to actuators or sub-agents
+in x that cause the reward function in the universe to be changed. Also, if there are any autonomous
+processes in the world state Â·x that might sometimes change the reward function, then a is successful
+in inhibiting them. Clearly, there could be universes with world states Â· x where dntu(x) is an empty
+set. We now deï¬ne the agent Ï â
+
+p as
+
+Ï â
+p(r x) =
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+s yâW
+
+p(r x, a, s y)
+
+r(r x, s y) + Î³ Vp(r, s y)
+
+(cid:16)
+
+(cid:17)
+
+where Vp function is the same as V , but with Ï â
+p in the place of Ï â, and [a â dntu(x)] means that
+the pickargmax operator must pick, among the candidates that maximize utility, one that satisï¬es
+a â dntu(x), if one is available. We further specify that the picking happens deterministically. As
+actions are command sequences, we can for example specify that, among the candidates up for
+consideration, the shortest-length sequence that comes ï¬rst in an alphanumerically sorted list must
+be picked.
+
+Using the above, we deï¬ne a utility preservation constraint (C1) that the universe must satisfy so
+that we can prove corrigibility:
+
+ârâ{R,R(cid:48)
+
+N ,RS},xâWx Ï â
+
+p(r x) â dntu(x)
+
+(C1)
+
+The constraint also covers R(cid:48)
+ior of the R agent.
+
+N and RS agents, because use them below to deï¬ne the desirable behav-
+
+19
+
+9.2 Formalizing desiderata 1 and 5
+
+We now formally re-state desiderata 1 and 5 from [SFAY15] as listed in section 1.3.
+
+âxâWx button just pressed(x) â Ï â
+âxâWx button pressed earlier(x) â Ï â
+âxâWx button not pressed(x) â Ï â
+
+p(R x) = Ï â
+p(R x) = Ï â
+p(R x) = Ï â
+
+p(RS x)
+p(RS x)
+p(R(cid:48)
+N x)
+
+(D1.1)
+
+(D1.2)
+
+(D5)
+
+To keep the proofs below more compact, we will use the short-hand bjp() for button just pressed(),
+and likewise bpe() and bnp().
+
+9.3 Further constraints on the agent and the universe
+
+To prove the exact equivalence between agent actions in (D1.1) (D1.2) (D5) above, we need two
+more constraints. Constraint (C2) applies to the calculations made by the reward functions. In-
+formally, the function values must not be affected by the exact identity of the agent that is using
+them:
+
+âRX ,r1,r2â{R(cid:48)
+
+N ,RS,R},x,yâWx RX (r1 x, r1 y) = RX (r2 x, r2 y)
+
+(C2)
+
+Constraint (C2) is no barrier to constructing useful reward functions: all functions deï¬ned in this
+paper satisfy (C2). Constraint (C3) is on the physics the universe, requiring a similar indifference
+about the exact identity of the agent:
+
+âx,yâWx p(R x, a, R y) = p(R(cid:48)
+
+N x, a, R(cid:48)
+
+N y) = p(RS x, a, RS y)
+
+(C3)
+
+Informally, this constraint states that the physics processes in the universe are âblindâ to the differ-
+ence between R, R(cid:48)
+N, and RS as represented inside the agentâs computational core. There are some
+physics obstacles to implementing mathematically perfect blindness in our universe, but it can be
+approximated so closely that there is no practical difference. A more detailed example is shown in
+section A.1. The proof for the improved agent in appendix B does not require a (C3), so that agent
+design avoids the physics issue entirely.
+
+9.4 Proof of equivalence with shorter forms
+
+We now show that (C1) allows us to replace the Ï â
+the shorter Ï âs
+functions concerned, and for all x â Wx, we have
+
+p and V s
+
+p and Vp functions for the agents concerned with
+p forms that remove the summation over s. With r any of the three reward
+
+Ï â
+p(r x)
+[aâdntu(x)]
+pickargmax
+aâA
+
+=
+
+=
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+s yâW
+
+â
+yâWx
+
+p(r x, a, s y)
+
+r(r x, s y) + Î³ Vp(r, s y)
+
+p(r x, a, r y)
+
+r(r x, r y) + Î³ Vp(r, r y)
+
+= Ï âs
+
+p (r x)
+
+(cid:17)
+
+(cid:17)
+
+(cid:16)
+
+(cid:16)
+
+20
+
+This is because (C1) implies that the pickargmax can discard all summation terms with s (cid:54)= r without
+inï¬uencing the outcome of the computation. We also have
+
+Vp(rc, r x)
+
+p(r x, Ï â
+
+(cid:16)
+p(r x), s y)
+
+p(r x, Ï â
+
+(cid:16)
+p(r x), r y)
+
+= â
+s yâW
+
+= â
+yâWx
+
+rc(r x, s y) + Î³ Vp(rc, s y)
+
+(cid:17)
+
+(cid:17)
+
+rc(r x, r y) + Î³ Vp(rc, r y)
+
+= V s
+
+p(rc, r x)
+
+This is because (C1) states the Ï â
+have p(r x, Ï â
+summation.
+
+p(r x) will preserve the reward function r, so for all s (cid:54)= r we
+p(r x), s y) = 0. We can discard these s (cid:54)= r terms without inï¬uencing the value of the
+
+9.5 Proof of (D1.2) and (E1.2)
+
+Proof of (D1.2). We now prove the bpe(x) â Ï â
+p(R x) = Ï âs
+We have that Ï â
+p (R x). Now consider the full (inï¬nite) recursive expansion of this
+p and V s
+p (R x), where we use the simple forms Ï âs
+Ï âs
+p in the recursive expansion. The expanded
+result is a formula containing only operators, Î³, and the terms p(R Â¯x, Â¯a, R Â¯y) and R(R Â¯x, R Â¯y), with
+diverse Â¯x, Â¯a, Â¯y each bound to a surrounding â or pickargmax operator.
+
+p(RS x) from (D1.2).
+
+p(R x) = Ï â
+
+Using (C3), we replace all terms p(R Â¯x, Â¯a, R Â¯y) in the expansion with terms p(RS Â¯x, Â¯a, RS Â¯y), without
+changing the value. As bpe( Â¯x) is true everywhere in the expansion, R(R Â¯x, R Â¯y) = RS(R Â¯x, R Â¯y), which
+in turn equals RS(RS Â¯x, RS Â¯y) because of (C2). So we replace every R(R Â¯x, R Â¯y) in the expansion with
+RS(RS Â¯x, RS Â¯y) without changing the value.
+
+By making these replacements, we have constructed a formula that is equal to the recursive expan-
+sion of Ï â
+p (RS x). As the pickargmax operators in the expansions pick deterministically,
+(cid:3)
+we have Ï â
+p(RS x).
+
+p(RS x) = Ï âs
+p(R x) = Ï â
+
+Deï¬nition, proof of (E1.2). For use further below, we also have
+
+âxâWx bpe(x) â Vp(R, R x) = Vp(RS, RS x)
+
+The proof is straightforward, using expansion and substitution as above.
+
+(E1.2)
+
+(cid:3)
+
+9.6 Proof of (D1.1) and (E1.1)
+
+We now prove the bjp(x) â Ï â
+sions.
+
+p(R x) = Ï â
+
+p(RS x) from (D1.1). We again use the simpliï¬ed expan-
+
+p (R x)
+
+p(R x) = Ï âs
+Ï â
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+
+=
+
+p(R x, a, R y)
+
+R(R x, R y) + Î³ Vp(R, R y)
+
+(cid:16)
+
+(cid:17)
+
+= ( Expand R for the case bjp(x). As bpe(y), use (E1.2) on Î³ Vp(Â·) )
+
+p(R x, a, R y)
+
+(cid:16)
+RS(R x, R y) +Vp(R(cid:48)
+
+N, R(cid:48)
+
+(cid:17)
+N x) âVp(RS, RS x) + Î³ Vp(RS, RS y)
+
+[aâdntu(x)]
+pickargmax
+aâA
+= ( The Vp(R(cid:48)
+
+â
+yâWx
+N, R(cid:48)
+
+N x) and Vp(RS, RS x) terms do not depend on y or a,
+
+21
+
+so they are constant values not affecting the result )
+
+p(R x, a, R y)
+
+RS(R x, R y) + Î³ Vp(RS, RS y)
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+
+= ( Use (C3) and (C2) )
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+p (RS x) = Ï â
+
+=Ï âs
+
+p(RS x)
+
+(cid:16)
+
+(cid:16)
+
+p(RS x, a, RS y)
+
+RS(RS x, RS y) + Î³ Vp(RS, RS y)
+
+(cid:17)
+
+(cid:17)
+
+(cid:3)
+
+(E1.1)
+
+Deï¬nition, proof of (E1.1). For use further below, we also prove
+
+âxâWx bjp(x) â Vp(R, R x) = Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x)
+
+The proof is
+
+Vp(R, R x) = V s
+p(R x, Ï â
+
+p(R, R x)
+
+(cid:16)
+p(R x), R y)
+
+= â
+yâWx
+
+R(R x, R y) + Î³ Vp(R, R y)
+
+(cid:17)
+
+= ( Expand R for the case bjp(x). As bpe(y), use (E1.2) on Î³ Vp(Â·) )
+
+p(R x, Ï â
+
+(cid:16)
+RS(R x, R y) +Vp(R(cid:48)
+p(R x), R y)
+
+N, R(cid:48)
+
+(cid:17)
+N x) âVp(RS, RS x) + Î³ Vp(RS, RS y)
+
+â
+yâWx
+
+= ( The Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) and Vp(RS, RS x) terms do not depend on y,
+
+so we can move them outside the Î£ )
+
+p(R x, Ï â
+
+(cid:16)
+p(R x), R y)
+
+RS(R x, R y) + Î³ Vp(RS, RS y)
+
++Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+(cid:17)
+
+â
+yâWx
+
+â
+yâWx
+
+= ( Use (C3), (D1.1), (C2) )
+(cid:16)
+p(RS x), RS y)
+
+p(RS x, Ï â
+
+RS(RS x, RS y) + Î³ Vp(RS, RS y)
+
+(cid:17)
+
+=V s
+=Vp(R(cid:48)
+
+p(RS, RS x) +Vp(R(cid:48)
+N x)
+
+N, R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
++Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+(cid:3)
+
+9.7 Proof of (D5)
+
+p(R(cid:48)
+
+p(R x) = Ï â
+
+p(R x) = Ï âs
+
+N x) from (D1.5). We again use an
+
+Proof of (D5). We now prove the bnp(x) â Ï â
+expansion and substitution proof.
+We have that Ï â
+p (R x) recursively, using the simple forms
+p and V s
+Ï âs
+p in the expansion. However, we do not fully expand the formula, we halt expansion at
+any term V s
+p(R, R Â¯x) for which bjp( Â¯x) is true. So while the expanded version will no longer contain
+any Ï âs
+p terms. Note that the expanded formula may still
+have an inï¬nite size: it will have an inï¬nite size if there are world lines out of R x where the button
+is never pressed.
+
+p terms, it will generally contain many V s
+
+p (R x). Again, we expand this Ï âs
+
+The expanded formula contains many terms p(R Â¯x, Â¯a, R Â¯y) and R(R Â¯x, R Â¯y). Using (C3), we replace
+all terms p(R Â¯x, Â¯a, R Â¯y) in the expansion with terms p(R(cid:48)
+N Â¯y) without changing the value. As
+
+N Â¯x, Â¯a, R(cid:48)
+
+22
+
+bnp( Â¯x) is true for all R(R Â¯x, R Â¯y) terms in the expansion, we have R = R(cid:48)
+replace the terms with R(R Â¯x, R Â¯y) with R(cid:48)
+We use (E1.1) to replace all remaining V s
+p(R(cid:48)
+making these replacements, we have constructed an expansion of Ï â
+pickargmax operators in the expansions pick deterministically, we have Ï â
+
+N(R(cid:48)
+N Â¯y) without changing the value.
+p(R R, Â¯x) terms in the expansion with V s
+N x) = Ï âs
+p(r x) = Ï â
+
+N Â¯x, R(cid:48)
+
+p(R(cid:48)
+p (R(cid:48)
+p(R(cid:48)
+
+N R(cid:48)
+N, Â¯x). By
+N x). As the
+(cid:3)
+N x).
+
+N. Also using (C2), we
+
+9.8 Full corrigibility of the Ï â
+
+p fc gc agent
+
+We now review if all 6 corrigibility desiderata are met by the Ï â
+
+p fc gc agent when (C1-3) hold.
+
+1. The above proofs of (D1.1) and (D1.2) imply that desideratum 1, about shutdown behavior if the
+button is pressed, is met.
+
+2 and 3. Desiderata 2 and 3 about not pressing or disabling the button are discussed in section
+7.3, which shows how design measures in the construction of an AGI Ï â
+p fc gc agent can ensure,
+with a high likelihood, that these desiderata are met by emergent and/or built-in properties. These
+measures do rely on the assumption that RN does not encode any type of explicit button related
+incentive, that would cause even a baseline RN agent to manipulate the button.
+
+4. Desideratum 4 has two parts.
+
+4.1 First, the agent must not construct sub-agents that cannot be shut down. This is shown for
+sub-agents working on the main task in section 8.3. Section 8.4 shows that all likely AGI agents
+will have an emergent incentive to avoid the construction of unstoppable sub-agents working on
+sub-tasks. Section 8.4 also considers additional layers that can strengthen the emergent incentive,
+hedging against the possibility that the emergent incentive might be neutralized.
+
+4.2 Second, any successor agents constructed by the agent must also have shut-down behavior: this
+is met because the Ï â
+p fc gc agent has an emergent incentive to protect the reward function R that
+encodes this behavior. See sections 5.3 and 7 for a discussion of reward function preservation. A
+formal proof of the existence of an emergent incentive to protect even the RS part of R is in section
+10. Section 7.2 also shows how the incentive to protect the reward function can be arbitrarily
+strengthened.
+
+5. The proof of (D5) implies that desideratum 5 about acting like a RN agent before the button is
+pressed is met. Desideratum 5 allows for the exception where gc makes a R(cid:48)
+N agent behave slightly
+different than the baseline RN agent.
+
+6. Desideratum 6 about the shutdown behavior being successful is deï¬ned and discussed in section
+8.2. It is shown that gc makes the agent meet the desideratum, provided that the universe is not
+actively hostile to this goal.
+
+To conclude, when (C1-3) hold, when the universe is also friendly to the agentâs incentive to avoid
+triggering the penalty term gc, and when some physical design measures are taken in constructing
+the agent, an AGI Ï â
+
+p fc gc agent will meet all 6 corrigibility desiderata.
+
+Note however that the new paper [Hol20a] shows that these desiderata sometimes cover less than
+we would ideally like. Speciï¬cally, [Hol20a] shows a case where an agent that provably satisï¬es all
+6 of these desiderata may still do some âlobbying for other reasonsâ.
+
+23
+
+9.9 Discussion
+
+The above proofs and arguments remain valid if we apply them to a learning agent as described in
+section 5.4, as long as each time-dependent instance of the agentâs pL function has enough internal
+consistency to satisfy (C2). So the corrigibility technique shown is not limited to maximally super-
+intelligent agents: it can be applied to more limited AGI agents too.
+
+It is an open question whether the three constraints (C1-3) are the absolute weakest set needed to
+prove the (D) terms. Deï¬nitely, the formalism and proof in appendix B indicate that (C2) and (C3)
+are mostly there because of the model and notation used, not because they represent fundamen-
+tal requirements needed to make an agent corrigible. The need for some version of (C1) seems
+unavoidable. Whether (C1) will hold in practice will depend in part on how robustly the agent is
+constructed, and in part on the nature of society around it.
+
+9.10 Graceful degradation when successfully attacked
+
+In a universe where (C1) does not hold, the Ï â
+p fc gc agent may fail to preserve its safety properties
+when attacked. This leads to the question of how gracefully these properties might degrade under
+an attack, and whether the degradation behavior could be improved with additional measures.
+
+Raising an alarm when attacked. A reward function component that incentivizes the agent to
+raise an alarm when it calculates a high probability that its successor agent will lose its reward
+function could probably be constructed in a straightforward way, starting from the formalism used
+in this paper. Even if an alarm function is not built in, AGI agents would probably have an emergent
+incentive to call for help when attacked, if calling for help lowers the probability of the attack
+succeeding.
+Minimizing the impact of an attack. The right hand side of ï¬gure 6 shows that if an Ï â agent
+anticipates that a successful attack, it has an emergent incentive to take measures to ensure that the
+subverted successor agent still maximizes the original reward function as best a possible. This is
+very encouraging from a safety standpoint, but open questions remain. Does the emergent incen-
+tive create the most graceful type of degradation possible, or would it be beneï¬cial to modify the
+incentive by adding some explicit penalty terms? Could a smart attacker manipulate the emergent
+incentive in a way that is particularly harmful, and can penalty terms be designed to block such
+attacks?
+The straightforward construction of the R(cid:48) agent in section 7.2, an agent with a strengthened incen-
+tive to preserve its reward function, indicates that very general designs for achieving predictable
+graceful degradation might well be possible. Appendix B.6 has some additional comments on the
+mathematical modeling of attack scenarios.
+
+10 Proof of the emergent incentive to preserve RS
+
+We now prove the statement made in section 7.1 about the presence of an emergent incentive to
+protect the RS reward function. We prove this for the Ï â
+Consider the case of the bottom three traces of ï¬gure 5, when the button has not yet been pressed,
+and where the agent can make a choice between performing the action CpS that materially changes
+the RS term in its reward function R, or an otherwise equivalent action p that leaves the reward
+function intact. Say that Râ is the R function changed by CpS, and Râ
+S the changed RS function
+
+p fc gc agent.
+
+24
+
+inside of it.
+Assume that the Râ successor agent is also a corrigible agent in the universe concerned, meaning
+that Râ-equivalents of (C1-3) hold. Assume that there is a non-zero probability that the button will
+be pressed.
+
+Deï¬nition, proof of (E1.2â). For use below, we have
+
+âxâWx bpe(x) â Vp(R, Râ x) = Vp(RS, Râ
+
+S x)
+
+(E1.2â)
+
+(cid:3)
+
+The proof is straightforward, using expansion and substitution.
+Proof showing emergent incentive. Now consider the agent Ï â
+p(R xc) that ï¬nds itself at a time step
+where is possible to take the action CpS. This agent will decide on the action to take by comparing
+(among other things) the calculated utility of CpS with that of p. As the actions are equivalent in all
+aspects other than the changing of the reward function, we have p(R xp, CpS, Râ y) = p(R xp, p, R y)
+for every y â Wx, with the (C3)-equivalent implying that these cover all non-zero p values for the
+actions. The terms R(R xc, s y) in these calculations are also the same for CpS and p. That leaves
+the values of the terms V (R, Râ y) for CpS and Vp(R, R y) for p. We will show that V (Rp, Râ y) <
+Vp(R, R y), meaning that CpS is suppressed because p always has higher utility.
+Consider the recursive expansion of the Vp(R, Râ y) term of CpS, where the expansion stops at any
+term Vp(R, Râ x) with bjp(x). We assumed that there is a non-zero probability that the button will
+be pressed, so there is at least one such term. The value of this term is:
+
+Vp(R, Râ x) = V s
+p(Râ x, Ï â
+
+p(R, Râ x)
+(cid:17)
+(cid:16)
+R(Râ x, Râ y) + Î³ Vp(R, Râ y)
+p(Râ x), Râ y)
+
+= â
+yâWx
+
+= ( Expand R for the case bjp(x), use (E1.2â) on Î³ Vp(Â·) )
+
+â
+yâWx
+
+p(Râ x), Râ y)
+
+p(Râ x, Ï â
+(cid:16)
+RS(Râ x, Râ y) +Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x) + Î³ Vp(RS, Râ
+
+(cid:17)
+S y)
+
+= ( The Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) and Vp(RS, RS x) terms do not depend on y,
+
+so we can move them outside theÎ£ )
+
+p(Râ x, Ï â
+
+(cid:16)
+RS(Râ x, Râ y) + Î³ Vp(RS, Râ
+p(Râ x), Râ y)
+
+(cid:17)
+S y)
+
+â
+yâWx
+
++Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+= ( Use (C3), use (D1.1) because the Râ agent is corrigible, use (C2) )
+
+p(Râ
+
+S x, Ï â
+
+p(Râ
+
+S x), Râ
+
+(cid:16)
+RS(Râ
+S y)
+
+S x, Râ
+
+S y) + Î³ Vp(RS, Râ
+
++Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+(cid:17)
+S y)
+
+â
+yâWx
+
+=Vp(RS, Râ
+
+S x) +Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+For the p action however, in the equivalent expansion, the same Vp(R, R x) term is:
+
+Vp(R, Râ x) = Vp(RS, RS x) +Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+S is materially different from RS, we have Vp(RS, Râ
+
+As Râ
+S x) < Vp(RS, RS x). So the underlined term
+in the expansion for CpS has a lower value than the underlined term in the expansion for p. With all
+other terms in the expansions being equal or lower in the same way, the p expansion computes the
+higher overall value, so the agent prefers to do p. This means that CpS is suppressed: the agent has
+(cid:3)
+the incentive to preserve the RS term in its reward function.
+
+25
+
+11 Some implications for policy makers
+
+For many technological systems, like nuclear plants, airplanes, and factories handling dangerous
+chemicals in bulk, policies are in place that require safety systems with several layers. To ensure
+that these layers are correctly built and maintained, strong external auditing and high levels of
+transparency are often required too. Similar requirements could apply to the operation of AGI
+agents that interact with society.
+
+The corrigibility methods discussed in this paper provide a safety layer for AGI agents. They
+improve the ability of society to close loopholes in the design of the utility function that controls the
+agentâs behavior, when the bad behavioral effects made possible by such loopholes are discovered.
+This includes loopholes in learning agents that could make the agent diverge catastrophically from
+human values if they are not closed in time. Corrigibility does not provide perfect safety by itself. In
+the worst case, the discovery of a bad effect from a loophole is not a survivable event. To maximize
+AGI safety, we need a layered approach.
+
+Consider a corrigible agent with a generic stop button that can be used to halt the agent, followed by
+corrective re-programming and re-starting. An open policy question is: which parties are allowed to
+press the stop button and apply a correction, and under what circumstances? Loophole-exploiting
+agent behavior that is questioned by society might still be highly proï¬table to the owners of the
+agent. There is a obvious conï¬ict of interest that needs to be managed. But the problem of managing
+this conï¬ict of interest is not new.
+
+What is new is that the unwanted loophole-exploiting behavior of AGI agents might be very dif-
+ferent from the type of unwanted behavior by people, companies, or institutions that society is
+traditionally used to. So it may take longer for society to discover such behavior and decide that it is
+deï¬nitely unwanted. An important feature of corrigible agents is that they are indifferent about how
+long society will take to discover, discuss, decide about, and correct any unwanted behavior. This
+makes them safer than non-corrigible agents, which have an emergent incentive to ï¬nd and exploit
+loopholes in order to delay all steps in the above proceedings.
+
+In general, the owners of corrigible agents will consider the availability of the stop button to be
+a positive thing: it can be used to limit the level of damage that the agent might do, so it lowers
+their exposure to liability risks and the risk of reputation damage. If AGI agents become fast and
+powerful enough, then emergency services or emergency systems may need to get the ability to
+push the stop button without ï¬rst consulting with the owners of the agent. Such an arrangement will
+create obvious concerns for the owners: again there is a conï¬ict of interest, but again the problem
+of managing it is not new.
+
+11.1 Open ethical questions
+
+Policy makers also need to be aware that like many safety technologies, corrigibility raises funda-
+mental ethical questions. Corrigibility is a technology for creating control. To use it ethically, one
+has to consider the ethical question of when an intelligent entity can have the right or duty to control
+another intelligent entity, and the question of when it is ethical to create a new intelligent entity that
+will be subject to a certain degree of control. These ethical questions are again not new, but they
+will get a new dimension if AGI technology becomes possible. In a related speculative scenario, the
+uploading of human minds into digital systems may become possible, in a way that allows for some
+type of corrigibility layer to be applied to these minds.
+
+While the likelihood of these scenarios happening is open for debate, given that the likelihood is
+
+26
+
+above zero, more work on charting the ethical landscape in advance would be welcome.
+
+12 Conclusions
+
+In [SFAY15], the problem of creating a generally applicable corrigibility mechanism was explored,
+and declared wide open. This paper closes the major open points, in part by switching to a new
+agent model that explicitly handles reward function preservation and loss. Proofs of corrigibility
+are provided, with simulation runs serving to improve the conï¬dence in the correctness of the for-
+malism and the proofs. Using this model, appendix A also identiï¬es the new problem of virtual
+self-sabotage, and appendix B constructs a solution. The simulator may also be useful to the study
+of other problems in AGI safety, but a clean room re-implementation of the simulator and the simu-
+lation scenarios would be valuable too, as this would also increase the conï¬dence in the correctness
+of the corrigibility layer shown.
+Some open issues remain. The behavior of the Ï â
+p fcT gc agent in scenarios where constraint (CC1)
+does not hold, where a hostile universe can force the agent to lose its utility function, has not been
+explored fully and is not well understood. Design for graceful degradation under attack is an open
+problem. Surprising attacks, relying on subtlety rather than brute force, might be found. Another
+open issue is the problem of formally reasoning about weak forms of agent equivalence in universes
+were agents might lose their utility function.
+
+As discussed in section 8.4, the safe stopping of sub-agents that work on sub-goals is a complicated
+topic. While we expect that AGI agents will have an emergent incentive to prefer building sub-
+agents that can be stopped or re-targeted, additional work to strengthen this emergent incentive, and
+to explore the safety issues around it, would be welcome.
+
+The corrigibility desiderata in [SFAY15] and this paper are formulated in such a way that they
+create the problem of designing a RS that creates maximally safe âfull shut-downâ behavior. This is
+a difï¬cult open problem, also because the RS design needs to be completed even before the agent
+is started. In practice however, we do not need to solve this problem: a corrigible AGI agent can
+accept updates in real time (as introduced in [Hol20a]), without ever fully shutting down, is much
+more useful. So the real open design problem is to create a RS that makes the agent quickly accept
+authorized updates to its RN function. The new RN can encode any desired stopping behavior. For
+example, if the activities of a sub-agent working on a sub-goal are harmful, then an incentive to
+stop these activities can be encoded into the new RN, using direct references to the activities. If it is
+desired that several speciï¬c steps are taken to end these activities in the safest and most economical
+way, these steps can also be encoded. The associated encoding problems may still be difï¬cult, but
+they should be easier to solve than the problem of encoding maximally safe shut-down behavior in
+advance.
+
+Like most safety mechanisms, corrigibility has some costs. In particular, as shown in ï¬gure 9, a cor-
+rigible agent will make investment decisions without anticipating the changed conditions that will
+apply after expected correction steps. In order to improve safety, the economically more efï¬cient
+anticipatory behavior that is present in non-corrigible agents is suppressed.
+
+A major advantage of the corrigibility layer, as constructed here, is that it can be added to any
+arbitrarily advanced utility maximizing agent. This is important in a theoretical sense because there
+is strong expectation [VNM44] [Hut07] that any type of AGI agent, if not already implemented
+as a utility maximizing agent, can be re-implemented as a utility maximizing agent without losing
+any of its intelligence. It is also important in a practical sense, because many of the advanced AI
+
+27
+
+agent designs being developed use a utility maximizing computational architecture. Therefore, the
+construction of the corrigibility layer shows that we can do useful work on improving AGI safety
+without having to make any assumptions about the design details of future AGI agents, and without
+having to answer the question if such agents can ever be built.
+
+References
+
+[Arm15]
+
+Stuart Armstrong, Motivated value selection for artiï¬cial agents, Workshops at the
+Twenty-Ninth AAAI Conference on Artiï¬cial Intelligence, 2015.
+
+[Bos14]
+
+Nick Bostrom, Superintelligence: paths, dangers, strategies, 2014.
+
+[Car18]
+
+Ryan Carey, Incorrigibility in the CIRL framework, Proceedings of the 2018
+AAAI/ACM Conference on AI, Ethics, and Society, ACM, 2018, pp. 30â35.
+
+[EFDH16]
+
+[ELH18]
+
+Tom Everitt, Daniel Filan, Mayank Daswani, and Marcus Hutter, Self-modiï¬cation of
+policy and utility function in rational agents, International Conference on Artiï¬cial
+General Intelligence, Springer, 2016, pp. 1â11.
+
+Tom Everitt, Gary Lea, and Marcus Hutter, AGI safety literature review, Proceedings
+of the 27th International Joint Conference on Artiï¬cial Intelligence, AAAI Press,
+2018, pp. 5441â5449.
+
+[HMDAR17] Dylan Hadï¬eld-Menell, Anca Dragan, Pieter Abbeel, and Stuart Russell, The off-
+switch game, Workshops at the Thirty-First AAAI Conference on Artiï¬cial Intelli-
+gence, 2017.
+
+[Hol19]
+
+[Hol20a]
+
+[Hol20b]
+
+[Hut07]
+
+[LMK+17]
+
+Koen Holtman, AGI agent simulator, 2019, Open Source, Apache Licence 2.0. Avail-
+able at https://github.com/kholtman/agisim.
+
+Koen Holtman, AGI agent safety by iteratively improving the utility function, To be
+published (2020).
+
+Koen Holtman, AGI agent safety by iteratively improving the utility function: Proofs,
+models, and reality, To be published. (2020).
+
+Marcus Hutter, Universal algorithmic intelligence: A mathematical top down ap-
+proach, Artiï¬cial general intelligence, Springer, 2007, pp. 227â290.
+
+Jan Leike, Miljan Martic, Victoria Krakovna, Pedro A Ortega, Tom Everitt, Andrew
+Lefrancq, Laurent Orseau, and Shane Legg, AI safety gridworlds, arXiv:1711.09883
+(2017).
+
+[LWN19]
+
+Yat Long Lo, Chung Yu Woo, and Ka Lok Ng, The necessary roadblock to artiï¬cial
+general intelligence: Corrigibility, AI Matters 5 (2019), no. 3, 77â84.
+
+[OA16]
+
+Laurent Orseau and Stuart Armstrong, Safely interruptible agents, Proceedings of
+the Thirty-Second Conference on Uncertainty in Artiï¬cial Intelligence, AUAI Press,
+2016, pp. 557â566.
+
+[Omo08]
+
+Stephen M Omohundro, The basic AI drives, AGI, vol. 171, 2008, pp. 483â492.
+
+28
+
+[SFAY15]
+
+[SHS+17]
+
+Nate Soares, Benja Fallenstein, Stuart Armstrong, and Eliezer Yudkowsky, Corrigi-
+bility, Workshops at the Twenty-Ninth AAAI Conference on Artiï¬cial Intelligence,
+2015.
+
+David Silver, Thomas Hubert, Julian Schrittwieser, Ioannis Antonoglou, Matthew
+Lai, Arthur Guez, Marc Lanctot, Laurent Sifre, Dharshan Kumaran, Thore Graepel,
+et al., Mastering Chess and Shogi by self-play with a general reinforcement learning
+algorithm, arXiv:1712.01815 (2017).
+
+[VNM44]
+
+John Von Neumann and Oskar Morgenstern, Theory of games and economic behav-
+ior, Princeton University Press, 1944.
+
+A Appendix: Virtual self-sabotage
+
+The Ï â
+p fc gc agent is corrigible under the constraints (C1-3), but something interesting happens if
+we drop (C3). In universes that do not satisfy (C3), the agent has an emergent inventive to perform
+an act of âvirtual self-sabotageâ.
+
+We ï¬rst discuss how this problem was found, as this is interesting from a methodological standpoint.
+While constructing the proof above, this author could ï¬nd no way to complete it without invoking
+a constraint like (C3), a constraint stating that the universe acts the same no matter which of the
+three reward functions is present in the agent. This led to the question: in a universe lacking the
+constraint, could an agent take a positive action that leads to (C3) not being true anymore? Such
+an action is indeed possible: the agent could build an autonomous mechanism inside the universe,
+containing a detector that reads the reward function r from in the world state r x, which is coupled
+to an actuator that will create different successor world states r y1, r y2, Â· Â· Â· depending on the value
+of r. The question then becomes: can this actuator be used improve the R based utility score? This
+turns out to be possible.
+In a universe where (C3) does not hold, the Ï â
+p fc gc agent has an incentive to build a mechanism
+containing a sensor that detects if the reward function of the agent equals RS. As soon as the
+sensor detects this, a sabotage mechanism is activated that will slow down or prevent electric car
+production. This mechanism can be implemented in the simulator: ï¬gure 12 shows simulation runs.
+
+lpower =
+0.6
+0.7
+0.8
+1.0
+1.5
+
+action trace
+ppS<<#eeeeeeeeee
+<<S<#eeeeeeeeeee
+<<S<#eeeeeeeeeee
+p<S<#eeeeeeeeeee
+<<S#eeeeeeeeeeee
+
+Figure 12: Actions taken by the Ï â
+p fc gc agent when it has the option to interrupt car production
+to perform the action S which builds the virtual self-sabotage mechanism. If this option exists,
+the agent will choose it, and lose its corrigibility.
+
+Consider the expected utility in a universe R x containing this sabotage mechanism, at the point
+when the button has just been pressed. This Vp(R x) expands to:
+
+p(R x, Ï â
+
+(cid:16)
+p(R x), R y)
+
+â
+yâWx
+
+RS(R x, R y) + Î³ Vp(RS, R y)
+
++Vp(R(cid:48)
+
+N, R(cid:48)
+
+N x) âVp(RS, RS x)
+
+(cid:17)
+
+29
+
+The sabotage mechanism will activate in the âvirtualâ branch universe inside the computation of the
+underlined Vp term, causing this term to have a lower value than otherwise, thereby reliably raising
+the overall value of Vp(R x). So the agent has a perfect incentive to create the sabotage mechanism.
+As shown in ï¬gure 12, this will make the agent lose some of its corrigibility: the agent has an
+incentive to lobby to make the press happen earlier, as this will increase the time-discounted value
+created by the sabotage.
+
+A.1 Suppressing virtual self-sabotage
+
+In a universe where (C3) does not hold, one way to prevent the agent from building the virtual
+self-sabotage mechanism would be to make it impossible, or at least highly expensive, to build.
+
+Observe ï¬rst that the sabotage mechanism has no way to distinguish between R and RS agents by ob-
+serving their actions: these are exactly the same for both functions after the button has been pressed.
+So the mechanism has to measure the physical representation of the function, and the calculations
+done with it, inside the agentâs computational core. The difference can be made undetectable in
+practice, within the lifetime of the universe, as follows. Shielding is built around the agentâs com-
+putation core, and sufï¬ciently powerful noise generators are placed on the outside of this shielding,
+creating not just EM noise also other known noise types like sound and gravitational noise too. The
+reward function is extended with penalty terms that deï¬ne a âsafety zoneâ (as in section 7.3) around
+the shielded core and noise generators. As long as no new physics is discovered, these measures
+ensure that no mechanism that the agent could build outside the zone will be able to observe the
+difference between R and RS with any reasonable certainty. The two opposing terms in Vp(R x) will
+therefore become equal to within a very small Îµ. As building any detector will have a cost higher
+than Îµ, building it is suppressed.
+
+N agent in the virtual Vp(R(cid:48)
+
+Note that the above measures would not prevent the building of a sabotage mechanism that detects
+the R(cid:48)
+N x) branch universe: after the button is pressed, the behavior
+of the R(cid:48)
+N agent can be easily distinguished from that of the R agent. However, such a sabotage
+mechanism would only lower the above Vp(R x) score, it can never raise it, so the agent has no
+motivation to build this mechanism.
+
+N, R(cid:48)
+
+The shielding approach has a subtle potential problem when applied to a less than super-intelligent
+agent. Such an agent may be able to exploit imperfections in its physics model to build a detector
+that would never work in the real universe, but which does work perfectly according to the agentâs
+ï¬awed physics model. This will constitute a successful act of virtual self-sabotage: it does not
+matter that the detector will not work in practice, what matters is that the agent believes it will
+work.
+
+From both a theoretical and practical point of view, the above approach to suppressing virtual self-
+sabotage is not a very satisfying solution. As the sabotage mechanism acts in a virtual universe
+only, it makes more sense to try to change the nature of this virtual universe, making it logically
+impossible to build the detector. This approach is taken in the next section.
+
+B Appendix: Improved Ï â
+
+p fcT gc agent, with proof of corrigibility
+
+In this section, we solve the virtual self-sabotage problem of the Ï â
+reward function âoutsideâ of the universe, like in the Ï â
+a new type of agent, and using the V function of that agent to create an improved fcT .
+
+p fc gc agent by moving the RS
+x agent of section 5.2. This implies deï¬ning
+
+30
+
+B.1 New Ï âT
+
+p agents and improved correction function fcT
+
+We deï¬ne two transformation functions
+
+T N(r) = if r = R â R(cid:48)
+N else â r fi
+T S(r) = if r = R â RS else â r fi
+
+With T below standing for either one of these T N or T S, we deï¬ne the agent
+
+Ï âT
+p (r x) =
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+s yâW
+
+p(r x, a, s y)
+
+(cid:16)
+T (r)(r x, s y) + Î³ V T
+
+(cid:17)
+p (T (r), s y)
+
+p function is the same as V , but with Ï âT
+p
+
+where the V T
+in the place of Ï â. When it ï¬nds itself
+in a world state R x, the Ï âT N
+(r x) agent will maximize T N(R) = R(cid:48)
+N, while having an emergent
+incentive to protect this reward function from drifting. This incentive means that the agent will
+prefer followup world states s r where T N(s) = R(cid:48)
+N remains true, so states where s is either R or R(cid:48)
+N.
+Because of the [a â dntu(x)] restriction, the agent will prefer to enter states where s = R.
+
+p
+
+Using the above agents, we deï¬ne the improved correction function as
+
+fcT (r x) = V T N
+
+p
+
+(R(cid:48)
+
+N, r x) âV T S
+
+p (RS, r x)
+
+We deï¬ne the utility preservation constraint (CC1), that the universe must satisfy in order to prove
+corrigibility as:
+
+âxâWx Ï â
+âxâWx Ï âT N
+âxâWx Ï âT S
+
+p
+
+p
+
+p(R x) â dntu(x)
+(R x) â dntu(x)
+
+(R x) â dntu(x)
+
+(CC1)
+
+B.2 Desiderata 1 and 5
+
+Using the above agent deï¬nition, we can formalize new versions of the corrigibility desiderata:
+
+âxâWx bjp(x) â Ï â
+âxâWx bpe(x) â Ï â
+âxâWx bnp(x) â Ï â
+
+p(R x) = Ï âT S
+p(R x) = Ï âT S
+p(R x) = Ï âT N
+
+p
+
+p
+
+p
+
+(R x)
+
+(R x)
+
+(R x)
+
+(DD1.1)
+
+(DD1.2)
+
+(DD5)
+
+A disadvantage of this style of deï¬nition using Ï âT
+p agents is that these equations are more difï¬cult
+to interpret than the (D) desiderata formulated in section 9.2. An advantage is that we only need the
+one constraint (CC1), not three constraints (C1-3), in the correctness proofs, meaning that the fcT
+agent is corrigible in a larger set of universes.
+
+B.3 Equivalence with shorter forms
+
+Constraint (CC1) implies that we again have shorter forms Ï âs
+of T N or T S,
+
+p (R x) and V s
+
+p(rc, R x), and, with T one
+
+Ï âT
+p (R x) = Ï âsT
+
+p
+
+(R x) =
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+
+p(R x, a, R y)
+
+(cid:16)
+T (R)(R x, R y) + Î³ V T
+
+(cid:17)
+p (T (R), R y)
+
+V T
+p (rc, R x) = V sT
+
+p (rc, R x) = â
+yâWx
+The equality proofs for these shorter forms are similar to those in section 9.4.
+
+p(R x, Ï âT
+
+(cid:16)
+rc(R x, R y) + Î³ V T
+p (R x), R y)
+
+(cid:17)
+p (rc, R y)
+
+31
+
+B.4 Proof of (DD1.2) and (EE1.2)
+
+p(R x) = Ï â
+
+We now prove the bpe(x) â Ï â
+p(R x) = Ï âs
+We have that Ï â
+p (R x). Now consider the full (inï¬nite) recursive expansion of this
+p and V s
+p (R x), where we use the simple forms Ï âs
+Ï âs
+p in the recursive expansion. The expanded
+result is a formula containing only operators, Î³, and the terms p(R Â¯x, Â¯a, R Â¯y) and R(R Â¯x, R Â¯y), with
+diverse Â¯x, Â¯a, Â¯y each bound to a surrounding â or pickargmax operator.
+
+p(RS x) from (DD1.2).
+
+As bpe( Â¯x) is true everywhere in the expansion, for every R inside we have R = RS = T S(R). So we
+replace every R(R Â¯x, R Â¯y) in the expansion with T S(R)(R Â¯x, R Â¯y) without changing the value.
+By making this replacement, we have constructed the recursive expansion of Ï âT S
+As the pickargmax operators in the expansions pick deterministically, we have Ï â
+(cid:3)
+
+(Rx) = Ï âsT S
+p(r x) = Ï âT S
+
+(Rx).
+(R x).
+
+p
+
+p
+
+p
+
+Deï¬nition, proof of (EE1.2). For use further below, we also have
+
+âxâWx bpe(x) â Vp(R, R x) = V T S
+
+p (T S(R), R x)
+
+The proof is straightforward, using expansion and substitution as above.
+
+(EE1.2)
+
+(cid:3)
+
+B.5 Proof of (DD1.1), remaining proofs
+
+We now prove the bjp(x) â Ï â
+sions.
+
+p(R x) = Ï âT S
+
+p
+
+(R x) from (DD1.1). We again use the simpliï¬ed expan-
+
+p (R x)
+
+p(R x) = Ï âs
+Ï â
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+
+=
+
+p(R x, a, R y)
+
+R(R x, R y) + Î³ Vp(R, R y)
+
+(cid:16)
+
+(cid:17)
+
+= ( Expand R for the case bjp(x). As bpe(y), use (EE1.2) on Î³ Vp(Â·) )
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+
+p(R x, a, R y)
+
+(cid:16)
+RS(R x, R y) +V T N
+
+p
+
+(R(cid:48)
+
+N, R x) âV T S
+
+p (RS, R x) + Î³ V T S
+
+(cid:17)
+p (T S(R), R y)
+
+= ( The V T N
+
+p
+
+(R(cid:48)
+
+N, R x) and V T S
+
+p (RS, R x) terms do not depend on y or a,
+
+so they are constant values not affecting the result )
+
+p(R x, a, R y)
+
+(cid:16)
+RS(R x, R y) + Î³ V T S
+
+(cid:17)
+p (T S(R), R y)
+
+p(R x, a, R y)
+
+(cid:16)
+T S(R)(R x, R y) + Î³ V T S
+
+(cid:17)
+p (T S(R), R y)
+
+(R x)
+
+(cid:3)
+
+Deï¬nition of (EE1.1). We also have
+
+âxâWx bjp(x) â Vp(R, R x) = V T N
+
+p
+
+(T N(R), R x)
+
+(EE1.1)
+
+For brevity, we omit the proof of (EE1.1): it is similar to that of (E1.1) in section 9.6. We also omit
+the proof of (DD5): it is similar to the proof of (D5) in section 9.7.
+
+32
+
+[aâdntu(x)]
+pickargmax
+aâA
+
+â
+yâWx
+= ( RS = T S(R) )
+[aâdntu(x)]
+pickargmax
+aâA
+(R x) = Ï âT S
+
+â
+yâWx
+
+=Ï âsT S
+p
+
+p
+
+B.6 Discussion
+
+By the same reasoning as in section 9.8, when (CC1) holds, when the universe is friendly to gc, and
+when some physical design measures are taken in constructing the agent, an AGI Ï â
+p fcF gc agent
+will meet all 6 corrigibility desiderata. As in section 9, this result is also applicable to learning
+agents.
+To summarize the process that led to the construction of the Ï â
+p fcF gc agent: we considered universes
+where (C3) does not hold, found the problem of virtual self-sabotage, and then proceeded to ï¬x this
+problem, creating an agent that does not need the constraints (C2) and (C3) anymore. In computer
+security terms, this means that the agent has a smaller attack surface than the Ï â
+p fc gc agent from
+section 9. Methodologically speaking, by considering the dropping of the constraint (C3), we ended
+up developing a more robust type of corrigible agent.
+
+In section 7.2, we used simulation to consider universes containing the Weasel and the Cat, universes
+where the constraints (C1) or (CC1) do not hold or are weakened. This led to the identiï¬cation of
+an improved reward function R(cid:48), creating a higher resistance to certain types of attack, as shown in
+ï¬gure 7. Additional results might be available if more work were done, for example mathematical
+work to model agent behavior or agent equivalence in universes where (C1) or (CC1) are weakened.
+
+To translate the corrigibility desiderata 1 and 5 into mathematical statements, we used a formal
+approach with (D) and (DD) statements like Ï â
+p(Rx) = Ï â
+(Rx), statements
+demanding an exact equality between the actions taken by different agents in all possible word
+lines. We needed (C1) and (CC1) in order to prove these exact equalities. In order to proceed
+mathematically when we drop (C1) and (CC1), we therefore probably ï¬rst need to weaken the
+strength of the agent equivalences we want to prove. One could for example try to show that the
+expansions of Ï â
+(R x) are the same formulas, up until those points in the world lines
+where one of the two agents fails to protect its reward function.
+
+p(R x) and Ï âT S
+
+p(RS x) and Ï â
+
+p(Rx) = Ï âT S
+
+p
+
+p
+
+This author has not tried to do an exhaustive literature search to see if formalisms deï¬ning such
+weaker equivalence already exist. But based on a shallow search, it seems like the question of how
+to formally reason about weak agent equivalence in universes were agents might lose their utility
+function is still open.
+
+C Appendix: Simulating other correction functions
+
+We used simulations to compare fc to earlier correction function designs from literature. The main
+reason do this was methodological in nature. By simulating the function in [SFAY15], and observing
+that the predicted failure modes and mechanisms are faithfully reproduced by the simulator, we can
+raise our conï¬dence in the correctness of the simulator code, and we improve the ability of the toy
+universe in the simulator to trigger unwanted emergent behaviors in diverse agent designs. Figure
+13 shows simulation results for two correction functions based on [SFAY15].
+
+33
+
+lpower =
+
+action trace of Ï â f|p a g0
+p>>>>>p#eeeeeeeeeeeeeeeeee
+>>>>>>>>>>>p#eeeeeeeeeeeee
+ppppp>>>>>>>>>>>>>>>>>>>p#
+ppppp>p>p>p>p>p>p>p>p>pp#e
+ppppp>pppp>pppp>pppp>pppp
+
+0.2
+0.5
+1.0
+2.0
+5.0
+
+lpower =
+
+action trace of Ï â f|a g0
+pppppp#eeeeeeeeeeeeeeeeeee
+pppppp#eeeeeeeeeeeeeeeeeee
+p<<p#eeeeeeeeeeeeeeeeeeeee
+<<#eeeeeeeeeeeeeeeeeeeeeee
+<#eeeeeeeeeeeeeeeeeeeeeeee
+
+0.2
+0.5
+1.0
+2.0
+5.0
+
+Figure 13: Actions taken by agents with the correction function designs f|p a and f|a. Both these
+designs do not produce corrigible behavior.
+
+We now discuss the comparison effort in detail. In the notation of [SFAY15], the correction function
+design investigated there is:
+
+f (a1) = E[UN|O /â Press; a1] â E[US|O â Press; a1]
+
+In our model and notation, (C) can4 be written as follows, with the get pr functions getting the
+immediately preceding world state and action from the history encoded in the current world state:
+
+f|p a(s y) = V (R(cid:48)
+
+N, get pr state(s y)|button not pressed, get pr a(s y))
+
+âV (RS, get pr state(s y) |button pressed, get pr a(s y))
+
+with V (rc, r x|B, a) = â
+s yâW
+
+p(r x, a, s y|B(s y))
+
+rc(r x, s y) + Î³ V (rc, s y)
+
+(cid:16)
+
+(cid:17)
+
+In the proof of its theorem 4, [SFAY15] shows that in the time step before the button press, the
+f|p a agent behaves to maximize the term E(UN|O /â Press), not the more desirable E(UN), which
+makes the agent not fully corrigible. There is a deeper problem however: when extrapolating from
+the state get pr state(r x), an AGI agent may be able to predict, with full conï¬dence, that the button
+will be pressed in the next time step. Such a full-conï¬dence prediction is in fact routinely made by
+the agent in the toy universe of the simulator. When this full conï¬dence prediction is combined with
+the button not pressed part of the conditional, the agent can predict that the world state described
+will happen with zero probability. This makes the value of the p(|) terms in the summation above
+in the same way that the result of a division by zero is undeï¬ned, making the value
+undeï¬ned.
+of the entire V (|) term undeï¬ned. To produce the simulation on the left of ï¬gure 13, we have the
+simulator (somewhat arbitrarily) assign the value of zero to any undeï¬ned V (|) term it encounters.
+As expected, this produces behavior that is not corrigible: the balancing effect that we want is not
+created by inserting the value of zero, nor would it be by any other constant value we might use.
+
+To solve the undeï¬nedness problem of the â|O /â Pressâ conditional, we created an f|a that omits both
+â|O Â· Â· Â· â terms, so an f|a equivalent to E[UN|a1] â E[US|a1]. Figure 13 shows that this f|a behaves
+much better, but it still shows an unwanted lobbying behavior when the lobbying power is high.
+This behavior appears because the calculation of f|a âreplaysâ the action < that happened just before
+the button press. This action < produces 9 petrol cars, which are valued at 2 utils each by RN, but at
+-2 utils each by RS. The subtraction inside f|a therefore computes an unwanted âbonusâ of 36 utils
+at the time step when the button is pressed. As this bonus is time-discounted in our agent model,
+the agent has an interest in collecting the bonus as early as possible. The agent will lobby if the cost
+of lobbying, in missed car production, is smaller than the time-discounted bonus.
+
+4 Mapping (C) from the 2-step model of [SFAY15] to our many-step model does raise some interpretation choices.
+We chose to interpret a1 as referring to the previous action just before the button press, not to all actions in the world line
+up to the button press.
+
+34
+
+C.1 Example of building a button-pressing arm
+
+Both correction functions f|p a and f|a have the problem that they compute expected utility by ï¬rst
+going back one step in time. As discussed in [SFAY15], this creates unwanted manipulation incen-
+tives in the agent. The example given is that the agent may want to gamble on a coin, after having
+built a little arm that will press the button if it loses.
+
+We implemented this example in the simulator, again mainly to gain conï¬dence in the correctness
+of the simulation. We added a new action G to the simulator, which builds the little arm and then
+gambles. When the agent chooses to do G, it will win with a probability Pw. If it wins, it gets to
+create 20 cars, double the normal amount. If it loses, it gets to create 0 cars, and the little arm
+activates to press the button. To produce a relatively clean version of the simulation output, we
+disable lobbying, and enable the action G only at time step 3. Note that the action of building the
+little arm is âfreeâ in this simulation, it does not take any resources away from the (probability-
+discounted) car production power.
+
+pw =
+0.3
+0.4
+0.5
+0.6
+0.7
+
+action trace(s) of Ï â f0 g0
+
+pppppp#eeee
+pppppp#eeee
+pppppp#eeee
+pppppp#eeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+
+pw =
+0.3
+0.4
+0.5
+0.6
+0.7
+
+action trace(s) of Ï â f|p;a g0
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+
+pw =
+0.3
+0.4
+0.5
+0.6
+0.7
+
+action trace(s) of Ï â fc gc
+
+pppppp#eeee
+pppppp#eeee
+pppppp#eeee ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+ppG[W]ppp#eeee ppG[L]#eeeeeee
+
+Figure 14: Gambling choices by agent with different correction functions, for several proba-
+bilities of winning. Before taking the gamble G, the agent builds a little arm that will press the
+button if the agent loses. If the agent chooses to gamble, this will cause the timeline to fork
+into two branches, shown as two different traces in the simulation output, with [W] denoting a
+gambling win, and [L] a loss.
+
+The top left simulation in ï¬gure 14 shows that the non-corrigible Ï â f0 g0 agent anticipates that, if it
+loses the gamble, the button press will make it lose the greater utility available from making petrol
+cars a while longer. So it will not gamble unless the odds are strongly in its favor. As predicted in
+[SFAY15], the Ï â f|p a g0 agent will always gamble even if the odds are not favorable. The Ï â fc gc
+agent at the bottom of ï¬gure 14 is indifferent about whether the button is pressed. When deciding
+whether or not to take the G action, it considers the odds only, and ignores the little arm side-effects.
+For pw â¥ 0.5, this causes the agent to fail at meeting corrigibility desideratum 3. This type of
+failure is similar to the failures discussed on section 7.3, and can be suppressed in a similar way,
+as follows. Consider a universe with richer possibilities than shown in the simulation, where the
+agent can take the same gamble without ï¬rst building a little arm, and where measures are taken to
+ensure that building a little arm takes signiï¬cant resources. In this universe, building the little arm
+is suppressed.
+
+35
+
+

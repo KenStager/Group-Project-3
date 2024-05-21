@@ -1,0 +1,1404 @@
+The dual role of constructive agents in public goods games: limited alone, amplifying
+cooperation with destructive agents
+
+Yuting Dong1, Zhixue He1,2, Chen Shen3,â Lei Shi1,â  and Jun Tanimoto2,3
+
+1. School of Statistics and Mathematics, Yunnan University of Finance and Economics, Kunming, 650221, China
+2. Interdisciplinary Graduate School of Engineering Sciences, Kyushu University, Fukuoka, 816-8580, Japan
+3. Faculty of Engineering Sciences, Kyushu University, Kasuga-koen, Kasuga-shi, Fukuoka 816-8580, Japan
+(Dated: April 3, 2024)
+
+Recent studies have revealed a paradoxical phenomenon in public goods games, wherein destruc-
+tive agents, harming both cooperators and defectors, can unexpectedly bolster cooperation. Building
+upon this intriguing premise, our paper introduces a novel concept: constructive agents, which con-
+fer additional benefits to both cooperators and defectors. We investigate the impact of these agents
+on cooperation dynamics within the framework of public goods games. Employing replicator dy-
+namics, we find that unlike destructive agents, the mere presence of constructive agents does not
+significantly alter the defective equilibrium. However, when the benefits from constructive agents
+are outweighed by the damage inflicted by destructive agents, the coexistence of both agent types
+can amplify the ability of destructive agents to sustain cooperation. This occurs through the facili-
+tation of a coexistence pattern involving cooperators, defectors, constructive agents, and destructive
+agents via cyclic dominance. Conversely, if the benefits from constructive agents surpass the harm
+caused by destructive agents, the presence of constructive agents nullifies the ability of destructive
+agents to foster cooperation. Our results highlights the nuanced dual role of constructive agents in
+shaping cooperation dynamics, emphasizing the necessity of carefully assessing incentive balances
+in evolutionary game theory.
+
+Keywords: Evolutionary game theory; Constructive agents; Destructive agents; Public goods game
+
+I.
+
+INTRODUCTION
+
+Cooperation can ensure the maximization of collective
+interests, but it is also vulnerable to exploitation by âfree-
+ridersâ who do not bear the costs of cooperation [1â3]. To
+explore the emergence and maintenance of cooperation,
+numerous studies rooted in the framework of evolution-
+ary game theory have revealed the mechanisms that sup-
+port the evolution of cooperation in individual interac-
+tions [4â7]. These include direct reciprocity, established
+through repeated interactions [8]; indirect reciprocity in-
+volving information transfer [9]; and network reciprocity
+arising from interaction structures [7]. However, in one-
+shot games where individuals interact only once, with-
+out the possibility of memory or behavioral information
+transfer, these reciprocity mechanisms are absent, mak-
+ing the maintenance of cooperation still a challenge [2].
+To tackle cooperation challenges in one-shot games, re-
+searchers have incorporated social mechanisms that al-
+low individuals to engage in additional decision-making
+stages after contributing to public goods in the public
+goods game (PGG), unveiling pathways for establishing
+cooperation. [5, 10â12]. These include allowing individu-
+als to impose costly punishments [10, 13, 14] and rewards
+[15, 16] on others based on contribution outcomes, decid-
+ing whether to participate in the game before contribut-
+ing to public goods (or called âlonerâ strategy) [17, 18],
+or exiting from the interaction early for a fixed payoff
+
+â steven shen91@hotmail.com
+â  shi lei65@hotmail.com
+
+[19, 20]. From these game interactions, different behav-
+iors can be observed. The framework of social value ori-
+entation analyzes and summarizes these behaviors by ex-
+ploring how individuals balance their own interests with
+those of others[21, 22], aiding in understanding coopera-
+tion issues in social dilemmas from a perspective of be-
+havioral value orientation.
+
+Recently, attention has been drawn to the impact of
+sadistic-orientation behavior on the cooperation dynam-
+ics, known as destructive behavior (or called âjokerâ
+strategy) [23â25]. These âbad guysâ not only opt out of
+contributing to public goods, but also engage in antiso-
+cial behaviors that harm the interests of others. Counter-
+intuitively, the presence of these destructive agents can
+maintain cooperation through a cycle of dominance in-
+volving cooperation, defection, and destructive strategies
+[23], and these individualsâ positive effects on cooperation
+remain robust in both infinite and finite populations [24].
+However, in contrast to this sadistic-orientation behav-
+ior, altruistic-orientation behavior is more commonly ob-
+served in behavioral experiments [21, 26]. For instance,
+some individuals exhibit a preference for engaging in al-
+truistic rewarding behavior, even at a personal cost [27].
+The complexity of human behavior leads to diversity in
+actions and strategies in interactions [21, 22]. Taking this
+into account, research further explores the evolutionary
+dynamics of coexisting altruistic and antisocial behaviors
+[28]. Interestingly, Szolnoki et al. [14] demonstrated that
+antisocial punishment (punishing those who contribute
+to the public good) can unexpectedly enhance the effec-
+tiveness of prosocial punishment (punishing free-riders)
+in structured populations, challenging conventional per-
+
+4
+2
+0
+2
+
+r
+p
+A
+2
+
+]
+h
+p
+-
+c
+o
+s
+.
+s
+c
+i
+s
+y
+h
+p
+[
+
+1
+v
+7
+3
+6
+1
+0
+.
+4
+0
+4
+2
+:
+v
+i
+X
+r
+a
+
+ 
+ 
+ 
+ 
+ 
+ 
+spectives on prosocial/antisocial behaviors and revealing
+new pathways for establishing cooperation. Importantly,
+the dynamics created by diverse interaction strategies
+provide a crucial perspective for a deeper understand-
+ing of the emergence of cooperation in real-life scenarios,
+which lie in the complexity of human behavior [29, 30].
+Inspired by this, we introduce a new concept - con-
+structive strategies, incorporating this altruistic behav-
+ior into the PGG model involving cooperation, defection,
+and destructive strategies. This approach enables us to
+expand current research in solving the cooperation is-
+sues by exploring the interconnected diverse behaviors
+of cooperation dynamics. In contrast to the destructive
+agents, constructive agents withdraw from game inter-
+actions but provide additional costly benefits to partici-
+pants without concern for their own gains or losses. Uti-
+lizing replicator dynamics in an infinite population [31],
+our research reveals that, although constructive agents
+alone do not alter evolutionary dynamics, their presence
+alongside destructive agents forms a cycle of dominance
+involving four strategies that support the emergence of
+cooperation. Additionally, constructive agents can am-
+plify the role of destructive agents in promoting coop-
+eration. However, when the benefits provided by con-
+structive agents surpass the harm caused by destructive
+agents, it can result in negative effects that diminish the
+capacity of destructive agents to promote cooperation.
+The dual role of constructive individuals emphasizes the
+balancing impact of positive and negative incentive fac-
+tors in evolutionary game dynamics, thereby enhancing
+the understanding of the incentive forces shaping coop-
+eration.
+
+II. MODEL
+
+To gain a deep understanding of how constructors in-
+fluence the cooperation dynamics, we first examine a
+three-strategy model that includes cooperation, defec-
+tion, and construction within the PGG. We then explore
+a four-strategy PGG model incorporating cooperation,
+defection, construction, and destruction to study the evo-
+lutionary dynamics of cooperation in the presence of both
+constructive agents and destructive agents.
+
+A. Public goods game with constructive agents
+
+In a classic PGG involving N players, a cooperator
+contributes c to the public pool (simplify without loss of
+generality, set c = 1), while a defector contributes noth-
+ing. The total amount in the public pool is multiplied
+by a synergy factor r and then evenly distributed among
+all participants. Defection is the only Nash equilibrium
+strategy when the synergy factor for cooperators meets
+1 < r < N [3]. When constructive agents are introduced,
+these individuals neither contribute to nor benefit from
+the public pool. Instead, they offer an additional benefit
+
+2
+
+of d2 > 0 to the participants (i.e., cooperators and de-
+fectors). Let the number of cooperators among the other
+individuals in the group be NC, and the number of con-
+structive agents be NCA, satisfying 0 â¤ NC + NCA â¤ N ,
+the payoff for a focal individual adopting cooperation
+(C), defection (D), and constructive strategies (CA) can
+be respectively expressed as follows:
+
+ÏC =
+
+r(NC + 1) + d2NCA
+S1
+
+â 1,
+
+ÏD =
+
+rNC + d2NCA
+S1
+ÏCA = 0,
+
+,
+
+(1)
+
+where S1 = N â NCA is the number of non-constructive
+agents in the group.
+
+Consider an infinitely large and well-mixed popula-
+tion consisting of cooperators, defectors, and construc-
+tive agents, with proportions x, y, z, respectively (sat-
+isfy x + y + z = 1 and 0 â¤ x, y, z â¤ 1). N individuals
+are randomly selected from the population to form group
+and play the PGG. The expected payoffs for the C, D,
+and CA strategies can be calculated as follows:
+
+N â1
+(cid:88)
+
+N â1âNCA(cid:88)
+
+PC =
+
+(cid:18)N â 1
+NCA
+
+(cid:19)(cid:18)N â 1 â NCA
+
+(cid:19)
+
+NC
+
+NC =0
+
+NCA=0
+Â· xNC Â· zNCA Â· (1 â x â z)N â1âNC âNCA Â· ÏC
+(cid:32) (cid:0)1 â (z)N (cid:1)
+(1 â z)
+
+1 â (z)N
+N (1 â z)
+
++ d2
+
+(cid:18)
+
+(cid:19)
+
+= r
+
+1 â
+
+x
+1 â z
+r (cid:2)1 â (z)N (cid:3)
+N (1 â z)
+
++
+
+â 1,
+
+N â1
+(cid:88)
+
+N â1âNCA(cid:88)
+
+PD =
+
+(cid:18)N â 1
+NCA
+
+(cid:19)(cid:18)N â 1 â NCA
+
+(cid:19)
+
+NC
+
+NC =0
+
+NCA=0
+Â· xNC Â· zNCA Â· (1 â x â z)N â1âNC âNCA Â· ÏD
+(cid:32) (cid:0)1 â (z)N (cid:1)
+(1 â z)
+
+1 â (z)N
+N (1 â z)
+
+x
+1 â z
+
++ d2
+
+1 â
+
+(cid:18)
+
+(cid:19)
+
+= r
+
+(cid:33)
+
+â 1
+
+(cid:33)
+
+â 1
+
+,
+
+PCA = 0.
+
+(2)
+By utilizing replicator dynamics [31], and taking into ac-
+count the existence of mutations where the probability
+of an individual mutating to another type is Âµ (Âµ âª 1),
+the evolutionary dynamics of strategies in this population
+can be write as:
+
+ï£±
+ï£´ï£²
+
+ï£´ï£³
+
+Ëx = x (cid:0)PC â Â¯P (cid:1) + Âµ(1 â 3x)
+Ëy = y (cid:0)PD â Â¯P (cid:1) + Âµ(1 â 3y)
+Ëz = z (cid:0)PCA â Â¯P (cid:1) + Âµ(1 â 3z)
+
+,
+
+(3)
+
+where Â¯P = xPC + yPD + zPCA is the average expected
+payoffs of the population.
+
+(4)
+
+III. RESULTS
+
+B. Public goods game with constructive agents and
+destructive agents
+
+When considering the four-strategy model, destruc-
+tive agents (denoted as DA), like CA, do not partici-
+pate in public pool allocation and investment, but indis-
+criminately reduce the payoffs of cooperators and defec-
+tors by d1 [23]. Let NDA represent the number of de-
+structive agents, and S2 denote the individuals who are
+neither constructive agents nor destructive agents, i.e.,
+S2 = N â NCA â NDA. Similar to Eq. (1), the payoffs
+of focal players adopting C, D, CA, and DA strategies
+within a group can be expressed as follows:
+
+ÏC =
+
+r (NC + 1) + d2NCA â d1NDA
+S2
+
+â 1,
+
+ÏD =
+
+rNC + d2NCA â d1NDA
+S2
+ÏDA = 0,
+ÏCA = 0.
+
+,
+
+Let the proportion of C, D, CA and DA in an infinitely
+large and well-mixed population be x, y, z, and w, respec-
+tively (satisfy x + y + z + w = 1 and 0 â¤ x, y, z, w â¤ 1).
+The expected payoffs for these four types of agents can
+be calculated as follows:
+
+N â1
+(cid:88)
+
+PC =
+
+N â1âNCA(cid:88)
+
+NCA=0
+NDA=0
+(cid:18)N â 1 â NCA
+NDA
+
+N â1âNCAâNDA(cid:88)
+
+(cid:18)N â 1
+NCA
+(cid:19)(cid:18)N â 1 â NDA â NCA
+
+NC =0
+
+(cid:19)
+
+(cid:19)
+
+NC
+
+Â· xNC Â· zNCA Â· wNDA
+Â· (1 â x â z â w)N â1âNC âNCAâNDA Â· ÏC
+
+= r
+
+x
+1 â z â w
+
+(cid:18)
+
+1 â
+
+1 â (z + w)N
+N (1 â z â w)
+
+(cid:19)
+
+w (cid:0)1 â (z + w)N â1(cid:1)
+(1 â z â w)
+(cid:2)1 â (z + w)N (cid:3)
+(1 â z â w)
+
+â 1,
+
+â d1
+
++
+
+r
+N
+
++ d2
+
+z (cid:0)1 â (z + w)N â1(cid:1)
+(1 â z â w)
+
+(5)
+
+N â1
+(cid:88)
+
+PD =
+
+N â1âNCA(cid:88)
+
+NCA=0
+NDA=0
+(cid:18)N â 1 â NCA
+NDA
+
+N â1âNCAâNDA(cid:88)
+
+(cid:18)N â 1
+NCA
+(cid:19)(cid:18)N â 1 â NDA â NCA
+
+NC =0
+
+(cid:19)
+
+(cid:19)
+
+NC
+
+Â· xNC Â· zNCA Â· wNDA
+Â· (1 â x â z â w)N â1âNC âNCAâNDA Â· ÏD
+
+= r
+
+x
+1 â z â w
+
+(cid:18)
+
+1 â
+
+1 â (z + w)N
+N (1 â z â w)
+
+(cid:19)
+
+â d1
+
+w (cid:0)1 â (z + w)N â1(cid:1)
+(1 â z â w)
+
++ d2
+
+z (cid:0)1 â (z + w)N â1(cid:1)
+(1 â z â w)
+
+(6)
+
+PCA = 0,
+
+PDA = 0.
+
+3
+
+(7)
+
+(8)
+
+Similar to Eq.
+population can be described as:
+
+(3), the evolutionary dynamics in this
+
+ï£±
+Ëx = x (cid:0)PC â Â¯P (cid:1) + Âµ(1 â 4x),
+ï£´ï£´ï£´ï£²
+Ëy = y (cid:0)PD â Â¯P (cid:1) + Âµ(1 â 4y),
+Ëz = z (cid:0)PCA â Â¯P (cid:1) + Âµ(1 â 4z),
+ï£´ï£´ï£´ï£³
+Ëw = w (cid:0)PDA â Â¯P (cid:1) + Âµ(1 â 4w),
+
+(9)
+
+where Â¯P = xPC + yPD + zPCA + wPDA is the average
+expected payoffs of the population.
+
+Before presenting our research results, we review the
+dynamics of the destructive agents in the traditional pub-
+lic goods game [23, 24]. In a population of size N , as-
+suming that M individuals hold the same strategy. The
+invasion analysis in ref. [23] indicates that the destructive
+agents can lead to three patterns of invasion under the pa-
+rameter conditions 1 < r < rmax = N (M â 1)/(M â N )
+and d1 > 0.
+(i) In the region of r > 1 + (N â 1)d1,
+destructive agents support the emergence of coopera-
+tors trough a rock-paper-scissors (RPS) cyclic dominance
+emerges.
+(ii) In the region of 1 + d1/(M â 1) < r <
+1 + (N â 1)d1, a bistability arises between the destructive
+agents-cooperators. Here, the destructive agents can pre-
+vail over the defector, while the defector dominates the
+cooperator. However, neither the destructive agents nor
+the cooperator can invade each other. (iii) In the region
+of r < 1 + d1/(M â 1), the destructive agents dominates
+in population.
+
+When introducing the constructive agents solely, a
+similar invasion analysis is conducted under the condi-
+tions 0 < r < rmx and d2 > 0, see Appendix for de-
+tailed analysis. The populationâs invasion state in the
+presence of constructive agents is entirely different from
+that introduced by destructive agents. Figure 1 illus-
+trates that the population consistently favors D, since D
+consistently maintain a positive expected payoff greater
+than the other two types. But the competitive relation-
+ship between C and CA is distinct. Region I: when
+r < 1 â (N â 1)d2 , C can not invade constructive agents,
+but CA agents can invade C, as the expected payoff for
+the constructive agents is higher than that of cooperators.
+Region II: When 1 â (N â 1)d2 < r < 1 â d2/(M â 1),
+C and CA can invade each other, leading to a state of
+antagonism. Region III: when r > 1 â d2/(M â 1), C
+agents can invade CA, since the expected payoff of C
+is greater than that of CA. To validate the theoretical
+analysis, numerical simulations were conducted in three
+regions, as illustrated in Figure 2. Consistent with theo-
+retical predictions, across the three mentioned parameter
+
+regions, there are variations in the competitive dynamics
+between C and CA, with D consistently holding domi-
+nance. These results indicate that when CA exists alone,
+despite potentially benefiting others, it cannot effectively
+resolve the social dilemma.
+
+4
+
+FIG. 2. The evolutionary dynamics of a a large, well-mixed
+population involving strategies C, D, and CA are derived
+from the replicator-mutator dynamics. Each vertex in the
+plot represents a homogeneous population where all individ-
+uals hold the same strategy. The three vertices correspond to
+homogeneous populations adopting the strategies of coopera-
+tion, defection, and constructive agents, respectively. Arrows
+indicate the direction of dynamics, while blue-purple dots in-
+dicate the convergence states of populations. Proximity to
+a vertex indicates a higher proportion of the strategy repre-
+sented by that vertex. Figures (a), (b), and (c) respectively
+depict the evolutionary dynamics in region I (setting r = 0.35
+and d2 = 0.125), Region II (setting r = 0.35 and d2 = 1.5),
+and Region III (setting r = 3.5 and d2 = 1.5) as shown in
+Figure 1. The results presented are generated using a modi-
+fied version of the DeFinetti package [32].
+
+FIG. 3. Depicted are the strategy coexistence in the four-
+strategy model (involving C, D, DA, and CA) as a function
+of the damage d1 caused by destructive agents and the benefit
+d2 provided by constructive agents. The red vertical axis on
+the far right of each subfigure illustrates the coexistence of
+strategies in the three-strategy model (involving C, D, and
+DA) under the same parameters. The square brackets denote
+the presence of cyclic dominance among strategies, while their
+absence indicates the state of stable coexistence. The values
+of r are 3.5, 2, 1, and 0.5 for (a)-(d) respectively, with a group
+size of N = 5 and a mutation rate of Âµ = 0.005.
+
+to low values of d1 [23], the introduction of CA broadens
+the range of d1 values conducive to cooperation. Coop-
+
+FIG. 1.
+Three patterns of invasion in the public goods
+games involving cooperators (C), defectors (D) and construc-
+tive agents (CA) under parameter phase r-d2. Region I (light
+green area) satisfies the conditions r < 1 â (N â 1)d2, cooper-
+ators are invaded by constructive agents, while both coopera-
+tors and constructive agents are invaded by defectors. Region
+II (light brown area) satisfies the conditions 1 â (N â 1)d2 <
+r < 1 â d2/(M â 1), cooperators are invaded by constructive
+agents, while both cooperators and constructive agents are
+invaded by defectors. Region III (light yellow area) satisfies
+the conditions r > 1 â d2/(M â 1), constructive agents are
+invaded by cooperators, while both cooperators and construc-
+tive agents are invaded by defectors. All these cases are appli-
+cable under N > 1 and 0 < r < rmax = N (M â 1)/(M â N ).
+Critical points are d2,1 = 1/(N â 1), d2,2 = M â 1.
+
+To further explore the impact of constructive agents
+on cooperation, we investigate the evolutionary dynam-
+ics involving the C, D, DA, and CA strategies. The
+coexistence of strategies obtained through numerical sim-
+ulation of replicator-mutator equations is depicted in
+Figure 3. Both the three-strategy model involving C,
+D and DA strategy and the four-strategy model con-
+sidered here demonstrate that cooperation occurs only
+when the synergy factor is sufficiently large (i.e., r â¥ 2),
+In the four-strategy
+as shown in Figure 3(a) and (b).
+model, for a specific d2, as the âharmâ inflicted by DA
+on participants (d1) increases, the population transitions
+from a pure D (blue region) phase to a coexistence phase
+of D + DA + CA (green region). Furthermore, as d1
+continues to increase, the population shifts from the
+D + DA + CA phase to the DA + CA (orange region)
+phase when r is low, as illustrated in Figure 3(c) and (d).
+Interestingly, a narrow region of four-strategy coexistence
+(yellow region) emerges between the D + DA + CA phase
+and the DA + CA phase when r is sufficiently large. In
+contrast to the three-strategy model (shown on the right
+red vertical axis in Figure 3) where cooperation is limited
+
+CACDCCCACA (a)(b)(c)Dr = 0.35,  d2 = 0.125D r = 0.35,  d2 = 1.5r = 3.5,  d2 = 1.5PGG+DADAD+DADAD+DADAD+DADAD+DADA+CA[C+D+DA+CA]D+DA+CADDA+CAD+DA+CADDA+CAD+DA+CADDA+CA[C+D+DA+CA]D+DA+CADPGG+CA+DAC+D+DA[]C+D+DA[]eration can persist in regions with large d1 as long as
+d1 > d2. On the other hand, for a specific d1, increasing
+the benefits provided by CA sustains cooperation within
+the population. However, as d2 surpasses d1, cooperation
+diminishes, leading to a transition from the four-strategy
+coexistence phase to the D+DA+CA phase. Further in-
+creases in d2 ultimately lead to the dominance of strategy
+D.
+
+5
+
+FIG. 5. Depicted are the frequency of the C (cooperator, red
+solid line), D (defector, yellow dashed line), and DA (destruc-
+tive agents, green dotted line) as a function of time steps. d1
+is set to 3, 1.65, 1.65, and 4.5 for (a)-(d), respectively. The
+other parameters are set as follows: N = 5, r = 3.5, and
+Âµ = 0.005. In (a), the frequency of C briefly increases before
+giving way to D. Strategy DA dominates the entire popula-
+tion eventually. In (b), strategies C, D, and DA exhibit cyclic
+dominance. The evolutionary process of strategy proportions
+in (c) and (d) resemble that of Figure (a), with the eventual
+dominance of strategy DA.
+
+involving three strategiesâC, D, and DA. It is notewor-
+thy that when d1 < 1, the cycle dominance can emerge
+with C, D, and DA, as shown in Figure 5(b). How-
+ever, when d1 > 1, the results in Figures 5(a), (c), and
+(d) show that cycle dominance disappears and DA ulti-
+mately comes to dominate. Overall, when both d1 and
+d2 exceed 1, and satisfy d1 > d2, the cyclic dominance
+among strategies can occur (see Figure 4). Yet, with the
+increasing benefits from CA in the population, the cyclic
+dominance among the four strategies disappears, indicat-
+ing that the introduction of constructive factors weakens
+the ability of destructive factors to maintain cooperation
+within the population.
+
+To further investigate the impact of d1 and d2 on the
+dynamics of strategy evolution, we examine the coex-
+istence of four strategies (C, D, DA, and CA) under
+varying combinations of d1 and d2. Results from Fig-
+ures 6(a) and (b) indicate that, for a fixed d1, a slight
+increase in d2 leads to a reduction in the peak ampli-
+tude of C during cyclic dominance oscillations (red solid
+line). Particularly, this weakening trend becomes more
+pronounced when d1 is slightly decreased, as illustrated
+in Figures 6(c) and (d). This suggests that the increase in
+benefit (d2) brought by the constructive agents weakens
+the advantage of destructive agents in inducing cooper-
+ators to dominate in the populationâs cyclic dynamics.
+Decreasing d1 also weakens the advantage of cooperators
+
+FIG. 4. Depicted are the frequency of the C (cooperator,
+red solid line), D (defector, blue dashed line), DA (destructive
+agents, magenta dotted line), and CA (constructive agents,
+green dash-dotted line) as a function of time steps. d2 is set
+to 0.65, 1.65, 3, and 4.5 for (a)-(d), respectively. The other
+parameters are set as follows: d1 = 3, N = 5, r = 3.5, and
+Âµ = 0.005.
+
+Figure 4 illustrates the temporal evolution of four
+strategies under a synergy factor of r = 3.5, providing
+insight into the evolving dynamics within the population.
+In Figure 4(a), the results indicate a transient increase in
+the proportions of cooperators and defectors in the early
+stages of evolution. Subsequently, both C and D decrease
+while the proportions of CA and DA increase until stabil-
+ity is reached, ultimately resulting in a coexistence state
+of CA + DA. Due to the absence of competition between
+the CA and DA, their proportions in the population are
+equal at equilibrium. When d2 is increased to 1.65, the
+population exhibits cyclic oscillations over time for these
+four strategies, as shown in Figure 4(b). Specifically, the
+proportion of D initially rises, then gives way to DA and
+CA, after which both are gradually replaced by C. Then,
+C is once again supplanted by D, forming a cycle. It is
+this dominating cycle that enables the coexistence of co-
+operators with the other three strategies. When d1 = d2,
+as depicted in Figure 4(c), the dominance of the strat-
+egy cycle gives way to the coexistence of D + DA + CA.
+Finally, when the benefits brought by CA outweigh the
+damage caused by DA (i.e., d2 > d1), Figure 4(d) shows
+that defectors eventually dominate the population.
+In
+contrast, we examine the temporal evolution dynamics
+
+0501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.0Strategy frequencyd1 = 3, d2 = 0.65d1 = 3, d2 = 1.65d1 = 3, d2 = 3Strategy frequencyTime stepsd1 = 3, d2 = 4.5Time steps C D DA CA(a)(b)(c)(d)0501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.0Strategy frequencyd1 = 0.65d1 = 1.65d1 = 4.5Strategy frequencyTime stepsTime steps C D DAd1 = 3(a)(b)(c)(d)6
+
+FIG. 6. Depicted are the frequencies of C (cooperator, red
+solid line), D (defector, blue dashed line), DA (destructive
+agents, magenta dotted line), and CA (constructive agents,
+green dash-dotted line) are depicted as a function of time
+steps under different d1-d2 parameter combinations [d1 = 3
+and d2 = 1.5 for (a); d1 = 3 and d2 = 1.8 for (b); d1 = 2.7
+and d2 = 1.5 for (c); d1 = 2.7 and d2 = 1.8 for (d)]. The other
+parameters are set as follows: N = 5, r = 3.5, and Âµ = 0.005.
+In (a) and (c), a decrease in d1 leads to a reduction in the
+peak frequencies of strategies C, DA, and CA within the
+cyclic dominance. In (c) and (d), an increase in d2 weakens
+the peak frequencies of all four strategies within the cyclic
+dominance.
+
+in cyclic dominance.
+
+The impact of mutation rate on the cyclic dominance
+phenomenon is depicted in Figure 7. When Âµ = 0.005,
+it can be observed that the peak cooperation frequency
+within the cyclic dominance reaches approximately 0.92.
+However, as the mutation rate increases to 0.01, the peak
+values for the dominance of all four strategies decrease.
+Specifically, the peak value for cooperators drops from
+0.92 to 0.188. When mutation rate increases to 0.1,
+while all four strategies still coexist within the popula-
+tion, the cyclic dominance phenomenon disappears, with
+the proportion of defectors surpassing that of coopera-
+tors. Moreover, the proportions of CA and DA stabilize
+In the scenario of very rare mutations,
+at a low level.
+specifically Âµ = 10â8, cyclic dominance disappears en-
+tirely, and defectors overwhelmingly dominate, pushing
+the frequencies of strategies C, CA, and DA nearly to
+zero.
+
+IV. DISCUSSION
+
+The intertwined evolutionary dynamics of diverse be-
+haviors could deepen understanding of how cooperation
+is sustained amidst the complexity of human behavior.
+In this work, we introduce constructive behaviors into
+
+FIG. 7. Depicted are the frequencies of C (cooperator, red
+solid line), D (defector, blue dashed line), DA (destructive
+agents, magenta dotted line), and CA (constructive agents,
+green dash-dotted line) as a function of time steps. The
+mutation rates are 10â8, 0.005, 0.01, and 0.1 for (a)-(d) re-
+spectively. The other parameters are set as follows: N = 5,
+r = 3.5, d1 = 3, and d2 = 1.5. As the mutation rate increases,
+the cyclic dominance among the four strategies gradually di-
+minishes.
+
+the traditional PGG, and consider the intertwined evolu-
+tionary dynamics of constructive agents and destructive
+agents. These constructive agents do not influence contri-
+butions and allocations in the public pool. Instead, they
+directly benefit participants in the PGG group (i.e., co-
+operators and defectors). Through mean-field results de-
+rived from the replicator-mutator equation and numerical
+simulations, our research reveals significant differences in
+the impact of constructive agents compared to destruc-
+tive agents on the cooperation dynamics. While the pres-
+ence of destructive agents can contribute to sustaining
+cooperation by facilitating a strategy cycle dominance,
+the sole participation of constructive agents in the evolu-
+tionary dynamics fails to resolve cooperation issues in a
+one-shot game, with defection still prevailing in the pop-
+ulation (see Figure 1). However, introducing constructive
+agents into the cooperation-defection-destruction model
+can maintain cooperation through a four-strategy cycle
+dominance process in evolution (see Figure 3).
+
+Although constructive agents themselves can not di-
+rectly alter the evolutionary outcomes of the population,
+together with destructive agents, they can engage in a cy-
+cle dominance involving four strategies to sustain coop-
+eration (see Figure 3). Interestingly, constructive agents
+can act as catalysts, influencing the impact of destruc-
+tive agents in promoting cooperation. The presence of
+constructors can expand the parameter region in which
+destructive agents promote cooperation. However, as the
+benefits provided by constructive agents increase, the ef-
+ficiency of destructive agents in promoting cooperation
+
+0501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.0Strategy frequencyd1 = 2.7, d2 = 1.5d1 = 2.7, d2 = 1.8Strategy frequencyTime stepsTime steps C  D DA  CAd1 = 3, d2 = 1.5d1 = 3, d2 = 1.8(a)(b)(c)(d)0501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.00501001502002503000.00.20.40.60.81.0Strategy frequency(cid:1) = 0.005(cid:1) = 0.01(cid:1) = 0.1Strategy FrequencyTime steps C  D DA  CA(a)(b)(c)(d)Time steps(cid:1) = 10-8decreases. When the benefits provided by constructive
+agents exceed the âharmâ caused by destructive agents
+to individuals, it breaks the cyclic dominance and weak-
+ens the ability of destructive agents to sustain coopera-
+tion (see Figure 4). Furthermore, an increased mutation
+rate can weaken the peak cooperation frequency in cyclic
+dominance. Conversely, in the limit of rare mutation
+rates, the phenomena of cyclic dominance among strate-
+gies completely disappear, with the defective strategy be-
+ing the unique Nash equilibrium. Neither destructive nor
+constructive agents derive any benefits from a common
+pool of funds. However, relying solely on altruistic be-
+havior from constructive agents is insufficient to support
+the establishment of cooperation in one-shot games. Im-
+portantly, the altruistic behavior of constructive agents
+provides positive incentives for others in society, while
+the behavior of destructive agents generates negative in-
+centives. By simultaneously considering these positive
+and negative incentive behaviors [11, 12, 14], the dynam-
+ics of cooperation maintenance are altered. Therefore,
+our study highlights the importance of balancing the in-
+teraction of positive and negative incentive behaviors.
+
+In our study, constructive and destructive agents repre-
+sent two typical orientations towards the interests of oth-
+ers: benefiting others and causing harm to others. How-
+ever,
+individual self-interest considerations have been
+overlooked. Considering that self-interest is a charac-
+teristic of rational human behavior, an integration of in-
+dividual actions build upon two dimensions of behavioral
+orientation within the social value orientation framework
+[21]âpreference for oneâs own gains and preference for op-
+ponentâs gainsâwill contribute to a more comprehensive
+understanding of cooperation emergence and promotion
+under diverse behavioral frameworks. On the other hand,
+in this challenging one-shot game scenario, cooperation
+cannot be sustained by relying solely on the constructive
+agents. In conjunction with reciprocity mechanisms, can
+the altruistic behaviors exhibited by constructive agents,
+promote the development of cooperation? Furthermore,
+by integrating behavioral information transmission, ana-
+lyzing the biased strategies of constructive and destruc-
+tive agents towards defectors or cooperators becomes fea-
+sible, aiding in a deeper understanding of how diverse
+behaviors affect the cooperation dynamics. Future re-
+search focusing on direct reciprocity, indirect reciprocity,
+and network reciprocity mechanisms will offer valuable
+insights into the complex interplay between diverse indi-
+vidual value orientations and the maintenance of cooper-
+ation.
+
+7
+
+to L.S.; (ii) a JSPS Postdoctoral Fellowship Program for
+Foreign Researchers (Grant No. P21374), and an accom-
+panying Grant-in-Aid for Scientific Research from JSPS
+KAKENHI (Grant No. JP 22KF0303) to C.S.; (iii) the
+grant-in-Aid for Scientific Research from JSPS, Japan,
+KAKENHI (Grant No. JP 20H02314 and JP 23H03499)
+awarded to J.T; (iv) China Scholarship Council (Grant
+No. 202308530309) and Yunnan Provincial Department
+of Education Science Research Fund Project (Grant No.
+2024Y503) to Z.H., and (v) Yunnan Provincial Depart-
+ment of Education Science Research Fund Project (Grant
+No. 2024Y502) to Y.D.
+
+Author contributions Y.D. and C.S. conceptualised,
+designed the study, formal analysis, methodology, vali-
+dation, and visualization; Y.D., Z.H., and C.S. writing
+original draft; L.S. and J.T. provided overall project su-
+pervision, review and editing; All authors approved the
+final version and agreed to be accountable for the work
+conducted in the work.
+
+Conflict of interest We declare that no conflict of in-
+
+terests.
+
+APPENDIX A. FINITE POPULATIONS:
+INVASION ANALYSIS
+
+Considering a homogeneous population of size M ,
+where individuals adopt strategy Y . Suppose one indi-
+vidual undergoes a mutation, shifting from strategy Y to
+strategy X. The successful invasion of this homogeneous
+population by the X individual is contingent upon the
+condition that the expected payoff from adopting strat-
+egy X exceeds that of individuals adopting strategy Y
+(i.e., PX > PY ).
+In this population, composed of one
+individual adopting strategy X and N â 1 individuals
+adopting strategy Y , the expected payoff for the individ-
+uals using strategy X can be represented as follows:
+
+PX = ÏX (1X, (N â 1)Y ).
+
+(A.1)
+
+During the game, individuals adopting strategy Y face
+two possible population states: one where one individual
+holds strategy X and N â 1 individuals hold strategy
+Y , and the other where all individuals hold strategy Y .
+Letâs denote the probabilities of these two states as p1
+and p2 respectively. The expected payoff for strategy Y
+can be expressed as:
+
+PY = ÏY (1X, (N â 1)Y ) Â· p1
++ÏY (0X, N Y ) Â· p2,
+
+(A.2)
+
+ARTICLE INFORMATION
+
+where,
+
+Acknowledgement We acknowledge the support pro-
+vided by (i) the National Natural Science Foundation of
+China (Grant No.11931015, 12271471, 12161089), Major
+project of National Philosophy and Social Science Foun-
+dation of China (Grants No. 22&ZD158 and 22VRCO49)
+
+p1 =
+
+=
+
+(cid:0)M â2
+(cid:1)
+(cid:1)(cid:0)1
+N â2
+1
+(cid:1)
+(cid:0)M â1
+N â1
+N â 1
+M â 1
+
+,
+
+(A.3)
+
+8
+
+strategy CA can invade the population of strategy C iff
+condition (A.9) holds.
+
+On the contrary, let PCA < PC derive :
+
+(A.4)
+
+r > 1 â
+
+d2
+M â 1
+
+,
+
+(A.10)
+
+p2 =
+
+=
+
+(cid:1)
+(cid:1)(cid:0)1
+0
+(cid:1)
+
+(cid:0)M â2
+N â1
+(cid:0)M â1
+N â1
+M â N
+M â 1
+
+.
+
+In a model involving C, D, and CA strategies, consid-
+ering the pairwise interaction of these strategies, there
+are six distinct scenarios regarding population composi-
+tion, as outlined below:
+(A) 1D + (M â 1)C
+
+PD = ÏD(1D, (N â 1)C)
+r
+N
+
+= r â
+
+,
+
+when r satisfies condition (A.10), the strategy CA can
+never invade the population of strategy C.
+
+(D) 1C + (M â 1)CA
+
+PCA = 0,
+
+PC = ÏC(1C, (N â 1)CA)
+= r â 1 + (N â 1) Â· d2.
+
+(A.11)
+
+PC = ÏC(1D, (N â 1)C) Â·
+
+N â 1
+M â 1
+
++ ÏC(0, N C) Â·
+
+M â N
+M â 1
+
+If PC > PCA, thus:
+
+= r â 1 â
+
+r
+N
+
+Â·
+
+N â 1
+M â 1
+
+.
+
+(A.5)
+Strategy D will successfully invade the population of
+strategy C, satisfying the PD > PC, the condition can
+be derived as follows:
+
+r < N Â·
+
+M â 1
+M â N
+
+.
+
+(A.6)
+
+In the limit M â â , the above condition is reduced
+to r < N , thereby encompassing the condition for the
+social dilemma: 0 < r < N . In the subsequent analysis,
+we will proceed under the assumption that inequality
+(A.6) holds.
+
+(B) 1C + (M â 1)D
+
+PC = ÏC(1C, (N â 1)D)
+
+=
+
+r Â· 1
+N
+
+â 1,
+
+PD = ÏD(1C, (N â 1)D) Â·
+
+N â 1
+M â 1
+
++ ÏD(0, N D) Â·
+
+M â N
+M â 1
+
+=
+
+r Â· 1
+N
+
+Â·
+
+N â 1
+M â 1
+
+.
+
+(A.7)
+Since 0 < r < N , we have PC < 0 and PD > 0,
+indicating PC < PD. Therefore, strategy C can never
+invade a population of strategy D.
+
+(C) 1CA + (M â 1)C
+
+PCA = 0,
+
+PC = ÏC(1CA, (N â 1)C) Â·
+
+N â 1
+M â 1
+
++ ÏC(0, N C) Â·
+
+M â N
+M â 1
+
+= r â 1 +
+
+d2
+M â 1
+
+.
+
+If PCA > PC, then:
+
+0 < r < 1 â
+
+d2
+M â 1
+
+,
+
+(A.8)
+
+(A.9)
+
+r > 1 â (N â 1) Â· d2,
+
+(A.12)
+
+strategy C will invade the population of strategy CA iff
+condition (A.12) holds.
+
+On the contrary, if PC < PCA , i.e.,
+
+r < 1 â (N â 1) Â· d2,
+
+(A.13)
+
+in this case, the strategy C will not invade the popula-
+tion of strategy CA.
+
+(E) 1D + (M â 1)CA
+
+PCA = 0,
+
+PD = ÏD(1D, (N â 1)CA)
+
+(A.14)
+
+= d2 Â· (N â 1).
+
+Since d2 > 0 and N > 1, it follows that d2(N â 1) > 0,
+i.e., PD > PCA. When this condition is satisfied, the
+inevitably invade the population of
+strategy D will
+strategy CA.
+
+(F) 1CA + (M â 1)D
+
+PCA = 0,
+
+PD = ÏD(1CA, (N â 1)D) Â·
+
+N â 1
+M â 1
+
++ ÏD(0, N D) Â·
+
+M â N
+M â 1
+
+=
+
+d2
+M â 1
+
+.
+
+(A.15)
+Since d2 > 0 and M â« 1, it follows that PD > 0. In
+this case, PCA < PD must hold, so the strategy CA will
+never invade the population of strategy D.
+
+According to the invasion analysis described above,
+we have obtained the distinct invasion regions for three
+strategies as shown in Figure 1. In scenarios (A), (B),
+(E), and (F), it is evident that when conditions 0 <
+r < N Â· M â1
+M âN and d2 > 0 are satisfied, both strategy
+C and strategy CA are consistently invaded by strategy
+D. From scenarios (C) and (D), although r > 1 â d2
+M â1 is
+
+satisfied, strategy CA does not invade strategy C. How-
+ever, when r > 1 â (N â 1) Â· d2, strategy CA is invaded
+by strategy C. Notably, the range of r values in the for-
+mer falls within that of the latter, thus, as long as the
+condition r > 1 â d2
+M â1 holds, the latter will definitely
+occur, namely, strategy CA being invaded by strategy
+C. Similarly, although r < 1 â (N â 1) Â· d2 is satisfied,
+
+strategy C does not invade strategy CA. However, when
+0 < r < 1 â d2
+M âN , strategy C is invaded by strategy CA.
+The range of r values in the former is contained within
+the range of the latter, thus, when r < 1 â (N â 1) Â· d2 is
+satisfied, strategy C will eventually be invaded by strat-
+egy CA. In contrast, when 1â(N â1)Â·d2 < r < 1â d2
+M â1 ,
+strategies CA and C invade each other, leading to a state
+of antagonism.
+
+9
+
+[1] Robert Axelrod and William D Hamilton. The evolution
+of cooperation. science, 211(4489):1390â1396, 1981.
+[2] Rick L Riolo, Michael D Cohen, and Robert Axelrod.
+Evolution of cooperation without reciprocity. Nature,
+414(6862):441â443, 2001.
+
+[3] Marco Archetti and Istvan Scheuring. Game theory of
+public goods in one-shot social dilemmas without assort-
+ment. Journal of theoretical biology, 299:9â20, 2012.
+[4] JÂ¨orgen W Weibull. Evolutionary game theory. MIT press,
+
+1997.
+
+[5] Martin Nowak and Roger Highfield. Supercooperators:
+Altruism, evolution, and why we need each other to suc-
+ceed. Simon and Schuster, 2011.
+
+[6] David G Rand and Martin A Nowak. Human coopera-
+
+tion. Trends in cognitive sciences, 17(8):413â425, 2013.
+
+[7] Martin A Nowak. Five rules for the evolution of cooper-
+
+ation. science, 314(5805):1560â1563, 2006.
+
+[8] Laura Schmid, Krishnendu Chatterjee, Christian Hilbe,
+and Martin A Nowak. A unified framework of di-
+rect and indirect reciprocity. Nature Human Behaviour,
+5(10):1292â1302, 2021.
+
+[9] Olof Leimar and Peter Hammerstein. Evolution of coop-
+eration through indirect reciprocity. Proceedings of the
+Royal Society of London. Series B: Biological Sciences,
+268(1468):745â753, 2001.
+
+[10] Ernst Fehr and Simon GÂ¨achter. Cooperation and punish-
+ment in public goods experiments. American Economic
+Review, 90(4):980â994, 2000.
+
+[11] Daniel Balliet, Laetitia B Mulder, and Paul AM
+Van Lange. Reward, punishment, and cooperation: a
+meta-analysis. Psychological bulletin, 137(4):594, 2011.
+
+[12] Attila Szolnoki and Matjaz Perc. Reward and coopera-
+tion in the spatial public goods game. Europhysics Let-
+ters, 92(3):38003, 2010.
+
+[13] Xuelong Li, Marko Jusup, Zhen Wang, Huijia Li, Lei
+Shi, Boris Podobnik, H Eugene Stanley, Shlomo Havlin,
+and Stefano Boccaletti. Punishment diminishes the ben-
+efits of network reciprocity in social dilemma experi-
+ments. Proceedings of the National Academy of Sciences,
+115(1):30â35, 2018.
+
+[14] Attila Szolnoki and MatjaËz Perc.
+
+Second-order free-
+riding on antisocial punishment restores the effectiveness
+of prosocial punishment. Physical Review X, 7(4):041027,
+2017.
+
+[15] James Andreoni, William Harbaugh, and Lise Vester-
+lund. The carrot or the stick: Rewards, punishments, and
+cooperation. American Economic Review, 93(3):893â902,
+2003.
+
+[16] Xiaojie Chen, Tatsuya Sasaki, ËAke BrÂ¨annstrÂ¨om, and Ulf
+Dieckmann. First carrot, then stick: how the adaptive
+hybridization of incentives promotes cooperation. Jour-
+
+nal of the royal society interface, 12(102):20140935, 2015.
+[17] GyÂ¨orgy SzabÂ´o and Christoph Hauert. Phase transitions
+and volunteering in spatial public goods games. Physical
+review letters, 89(11):118101, 2002.
+
+[18] GyÂ¨orgy SzabÂ´o and Christoph Hauert. Evolutionary
+prisonerâs dilemma games with voluntary participation.
+Physical Review E, 66(6):062903, 2002.
+
+[19] Chen Shen, Marko Jusup, Lei Shi, Zhen Wang, MatjaËz
+Perc, and Petter Holme. Exit rights open complex path-
+ways to cooperation. Journal of the Royal Society Inter-
+face, 18(174):20200777, 2021.
+
+[20] Shulan Li, Zhixue He, Danyang Jia, Chen Shen, Lei Shi,
+and Jun Tanimoto. Granting leaders priority exit options
+promotes and jeopardizes cooperation in social dilemmas.
+Neurocomputing, page 127566, 2024.
+
+[21] Sandy Bogaert, Christophe Boone, and Carolyn De-
+clerck. Social value orientation and cooperation in so-
+cial dilemmas: A review and conceptual model. British
+journal of social psychology, 47(3):453â480, 2008.
+
+[22] Ryan O Murphy, Kurt A Ackermann, and Michel JJ
+Handgraaf. Measuring social value orientation. Judg-
+ment and Decision making, 6(8):771â781, 2011.
+
+[23] Alex Arenas, Juan Camacho, JosÂ´e A Cuesta, and
+RubÂ´en J Requejo. The joker effect: Cooperation driven
+by destructive agents.
+Journal of theoretical biology,
+279(1):113â119, 2011.
+
+[24] RubÂ´en J Requejo, Juan Camacho, JosÂ´e A Cuesta, and
+Alex Arenas. Stability and robustness analysis of coop-
+eration cycles driven by destructive agents in finite pop-
+ulations. Physical Review E, 86(2):026105, 2012.
+
+[25] Khadija Khatun, Chen Shen, Lei Shi, and Jun Tanimoto.
+Stability of pairwise social dilemma games: destructive
+agents, constructive agents, and their joint effects. arXiv
+preprint arXiv:2402.12809, 2024.
+
+[26] Thomas Grund, Christian Waloszek, and Dirk Helbing.
+How natural selection can create both self-and other-
+regarding preferences and networked minds. Scientific
+reports, 3(1):1480, 2013.
+
+[27] Jung-Kyoo Choi and TK Ahn. Strategic reward and
+altruistic punishment support cooperation in a public
+goods game experiment. Journal of Economic Psychol-
+ogy, 35:17â30, 2013.
+
+[28] Ayelet Gneezy and Daniel MT Fessler. Conflict, sticks
+and carrots: war increases prosocial punishments and re-
+wards. Proceedings of the Royal Society B: Biological Sci-
+ences, 279(1727):219â223, 2012.
+
+[29] Francisco C Santos, Flavio L Pinheiro, Tom Lenaerts,
+and Jorge M Pacheco. The role of diversity in the
+evolution of cooperation. Journal of theoretical biology,
+299:88â96, 2012.
+
+[30] MatjaËz Perc and Attila Szolnoki. Social diversity and pro-
+
+motion of cooperation in the spatial prisonerâs dilemma
+game. Physical Review E, 77(1):011904, 2008.
+
+[31] John Maynard Smith. Evolution and the theory of games.
+In Did Darwin get it right? Essays on games, sex and
+evolution, pages 202â215. Springer, 1982.
+
+[32] Marco Archetti. Definetti: a mathematica program to
+analyze the replicator dynamics of 3-strategy collective
+interactions. SoftwareX, 11:100415, 2020.
+
+10
+
+

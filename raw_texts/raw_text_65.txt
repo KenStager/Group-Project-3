@@ -1,0 +1,1409 @@
+1
+2
+0
+2
+
+y
+a
+M
+8
+
+]
+
+G
+L
+.
+s
+c
+[
+
+3
+v
+8
+8
+4
+3
+0
+.
+2
+1
+0
+2
+:
+v
+i
+X
+r
+a
+
+MULTI-AGENT POLICY OPTIMIZATION WITH
+APPROXIMATIVELY SYNCHRONOUS ADVANTAGE ESTIMATION
+
+A PREPRINT
+
+Lipeng Wan*
+Department of Artiï¬cial Intelligence
+Xiâan Jiaotong University
+wanlipeng@stu.xjtu.edu.cn
+
+Xuguang Lan
+Department of Artiï¬cial Intelligence
+Xiâan Jiaotong University
+xglan@mail.xjtu.edu.cn
+
+Xuwei Song*
+Department of Artiï¬cial Intelligence
+Xiâan Jiaotong University
+songxw17@stu.xjtu.edu.cn
+
+Zeyang Liu
+Department of Artiï¬cial Intelligence
+Xiâan Jiaotong University
+zeyang.liu@stu.xjtu.edu.cn
+
+Nanning Zheng
+Department of Artiï¬cial Intelligence
+Xiâan Jiaotong University
+nnzheng@mail.xjtu.edu.cn
+
+May 11, 2021
+
+ABSTRACT
+
+Current policy based multi-agent reinforcement learning methods introduce an asynchronous value
+function or advantage function for individual agent to achieve credit assignment. As a result, agents
+may be misled to update their policies for better cooperation with partnersâ outdated policies. In this
+work, we achieve credit assignment through the marginal advantage estimation, which is an expansion
+from single-agent advantage estimation to multi-agent systems. We further introduce approximations
+in multi-agent policy optimization for synchronous advantage estimation, and decompose the opti-
+mization problem into multiple sub-problems of single-agent situation. The experimental results on
+StarCraft multi-agent challenges and multi-agent particle environments demonstrate the superiority
+of our method to baselines with asynchronous estimation for credit assignment.
+
+1
+
+Introduction
+
+In cooperative multi-agent reinforcement learning (MARL), each agent is treated as an independent decision-maker,
+but they can be trained together to learn cooperation. The common goal is to maximize the global return from the
+perspective of a team of agents. One of the challenges is multi-agent credit assignment (Chang et al., 2004): in
+cooperative settings, joint actions typically generate only global rewards, making it difï¬cult for each agent to deduce
+its own contribution to the teamâs success. Credit assignment requires differentiated evaluation for each individual
+policy, but designing a specialized reward function for each agent is complicated and lacks generalization (Grzes, 2017;
+Mannion et al., 2018).
+
+To achieve credit assignment, the paradigm of centralised training with decentralised executions (CTDE) is proposed
+(Oliehoek & Vlassis, 2007; Jorge et al., 2016). The basic idea of CTDE is to train agents together with global
+information. In policy based MARL, CTDE is realised by introducing centralised critics. Such critics only work during
+training and are accessible to additional state information. At the same time, for decentralised executions, each agent is
+assigned with an independent policy which conditions on its local action-observation history.
+
+ 
+ 
+ 
+ 
+ 
+ 
+arXiv Template
+
+A PREPRINT
+
+Figure 1: Examples of asynchronous Q value estimation (left) and synchronous Q value estimation (right). Two agents
+(a1, a2) with limited sight range (red dashed circles) need to cover two landmarks (blue dots) while avoid collision.
+Estimated Q values for the available actions of a1 are represented by blueish arrows. The size of the arrow represents
+the scale of the Q value. With asynchronous estimation, the policy of a1 may be updated to move to the right, which
+results in collision with a2.
+
+In MARL, the centralised critic needs to estimate the policies of different agents respectively but simultaneously. Such
+estimations are based on the joint policy of all agents. For agent a, the estimation of its policy Ïa at iteration i serves
+i+1), where Ïâa
+for the update from Ïa
+is the policy of the group of agents except a. The estimation of (Ïa
+i+1) is deï¬ned as synchronous estimation.
+Synchronous estimation requires the knowledge of other agentsâ future policy Ïâa
+
+i+1. Such update should be executed to optimize the joint policy (Ïa
+
+i+1, Ïâa
+
+i+1, Ïâa
+
+i to Ïa
+
+i+1, as shown in Figure 1.
+
+Current works such counter-factual multi-agent policy gradient (COMA) (Foerster et al., 2018) and multi-agent deep
+deterministic policy gradient (Lowe et al., 2017) achieve credit assignment with asynchronous estimation, where the
+action samples of other agentsâ current or past policies are considered. As a result, the policy of an individual agent
+is updated for cooperation with the current or past policies of their partners, which may eventually deteriorate the
+i , Ïâa
+teamâs joint policy. For example, in COMA, based on the asynchronous estimation of (Ïa
+), the policy of agent
+i
+i+1, Ïâa
+a is updated according to the target: Q(Ïa
+). However, the teamâs joint policy may degenerate
+as Q(Ïa
+). From the example, credit assignment with asynchronous estimation may introduce
+errors for the policy update. The problem is serious for situations where the policy updates frequently or dramatically in
+training.
+
+i+1) < Q(Ïa
+
+i+1, Ïâa
+
+) > Q(Ïa
+
+i , Ïâa
+i
+
+i , Ïâa
+i
+
+i
+
+In this paper, we achieve credit assignment through the proposed marginal advantage estimation (MAE). Based on MAE,
+a novel method for approximatively synchronous advantage estimation (ASAE) in multi-agent policy optimization
+(MAPO) is proposed. Speciï¬cally, the advantage functions of single-agent reinforcement learning are extended to
+multi-agent systems for credit assignment. Then, the approximation of other agentsâ future policies is applied to achieve
+synchronous estimation. To ensure the reliability of the approximation, extra restrictions are introduced. The MAPO
+problem with introduced restrictions is further simpliï¬ed and decomposed into multiple sub-problems, which are ï¬nally
+solved by proximal policy optimization method. Our algorithm is trained and tested on StarCraft multi-agent challenges
+and multi-agent particle environments. Experimental results show that our method outperforms baselines on most of the
+tasks. Compared to asynchronous estimation method, ASAE exhibits stronger ability to solve the challenge of credit
+assignment.
+
+We have two contributions in this work: (1) A novel advantage estimation method which extends single-agent advantage
+functions to multi-agent system for credit assignment is proposed. (2) A simple yet effective method for synchronous
+policy estimation is proposed for the ï¬rst time.
+
+2 Related Work
+
+A crucial challenge in cooperative multi-agent tasks is credit assignment. Reinforcement learning algorithms designed
+for single-agent tasks ignore credit assignment and show poor performance in complex cooperative tasks where high
+coordination among agents is required (Lowe et al., 2017).
+
+To deal with the challenge, some value based multi-agent reinforcement learning (MARL) methods introduce an utility
+function or local Q value function to evaluate the policy for each agent. The global Q value is then obtained from
+the local functions. In value decomposition network, global Q value function is deï¬ned as the sum of local Q value
+functions (Sunehag et al., 2018). Mixing Q network (Rashid et al., 2018) acquires the global Q value by mixing local
+Q values with a neural network. In mean-ï¬eld multi-agent methods, local Q values are deï¬ned on agent pairs. The
+
+2
+
+arXiv Template
+
+A PREPRINT
+
+mapping from local Q values to the global Q value is established by measuring the inï¬uence of each agent pairâs action
+to the shared return (Yang et al., 2018).
+
+For policy based MARL methods, credit assignment is generally realised through differentiated evaluation with
+CTDE paradigm. Multi-agent deep deterministic policy gradient (MADDPG) extends DDPG to multi-agent tasks
+by introducing centralised critics. These critics are used to predict the Q values for individual agent based on joint
+actions. Counter-factual multi-agent policy gradient (COMA) is inspired by the idea of difference reward (Wolpert &
+Tumer, 2002) and provides a naive yet effective approach for differentiated advantage estimation in cooperative MARL.
+In COMA, a centralised critic is used to predict the Q value function Q(s, u) for joint action u and state s. And the
+advantage function for agent a is deï¬ned as
+
+Aa(s, u) = Q(s, u) â
+
+(cid:88)
+
+ua
+
+Ïa(ua|Ï a)Q(s, (uâa, ua))
+
+(1)
+
+where Ï and Ï represent trajectory and policy respectively. âa denotes the group of agents except a, and u = (ua, uâa).
+However, COMA introduces a counter-factual baseline, which assumes that other agents take ï¬xed actions sampled from
+current policies. The policy estimation for COMA is asynchronous. The problem is even more serious for MADDPG
+because the estimation is based on historical actions which are no longer taken by other agents.
+
+3 Background
+
+We consider a most general setting of partially observable, full cooperative multi-agent reinforcement learning (MARL)
+tasks, which can be described as a stochastic game deï¬ned by a tuple G =< S, U, P, r, Z, O, n, Î³ >. The true state of
+environment s â S is unavailable to all agents. At each time step, n agents identiï¬ed by a â A (A = {1, 2, Â· Â· Â· , n})
+receive their local observations za â Z, and take actions ua â U simultaneously. The joint observation Z = Z n is
+acquired by the observation function O(s, a) : S ÃA â Z. The next state is determined by joint action u â U (U = U n)
+and the transition function P (s(cid:48)|s, u) : S Ã U Ã S â [0, 1]. The reward function r(s, u) : S Ã U â R is shared by all
+agents, so as the discounted return Gt = (cid:80)â
+In policy based MARL with centralised training with decentralised executions, each agent is assigned with an inde-
+pendent policy Ïa(ua|Ï a), which is trained on its local trajectory Ï a consisting of historical observations and actions
+{(za
+1 ), Â· Â· Â· }. Besides, action-state value function QÏ(s, u) and state value function V Ï(s) are usually
+introduced for policy evaluation. The advantage function is represented by AÏ(s, u) = QÏ(s, u) â V Ï(s). And symbols
+in bold denote the joint variable of group agents. For brevity, Ï is used to denote Ï(u|Ï ).
+
+t+i Î³trt+i. Î³ â [0, 1) is a discount factor.
+
+0), (ua
+
+0 , ua
+
+1, za
+
+Figure 2: Demonstration of MAE for action u1
+sample 1 (red dot). m joint action samples are sampled at
+state st (green ellipse). Each sample is represented by a lateral queue in orange dashed box. And the ac-
+tion of agent n in sample m is represented by un
+sample m. These samples are then reorganized. Each blue
+solid line connects a reorganized sample. Based on m reorganized samples, m counter-factual advantages
+A1
+sample m) are estimated according to
+equation (1) or equation (9). Especially, for counter-factual advantage function given by equation (9), extra in-
+teractive simulations (green dashed box) are executed. The marginal advantage is ï¬nally acquired by A1
+mar =
+1
+m
+
+sample 2), Â· Â· Â· , A1
+
+sample 1, uâ1
+
+sample 1, uâ1
+
+sample 1, uâ1
+
+sample 1, uâ1
+
+sample 1), A1
+
+sample i).
+
+i=1 A1
+
+ctf (u1
+
+ctf (u1
+
+ctf (u1
+
+ctf (u1
+
+(cid:80)m
+
+3
+
+arXiv Template
+
+A PREPRINT
+
+In single-agent policy optimization problems (Schulman et al., 2015), the objective is to maximize the expected
+accumulative reward, which is usually represented by an action-state value function. Similarly, for MAPO with
+centralised training with decentralised executions, agents are trained together with Q values predicted by centralised
+critic. While each actor is expected to optimize a decentralised policy independently. The objective for agent a is
+
+max
+Ïa
+
+Euaâ¼Ïa,uâaâ¼Ïâa
+
+(cid:2)Qa(s, ua, uâa)(cid:3)
+
+(2)
+
+where Qa(s, ua, uâa) is the estimated Q value functions for agent a, which can be substituted by advantage functions
+to reduce the variance. The superscribe âa denotes the group of n â 1 agents except a.
+
+4 Approximatively Synchronous Advantage Estimation in Multi-agent System
+
+In this section, we ï¬rst introduce marginal advantage estimation (MAE) which achieves credit assignment by extending
+advantage functions of single-agent reinforcement learning (RL) to multi-agent systems. Then, we describe how to
+implement synchronous advantage estimation based on MAE in multi-agent policy optimization (MAPO) problem.
+
+4.1 Credit Assignment through Marginal Advantage Estimation
+
+In this subsection, we address the challenge of credit assignment through the proposed marginal advantage estimation.
+
+From the perspective of teamed agents, the advantage function of joint action u under state s is deï¬ned as A(s, u) =
+Q(s, u) â V (s). For clarity, we use Qjt to denote the Q(s, u). However, such advantage function is shared by the team.
+In order to implement differentiated advantage estimations for credit assignment, a particular marginal Q value function
+Qa
+
+mar is introduced for each agent.
+
+Qa
+
+mar(s, uâa) = Euâaâ¼Ïâa [Q(s, u)]
+
+(3)
+
+where Ïâa(uâa|Ï âa) is represented by Ïâa for brevity. Qa
+mar is deï¬ned as the expectation of Qjt on other agentsâ
+policies Ïâa, which is particular for each agent. Compared to Qjt, Qmar also eliminates the estimation variance
+introduced by othersâ action samples. By replacing Qjt with Qmar, the marginal advantage function Aa
+mar to achieve
+credit assignment is obtained:
+
+Aa
+
+mar(s, ua) =
+
+Q(s, u) dÏâa â V (s)
+
+(4)
+
+(cid:90)
+
+uâa
+
+According to the Bellman equation, the state value function can be written as the expectation of Q value function on
+policy. Since decentralised policies are considered to be independent (Foerster et al., 2018), the joint policy Ï equals to
+a product of the independent policies where Ï = (cid:81)n
+
+a Ïa = Ïa Â· Ïâa.
+
+(cid:90)
+
+u
+(cid:90)
+
+V (s) =
+
+=
+
+Q(s, u) dÏ
+
+(cid:90)
+
+Q(s, ua, uâa) dÏadÏâa
+
+uâa
+
+ua
+
+Notice that u = (ua, uâa). Combine equation (4) with equation (5).
+
+Aa
+
+mar(s, ua) =
+
+(cid:90)
+
+uâa
+
+(cid:20)
+
+Q(s, u) â
+
+(cid:90)
+
+ua
+
+Q(s, u) dÏa
+
+(cid:21)
+
+dÏâa
+
+(5)
+
+(6)
+
+Given a counter-factual scenario: only the actor under evaluation is considered to be agent, while other actors are
+viewed as part of the environment and always take ï¬xed actions at the given state. The state in counter-factual scenario
+sa
+ctf , ua) = (s, ua, uâa) = (s, u). The advantage function under this
+ctf can be represented by (s, uâa). Apparently, (sa
+circumstance is deï¬ned as counter-factual advantage function, which is written as:
+ctf (sa
+
+ctf , ua) = Q(sa
+
+ctf )
+
+Aa
+
+ctf , ua) â V (sa
+(cid:90)
+
+= Q(s, u) â
+
+Q(s, u) dÏa
+
+(7)
+
+Notice that Aa
+form of marginal advantage function is acquired.
+
+ctf is identical to the integral item in equation (6). By replacing the integral item with Aa
+
+ctf , a simpler
+
+ua
+
+Aa
+
+mar(s, ua) =
+
+(cid:90)
+
+uâa
+
+Aa
+
+ctf (sa
+
+ctf , ua) dÏâa
+
+(8)
+
+4
+
+arXiv Template
+
+A PREPRINT
+
+ctf is an unbiased estimation of Qjt, and Aa
+
+It can be proved that if Aa
+(Appendix I).
+Since the counter-factual scenario is deï¬ned as a single-agent environment, Aa
+advantage function used in single-agent RL. For example, consider using TD residual Î´a
+time step t.
+
+mar is also an unbiased estimation of Qa
+
+mar
+
+ctf can be replaced by other forms of
+t as an estimation for Aa
+ctf,t at
+
+t = r(sctf , ua
+Î´a
+= r(st, ua
+
+t ) + Î³V (sctf,t+1) â V (sctf,t)
+
+t , uâa
+t
+
+) + Î³V (st+1, uâa
+
+t+1) â V (st, uâa
+
+t
+
+)
+
+(9)
+
+Since agentsâ policies are considered to be independent (Foerster et al., 2018), the integration on Ïâa can be split into a
+(n â 1)-layer integration, which is complicated for execution. For simplicity and efï¬ciency, the Monte-Carlo sampling
+is adopted.
+
+Aa
+
+ctf (st, ut)dÏâa
+
+Aa
+
+mar(st, ua
+
+t ) =
+
+â
+
+(cid:90)
+
+m
+(cid:88)
+
+uâa
+1
+m
+
+i=1
+
+Aa
+
+ctf (st, ut, uâa
+t,i )
+
+(10)
+
+Where m is the number of joint action samples. For m = 1 and Aa
+ctf given by equation (1), the marginal advantage
+function degenerates to advantage function of COMA. A demonstration of MAE with Monte-Carlo sampling is given in
+Figure 2.
+
+4.2 Synchronous Advantage Estimation through Approximations
+
+In this subsection, we describe how to achieve synchronous estimation in MAE through approximations. Synchronous
+policy estimation requires the prediction of other agentsâ future policies, as shown in Figure 1. Direct prediction of
+othersâ future policies is very difï¬cult (Grover et al., 2018). Instead, in iterative training, only othersâ policies of the
+next iteration are needed. Assume othersâ joint policy of iteration i is Ïâa
+. The marginal advantage function with
+synchronous estimation can be written as:
+
+i
+
+Aa
+
+i+1,syn(s, ua) = Euâaâ¼Ïâa
+
+i+1
+
+(cid:2)Aa
+
+ctf,i+1(s, ua, uâa)(cid:3)
+
+(11)
+
+i+1, Ïâa
+
+Firstly, we introduce an approximation that Ïâa
+. To ensure the reliability, a restriction is introduced as
+(cid:3) < Î´1. Besides, the advantage function is based on trajectory samples, while only samples from
+KL (cid:2)Ïâa
+iteration i are available (Schulman et al., 2015). To ensure there is no much difference of trajectory distributions
+between episode i and i + 1, a supplementary restriction is introduced as KL (cid:2)Ïa
+(cid:3) < Î´2. Combining the
+restrictions with equation (2), the objective for policy optimization of agent a is
+
+i+1 â Ïâa
+
+i+1, Ïa
+i
+
+i
+
+i
+
+max
+Ïa
+i+1
+
+Euaâ¼Ïa
+
+i
+
+(cid:20)
+Aa
+
+i+1,syn(s, ua) Â·
+
+= max
+Ïa
+i+1
+
+Euâ¼Ïa
+
+i
+
+(cid:20)
+Aa
+
+i+1(s, u) Â·
+
+subject to : KL (cid:2)Ïâa
+
+i+1, Ïâa
+i
+i+1, Ïa
+i
+
+(cid:3) < Î´2
+
+KL (cid:2)Ïa
+
+Ïa
+i+1
+Ïa
+i
+(cid:3) < Î´1
+
+Ïa
+i+1
+Ïa
+i
+(cid:21)
+
+(cid:21)
+
+(12)
+
+Notice that we have introduced importance sampling to calculate the expectation on Ïa
+i+1 with the samples from Ïa
+i .
+The ï¬rst restriction involves other agentsâ policies, which requires joint optimization of all agentsâ policies. The integral
+objective of multi-agent policy optimization with n agents is
+
+max
+Ïa
+i+1
+
+n
+(cid:88)
+
+a
+
+(cid:20)
+
+Euâ¼Ïi
+
+Aa
+
+i+1(s, u) Â·
+
+(cid:21)
+
+Ïa
+i+1
+Ïa
+i
+
+subject to :
+
+n
+(cid:91)
+
+a
+n
+(cid:91)
+
+a
+
+KL (cid:2)Ïâa
+
+i+1, Ïâa
+
+i
+
+(cid:3) < Î´1
+
+(13)
+
+KL (cid:2)Ïa
+
+i+1, Ïa
+i
+
+(cid:3) < Î´2
+
+5
+
+arXiv Template
+
+A PREPRINT
+
+It can be proved that KL (cid:2)Ïâa
+restriction KL (cid:2)Ïâa
+
+(cid:3) = (cid:80)âa
+
+i+1, Ïâa
+(cid:3) < Î´1 can be written as
+
+o KL (cid:2)Ïo
+
+i+1, Ïâa
+
+i
+
+i
+
+i+1, Ïo
+i
+
+(cid:3) (Appendix II). For simpliï¬cation, a tighter form of the
+
+KL (cid:2)Ïo
+
+i+1, Ïo
+i
+
+(cid:3) <
+
+Î´1
+n â 1
+
+= Î´(cid:48)
+
+1, f or o in
+
+âa
+(cid:91)
+
+By replacing the restriction KL (cid:2)Ïâa
+equals to
+
+i+1, Ïâa
+
+i
+
+(cid:3) < Î´1 with the tighter form, the restriction (cid:83)n
+
+a KL (cid:2)Ïâa
+
+i+1, Ïâa
+
+i
+
+n
+(cid:91)
+
+âa
+(cid:91)
+
+a
+
+o
+
+{KL (cid:2)Ïo
+
+i+1, Ïo
+i
+
+(cid:3) < Î´(cid:48)
+
+1}a
+
+(14)
+
+(cid:3) < Î´1
+
+(15)
+
+Notice that there are n â 1 duplicate restrictions for each KL (cid:2)Ïa
+restriction (cid:83)n
+
+(cid:3) < Î´1 is simpliï¬ed.
+
+a KL (cid:2)Ïâa
+
+i+1, Ïâa
+
+i
+
+i+1, Ïa
+i
+
+(cid:3) < Î´(cid:48). By removing redundant duplicates, the
+
+n
+(cid:91)
+
+a
+
+KL (cid:2)Ïa
+
+i+1, Ïa
+i
+
+(cid:3) < Î´(cid:48)
+
+1
+
+(16)
+
+1 = Î´2 and two restrictions in equation (13) can be combined into (cid:83)n
+
+(cid:3) < Î´2. In centralised
+Set Î´(cid:48)
+training with decentralised executions, the policies of different agents are updated independently. For agent a, only the
+sub-restriction KL (cid:2)Ïa
+(cid:3) < Î´2 is effective. For further simpliï¬cation, the integral objective in equal (13) can be
+split into n sub-objectives:
+
+a KL (cid:2)Ïa
+
+i+1, Ïa
+i
+
+i+1, Ïa
+i
+
+f or a in 1, 2, Â· Â· Â· , n :
+
+(cid:20)
+Aa
+
+Euâ¼Ïi
+
+max
+Ïa
+i+1
+subject to : KL (cid:2)Ïa
+
+i+1(s, u) Â·
+
+i+1, Ïa
+i
+
+(cid:21)
+
+Ïa
+i+1
+Ïa
+i
+(cid:3) < Î´2
+
+(17)
+
+Figure 3: Test win rate vs. training steps of various methods on SMAC benchmarks
+
+It is proved in the proximal policy optimization (PPO) that the KL divergence restriction can be effectively replaced by
+a clip operation (Schulman et al., 2017). Referring to the PPO algorithm, the sub-objectives of MAPO with ASAE is
+
+6
+
+acquired.
+
+arXiv Template
+
+A PREPRINT
+
+f or a in 1, 2, Â· Â· Â· , n :
+
+max
+Ïa
+i+1
+
+Euaâ¼Ïa
+
+i
+
+(cid:104)
+
+Euâaâ¼Ïâa
+
+i
+
+(cid:2)Aa
+
+i+1(s, u)(cid:3) Â·
+
+clip(
+
+Ïa
+i+1
+Ïa
+i
+
+(cid:21)
+
+, 1 â (cid:15), 1 + (cid:15))
+
+(18)
+
+Where (cid:15) is the clip range.
+
+The training process of MAPO with ASAE is given by algorithm 1 (Appendix III).
+
+5 Experiments
+
+We evaluate our method (ASAE) on a variety of benchmarks. In experiments, the advantage function in equation (1) is
+applied as the counter-factual advantage for our method. We also adopt the CTDE paradigm, and use the same actors
+and critic structures as COMA (Foerster et al., 2018). The centralised critic is used to predict the joint Q values of
+reorganized samples. The number of samples m is 10 and the clip range is 0.1 for all experiments.
+
+5.1 StarCraft Multi-agent Challenge (SMAC)
+
+Environment Settings. SMAC (Samvelyan et al., 2019) is a benchmark designed for the evaluation of cooperative
+MARL algorithms (Han et al., 2019; Zhang et al., 2019). It provides an interface for RL agents to interact with StarCraft
+II. In our experiments, only ally units are considered to be MARL agents. The environment is partially observable and
+each agent has a sight range. Only speciï¬c attributes of units in sight range are observable. And agents is accessible to
+the terrain features surrounding them. In addition, the last actions of ally units in sight range are also observable. The
+state includes information about all units on the map and it is only available in centralised training.
+
+We consider different types of tasks involving both mixed and single type of agents. Speciï¬cally, our experiments are
+carried out on 8 tasks of different difï¬culty level, and the detail information is given in appendix IV. In homogeneous
+tasks, agents are of the same type. In symmetric scenarios, each army is composed of the same units, while the enemy
+army always outnumbers allied army in asymmetric scenarios. In micro-trick tasks, a higher-level of cooperation and
+speciï¬c micromanagement tricks is required to defeat the enemy.
+
+Training Settings. We compare our method with baseline algorithms including IQL (Tan, 1993), VDN (Sunehag et al.,
+2018), QMIX (Rashid et al., 2018) and COMA. In these baselines, only COMA is policy based but suffers from the
+asynchronous estimation. For (super) hard tasks such as 2c_vs_64zg and M M M 2, good samples are added to replay
+buffer in initializing stage for early policy training. Each algorithm is trained for 3 million time steps. The training
+batch-size is 32 and the discount factor is 0.99. The learning rates for critic and actors are both 0.001.
+
+Experimental Results. The test win rates during training are shown in Figure 3. Compared to baselines, our algorithm
+performs best in most of the tasks. From the results, suffering from asynchronous estimation, COMA shows no
+performance in 3 tasks(2m_vs_1z, 3s_vs_3z, M M M 2). And our algorithm shows considerable superiority to COMA
+in 7 out of 8 tasks.
+
+The algorithms after 3 million steps of training are tested in 100 battle games. The win rates are given in table 1. From
+table 1 and Figure 3, it is noticeable that compared to QMIX, although our algorithm converges slower in some tasks
+such as 3m and 2m_vs_1z, the ï¬nal performance of our algorithm is even better than QMIX. It is probably because in
+our method, the introduced restrictions have limited the policy update, which slows down the convergence.
+
+We render the battle process between agents trained by our algorithms and default AI. Some key frames are showed in
+Figure 4. Agents in red are ally units. In the ï¬rst task 3s5z, the cooperative agents learn to focus ï¬re after training.
+After few rounds of crossï¬re, enemy group quickly lose the ï¬rst unit. In the second task M M M 2, besides focus ï¬re,
+the cooperative agents also learn to adjust formation and use skill to avoid being destroyed. Particularly, in micro-trick
+tasks, cooperative agents learn to take advantage of map features and unitsâ differences. As shown in the third sub-graph,
+in task 2c_vs_64zg, only ally units are able to move across terrain. Taking advantage of this, ally units can attack
+enemy and move across the terrain when enemy approaching thus avoid being attacked.
+
+5.2 Simple Spread
+
+The simple spread environment from multi-agent particle environmentMordatch & Abbeel (2017) consists of N agents
+and N landmarks. The aim of teamed agents is to learn covering all the landmarks while avoiding collisions, as shown
+
+7
+
+arXiv Template
+
+A PREPRINT
+
+Table 1: Test win rates after 3 million steps of training
+
+ENV
+
+Algorithms
+ours COMA IQL VDN QMIX
+
+3m
+8m
+3s5z
+1c3s5z
+2m_vs_1z
+3s_vs_3z
+2c_vs_64zg
+MMM2
+
+1.0
+1.0
+0.95
+1.0
+1.0
+1.0
+0.97
+0.78
+
+0.81
+0.97
+0.0
+0.4
+0.0
+0
+0.15
+0
+
+0.91
+0.88
+0.0
+0.54
+1.0
+0.96
+0.38
+0
+
+1.0
+0.91
+0.65
+0.68
+1.0
+1.0
+0.41
+0
+
+1.0
+1.0
+0.93
+0.95
+1.0
+1.0
+0.94
+0.81
+
+Figure 4: Display of learned cooperative strategies.
+
+in Figure 5. At the beginning of each episode, the landmarks are randomly placed in a square box. The environment is
+partially observable, where each agent has a sight range. Only agentsâ speed, location and landmarksâ location in sight
+range are observable. The reward function is designed based on the sum of distances from each agent to the nearest
+landmark. In addition, the team is punished when collision among agents occurs. The reward is shared by all agents.
+Our experiments are conducted in three independent tasks with N = 3, N = 4 and N = 5.
+
+We compare our method with baseline algorithms including IQL, VDN, QMIX and COMA. Each algorithm is trained
+for 1.6k iterations. For each iteration, we train the network with all data collected from 4 environment threads. The max
+episode length for each thread is 150. The discount factor is 0.98 and learning rates for actor and critic are 5e â 5 and
+5e â 4 respectively.
+
+The training curves are shown in Figure 5. Our method converges after 0.8k iterations of training. Compared to
+baselines, our method achieves the highest return and stability.
+
+5.3 Predator-Prey
+
+The predator-prey environment from multi-agent particle environment (Mordatch & Abbeel, 2017) consists of obstacles,
+walls, predators and preys, as shown in Figure 6. The aim of predators is to capture all preys, while the aim of preys is
+to survive during a given time. Two stationary obstacles are randomly placed around the centre at the beginning of
+each episode. The environment is fully observable and agents is accessible to position of obstacles, walls, predators
+and preys. Besides, the speed of predators and preys are also observable. The predator team is rewarded based on the
+sum of the distances from each predator to the nearest prey. The predators also receive a positive reward when any
+prey is caught. The prey team is rewarded based on the sum of distances from each prey to the nearest predator, and is
+punished according to the sum of distance from each prey to the ground center. The prey team also receives a negative
+
+8
+
+arXiv Template
+
+A PREPRINT
+
+Figure 5: Experiments on simple spread environment. The upper left sub-graph is a demonstration of the environment,
+where agents (green dots) need to cover all landmarks (blue dots) within ï¬nite sight range (red boxes) while avoid
+collision. Black dots denote the obstacles.
+
+Figure 6: Experiments on predatorsâ training. The upper left sub-graph is a demonstration of the environment, where
+predators (red dots) hunt preys (blue dots) within ground surrounded by walls (yellow bars). Black circles denote the
+obstacles.
+
+reward when any prey is captured. We conduct two different types of experiments involving both predators training for
+different algorithms and competitive training between our method and COMA.
+
+Training of predators. In experiment of predatorsâ training, only predators are viewed as agents. While the preys are
+assigned with random policies. The number of prey is three. Each algorithm is trained for 10k iterations and other
+experiment settings are same as the experiments on simple spread. The experimental results are shown in Figure 6.
+
+9
+
+arXiv Template
+
+A PREPRINT
+
+Figure 7: Results of competitive training between our method and COMA.
+
+Competitive training between ASAE and COMA. We conduct experiments with competitive training for further
+comparison between our algorithm and COMA. Speciï¬cally, our method is adopted for training predator and prey group
+respectively, while COMA is always applied for the training of the opposite group. The numbers of predator and prey
+are the same in all tasks.
+
+The results are shown in Figure 7. In ASAE predators versus COMA preys scenarios, after 2k iterations of training, the
+performance of predators begins to improve with the training process, while the accumulative return of preys continues
+decreasing. Especially, in task 4 predators vs 4 preys, the training curve of our method converges after 4k iterations
+training. For the opposite group setting, our method also shows better performance than COMA. We test the capture
+rate for predators after 10k iterations of competitive training. The capture rate is deï¬ned as the ratio of captured preys
+to total preys in 100 times of tests. The results are shown in Figure 8.
+
+Figure 8: Capture rate of trained predators.
+
+Discussion. From the training curve of ASAE in Figure 5 and Figure 6, it can be seen that the credit assignment
+becomes more challenging as the number of cooperative agents increases. And it is noticeable that in Figure 7 and
+Figure 8, our algorithm shows growing superiority to COMA as the number of agent increases. From the results, it can
+be inferred that in comparison with COMA which applys asynchronous advantage estimations, our method is a better
+method to achieve credit assignment.
+
+10
+
+arXiv Template
+
+A PREPRINT
+
+6 Conclusion
+
+In this work, we describe the problem of asynchronous policy estimation for credit assignment in policy based
+cooperative MARL, and propose a approximatively synchronous estimation method to solve the problem. Firstly, we
+introduce the marginal advantage function which achieves credit assignment by extending single-agent advantage
+function to multi-agent systems. Then, the marginal advantage function is applied to MAPO, and the approximations are
+introduced to realise the synchronous estimation. We solve the optimization problem according to PPO. Our algorithms
+are evaluated on the StarCraft II SMAC and multi-agent particle environment. The experimental results demonstrates
+our algorithm outperforms the baselines in most of the tasks. Especially, compared to COMA, which suffers from
+asynchronous policy estimation, our algorithm shows increasing superiority in tasks with harder credit assignment
+challenge.
+
+ASAE achieves synchronous estimation through the approximations of partersâ policies. For future work, we are
+interested in combining ASAE with policy modelling methods (Raileanu et al., 2018; Han & Gmytrasiewicz, 2018),
+where partnersâ policies can be directly modelled.
+
+References
+
+Yu-Han Chang, Tracey Ho, and Leslie P Kaelbling. All learning is local: Multi-agent learning in global reward games.
+
+In Advances in neural information processing systems, pp. 807â814, 2004.
+
+Jakob N Foerster, Gregory Farquhar, Triantafyllos Afouras, Nantas Nardelli, and Shimon Whiteson. Counterfactual
+
+multi-agent policy gradients. In Thirty-second AAAI conference on artiï¬cial intelligence, 2018.
+
+Aditya Grover, Maruan Al-Shedivat, Jayesh Gupta, Yuri Burda, and Harrison Edwards. Learning policy representations
+
+in multiagent systems. In International conference on machine learning, pp. 1802â1811. PMLR, 2018.
+
+Marek Grzes. Reward shaping in episodic reinforcement learning. 2017.
+
+Lei Han, Peng Sun, Yali Du, Jiechao Xiong, Qing Wang, Xinghai Sun, Han Liu, and Tong Zhang. Grid-wise control
+for multi-agent reinforcement learning in video game ai. In International Conference on Machine Learning, pp.
+2576â2585. PMLR, 2019.
+
+Yanlin Han and Piotr Gmytrasiewicz. Learning othersâ intentional models in multi-agent settings using interactive
+pomdps. In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp.
+5639â5647, 2018.
+
+Emilio Jorge, Mikael KÃ¥gebÃ¤ck, Fredrik D Johansson, and Emil Gustavsson. Learning to play guess who? and inventing
+
+a grounded language as a consequence. arXiv preprint arXiv:1611.03218, 2016.
+
+Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. Multi-agent actor-critic for mixed
+
+cooperative-competitive environments. Neural Information Processing Systems (NIPS), 2017.
+
+Patrick Mannion, Sam Devlin, Jim Duggan, and Enda Howley. Reward shaping for knowledge-based multi-objective
+
+multi-agent reinforcement learning. The Knowledge Engineering Review, 33, 2018.
+
+Igor Mordatch and Pieter Abbeel. Emergence of grounded compositional language in multi-agent populations. arXiv
+
+preprint arXiv:1703.04908, 2017.
+
+Frans A Oliehoek and Nikos Vlassis. Q-value functions for decentralized pomdps.
+
+In Proceedings of the 6th
+
+international joint conference on Autonomous agents and multiagent systems, pp. 1â8, 2007.
+
+Roberta Raileanu, Emily Denton, Arthur Szlam, and Rob Fergus. Modeling others using oneself in multi-agent
+
+reinforcement learning. CoRR, abs/1802.09640, 2018. URL http://arxiv.org/abs/1802.09640.
+
+Tabish Rashid, Mikayel Samvelyan, Christian Schroeder De Witt, Gregory Farquhar, Jakob Foerster, and Shimon
+Whiteson. Qmix: Monotonic value function factorisation for deep multi-agent reinforcement learning. arXiv preprint
+arXiv:1803.11485, 2018.
+
+Mikayel Samvelyan, Tabish Rashid, Christian Schroeder de Witt, Gregory Farquhar, Nantas Nardelli, Tim G. J. Rudner,
+Chia-Man Hung, Philiph H. S. Torr, Jakob Foerster, and Shimon Whiteson. The StarCraft Multi-Agent Challenge.
+CoRR, abs/1902.04043, 2019.
+
+John Schulman, Sergey Levine, Pieter Abbeel, Michael Jordan, and Philipp Moritz. Trust region policy optimization.
+
+In International conference on machine learning, pp. 1889â1897, 2015.
+
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization
+
+algorithms. arXiv preprint arXiv:1707.06347, 2017.
+
+11
+
+arXiv Template
+
+A PREPRINT
+
+Peter Sunehag, Guy Lever, Audrunas Gruslys, Wojciech Marian Czarnecki, VinÃ­cius Flores Zambaldi, Max Jaderberg,
+Marc Lanctot, Nicolas Sonnerat, Joel Z Leibo, Karl Tuyls, et al. Value-decomposition networks for cooperative
+multi-agent learning based on team reward. In AAMAS, pp. 2085â2087, 2018.
+
+Ming Tan. Multi-agent reinforcement learning: Independent vs. cooperative agents. In Proceedings of the tenth
+
+international conference on machine learning, pp. 330â337, 1993.
+
+David H Wolpert and Kagan Tumer. Optimal payoff functions for members of collectives. In Modeling complexity in
+
+economic and social systems, pp. 355â369. World Scientiï¬c, 2002.
+
+Yaodong Yang, Rui Luo, Minne Li, Ming Zhou, Weinan Zhang, and Jun Wang. Mean ï¬eld multi-agent reinforcement
+
+learning. In International Conference on Machine Learning, pp. 5571â5580, 2018.
+
+Sai Qian Zhang, Qi Zhang, and Jieyu Lin. Efï¬cient communication in multi-agent reinforcement learning via variance
+
+based control. arXiv preprint arXiv:1909.02682, 2019.
+
+A Appendix I
+
+Assume that joint advantage Aa(s, u) is a unbiased estimation of joint Q value function Q(s, u). Then
+
+Aa(s, u) = Q(s, u) â bs
+where : âÎ¸bs â¡ 0
+
+Then
+
+Aa(s, u) = Eâa
+= Eâa
+= Eâa
+
+Ï [Aa(s, u)]
+Ï [Q(s, u) â bs]
+Ï [Q(s, u)] â Eâa
+
+Ï [bs]
+Ï [bs] = Eâa
+
+Eâa
+
+Ï [Q(s, u)] is exact the marginal Q value function and âÎ¸Eâa
+
+Ï [âÎ¸bs] â¡ 0
+
+B Appendix II
+
+Consider two agents, whose policies of episode i are represented by Ï1
+
+i respectively.
+
+KL (cid:2)Ï1
+
+i Ï2
+
+i , Ï1
+
+iâ1Ï2
+
+iâ1
+
+(cid:90)
+
+(cid:3) =
+
+i Ï2
+Ï1
+
+i log
+
+i and Ï2
+Ï1
+i Ï2
+i
+Ï1
+iâ1Ï2
+Ï1
+i
+Ï1
+
++ log
+
+iâ1
+
+iâ1
+
+du
+
+Ï2
+i
+Ï2
+
+iâ1
+
+(cid:90)
+
+du +
+
+Ï2
+i log
+
+(cid:3) + KL (cid:2)Ï2
+
+i , Ï2
+
+iâ1
+
+(cid:19)
+
+du
+
+du
+
+Ï2
+i
+Ï2
+(cid:3)
+
+iâ1
+
+(cid:90)
+
+(cid:90)
+
+=
+
+<
+
+(cid:18)
+
+log
+
+i Ï2
+Ï1
+i
+
+Ï1
+i log
+
+Ï1
+i
+Ï1
+i , Ï1
+
+iâ1
+
+iâ1
+
+=KL (cid:2)Ï1
+
+The relation can be expanded to joint distribution of other agentsâ policies
+
+KL (cid:2)Ïâa
+
+i
+
+, Ïâa
+iâ1
+
+(cid:3) =
+
+(cid:90) âa
+(cid:89)
+
+o
+
+Ïo
+i log
+
+(cid:81)âa
+
+o Ïo
+i
+o Ïo
+
+(cid:81)âa
+
+iâ1
+
+du
+
+<
+
+âa
+(cid:88)
+
+o
+
+C Appendix III
+
+Other experiments
+
+KL (cid:2)Ïo
+
+i , Ïo
+
+iâ1
+
+(cid:3)
+
+12
+
+(19)
+
+(20)
+
+(21)
+
+(22)
+
+arXiv Template
+
+A PREPRINT
+
+Figure 9: Performance of our method with different number of action samples.
+
+Figure 10: Comparison among MAPPO, DOP and our method on SMAC.
+
+Figure 11: Performance of our method with different clip ranges.
+
+13
+
+

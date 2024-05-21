@@ -1,0 +1,1175 @@
+2
+2
+0
+2
+
+b
+e
+F
+0
+2
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+2
+2
+7
+9
+0
+.
+2
+0
+2
+2
+:
+v
+i
+X
+r
+a
+
+PooL: Pheromone-inspired Communication Framework for
+Large Scale Multi-Agent Reinforcement Learning
+
+Zixuan Cao
+Peking University
+Beijing, China
+caozixuan.percy@stu.pku.edu.cn
+
+Zhanbo Zhao
+Peking University
+Beijing, China
+zhaozb1997@pku.edu.cn
+
+Mengzhi Shi
+Peking University
+Beijing, China
+shimengzhi@pku.edu.cn
+
+Xiujun Ma
+Peking University
+Beijing, China
+maxj@cis.pku.edu.cn
+
+ABSTRACT
+Being difficult to scale poses great problems in multi-agent coordi-
+nation. Multi-agent Reinforcement Learning (MARL) algorithms
+applied in small-scale multi-agent systems are hard to extend to
+large-scale ones because the latter is far more dynamic and the
+number of interactions increases exponentially with the growing
+number of agents. Some swarm intelligence algorithms simulate
+the release and utilization mechanism of pheromones to control
+large-scale agent coordination. Inspired by such algorithms, PooL,
+an pheromone-based indirect communication framework applied
+to large scale multi-agent reinforcement learning is proposed in
+order to solve the large-scale multi-agent coordination problem. Ph-
+eromones released by agents of PooL are defined as outputs of most
+reinforcement learning algorithms, which reflect agentsâ views of
+the current environment. The pheromone update mechanism can
+efficiently organize the information of all agents and simplify the
+complex interactions among agents into low-dimensional repre-
+sentations. Pheromones perceived by agents can be regarded as a
+summary of the views of nearby agents which can better reflect
+the real situation of the environment. Q-Learning is taken as our
+base model to implement PooL and PooL is evaluated in various
+large-scale cooperative environments. Experiments show agents
+can capture effective information through PooL and achieve higher
+rewards than other state-of-arts methods with lower communica-
+tion costs.
+
+KEYWORDS
+multi-agent communication, swarm intelligence, reinforcement
+learning, pheromones
+
+1 INTRODUCTION
+MARL focuses on developing algorithms to optimize behaviors of
+different agents which share a common environment [2]. Agentsâ
+behaviors in MARL settings are usually modeled as Partially Ob-
+servable Markov Decision Process (POMDP), in which agents only
+have a partial observation of the global state. MARL faces two ma-
+jor problems. First, partial observations from different agents as
+input features cause a curse of dimensionality. Second, it is dif-
+ficult to consider all possible interactions among agents because
+the number of possible interactions grows exponentially. With the
+increase of agentsâ scale, these two problems will become more
+
+and more serious. In MARL, there are various methods to solve the
+two problems. These methods can be roughly divided into two cat-
+egories, Centralized Training Decentralized Execution (CTDE) [25]
+and multi-agent communication. In the CTDE framework, agents
+can access global information while training, and agents select
+actions based on partial observations while execution. But CTDE
+algorithms are still unable to deal with large-scale agents for the
+reason that the dimension of global information is still too high to
+handle even at the training step. Multi-agent communication is an-
+other promising approach to coordinate the behaviors of large-scale
+agents. Agents can choose actions by their partial observations and
+information received from other agents. But designing an effective
+communication mechanism is not a trivial task. For an agent, the
+message representation, message sender selection, and message
+utilization all need to be carefully designed. In addition, agentsâ
+communication is limited by bandwidth in reality. This bandwidth
+limitation also affects the scale of multi-agent communication.
+
+Swarm Intelligence refers to solving problems by the interac-
+tions of simple information-processing units [14]. One of the key
+concepts of Swarm Intelligence is Stigmergy which is proposed in
+the 1950s by Pierre-Paul GrassÃ© [10]. Summarizing from behaviors
+of insects, Stigmergy refers to a mechanism of indirect coordination
+between agents by the trace left in the environment. A representa-
+tive algorithm inspired by Stigmergy is Ant Colony Optimization
+(ACO) algorithm. It takes inspiration from the foraging behavior of
+some ant species and uses a mechanism similar to pheromones for
+solving optimization problems [6]. ACO is widely used in various
+path-finding problems in the real world [3, 15]. The effectiveness of
+such ACO algorithms depends on the exploration of a large number
+of units (e.g. robots) and pheromone-based indirect communica-
+tion among them. However, in ACOâs settings, unitsâ behaviors
+are confined by predefined rules, which is unsuitable in MARL
+environments.
+
+In this paper, inspired by the pheromone mechanism introduced
+in ACO, an indirect communication framework for MARL is devel-
+oped by introducing pheromones into Deep Reinforcement Learn-
+ing (DRL). The output of reinforcement learning algorithms is usu-
+ally the scoring of actions or the probabilities of selecting a certain
+action. These values can be used not only to select actions but also
+to reflect the agentsâ views of the environment. These values out-
+put by different agents can be organized by a pheromone update
+mechanism similar to ACO. Therefore, the pheromone information
+
+ 
+ 
+ 
+ 
+ 
+ 
+perceived by agents combines the views and knowledge of other
+agents around them, and can better reflect the real situation of the
+current agent.
+
+Figure 1: Intuition behind PooL (a) Most agents trained
+by Table Q-Learning without any communication fall into
+holes. (b) More than half agents find food with the guidance
+of pheromones by pheromone based Q-Learning.
+
+The intuition behind our framework is shown in Figure 1. In
+a simple grid maze environment, there are ant nests (blue grids),
+obstacles (grey grids), holes (black grids), and food (orange grids).
+Agents (i.e. ants) get negative rewards at every time step. Agents
+will exit from the environment if they fall into holes or find food.
+Agents who find food get extra positive rewards. If agents take ac-
+tions dependently, they are very easy to fall into local optimization
+(fall into holes). But if agents communicate through pheromones,
+those agents who find the optimal solution will transfer the infor-
+mation of the optimal solution to other agents. As a result, more
+agents find the optimal solution with the guidance of pheromones.
+More details about this motivation example will be discussed in
+Section 6.
+
+Following the intuition above, the pheromone mechanism is ex-
+tended to the field of DRL. PooL simulates the process of ant colonies
+releasing pheromone, feeling the pheromone and the surrounding
+environment, and making decisions. A pheromone receptor is de-
+signed to convert pheromone information to a fixed dimension
+feature. For each agent, the original reinforcement learning compo-
+nent receives information from the real world and the pheromone
+receptor to choose actions and release pheromones. In this way,
+PooL realizes indirect agent communication and distributed training
+and execution in MARL. We combine PooL with Deep Q-Learning
+and evaluate PooL in a variety of settings of MAgent [35] which is
+further capsuled by PettingZoo [28]. Experiments show that PooL
+can achieve effective communication of local information and get
+higher rewards.
+
+The contributions of our paper can be summarized as follows:
+(1) We propose a pheromone-based indirect communication
+framework that combines MARL with swarm intelligence
+algorithms.
+
+(2) PooL realizes more effective large-scale multi-agent coordi-
+nation and achieves better performance than the existing
+methods when there are hundreds of agents in the environ-
+ment.
+
+(3) PooL can be combined with any reinforcement learning al-
+gorithms, and the additional cost is very small, which makes
+it easier to apply to real-world scenes.
+
+Our paper is organized as follows. Section 2 introduces work that
+is closely related to our proposed framework. Section 3 introduces
+the background knowledge related to our problem to be solved. In
+Section 4, we give a detailed description of PooL. In section 5, we
+show the performance of PooL in a variety of settings. Section 6
+summarizes our paper.
+
+2 RELATED WORK
+Our paper is closely related to two branches of study: Multi-agent
+Reinforcement Learning (MARL) and control algorithms that are
+based on Swarm Intelligence.
+
+2.1 Multi-agent Reinforcement Learning
+DRL methods like Deep Q-Learning (DQN) [22] promote the ap-
+plication of reinforcement learning in many fields such as Atari
+Games [23] and Go [26]. But most existing methods of DRL focus
+on the control of a single agent. As in real life, many scenes contain
+multi-agent interactions and cooperation. MARL attracts more and
+more attention. [7, 17, 30] are classic MARL algorithms following
+the framework of CTDE [25]. These algorithms apply modified
+single-agent reinforcement learning algorithms such as DDPG [16]
+and Soft Q-Learning [8] in MARL settings. However, such methods
+still suffer from the curse of dimensionality because the method still
+needs to handle all agentsâ features while training. Communication
+is an effective way to solve such problems. CommNet [27] designs a
+channel for all agents to communicate and extract information from
+all agents by average pooling. In order to better handle the situation
+with more agents, [34] uses an information filtering network to se-
+lect useful information. VAIN [11], ATOC [13] and TarMAC [4] use
+attention mechanism to select communication targets and informa-
+tion more reasonably. But these methods still assume a centralized
+controller that can access all communication needed information
+while training. DGN [12] models agentsâ interactions with graph
+structures by Graph Neural Networks (GNN) [36]. In DGN, agentsâ
+communication is achieved by the convolution of graph nodes(e.g.
+agents nearby). Graph convolution is able to express more complex
+agent interactions. But its performance and convergence speed are
+still confined by the number of agents.
+
+In order to make algorithms scale to many agents, MFQ [18]
+accepts the average action value of nearby agents as extra network
+input. [37] proposes to approximate Q-function with factorized
+pairwise interactions. [29] provides another idea that trains agents
+from few to more with transfer mechanisms.
+
+2.2 Control Algorithms Based on Swarm
+
+Intelligence
+
+Swarm Intelligence is widely used in group control problems. [5, 19]
+discusses the use of swarm intelligence in adaptive learning of
+routing tables and network-failure-detection. [1, 32] utilize phe-
+romones to achieve multi-agent coordination. However, Swarm
+Intelligence algorithms like Bird Swarm Algorithm and Ant Colony
+Optimization are rule-based, as a result, they can not learn from
+environments. Phe-Q [24] first introduces the idea of pheromone
+mechanisms to reinforcement learning. [20, 21] follow similar ideas
+and improve the convergence speed of Q-Learning in different
+environments. [31] proposes to release the pheromone according
+
+Ant NestObstacleHoleFood(a) Table Q -Learning(b) Pheromone Table Q -Learningto the distance between the agent and the target, and apply the
+pheromone information to Deep Reinforcement Learning.
+
+Learning-based methods are more and more popular with the
+success of deep learning in many fields. Most methods mentioned
+above can not take advantage of deep neural networks. DRL is
+applied in [31], but the way [31] obtains pheromones is artificially
+designed based on the specific environment. It will be more appro-
+priate if pheromones are generated based on learning algorithms.
+
+3 BACKGROUND
+3.1 Problem Formulation
+The problem for multi-agent coordination in this paper can be
+considered as a Dec-POMDP game [9]. It can be well defined by a
+tuple ð =< ð¼, ð, {ð´ð } , ð, {ðð } , {Î©ð } , ð,ð , ð¾ >, where ð¼ is a set of ð
+agents, ð is the state space, ð´ð is the action space for agent ð, ðð
+is the observation space for agent ð, ð is the time horizon for the
+game and ð¾ is the discount factor for individual rewards ðð . When
+agents took actions ð in state ð , the probability of the environment
+transitioning to state ð  â² is ð (ð  â²|ð , ð) and the probability of agents
+seeing observations ð is ð (ð |ð , ð).
+
+For agents in the problem above, their goal is to maximize their
+ð¾ð¡ ðð¡
+ð . The achievement of this goal
+
+own expected return ðºð = (cid:205)ð
+requires the cooperation of agents belonging to the same team.
+
+ð¡ =0
+
+3.2 Table Q-Learning and Deep Q-Learning
+Q-Learning is a popular method in single agent reinforcement
+learning. For agent ð, Q-Learning uses an action-value function for
+ð = ð(cid:3). Table Q-Learning
+policy ðð as ðð
+maintains a Q-table and update Q-values by the following equation:
+ðð
+ð (Î©ð, ð) = ðð
+
+ð (Î©ð, ð) = E (cid:2)ðð | Î©ð¡
+
+ð (Î©ð, ð)). (1)
+
+ð , ðâ²)âðð
+
+ð = Î©, ðð¡
+
+ð (Î©ð, ð)+ð¼ (ðð +ð¾ max
+ðâ²
+
+ðð
+ð (Î©â²
+
+For every step, the agent selects its action based on the max value
+of these actions with an epsilon-greedy exploration strategy.
+
+As Q-Table can not handle high dimensional states, Deep Q-
+Learning (DQN) uses neural network to approximate Q-function.
+DQN tries to optimize ðâ
+ð with back propagation by minimizing
+the follwing loss function:
+
+Lð (ð ) = EÎ©,ð,ð,Î©â²
+
+where ð¦ = ð + ð¾ max
+ðâ²
+
+(cid:104)(cid:0)ðâ
+
+ð (Î©, ð | ð ) â ð¦(cid:1)2(cid:105)
+(cid:0)Î©â², ðâ²(cid:1) .
+Â¯ðâ
+ð
+
+,
+
+(2)
+
+In DQN [23], there is a replay buffer to store agent information.
+Data is randomly extracted from the replay buffer to train the
+ð . Â¯ðâ
+ð has the same architecture with ðâ
+model. Target Q-network Â¯ðâ
+ð
+copies parameters from ðâ
+ð frequently. In this way, DQN disrupts
+the temporal correlation and makes the training of the model more
+stable.
+
+4 METHODOLOGY
+In this section, we discuss how our pheromone-based framework
+is realized. Firstly, a general view of PooL is described. Then, im-
+plementation details will be introduced step by step. We choose
+Q-Learning as a base model for PooL in the following sections but
+our framework is able to combine with most existing reinforcement
+learning algorithms.
+
+4.1 Communication Framework Overview
+Figure 2 gives a whole picture of PooL. In the left of Figure 2, a
+simple grid world is built as a demonstration. From the view of the
+grey agent, the black-bordered squares represent the real grids of
+our environment. They are the smallest units to express information
+in our environment. In order to realize indirect communication
+based on pheromones, we need to set up a virtual medium, which is
+represented by the blue-bordered squares. The area near the current
+agent is divided into three regions from small to large: Influence
+Domain, Observation Domain, and Perception Domain. Agents
+handle these three regions with different behaviors. The meanings
+of the three regions are as follows.
+
+â¢ Influence Domain: the influence range of pheromones re-
+
+leased by agents.
+
+â¢ Observation Domain: the partial observation of the agent
+
+in the environment.
+
+â¢ Perception Domain: the range of pheromones that agents
+
+can perceive.
+
+In nature, generally, animals perceive a much larger range of
+pheromones than they observe their surrounding environment by
+eyes. Therefore, in our settings, the Perception Domain is larger
+than the Observation Domain.
+
+The right part of Figure 2 shows how PooL processes received
+information and updates pheromones. PooL consists of three com-
+ponents. The first is the information processor (composed of convo-
+lution layers and fully connected layers). Its input feature consists
+of two parts: real-world observations and a summary of pheromone
+information. Its output is Q-values, which can be transformed into
+pheromones. The second is the pheromone update mechanism re-
+alized through a virtual medium. Thirdly, a pheromone receptor is
+used to sense the pheromone information from the surrounding by
+convolution layers and transform the information into the represen-
+tation features of the current environment. With the increase of the
+number of agents, the pheromone information extracted by agents
+can more accurately reflect the situation of the local environment.
+In the following sections, we introduce the realization of our
+framework in three steps. First, a virtual medium is defined to allow
+the propagation of pheromones. Then, when agents release their
+pheromones, an update mechanism updates the values of pheromo-
+nes stored in the virtual medium. Finally, pheromone information
+is processed by the pheromone receptor and serves as extra input
+for our reinforcement learning algorithms such as DQN.
+
+4.2 Virtual Medium Settings
+In order to achieve pheromone-based indirect communication in
+the environment, a virtual medium to simulate the mechanism of
+pheromones in nature needs to be built first. A virtual map can be
+constructed by dividing the real environment map into ð» Ãð virtual
+grids. ððð  (ð) denotes a mapping function that can return agent ðâs
+current position like (â, ð¤). ð¼ðð ð represents the pheromone value
+stored in the virtual medium whose shape is (ð»,ð , ðð´) (ðð´ is
+denoted as the number of actions). ð (â, ð¤) represents the current
+number of agents in (â, ð¤). The pheromone released by agent ð is
+denoted as ðâð (ð). ðâð (ð) is a vector with ðð´ dimensions.
+
+Figure 2: Overview of PooL. The left part represents agentsâ environment from the view of our proposed framework. The
+right part shows how agents process information from two sources (real world observations and pheromones) and release
+pheromones based on their output.
+
+4.3 Pheromone Update Rule
+Following Q-Learningâs idea, pheromones are defined based on
+the Q-function. As the range of the Q-functionâs estimated values
+changes while training, Q-values are standardized as pheromones.
+For agent ðâs Q-values ðð , they are transformed by a standardization
+function ðð¡ (ðð ). After standardization, values of pheromones obey
+the standard normal distribution with the mean of 0.0 and the
+standard deviation of 1.0.
+
+ðâð (ð) = ðð¡ (ðð ),
+where ðð = (ðð (Î©ð, ð0), Â· Â· Â· , ðð (Î©ð, ððð´â1)).
+
+(3)
+
+At the beginning of each time step, each agent calculates their Q-
+values and releases their pheromones on their Influence Domain.
+We take the mean value of all released pheromones in each grid,
+and update the value of pheromones in each grid according to the
+evaporation coefficient ð½. For a virtual grid, whose position is (â, ð¤),
+its pheromone value is updated by the following equation:
+
+Info(â, ð¤) =(1 â ð½) Info(â, ð¤)
+
+ð¼â,ð¤
+âï¸ ð (ð ð ) /ð (â, ð¤).
+
++ ð½
+
+(4)
+
+The optimization goal for Q-learning can be updated to:
+
+Lð (ð ) = EÎ©,ð¼ðð ð,ð,ð,Î©â²,ð¼ðð ðâ²
+
+(cid:104)(cid:0)ðâ
+
+ð (Î©, ððð (ð, ð¼ðð ð | ðð ), ð | ðð ) â ð¦(cid:1)2(cid:105)
+
+,
+
+where ð¦ = ð + ð¾ max
+ðâ²
+
+Â¯ðâ
+ð
+
+(cid:0)Î©â², ððð (ð, ð¼ðð ð â²), ðâ²(cid:1) .
+
+(5)
+The complete algorithm is described in Algorithm 1. The algo-
+rithm can be divided into two parts: calculate and update phero-
+mones released by different agents and choose actions based on
+information observed by agents.
+
+4.5 Algorithm Cost Analysis
+Compared with DQN, the extra cost of PooL lies in the pheromone
+update mechanism and pheromone receptor. For pheromone up-
+date, it can be done in ð (ð»ð ) time. For the pheromone receptor,
+the complexity of its network structure depends on the size of the
+Perception Domain, and the size of the Perception Domain is gen-
+erally much smaller than the Observation Domain. As a result, the
+extra cost of PooL is relatively small compared with DQN.
+
+ð¼â,ð¤ is a set of agents where for every ð â ð¼â,ð¤, there is ððð  (ð) =
+(â, ð¤).
+
+4.4 Pheromone Based Deep Q-Learning
+The main difference between our proposed pheromone-based deep
+Q-Learning and DQN is that our information processor receives in-
+puts from two sources. Except for the partial observation of the cur-
+rent environment, our processor also receives the information pro-
+cessed by the pheromone receptor. For agent ð, the summary of phe-
+romone information processed by agent ð is denoted as ððð (ð, ð¼ðð ð).
+
+4.6 Implementation Details
+As shown in Figure 2, we use the structure of multi-layer convo-
+lution and multi-layer fully connected layers as our information
+processor to process observations and summary of pheromone
+information. The receptor is also a convolution structure and pro-
+cesses pheromone information from the virtual medium. The size of
+the Influence Domain is 1 Ã 1 and the size of the Perception Domain
+is 3 Ã 3. The selection of hyperparameters such as the virtual map
+size ð»,ð , and the evaporation coefficient ð½ will be discussed in
+Section 5.
+
+Current AgentTeam MateOpponentReal GridVirtual GridPerception DomainObservation DomainInfluence DomainObservation of real worldSummary of pheromoneinformation Agent 0Agent 1,2â¦,n-2Observation of real worldSummary of pheromoneinformation Agent n-1Q Values of different agentsPheromones perceived by different agentsPheromone ReceptorInformation ProcessorUpdate PheromonesInformation ProcessorBased on Equation 4Algorithm 1 PooL Motivated Deep Q-Learning
+Input: D: replay buffer; ð 0
+
+ð, ð 0
+
+ð : initial parameters of information
+processor ð and pheromone receptor ððð; ð : maximum number
+of steps allowed to run the game; ðð : maximum number of
+running episodes; ð¼ðð ð: an all zero matrix of shape ð» Ãð Ã ðð´.
+ð, ð â
+
+ð for trained model.
+
+Output: Optimal parameters ð â
+for round ð = 1 to ðð do
+for step ð¡ = 1 to ð do
+
+for all (â, ð¤) satisfies 1 â¤ â â¤ ð» and 1 â¤ ð¤ â¤ ð do
+
+update ð¼ðð ð (â, ð¤) with equation 3
+
+for
+
+every agent by ðð
+
+end for
+Select Action ðð
+arg maxð ðð (Î©, ððð (ð, ð¼ðð ð |ðð ), ð | ðð )
+Update the environment state according to the actions
+taken by agents.
+For every agent, store (Î©ð, ðð, ðð, ð¼ðð ð, Î©â², ð¼ðð ð â²) to D
+
+=
+
+end for
+Sample a mini-batch data from D
+Calculate loss of the data by Equation 5
+Perform a gradient descent step to update ðð, ðð
+Copy parameters from the current network to the target
+network at a certain frequency
+
+end for
+
+5 EXPERIMENT
+In this section, we describe the settings of our experiment envi-
+ronments and show the performance of PooL. We first discuss the
+motivation example mentioned in Section 1. Then, main results
+compared with other methods is shown in various settings of MA-
+gent. Finally, Battle environment is taken as an example to discuss
+details about our framework.
+
+5.1 Motivation Experiment
+5.1.1 Detailed Settings of Motivation Environment.
+
+In our motivation environment, agents get rewards of â1.0 at
+every time step and get rewards of 100.0 if they find food. For
+each agent, they will exit from the environment if they fall into
+holes or find food. The game ends when there are no agents in the
+environment. In order to set up a multi-agent environment, several
+agents are placed in each ant nest. This problem is solved by two
+methods: Table Q-Learning and PooL motivated Table Q-Learning.
+Agents using Table Q-Learning will update their Q-functions by
+Equation 1. For agents with pheromones, expect for Equation 1, we
+also maintain pheromone information by Equation 3. At every time
+step, agents fuse their Q-values of the current state with pheromone
+information according to a certain weight. In this way, we pass
+information from other agents to the current agentâs Q-table.
+
+5.1.2 Motivation Result.
+
+Figure 3 shows results of Table Q-Learning and PooL with differ-
+ent numbers of agents. Although Table Q-Learning achieves higher
+rewards at the beginning, more agents of PooL find the optimal
+solution at the end, which leads to higher average rewards for PooL.
+Our frameworkâs rewards will be smoother if there are more agents
+
+in the environment, which indicates that our framework is more
+advantageous when there are more agents.
+
+(a) Motivation Environment
+
+(b) Motivation Result
+
+Figure 3: (a) Environment demonstration of our motivation.
+Agents start from ant nests on the left and try to find food.
+(b) Result of Motivation Experiment. Table Q-Learning (the
+purple line) receives lower rewards. Pool motivated Table
+Q-Learning (the blue line and the red line) receives higher
+rewards.
+
+5.2 Main Experiments
+PooL is mainly evaluated in six multi-agent environments. We first
+introduce the settings of these six environments, and then show
+performance of different methods in these six environments.
+
+5.2.1 Environment Description.
+
+Our environment settings are based on MAgent[35] encapsulated
+by Pettingzoo[28]. Pettingzoo implements a variety of large-scale
+multi-agent environments based on MAgent. Agents in MAgent
+settings can get the location of obstacles and the location and HP
+(Health Points) of other agents within their view range. In our ex-
+periment, we use Battle, Battlefield, Combined Arms, Tiger-Deer,
+Adversarial Pursuit, and Gather as our running multi-agent envi-
+ronments. In the following experiments, the evaporation coefficient
+is 0.5 and the virtual map size is 10 Ã 10 for Gather with real-world
+map size 200 Ã 200 and 8 Ã 8 for other environments with smaller
+real-world map sizes.
+
+â¢ Battle: In Battle, there are two teams: Red and Blue. At each
+time step, agents from the two teams decide their actions:
+move or attack. Agents will get rewards if they attack or kill
+their opponents.
+
+â¢ Battlefield: The settings of Battlefield are similar to Battle
+except that there are indestructible obstacles in Battlefield.
+â¢ Combined Arms: The settings of Combined Arms are also
+similar to Battle except that for each team there are two
+kinds of agents: ranged units and melee units. Ranged units
+have a longer attack range and are easier to be killed, while
+melee units have a shorter attack range and are harder to be
+killed.
+
+â¢ Tiger-Deer: Tiger-Deer is an environment that simulates
+hunting in nature. Tigers try to attack and kill deer to get
+food. Deer will die if they are attacked too many times and
+tigers will starve to death if they canât kill deer for a few
+time steps.
+
+Ant NestObstacleHoleFood05001000150020002500300035004000Episode4020020406080Agent Average RewardPDQN_18PDQN_45DQN(a) Battle
+
+(b) Battlefield
+
+(c) Combined Arms
+
+(d) Adversarial Pursuit
+
+(e) Tiger-Deer
+
+(f) Gather
+
+Figure 4: Demonstration of Pettingzoo MAgent enrironment.
+
+â¢ Adversarial Pursuit:Adversarial Pursuit settings are simi-
+lar to Tiger-Deer without death. There are two teams in this
+environment: Red and Blue. Red agents are slower and larger
+than blue agents. Red agents will get rewards by tagging blue
+agents and blue agents try to avoid being tagged.
+
+â¢ Gather: There are hundreds of agents and thousands of
+pieces of food in this environment. Agents should work
+together to break the food into pieces and eat them. Agents
+can attach each other to snatch food. It is an environment
+where competition and cooperation coexist. But in this paper,
+we focus more on cooperation. We limit the number of time
+steps in the game. In the case of sufficient food, agents can
+reduce competition and focus on cooperation.
+
+Details of our environments are shown in Table 1. Observation
+Space describes the shape of the features from the environment
+received by agents. Amount describes the initial value of the number
+of agents in the environment. For Battle, Battle Field, and Combined
+Arms which are symmetrical, there is no difference between our
+agents and opponents in roles they play. In particular, in Combined
+Arms, each team has two kinds of heterogeneous agents. More
+detailed information can refer to [28, 35].
+
+PooL is compared with DQN [23], MFQ [33], DGN [12]. DGN
+is applied in Battle, Battlefield, Adversarial Pursuit, Tiger-Deer
+environments. In these four environments, We use the same set-
+tings as DGN ââ the number of agents remains unchanged during
+the game. But for Combined Arms and Gather, the previous set-
+ting goes against the original intention of these two environments.
+Therefore, we only compare PooL with MFQ and DQN in these two
+environments.
+
+5.2.2 Main Result.
+
+DQN models are trained by self-play as our opponents. Then
+our models are trained against those opponents. In the following
+experiments, for PooL, the Influence Domain is 1Ã1 virtual grid, The
+Perception Domain is 3 Ã 3 virtual grids. The Observation Domain
+for different environments is shown in Table 1. Our experimental
+results are shown in Figure 5.
+
+â¢ Battle: In Battle, to improve the difficulty of our game, the
+team to be trained controls 80 agents and the team of op-
+ponents controls 100 agents respectively. The agents based
+on PooL learn the local coordination strategy faster, so as to
+obtain higher rewards with fewer games.
+
+â¢ Battlefield: In Battlefield, the obstacles in the environment
+separate different agents, so for agents with only partial
+
+(a) Battle
+
+(b) Battlefield
+
+(c) Tiger-Deer
+
+(d) Pursuit
+
+(e) Combined Arms
+
+(f) Gather
+
+Figure 5: Main results of experiments. PooL (the green line)
+achieves higher rewards except in Combined Arms. The ex-
+perimental results also show that PooL is more stable in re-
+peated experiments.
+
+observations, communication is more important. As a re-
+sult, PooL performs better than in Battle. With pheromones,
+agents based on our proposed framework obtain effective
+information on a larger scale and learn the coordination
+strategy faster.
+
+â¢ Tiger-Deer: We control deer to avoid being attacked by
+tigers. Tiger-Deer is a simulated hunting environment in
+nature, which is very consistent with our pheromone-based
+indirect communication mechanism. As a result, through
+pheromones, deer in the environment can quickly know
+
+025050075010001250150017502000Episode0255075100125150Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode100102030405060Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode2.42.22.01.81.61.41.21.00.8Agent Average RewardDQNMFQDGNPooL0200400600800100012001400Episode5040302010Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode1.01.52.02.53.03.54.0Agent Average RewardDQNMFQPooL02004006008001000Episode505101520Agent Average RewardDQNMFQPooLTable 1: Detail settings of Experiment Environment. For Battle and Battlefield, Our agents can be either red or blue. For Com-
+bined Arms, each team contains two types of agents: Ranged and Melee.
+
+Environment
+
+Battle,Battle Field
+Tiger and Deer
+Pursuit
+Gather
+Combined Arms
+
+Agents to be trained
+
+Agents of opponents
+
+Observation Space Amount
+
+(5,7,7)
+(5,3,3)
+(5,5,5)
+(5,7,7)
+(7,7,7)
+
+80
+101
+100
+495
+66,55
+
+Role
+Red or Blue
+Deer
+Blue
+Predator
+Melee, Ranged
+
+Observation Space Amount
+
+(5,7,7)
+(5,9,9)
+(5,6,6)
+-
+(7,7,7)
+
+100
+20
+25
+1636
+66,55
+
+Role
+Red or Blue
+Tiger
+Red
+Food
+Melee, Ranged
+
+which direction there is a tiger and where other deer are
+fleeing.
+
+â¢ Adversarial Pursuit: We control the smaller blue agents to
+avoid being tagged by red agents. Experiments show that
+blue agents can communicate through pheromones to escape
+from red agents.
+
+â¢ Combined Arms: As there are two kinds of agents (ranged
+and melee) in one team. In this experiment, our channel of
+ð¼ðð ð is the sum of the number of actions of the two. Ex-
+periments show that PooL and MFQ perform better than
+DQN.
+
+â¢ Gather: In such an agent-intensive environment, experi-
+ments show that our framework can greatly promote coop-
+eration among agents. The average reward of agents trained
+by PooL is about twice that of other methods.
+
+It can be seen from Figure 5 that our method has a higher reward
+and faster convergence speed under various environmental settings.
+In Table 2, we choose the best model in the training step for each
+method and do a final evaluation. In most environments, rewards
+achieved by PooL are far more higher than other methods.
+
+In summary, MFQ pays more attention to the coordination of
+global information. As a result, when the starting position of the
+agent is random, the performance of MFQ is similar to DQN. DGN
+is powerful to utilize information from its neighborhood. But as it
+regards agents as a graph, the convergence speed of agent train-
+ing is much slower than other methods. In order to make DGN
+perform better in the scene of large-scale agents, we improve the
+update frequency of DGN parameters, which makes the time cost of
+DGN much higher than other methods. PooL effectively simplifies
+complex information in the environment, so that the agent trained
+by PooL can not only converge quickly but also use additional in-
+formation to find better policies. PooL also has its limitation. The
+results in Combined Arms show that the current framework can
+not obtain significant advantages compared with other algorithms
+when there are heterogeneous agents in the same team.
+
+In order to further demonstrate the advantages of our proposed
+framework, we use our model trained by PooL against models
+trained by other methods. Because only Battle and BattleField are
+completely symmetrical in settings, our comparison experiment is
+only carried out in these two environments.
+
+Figure 6 indicates that PooL not only has better convergence
+and cumulative reward in the training process but also has advan-
+tages against other methods. In the comparison, the overall worst
+performing method is DGN, which is based on graph convolution.
+
+(a) Comparison in Battle
+
+(b) Comparison in Battlefield
+
+Figure 6: The performance of PooL competing against each
+baseline algorithm in Battle and Battlefield.
+
+This may be due to DGN overfitting the opponentâs strategy in en-
+vironments with large-scale agents. PooL not only achieves higher
+rewards when fighting against the baseline but also learns more
+general strategies than other methods.
+
+5.3 Detailed Experiments in Battle
+In this section, we take Battle as an example to discuss the details
+of our proposed method.
+
+5.3.1 Effectiveness.
+
+In order to show the effectiveness of our method, we compare
+our model with DQN with global information and MFQ with neigh-
+bor information. In MAgent, the density information of agents in
+the environment is available. This global information is added as an
+extra input to DQN. MFQ method uses information from surround-
+ing agents. In section 6.3, we follow the settings of the original
+source code of MFQ which averages the actions of all agents. To
+promote local coordination of MFQ, we divide the environment into
+different grids like our framework. The area of the grid is close to
+the area of the Perception Domain of our framework. This modified
+MFQ denoted as MFQ_N receives information from its current grid.
+Figure 7 shows that our proposed framework still outperforms
+MFQ_N, and achieve similar results of DQN_G. This former result
+indicates that PooL not only receives signals from a wider range
+around but also contains more useful information than MFQ. The
+latter result shows that PooL is powerful to utilize local pheromone
+information to approximate the global situation.
+
+5.3.2
+
+Scale Influence.
+
+Figure 8 shows how the number of agents from different teams
+affects our experimental result. Experimental results show that
+PooL is scalable and can give full play to its advantages when the
+
+PooL VS DQNPooL VS MFQPooL VS DGN020406080100Average Reward Per EpisodePooL VS DQNPooL VS MFQPooL VS DGN01020304050607080Average Reward Per EpisodeTable 2: Evaluation Results With Trained Models. PooL ourperforms all other methods except in Combined Arms.
+
+Environment
+
+Battle
+Battlefield
+Tiger-Deer
+Pursuit
+Combined Arms:Melee
+Combined Arms:Ranged
+Gather
+
+Average Cumulated Reward
+
+MFQ
+124.7 Â± 5.4
+39.8 Â± 8.2
+
+DGN
+111.2 Â± 7.6
+55.9 Â± 7.1
+
+DQN
+PooL
+128.7 Â± 13.0
+148.5 Â± 12.6
+43.7 Â± 7.1
+66.6 Â± 6.6
+â1.84 Â± 0.29 â1.29 Â± 0.12 â1.21 Â± 0.13 â0.77 Â± 0.09
+â18.5 Â± 3.0 â13.5 Â± 5.56
+â18.8 Â± 4.6
+2.00 Â± 0.19
+4.21 Â± 0.23
+3.90 Â± 0.30
+3.65 Â± 0.31
+3.33 Â± 0.88
+22.0 Â± 0.32
+
+â17.6 Â± 4.1
+3.14 Â± 0.19
+4.21 Â± 0.24
+9.57 Â± 1.17
+
+-
+-
+-
+
+coefficient is too small, the information reflected by pheromone
+will lag.
+
+(a) Compared with DQN with global infor-
+mation
+
+(b) Compared with modified MFQ
+
+Figure 7: Performance of PooL compared with DQN with
+global information and MFQ with neighborhood informa-
+tion.
+
+number of agents in the environment is different. DQN, however,
+fails to learn a good policy when the number of agents becomes
+larger. MFQ suffers from unstable training procedures when there
+are more agents.
+
+(a) 40 VS 50
+
+(b) 80 VS 100
+
+(c) 120 VS 150
+
+Figure 8: Scale Influence
+
+5.3.3 Hyper Parameters Selection.
+
+In our proposed method, there are two key hyperparameters
+to choose: the size of our virtual map and the evaporation coeffi-
+cient of pheromones. In Figure 9(a), models are trained with virtual
+map sizes 6, 8 and 10 respectively. The result indicates that PooL
+is not sensitive to this parameter. Figure 9(b) indicates that when
+the evaporation coefficient is between 0.1-0.9, the average reward
+after model convergence is almost the same. A value of 0.1 or 0.9
+may slightly reduce the convergence speed of the model. There-
+fore, we recommend a value of about 0.5 according to the actual
+environment. If the evaporation coefficient is too large, the model
+can not effectively extract historical information. If the evaporation
+
+(a) Virtual Map Size Selection
+
+(b) Evaporation Coefficient Selection
+
+Figure 9: Hyper Parameters Selection (a) Virtual Map Size
+has little effect on the performance of PooL. (b) A moderate
+coefficient is conducive to obtaining stable training results.
+
+6 CONCLUSION
+In this paper, we propose PooL, a pheromone-based indirect com-
+munication framework applied to MARL cooperation task. Inspired
+by swarm intelligence algorithms like ACO, PooL inherits the ad-
+vantage of swarm intelligence algorithms that can be applied to
+large-scale agent coordination. Unlike ACO, pheromones released
+by agents are the output of DRL algorithms. Q-Learning is taken
+as an example to realize our framework, but other reinforcement
+learning algorithms can be applied to PooL in the same way. In
+our proposed framework, the information of agents in the environ-
+ment is organized and dimensionally reduced by the pheromone
+update mechanism. Therefore, the cost of communication between
+agents is also very small. PooL is evaluated with different MARL
+algorithms in various environments proposed by Pettingzoo which
+contains hundreds of agents. Experimental results show that PooL
+converges faster and has higher rewards than other methods. Its su-
+perior performance with low cost in game environments shows that
+it has the potential to be applied in more complex real-world scenes
+with a bandwidth limit. PooLâs success indicates that rule-based
+swarm intelligence control algorithms are promising to combine
+with learning-based models for large-scale agentsâ coordination.
+
+ACKNOWLEDGMENTS
+This work was supported by NSF China under grand xxxxxxxx.
+
+025050075010001250150017502000Episode0255075100125150Agent Average RewardDQNDQN_GPooL025050075010001250150017502000Episode020406080100120140160Agent Average RewardMFQMFQ_NPooL025050075010001250150017502000Episode020406080100Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode0255075100125150Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode0255075100125150175Agent Average RewardDQNMFQDGNPooL025050075010001250150017502000Episode0255075100125150Agent Average RewardDQNMFQPooL_6PooL_8PooL_10025050075010001250150017502000Episode020406080100120140160Agent Average Reward0.10.50.9[25] Frans A Oliehoek, Matthijs TJ Spaan, and Nikos Vlassis. 2008. Optimal and
+approximate Q-value functions for decentralized POMDPs. Journal of Artificial
+Intelligence Research 32 (2008), 289â353.
+
+[26] David Silver, Aja Huang, Chris J Maddison, Arthur Guez, Laurent Sifre, George
+Van Den Driessche, Julian Schrittwieser, Ioannis Antonoglou, Veda Panneershel-
+vam, Marc Lanctot, et al. 2016. Mastering the game of Go with deep neural
+networks and tree search. nature 529, 7587 (2016), 484â489.
+
+[27] Sainbayar Sukhbaatar, Arthur Szlam, and Rob Fergus. 2016. Learning Multiagent
+Communication with Backpropagation. ADVANCES IN NEURAL INFORMATION
+PROCESSING SYSTEMS 29 (NIPS 2016) (2016), 2252â2260.
+
+[28] J. K Terry, Benjamin Black, Nathaniel Grammel, Mario Jayakumar, Ananth
+Hari, Ryan Sulivan, Luis Santos, Rodrigo Perez, Caroline Horsch, Clemens Di-
+effendahl, Niall L Williams, Yashas Lokesh, Ryan Sullivan, and Praveen Ravi.
+2020. PettingZoo: Gym for Multi-Agent Reinforcement Learning. arXiv preprint
+arXiv:2009.14471 (2020).
+
+[29] Weixun Wang, Tianpei Yang, Yong Liu, Jianye Hao, Xiaotian Hao, Yujing Hu,
+Yingfeng Chen, Changjie Fan, and Yang Gao. 2020. From few to more: Large-scale
+dynamic multiagent curriculum learning. In Proceedings of the AAAI Conference
+on Artificial Intelligence, Vol. 34. 7293â7300.
+
+[30] Ermo Wei, Drew Wicke, David Freelan, and Sean Luke. 2018. Multiagent soft
+
+q-learning. In 2018 AAAI Spring Symposium Series.
+
+[31] Xing Xu, Rongpeng Li, Zhifeng Zhao, and Honggang Zhang. 2021. Stigmer-
+gic Independent Reinforcement Learning for Multiagent Collaboration. IEEE
+Transactions on Neural Networks and Learning Systems (2021).
+
+[32] Xing Xu, Zhifeng Zhao, Rongpeng Li, and Honggang Zhang. 2019. Brain-inspired
+
+stigmergy learning. IEEE Access 7 (2019), 54410â54424.
+
+[33] Yaodong Yang, Rui Luo, Minne Li, Ming Zhou, Weinan Zhang, and Jun Wang.
+2018. Mean field multi-agent reinforcement learning. In International Conference
+on Machine Learning. PMLR, 5571â5580.
+
+[34] Yuhang Zhao and Xiujun Ma. 2019. Learning Efficient Communication in Coop-
+
+erative Multi-Agent Environment.. In AAMAS. 2321â2323.
+
+[35] Lianmin Zheng, Jiacheng Yang, Han Cai, Ming Zhou, Weinan Zhang, Jun Wang,
+and Yong Yu. 2018. Magent: A many-agent reinforcement learning platform for
+artificial collective intelligence. In Proceedings of the AAAI Conference on Artificial
+Intelligence, Vol. 32.
+
+[36] Jie Zhou, Ganqu Cui, Shengding Hu, Zhengyan Zhang, Cheng Yang, Zhiyuan Liu,
+Lifeng Wang, Changcheng Li, and Maosong Sun. 2020. Graph neural networks:
+A review of methods and applications. AI Open 1 (2020), 57â81.
+
+[37] Ming Zhou, Yong Chen, Ying Wen, Yaodong Yang, Yufeng Su, Weinan Zhang,
+Dell Zhang, and Jun Wang. 2019. Factorized q-learning for large-scale multi-
+agent systems. In Proceedings of the First International Conference on Distributed
+Artificial Intelligence. 1â7.
+
+REFERENCES
+[1] Malika Bourenane, Abdelhamid Mellouk, and Djilali Benhamamouch. 2007. Re-
+inforcement learning in multi-agent environment and ant colony for packet
+scheduling in routers. In Proceedings of the 5th ACM international workshop on
+Mobility management and wireless access. 137â143.
+
+[2] Lucian BuÅoniu, Robert BabuÅ¡ka, and Bart De Schutter. 2010. Multi-agent re-
+Innovations in multi-agent systems and
+
+inforcement learning: An overview.
+applications-1 (2010), 183â221.
+
+[3] Xiaolin Dai, Shuai Long, Zhiwen Zhang, and Dawei Gong. 2019. Mobile robot
+path planning based on ant colony algorithm with A* heuristic method. Frontiers
+in neurorobotics 13 (2019), 15.
+
+[4] Abhishek Das, ThÃ©ophile Gervet, Joshua Romoff, Dhruv Batra, Devi Parikh, Mike
+Rabbat, and Joelle Pineau. 2019. Tarmac: Targeted multi-agent communication.
+In International Conference on Machine Learning. PMLR, 1538â1546.
+
+[5] Gianni Di Caro and Marco Dorigo. 1998. AntNet: Distributed stigmergetic control
+for communications networks. Journal of Artificial Intelligence Research 9 (1998),
+317â365.
+
+[6] Marco Dorigo, Mauro Birattari, and Thomas Stutzle. 2006. Ant colony optimiza-
+
+tion. IEEE computational intelligence magazine 1, 4 (2006), 28â39.
+
+[7] Jakob Foerster, Gregory Farquhar, Triantafyllos Afouras, Nantas Nardelli, and Shi-
+mon Whiteson. 2018. Counterfactual multi-agent policy gradients. In Proceedings
+of the AAAI Conference on Artificial Intelligence, Vol. 32.
+
+[8] Tuomas Haarnoja, Haoran Tang, Pieter Abbeel, and Sergey Levine. 2017. Rein-
+forcement learning with deep energy-based policies. In International Conference
+on Machine Learning. PMLR, 1352â1361.
+
+[9] Eric A Hansen, Daniel S Bernstein, and Shlomo Zilberstein. 2004. Dynamic
+programming for partially observable stochastic games. In AAAI, Vol. 4. 709â
+715.
+
+[10] Francis Heylighen. 2015. Stigmergy as a Universal Coordination Mechanism: com-
+ponents, varieties and applications. Human Stigmergy: Theoretical Developments
+and New Applications; Springer: New York, NY, USA (2015).
+
+[11] Yedid Hoshen. 2018. VAIN: Attentional Multi-agent Predictive Modeling. AD-
+VANCES IN NEURAL INFORMATION PROCESSING SYSTEMS 30 (NIPS 2017) (2018),
+2701â2711.
+
+[12] Jiechuan Jiang, Chen Dun, Tiejun Huang, and Zongqing Lu. 2020. Graph Convo-
+
+lutional Reinforcement Learning. ICLR (2020).
+
+[13] Jiechuan Jiang and Zongqing Lu. 2018. Learning Attentional Communication for
+Multi-Agent Cooperation. ADVANCES IN NEURAL INFORMATION PROCESSING
+SYSTEMS 31 (NIPS 2018) (2018), 7254â7264.
+
+[14] James Kennedy. 2006. Swarm intelligence. In Handbook of nature-inspired and
+
+innovative computing. Springer, 187â219.
+
+[15] StanisÅaw Konatowski and Piotr PawÅowski. 2018. Ant colony optimization
+algorithm for UAV path planning. In 2018 14th International Conference on Ad-
+vanced Trends in Radioelecrtronics, Telecommunications and Computer Engineering
+(TCSET). IEEE, 177â182.
+
+[16] p timothy lillicrap, j jonathan hunt, alexander pritzel, nicolas heess, tom erez,
+yuval tassa, david silver, and daan wierstra. 2016. Continuous control with deep
+reinforcement learning. CoRR (2016).
+
+[17] Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. 2020.
+Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments.
+ADVANCES IN NEURAL INFORMATION PROCESSING SYSTEMS 30 (NIPS 2017)
+(2020), 6379â6390.
+
+[18] Rui Luo*, Yaodong Yang*, Minne Li, Ming Zhou, Weinan Zhang, and Jun Wang.
+2018. Mean Field Multi Agent Reinforcement Learning. The 35th International
+Conference on Machine Learning (ICMLâ18), PMLR (2018), 5567â5576.
+
+[19] Chihiro Maru, Miki Enoki, Akihiro Nakao, Shu Yamamoto, Saneyasu Yamaguchi,
+and Masato Oguchi. 2016. QoE Control of Network Using Collective Intelligence
+of SNS in Large-Scale Disasters. In 2016 IEEE International Conference on Computer
+and Information Technology (CIT). IEEE, 57â64.
+
+[20] Marco Matta, Gian Carlo Cardarilli, Luca Di Nunzio, Rocco Fazzolari, Daniele Gia-
+rdino, M Re, F Silvestri, and S SpanÃ². 2019. Q-RTS: a real-time swarm intelligence
+based on multi-agent Q-learning. Electronics Letters 55, 10 (2019), 589â591.
+[21] Syed Irfan Ali Meerza, Moinul Islam, and Md Mohiuddin Uzzal. 2019. Q-Learning
+Based Particle Swarm Optimization Algorithm for Optimal Path Planning of
+Swarm of Mobile Robots. In 2019 1st International Conference on Advances in
+Science, Engineering and Robotics Technology (ICASERT). IEEE, 1â5.
+
+[22] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis
+Antonoglou, Daan Wierstra, and Martin Riedmiller. 2013. Playing Atari with
+Deep Reinforcement Learning. CoRR (2013).
+
+[23] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness,
+Marc G Bellemare, Alex Graves, Martin Riedmiller, Andreas K Fidjeland, Georg
+Ostrovski, et al. 2015. Human-level control through deep reinforcement learning.
+nature 518, 7540 (2015), 529â533.
+
+[24] Ndedi Monekosso and Paolo Remagnino. 2001. Phe-Q: A pheromone based
+Q-learning. In Australian Joint Conference on Artificial Intelligence. Springer,
+345â355.
+
+

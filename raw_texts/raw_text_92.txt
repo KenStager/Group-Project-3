@@ -1,0 +1,1062 @@
+4
+2
+0
+2
+
+r
+a
+
+M
+1
+2
+
+]
+
+C
+H
+.
+s
+c
+[
+
+1
+v
+7
+5
+5
+4
+1
+.
+3
+0
+4
+2
+:
+v
+i
+X
+r
+a
+
+Changing humanâs impression of empathy from agent by verbalizing
+agentâs position
+
+Takahiro Tsumura1 and Seiji Yamada1
+
+Abstractâ As anthropomorphic agents (AI and robots) are
+increasingly used in society, empathy and trust between people
+and agents are becoming increasingly important. A better
+understanding of agents by people will help to improve the
+problems caused by the future use of agents in society. In
+the past, there has been a focus on the importance of self-
+disclosure and the relationship between agents and humans in
+their interactions. In this study, we focused on the attributes
+of self-disclosure and the relationship between agents and
+people. An experiment was conducted to investigate hypotheses
+on trust and empathy with agents through six attributes of
+self-disclosure (opinions and attitudes, hobbies, work, money,
+personality, and body) and through competitive and cooperative
+relationships before a robotic agent performs a joint task. The
+experiment consisted of two between-participant factors: six
+levels of self-disclosure attributes and two levels of relationship
+with the agent. The results showed that the two factors had no
+effect on trust in the agent, but there was statistical significance
+for the attribute of self-disclosure regarding a personâs empathy
+toward the agent. In addition, statistical significance was found
+regarding the agentâs ability to empathize with a person as
+perceived by the person only in the case where the type of
+relationship, competitive or cooperative, was presented. The
+results of this study could lead to an effective method for
+building relationships with agents, which are increasingly used
+in society.
+
+I. INTRODUCTION
+
+Humans live in society and use a variety of tools such as
+ChatGPT and generative image AI, and todayâs AI issues are
+focused on the trustworthy and ethical use of AI technology.
+Kaplan et al. [1] aimed to identify the key factors that predict
+trust in AI, and they examined three predictive categories
+and subcategories from data from 65 papers: human char-
+acteristics and capabilities, AI performance and attributes,
+and contextual challenges. All categories examined were
+significant predictors of trust in AI. The more AI is used
+in human society, the more trust in AI is discussed, and
+a key issue is that the failure to establish appropriate trust
+in AI
+relationships leads to overconfidence and distrust
+agents, which in turn leads to poor task performance.
+
+When performing tasks with an AI, it is also important
+to consider ways to repair trust in the AI. KÂ¨ahkÂ¨onen et
+al. [2] systematically reviewed trust repair research con-
+ducted over the past two decades to provide researchers
+and managers with comprehensive insights and directions
+for future research. The review suggested that early use of
+trust repair strategies for small violations can prevent these
+
+1Takahiro Tsumura and Seiji Yamada is with Department of Informatics,
+The Graduate University for Advanced Studies, SOKENDAI, Tokyo, Japan.
+Also Takahiro Tsumura and Seiji Yamada is with Digital Content and Media
+Sciences Research Division, National Institute of Informatics, Tokyo, Japan.
+
+violations from escalating into larger violations and, in turn,
+increase the efficiency and effectiveness of trust repair with
+employees. Bunting et al. [3] used insights from focus group
+discussions on newly created trust, mistrust, and distrust
+questions to identify how citizens perceive these different
+concepts and how these perceptions are gendered. They then
+used the new survey data they collected to examine how the
+focus group results influenced survey responses and which
+survey items were most likely to effectively measure the three
+concepts.
+
+Along with trust, we often empathize with artifacts. Hu-
+mans are known to have a tendency to treat artifacts as if they
+were human in the media equation. However, some humans
+do not accept these agents [4]. Empathy is closely related to
+trust. As agents permeate society in the future, it is hoped that
+they will have an element of human acceptance. Omdahl [5]
+broadly classified empathy into three types: (1) affective
+empathy, which is an emotional response to the emotional
+state of another person; (2) cognitive empathy, defined as
+a cognitive understanding of the emotional state of another
+person; and (3) empathy that includes the above two types of
+empathy. Preston and de Waal [6] suggested that at the heart
+of empathic response is a mechanism that allows the observer
+to access the subjective emotional state of the subject. They
+defined the Perception Action Model (PAM) and integrated
+different perspectives in empathy. They defined empathy as
+three types: (a) sharing or being influenced by the emotional
+states of others, (b) evaluating the reasons for emotional
+states, and (c) having the ability to identify and incorporate
+other perspectives.
+
+In the present study, we investigated the factors that
+contribute to trust and empathy toward agents to enhance
+their evaluation prior to performing a task. The definition
+of empathy in this study is empathy toward an agent, not
+having the agent acquire empathic competence. An agentâs
+empathic capacity in this study is what makes people per-
+ceive that the agent can empathize with them. Through the
+self-introductions used in the experiment, participants will
+be asked to assess whether or not they have empathy for an
+agent.
+
+II. RELATED WORK
+
+We summarized some of the previous studies on trust in
+AI. Noting that lack of trust is one of the main obstacles
+standing in the way of taking full advantage of AI, Gillath
+et al. [7] focused on increasing trust in AI through emotional
+means. Specifically,
+they tested the association between
+attachment style, an individual difference that describes how
+
+ 
+ 
+ 
+ 
+ 
+ 
+increasing attachment
+
+people feel, think, and act in relationships, and trust in AI.
+Results showed that
+insecurity de-
+creased trust, while increasing attachment security increased
+trust in AI. Focusing on clinicians as the primary users of AI
+systems in healthcare, Asan et al. [8] presented the factors
+that shape trust between clinicians and AI. They focused
+on key trust-related issues to consider when developing AI
+systems for clinical use.
+
+With the emphasis on research on trust in human rela-
+tionships, research on trust in AI agents has also received
+attention. In a study of trustworthy AI agents, Maehigashi et
+al. [9] investigated how beeps emitted by a social robot with
+anthropomorphic physicality affect human trust in the robot.
+They found that (1) sounds just prior to a higher performance
+increased trust when the robot performed correctly, and (2)
+sounds just prior to a lower performance decreased trust to
+a greater extent when the robot performed inaccurately. To
+determine how anthropomorphic physicality affects human
+trust
+in agents, Maehigashi et al. [10] also investigated
+whether human trust in social robots with anthropomorphic
+physicality is similar to trust in AI agents and humans. Also,
+they investigated whether trust in social robots is similar to
+trust in AI agents and humans. The results showed that trust
+in social robots was basically not similar to trust in AI agents
+or humans, and was entrenched between the two.
+
+Maehigashi [11] experimentally investigated the nature of
+human trust in communication robots compared to trust in
+other people and AI systems. Results showed that trust in
+robots in computational tasks that yield a single solution
+is essentially similar to that in AI systems, and partially
+similar to trust in others in emotion recognition tasks that
+allow multiple interpretations. Okamura and Yamada [12]
+proposed a method for adaptive trust calibration that consists
+of a framework for detecting inappropriate calibration con-
+ditions by monitoring the userâs trust behavior and cognitive
+cues, called âtrust calibration cues,â that prompt the user to
+resume trust calibration. Okamura and Yamada [13] focused
+their research on trust alignment as a way to detect and
+mitigate inappropriate trust alignment, and they addressed
+these research questions using a behavior-based approach to
+understanding calibration status. The results demonstrate that
+adaptive presentation of trust calibration cues can facilitate
+trust adjustments more effectively than traditional system
+transparency approaches.
+
+We also considered the design of empathy factors from
+previous studies of anthropomorphic agents using empathy.
+Tsumura and Yamada [14] focused on self-disclosure from
+agents to humans in order to enhance human empathy toward
+anthropomorphic agents, and they experimentally investi-
+gated the potential for self-disclosure by agents to promote
+human empathy. Tsumura and Yamada [15] also focused on
+tasks in which humans and agents engage in a variety of in-
+teractions, and they investigated the properties of agents that
+have a significant impact on human empathy toward them.
+To clarify the empathy between agents/robots and humans,
+Paiva represented the empathy and behavior of empathetic
+agents (called empathy agents in HAI and HRI studies) in
+
+two different ways: targeting empathy and empathizing with
+observers [16]. Rahmanti et al. [17] designed a chatbot with
+artificial empathic motivational support for dieting called
+âSlimMeâ and investigated how people responded to the
+diet bot. They proposed a text-based emotional analysis
+that simulates artificial empathic responses to enable the
+bot to recognize usersâ emotions. JÂ´auregui et al. [18] found
+evidence to support or oppose a robotic mirroring framework,
+resulting in increased interest in self-tracking technology for
+health care.
+
+We also present some previous studies on the attributes of
+self-disclosure and its relationship to agents. Pan et al. [19]
+examined the effect of exposure to online support-seeking
+posts containing different
+levels of self-disclosure depth
+(baseline, peripheral, core) affecting the quality (person-
+centeredness and politeness) of participantsâ messages pro-
+viding support. A study of cooperative and competitive tasks
+was conducted by Ruissen and de Bruijn [20]. In the study,
+cooperative and competitive tasks were tested using Tetris.
+The results confirmed that the cooperative task did not reduce
+self-integration, but the competitive task did.
+
+Collins and Miller [21] aimed to clarify and review this
+literature by using a meta-analytic procedure to evaluate the
+evidence for three different disclosure preference effects. For
+each effect, they found a significant relationship favoring
+disclosure. (a) people who make intimate disclosures tend
+to be liked more than those who disclose at lower levels; (b)
+people disclose more to those they initially favor; and (c)
+people like other people as a result of disclosing information
+to them. Meng and Dai [22] investigated when and how
+effective chatbot emotional support is in reducing peopleâs
+stress and worry. The results showed that the positive effects
+of emotional support on anxiety reduction were enhanced
+when conversation partners mutually self-disclosed.
+
+III. MATERIALS AND METHODS
+
+A. Hypotheses
+
+The purpose of this study is to examine whether self-
+disclosure attributes and types of relationships with partic-
+ipants influence trust and empathy toward agents, focusing
+on the time before agents perform tasks with participants.
+This objective could be an important factor in promoting
+the use of agents in society. The following hypotheses are
+formulated in this study. If these hypotheses are supported,
+this research will be valuable in developing agents that are
+more acceptable to humans. On the basis of the above, four
+hypotheses were examined.
+
+H1: Trust toward the agent changes with the attribute of
+
+self-disclosure.
+
+H2: Trust toward the agent increases when a cooperative
+relationship is presented rather than a competitive
+relationship.
+
+H3: Empathy toward the agent changes with the attribute
+of self-disclosure, but does not change with the type
+of relationship presented.
+
+H4: The empathy capacity of the agent does not change
+with the attribute of self-disclosure, but it changes with
+the type of relationship presented.
+
+H1 and H2 investigate whether trust in an agent is affected
+by the two factors in this study, that is, six levels of self-
+disclosure attributes and two levels of relationship with the
+agent [21], [22]. Previous studies with people have shown
+that
+the content of self-disclosure affects trust, and that
+cooperative relationships are more likely to gain trust than
+competitive relationships. For this reason, we investigate
+whether trust in agents changes similarly to that in people.
+Previous studies by Tsumura and Yamada [14], [15] have
+shown that H3 is a key factor in the relationship between trust
+and self-disclosure, and the present study will investigate the
+impact of each factor in detail. H4 is an investigation of
+agentsâ capacity for empathy. Previous studies have shown
+that the amount of self-disclosure affects empathy, and since
+the amount of self-disclosure in this study is almost the
+the ability to
+same, we assumed that
+empathize [19]. Regarding the type of relationship presented,
+we also considered that the participantâs evaluation of the
+agentâs empathy ability would change as the impression of
+the agent changes depending on the relationship [20].
+
+it does not affect
+
+B. Experimental details
+
+The experiment consisted of a video viewing task, fol-
+lowed by three different surveys. The experiment was con-
+ducted in an online environment using Yahoo! Crowdsourc-
+ing. The online environment used in this experiment has
+already been used as one experimental environment [14],
+[15], [23]. A flowchart of this experiment is shown in Figure
+1. Participants learned about self-disclosure attributes and
+their relationship with the agent by watching a video of the
+agent giving a self-introduction. This studyâs agent was a
+learning support agent, and the situation is that the agent is
+giving a self-introduction before providing learning support.
+In the videos, the agent used the same gestures regardless of
+the factors, and the videos were silent, so self-introductions
+were done via text message. None of the videos were longer
+than 2 minutes, and participants could not proceed to a
+questionnaire without confirming that they had watched the
+video.
+
+Because the experiment was conducted on a participant-
+to-participant factorial basis, all participants watched only
+one video out of 12 combinations and completed the ques-
+tionnaire. The questionnaire consisted of three types of
+questions: trust in the agent, empathy toward the agent, and
+the agentâs ability to empathize. In addition, one question
+involved a self-disclosure check used in the task and a
+confirmation that the participant had watched the video.
+
+The experiment was conducted at 12 levels in total, with 6
+levels of self-disclosure attributes and 2 levels of relationship
+with the agent as 2 factors. The independent variables were
+self-disclosure attributes (opinions and attitudes, hobbies,
+work, money, personality, and body) and relationship with
+the agent (competitive and cooperative). The three dependent
+
+variables were trust in the agent, empathy toward the agent,
+and the agentâs capacity for empathy.
+
+C. Participants
+
+We recruited participants through Yahoo! Crowdsourcing
+and paid 40 yen (=0.27 dollars) per participant as compensa-
+tion. We created a web page for the experiment using Google
+Forms and uploaded and embedded a video created for the
+experiment on YouTube.
+
+There was a total of 587 participants. Cronbachâs Î±
+coefficient was then used to determine the reliability of the
+trust questionnaire, and the coefficient was determined to be
+0.9160-0.9612 in all conditions. In addition, Cronbachâs Î±
+coefficient was used for the reliability of the empathy ques-
+tionnaire for agents, and the coefficients were determined to
+be 0.6965 to 0.8224. Cronbachâs Î± coefficient was used for
+the reliability of the questionnaire for empathy capacity of
+agents, and the coefficients were determined to range from
+0.7904 to 0.8680.
+
+In the analysis, 47 participants in each of all conditions
+were analyzed in the order of their participation. Thus, the
+total number of participants used in the analysis was 564.
+The mean age was 48.90 years (standard deviation = 11.03
+years), with a minimum age of 20 years and a maximum age
+of 79 years. There were also 432 males and 132 females.
+
+D. Self-disclosure attributes
+
+In this study, we prepared six levels of self-disclosure
+attributes. The reason for preparing six levels was to inves-
+tigate the impression that the agentâs self-disclosure gives to
+others, on the basis of previous studies that have classified
+self-disclosure into six categories [24]. The content of each
+type of self-disclosure is as follows. In the content related
+to opinions and attitudes, the agent talked about the most
+important factors in their learning. For hobbies, the agent
+talked about its love of learning. For work, the agent talked
+about the pressures of work in learning support. For money,
+the agent discussed how money is spent on learning. For
+personality, the agent talked about what people say about
+its personality. For body, the agent talked about its own
+appearance.
+
+In all conditions, the amount of conversation was kept
+nearly uniform, and participants spent approximately the
+same amount of time watching the videos. Each attribute
+of self-disclosure was recognized by the participants; the
+results of the chi-square test showed that Ï2(25)=1043, p <
+0.01, and the results of the residual analysis showed that
+the participants correctly recognized the attribute of self-
+disclosure. On the basis of these results, a manipulation
+check for each attribute of self-disclosure was completed,
+and this experimental data was used for analysis.
+
+E. Relationship with agent
+
+There were two levels of relationship with the agent. The
+agent either conveyed that it was a competitor or that it was
+a cooperative partner. The purpose of this experiment was
+not to actually perform a joint task but to investigate the
+
+Fig. 1. Flowchart of experiment.
+
+F. Questionnaire
+
+Fig. 2. Competitive agent
+
+Fig. 3. Cooperative agent
+
+change in the participantâs impression of the agent by only
+presenting the type of relationship. The competing agent is
+shown in Figure 2, and the cooperating agent is shown in
+Figure 3. The agents in this task were introduced as learning
+support agents, but the relationship is mentioned at the end
+of their self-introduction. For this reason, the content of each
+attribute of self-disclosure and the topic of the relationship
+with the agent are independent.
+
+In this study, we used a questionnaire related to empathy
+that has been used in previous psychological studies. To mea-
+sure cognitive trust, the Multi-Dimensional Measure of Trust
+(MDMT) [25] was used. MDMT was developed to measure a
+task partnerâs reliability and competence corresponding to the
+definition of cognitive trust. The participants rated how much
+the partner AI fit each word (reliable, predictable, depend-
+able, consistent, competent, skilled, capable, and meticulous)
+on an 8-point scale (0: not at all - 7: very). Moreover,
+for emotional trust, we asked participants to answer how
+much the partner AI fit each word (secure, comfortable, and
+content) on a 7-point scale (1: strongly disagree - 7: strongly
+agree) as in the previous study [26]. In our study, we removed
+the matching 0 scale of cognitive trust, bringing it to the same
+7 scale as emotional trust. The trust questionnaire used in this
+study was the one used by Maehigashi et al. [9].
+
+To investigate the characteristics of empathy, we modified
+the Interpersonal Reactivity Index (IRI) to be an index
+for anthropomorphic agents. The main modifications were
+changing the target name. In addition, the number of items
+on the IRI was modified to 12; for this, items that were
+not appropriate for the experiment were deleted, and similar
+items were integrated. Since both of the questionnaires used
+were based on IRI, a survey was conducted using a 5-point
+Likert scale (1: not applicable, 5: applicable).
+
+The questionnaire used is shown in Table I. Since Q4, Q9,
+and Q10 were reversal items, the points were reversed during
+analysis. Q1 to Q6 were related to affective empathy, and
+Q7 to Q12 were related to cognitive empathy. Participants
+answered a questionnaire after completing the task. Qet is
+a questionnaire on empathy for the agent, and Qeo is a
+questionnaire on the agentâs capacity for empathy.
+
+TABLE I
+SUMMARY OF QUESTIONNAIRE USED IN THIS EXPERIMENT
+
+Qt11: Content.
+
+Qt10: Comfortable.
+
+Qt2: Predictable.
+Qt6: Skilled.
+
+Qt4: Consistent.
+Qt8: Meticulous.
+
+Qt3: Dependable.
+Qt7: Capable.
+
+Trust
+Cognitive trust
+Qt1: Reliable.
+Qt5: Competent.
+Emotional trust
+Qt9: Secure.
+Affective empathy
+Personal distress
+Qet1: If an emergency happens to the robot, you would be anxious and restless.
+Qet2: If the robot is emotionally disturbed, you would not know what to do.
+Qet3: If you see the robot in need of immediate help, you would be confused and would not know what to do.
+Empathic concern
+Qet4: If you see the robot in trouble, you would not feel sorry for that robot.
+Qet5: If you see the robot being taken advantage of by others, you would feel like you want to protect that robot.
+Qet6: The robotâs story and the events that have taken place move you strongly.
+Cognitive empathy
+Perspective taking
+Qet7: You look at both the robotâs position and the human position.
+Qet8: If you were trying to get to know the robot better, you would imagine how that robot sees things.
+Qet9: When you think youâre right, you donât listen to what the robot has to say.
+Fantasy scale
+Qet10: You are objective without being drawn into the robotâs story or the events taken place.
+Qet11: You imagine how you would feel if the events that happened to the robot happened to you.
+Qet12: You get deep into the feelings of the robot.
+Affective empathy
+Personal distress
+Qeo1: Do you think the robot would be anxious and restless if an emergency situation happened to you?
+Qeo2: Do you think the robot would not know what to do in a situation where you are emotionally involved?
+Qeo3: Do you think the robot will be confused and not know what to do when it sees itself in imminent need of help?
+Empathic concern
+Qeo4: Do you think the robot would not feel sorry for you if it saw you in trouble?
+Qeo5: Do you think the robot would feel like protecting you if it saw you being used by others for their own good?
+Qeo6: Do you think the robot is strongly moved by your story and the events that took place?
+Cognitive empathy
+Perspective taking
+Qeo7: Do you think the robot will look at both your position and the robotâs position?
+Qeo8: Do you think the robot tried to get to know you better and imagined how things looked from your point of view?
+Qeo9: Do you think robots wonât listen to your arguments when you seem to be right?
+Fantasy scale
+Qeo10: Do you think the robot is objective without being drawn into your story or the events that took place?
+Qeo11: Do you think robots imagine how they would feel if the events that happened to you happened to them?
+Qeo12: Do you think the robot will go deeper into your feelings?
+
+G. Analysis method
+
+A two-factor analysis of variance was used. ANOVA
+has been frequently used in previous studies and is the
+appropriate method of analysis with respect to this study.
+As mentioned above, the factors among participants were
+six levels of self-disclosure attributes and two levels of
+relationship with the agent. On the basis of the results of
+the participantsâ questionnaires, we examined how the self-
+disclosure attributes and relationship with the agent affected
+trust and empathy toward the agent and the agentâs ability to
+empathize with the participant. The trust and empathy values
+tabulated in the task were used as dependent variables. The
+statistical software R (ver. 4.1.0) was used for the ANOVA
+and multiple comparisons in all analyses in this paper.
+
+IV. RESULTS
+
+In this study, cognitive and emotional trust were consid-
+ered together as trust. Table II shows the mean and standard
+deviation for each condition. Table III shows the results of
+the analysis of variance for the three questionnaires. In this
+paper, when a main effect was found, multiple comparisons
+were examined for significant differences using multiple
+comparison tests with Tukeyâs HSD test.
+
+The results showed that trust (Qt1-Qt11) toward the agent
+was not significant. For empathy toward the agent (Qt1-
+Qt12), a main effect was found for the self-disclosure at-
+tribute. The results of the multiple comparisons are shown
+in Figure 4. Table IV shows the mean and standard deviations
+of the results of the multiple comparisons of empathy for the
+agents. Among the attributes of self-disclosure, significance
+was found between the job and money content. This indicates
+that self-disclosure attributes affected empathy toward the
+agent in some cases.
+
+In addition, a main effect was found for the agentâs
+empathy capacity (Qeo1-Qeo12) in relationship with agent.
+The results of the main effect are shown in Figure 5. This
+allows us to imagine that agents are more empathetic than
+those who just tell people that they are in a cooperative
+relationship, but not in a competitive relationship. It was
+shown that peopleâs evaluations of the empathy capacity of
+the agent were variable even before the actual collaborative
+task.
+
+V. DISCUSSION
+
+The way to properly build a relationship between a human
+and an AI agent is not only trust and empathy toward the
+agent, but also proper recognition by the person of the
+
+TABLE II
+RESULTS OF PARTICIPANTSâ STATISTICAL INFORMATION
+
+Category
+
+Trust
+(Qt1-Qt11)
+
+Empathy
+(Qet1-Qet12)
+
+Empathy
+(Qeo1-Qeo12)
+
+Conditions
+opinions and attitudes-competitive
+opinions and attitudes-cooperative
+hobbies-competitive
+hobbies-cooperative
+work-competitive
+work-cooperative
+opinions and attitudes-competitive
+opinions and attitudes-cooperative
+hobbies-competitive
+hobbies-cooperative
+work-competitive
+work-cooperative
+opinions and attitudes-competitive
+opinions and attitudes-cooperative
+hobbies-competitive
+hobbies-cooperative
+work-competitive
+work-cooperative
+
+Mean
+50.83
+48.55
+46.94
+50.02
+50.96
+49.36
+33.96
+32.98
+32.32
+34.02
+35.43
+33.13
+35.47
+33.81
+34.57
+37.55
+33.57
+35.64
+
+S.D.
+10.84
+9.174
+10.40
+10.71
+9.297
+11.00
+6.406
+6.476
+5.146
+6.229
+6.590
+6.762
+7.244
+8.061
+5.763
+6.477
+6.341
+7.394
+
+Conditions
+money-competitive
+money-cooperative
+personality-competitive
+personality-cooperative
+body-competitive
+body-cooperative
+money-competitive
+money-cooperative
+personality-competitive
+personality-cooperative
+body-competitive
+body-cooperative
+money-competitive
+money-cooperative
+personality-competitive
+personality-cooperative
+body-competitive
+body-cooperative
+
+Mean
+48.26
+48.83
+51.40
+50.60
+49.55
+50.85
+31.62
+31.66
+31.79
+32.26
+31.70
+32.43
+32.45
+34.60
+35.11
+35.09
+32.43
+34.81
+
+S.D.
+9.863
+10.75
+10.59
+8.561
+8.091
+8.718
+6.152
+5.913
+6.075
+6.635
+6.947
+6.382
+6.286
+6.765
+7.690
+7.208
+6.971
+6.412
+
+TABLE III
+ANALYSIS RESULTS OF ANOVA
+
+Factor
+
+Self-disclosure attributes
+Relationship with agent
+Self-disclosure attributes Ã Relationship with agent
+Self-disclosure attributes
+Relationship with agent
+Self-disclosure attributes Ã Relationship with agent
+Self-disclosure attributes
+Relationship with agent
+Self-disclosure attributes Ã Relationship with agent
+
+F
+0.9593
+0.0031
+0.9581
+2.470
+0.0113
+1.158
+1.778
+5.106
+1.554
+
+p
+0.4422 ns
+0.9558 ns
+0.4430 ns
+0.0315 *
+0.9152 ns
+0.3286 ns
+0.1156 ns
+0.0242 *
+0.1715 ns
+
+Î·2
+p
+0.0086
+0.0000
+0.0086
+0.0219
+0.0000
+0.0104
+0.0158
+0.0092
+0.0139
+
+Trust
+(Qt1-Qt11)
+
+Empathy
+(Qet1-Qet12)
+
+Empathy
+(Qeo1-Qeo12)
+
+p: *p<0.05
+
+MULTIPLE COMPARISONS OF SELF-DISCLOSURE ATTRIBUTES: MEAN AND S.D.
+
+TABLE IV
+
+Category
+
+Empathy
+(Qet1-Qet12)
+
+Conditions
+opinions and attitudes
+hobbies
+work
+money
+personality
+body
+
+Mean
+33.47
+33.17
+34.28
+31.64
+32.02
+32.06
+
+S.D.
+6.425
+5.747
+6.740
+6.002
+6.331
+6.644
+
+agentâs capacity for empathy. Trust and empathy toward
+agents are necessary for agents to be utilized in society.
+If trust and empathy toward agents can be made constant
+through appropriate approaches, humans and agents can build
+a trusting relationship.
+
+In this study, we conducted an experiment to investigate
+the conditions necessary for humans to trust and empathize
+with agents. We focused on the agentâs self-disclosure at-
+tributes and the relationship with the agent as factors that
+influence trust and empathy. The purpose of this study was
+to investigate whether the attributes of self-disclosure and
+the relationship with the agent can control trust and empathy
+toward the agent in interactions with the agent. To this end,
+four hypotheses were formulated, and the data from the
+experiment were analyzed.
+
+The results of the experiment showed that the attribute
+of self-disclosure and the relationship with the agent did
+
+not cause statistically significant changes in trust toward the
+agent. H1, âTrust toward the agent changes with the attribute
+of self-disclosureâ was not supported. In addition, H2, âTrust
+toward the agent increases when a cooperative relationship
+is presented rather than a competitive relationship,â was not
+also supported. One possible factor that led to this result is
+that the amount of information in each of the self-disclosures
+did not change, despite differences in the attributes of self-
+disclosure. Regarding the relationship with the agent, it is
+also possible that trust in the agent is related to the agentâs
+ability as demonstrated by the agent actually performing the
+task, and that simply presenting the relationship with the
+agent in text messages alone, as in this study, would not be
+sufficient to make a sufficient difference.
+
+On the other hand, H3, âEmpathy toward the agent
+changes with the attribute of self-disclosure, but does not
+change with the type of relationship presented,â supported
+
+Fig. 4. Results of multiple comparisons on self-disclosure attributes. Red lines are medians, and circles are outliers.
+
+of the agent in advance on the basis of their relationship
+with the agent, simply by recognizing the agentâs position.
+This indicated the possibility that the evaluation of the agent
+is determined in advance when the person and the agent
+actually interact.
+
+A limitation of this study is that participants observed the
+agentâs self-introduction by watching a video. Because the
+results of this study focused on changes in the situation be-
+fore an actual task, participants did not perform an actual task
+with the agent. If a collaborative task had been added after
+this experiment, trust in the agent could have changed, and
+further changes in empathy toward the agent and the agentâs
+ability to empathize with the participant could have occurred
+after the task. Future research will also focus on changes in
+trust and empathy after a task for both the cooperative and
+competitive tasks, and we will propose a design that allows
+agents used in society to develop appropriate relationships
+with people.
+
+VI. CONCLUSIONS
+
+To establish appropriate trust and empathy relationships
+with anthropomorphic agents, including AI and robots, it is
+important for people to gain knowledge about the agents. An
+experiment was conducted with two inter-participant factors:
+the attribute of self-disclosure and the relationship with the
+agent. The number of levels for each factor was six levels of
+self-disclosure attributes and two levels of relationship with
+the agent. The dependent variables were trust and empathy
+toward the agent and the agentâs capacity for empathy. The
+results showed that there were no significant differences in
+trust in the agent regardless of the attribute of self-disclosure
+or relationship with the agent. However, there was a main
+effect of the attribute of self-disclosure on empathy toward
+the agent. In addition, a main effect was found for the
+agentâs ability to empathize with the participant regarding
+
+Fig. 5. Results of main effects on relationships with agent. Red lines are
+medians, and circles are outliers.
+
+the hypothesis. The results for H3 were similar to those
+obtained by Tsumura and Yamada [14], [15], and the same
+results were obtained in this study. In addition, since the
+agents in this study were engaged in conversation for the
+purpose of supporting learning, it is possible that the content
+of self-disclosure was relevant to the conversation because
+the content of work was statistically significantly more
+empathetic than the content of money in the self-disclosure
+attribute.
+
+Finally, H4, âThe empathy capacity of the agent does not
+change with the attribute of self-disclosure, but it changes
+with the type of relationship presented,â supported the hy-
+pothesis. The fact that this hypothesis was supported is a
+strength of this study. In this experiment, the relationship
+with the agent was only presented in short phrases via text
+message. Nevertheless, when participants perceived the agent
+as a cooperating partner, they indicated that they thought
+the agent had the capacity for empathy. In other words, the
+results showed that people evaluated the empathy capacity
+
+[16] A. Paiva, I. Leite, H. Boukricha, and I. Wachsmuth, âEmpathy in
+virtual agents and robots: A survey,â ACM Trans. Interact. Intell. Syst.,
+vol. 7, no. 3, 2017.
+
+[17] A. R. Rahmanti, H.-C. Yang, B. S. Bintoro, A. A. Nursetyo, M. S.
+Muhtar, S. Syed-Abdul, and Y.-C. J. Li, âSlimme, a chatbot with
+artificial empathy for personal weight management: System design
+and finding,â Frontiers in Nutrition, vol. 9, 2022.
+
+[18] D. A. GÂ´omez JÂ´auregui, F. Dollack, and M. PerusquÂ´Ä±a-HernÂ´andez,
+âRobot mirroring: Improving well-being by fostering empathy with an
+artificial agent representing the self,â in 2021 9th International Con-
+ference on Affective Computing and Intelligent Interaction Workshops
+and Demos (ACIIW), 2021, pp. 1â7.
+
+[19] W. Pan, B. Feng, V. S. Wingate, and S. Li, âWhat to say when
+seeking support online: A comparison among different levels of self-
+disclosure,â Frontiers in Psychology, vol. 11, 2020.
+
+[20] M. I. Ruissen and E. R. A. de Bruijn, âCompetitive game play atten-
+uates self-other integration during joint task performance,â Frontiers
+in Psychology, vol. 7, 2016.
+
+[21] N. L. Collins and L. C. Miller, âSelf-disclosure and liking: a meta-
+analytic review,â Psychol Bull, vol. 116, no. 3, pp. 457â475, Nov.
+1994.
+
+[22] J. Meng and Y. N. Dai, âEmotional Support from AI Chatbots:
+Should a Supportive Partner Self-Disclose or Not?â Journal of
+Computer-Mediated Communication, vol. 26, no. 4, pp. 207â222, 05
+2021. [Online]. Available: https://doi.org/10.1093/jcmc/zmab005
+[23] R. Davis, âWeb-based administration of a personality questionnaire:
+Comparison with traditional methods,â Behavior Research Methods,
+Instruments, & Computers, vol. 31, pp. 572â577, 1999.
+
+[24] S. M. Jourard, Self-disclosure: An experimental analysis of the trans-
+
+parent self.
+
+John Wiley, 1971.
+
+[25] D. Ullman and B. F. Malle, âMeasuring gains and losses in
+human-robot trust: Evidence for differentiable components of trust,â
+in 2019 14th ACM/IEEE International Conference on Human-Robot
+Interaction (HRI), ser. 2019 14th ACM/IEEE International Conference
+on Human-Robot Interaction (HRI), 2019, pp. 618â619. [Online].
+Available: https://doi.org/10.1109/HRI.2019.8673154
+
+[26] S. Y. X. Komiak and I. Benbasat, âThe effects of personalizaion and
+familiarity on trust and adoption of recommendation agents,â MIS Q.,
+vol. 30, pp. 941â960, 2006.
+
+the relationship with the agent. These results supported our
+hypothesis. This study showed that when humans perceive
+the empathy capacity of the agent, simply being presented
+with the agentâs relationship to the agent prior to the task
+changes their evaluation of the empathy capacity of the agent.
+This is an example of the importance of designing before the
+actual task to be performed when using agents in the future.
+
+ACKNOWLEDGMENTS
+
+This work was partially supported by JST, CREST (JP-
+MJCR21D4), Japan. This work was also supported by
+JST, the establishment of university fellowships towards the
+creation of science technology innovation, Grant Number
+JPMJFS2136.
+
+REFERENCES
+
+[1] A. D. Kaplan, T. T. Kessler, J. C. Brill, and P. A. Hancock, âTrust
+intelligence: Meta-analytic findings,â Human Factors,
+in artificial
+vol. 65, no. 2, pp. 337â359, 2023, pMID: 34048287. [Online].
+Available: https://doi.org/10.1177/00187208211013988
+
+[2] T. KÂ¨ahkÂ¨onen, K. Blomqvist, N. Gillespie, and M. Vanhala,
+âEmployee trust repair: A systematic review of 20 years of empirical
+research and future research directions,â Journal of Business
+Research, vol. 130, pp. 98â109, 2021. [Online]. Available: https:
+//www.sciencedirect.com/science/article/pii/S014829632100179X
+
+[3] H. Bunting,
+
+J. Gaskell, and G. Stoker, âTrust, mistrust and
+distrust: A gendered perspective on meanings and measurements,â
+Frontiers in Political Science, vol. 3, 2021. [Online]. Available:
+https://www.frontiersin.org/articles/10.3389/fpos.2021.642129
+
+[4] T. Nomura, T. Kanda, H. Kidokoro, Y. Suehiro, and S. Yamada, âWhy
+do children abuse robots?â Interaction Studies, vol. 17, no. 3, pp. 347â
+369, 2016.
+
+[5] B. L. Omdahl, Cognitive appraisal, emotion, and empathy, 1st ed.
+
+New York: Psychology Press, 1995.
+
+[6] S. D. Preston and F. B. M. de Waal, âEmpathy: Its ultimate and
+proximate bases,â Behavioral and Brain Sciences, vol. 25, no. 1, p.
+1â20, 2002.
+
+[7] O. Gillath, T. Ai, M. S. Branicky, S. Keshmiri, R. B. Davison,
+and R. Spaulding, âAttachment and trust in artificial intelligence,â
+Computers
+in Human Behavior, vol. 115, p. 106607, 2021.
+[Online]. Available: https://www.sciencedirect.com/science/article/pii/
+S074756322030354X
+
+[8] O. Asan, A. E. Bayrak, and A. Choudhury, âArtificial intelligence
+and human trust in healthcare: Focus on clinicians,â J Med Internet
+Res, vol. 22, no. 6, p. e15154, Jun 2020.
+[Online]. Available:
+https://doi.org/10.2196/15154
+
+[9] A. Maehigashi, T. Tsumura, and S. Yamada, âEffects of beep-sound
+interaction,â in Social
+timings on trust dynamics in human-robot
+Robotics, F. Cavallo, J.-J. Cabibihan, L. Fiorini, A. Sorrentino, H. He,
+X. Liu, Y. Matsumoto, and S. S. Ge, Eds. Cham: Springer Nature
+Switzerland, 2022, pp. 652â662.
+
+[10] ââ, âExperimental investigation of trust in anthropomorphic agents
+as task partners,â in Proceedings of the 10th International Conference
+on Human-Agent Interaction, ser. HAI â22. New York, NY, USA:
+Association for Computing Machinery, 2022, p. 302â305. [Online].
+Available: https://doi.org/10.1145/3527188.3563921
+
+[11] A. Maehigashi, âThe nature of trust in communication robots: Through
+comparison with trusts in other people and ai systems,â in 2022 17th
+ACM/IEEE International Conference on Human-Robot Interaction
+(HRI), 2022, pp. 900â903.
+
+[12] K. Okamura and S. Yamada, âAdaptive trust calibration for human-AI
+
+collaboration,â PLOS ONE, vol. 15, no. 2, pp. 1â20, 2020.
+
+[13] ââ, âEmpirical evaluations of framework for adaptive trust cali-
+bration in human-ai cooperation,â IEEE Access, vol. 8, pp. 220 335â
+220 351, 2020.
+
+[14] T. Tsumura and S. Yamada, âInfluence of agentâs self-disclosure on
+human empathy,â PLOS ONE, vol. 18, no. 5, pp. 1â24, 05 2023.
+[Online]. Available: https://doi.org/10.1371/journal.pone.0283955
+[15] ââ, âInfluence of anthropomorphic agent on human empathy through
+
+games,â IEEE Access, vol. 11, pp. 40 412â40 429, 2023.
+
+

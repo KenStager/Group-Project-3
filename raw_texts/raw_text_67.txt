@@ -1,0 +1,1794 @@
+Autonomous Agents and Multi-Agent Systems manuscript No.
+(will be inserted by the editor)
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy
+Optimization
+
+Eshagh Kargar* Â· Ville Kyrki
+
+1
+2
+0
+2
+
+p
+e
+S
+2
+
+]
+
+G
+L
+.
+s
+c
+[
+
+1
+v
+2
+8
+8
+0
+0
+.
+9
+0
+1
+2
+:
+v
+i
+X
+r
+a
+
+Received: date / Accepted: date
+
+Abstract This work considers the problem of learning cooperative policies in multi-
+agent settings with partially observable and non-stationary environments without a
+communication channel. We focus on improving information sharing between agents
+and propose a new multi-agent actor-critic method called Multi-Agent Cooperative
+Recurrent Proximal Policy Optimization (MACRPO). We propose two novel ways of
+integrating information across agents and time in MACRPO: First, we use a recur-
+rent layer in criticâs network architecture and propose a new framework to use a meta-
+trajectory to train the recurrent layer. This allows the network to learn the cooperation
+and dynamics of interactions between agents, and also handle partial observability.
+Second, we propose a new advantage function that incorporates other agentsâ rewards
+and value functions. We evaluate our algorithm on three challenging multi-agent envi-
+ronments with continuous and discrete action spaces, Deepdrive-Zero, Multi-Walker,
+and Particle environment. We compare the results with several ablations and state-of-
+the-art multi-agent algorithms such as QMIX and MADDPG and also single-agent
+methods with shared parameters between agents such as IMPALA and APEX. The
+results show superior performance against other algorithms. The code is available
+online at https://github.com/kargarisaac/macrpo.
+
+Keywords Multi-Agent Â· Reinforcement Learning Â· Cooperative
+
+1 Introduction
+
+While reinforcement learning (RL) has gained popularity in policy learning, many
+problems which require coordination and interaction between multiple agents cannot
+
+Eshagh Kargar
+Aalto University, Finland
+E-mail: eshagh.kargar@aalto.ï¬
+
+Ville Kyrki
+Aalto University, Finland
+E-mail: ville.kyrki@aalto.ï¬
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+Eshagh Kargar*, Ville Kyrki
+
+Fig. 1: Different frameworks for information sharing. Our proposed method and the standard approach
+for information sharing through agents are shown in separate boxes. Blue arrows are for ours, and the red
+ones are for the standard approach to share parameters. After collecting trajectories by agents, ours, in
+addition to sharing parameters between agents, uses the meta-trajectory to train the criticâs LSTM layer.
+This allows the critic to learn the interaction between agents along the trajectories through its hidden state.
+In contrast, the literature approach, which does parameter sharing, uses separate trajectories collected by
+agents to train the LSTM layer. For more details about the network architectures, please see Fig 2.
+
+be formulated as single-agent reinforcement learning. Examples of such scenarios
+include self-driving cars [1], multiplayer games [2, 3], and distributed logistics [4].
+Solving these kind of problems using single-agent RL is problematic, because the
+interaction between agents and the non-stationary nature of the environment due to
+multiple learning agents can not be considered [5]. Multi-agent reinforcement learn-
+ing (MARL) and cooperative learning between several interacting agents can be bene-
+ï¬cial in such domains and has been extensively studied [6, 5]. However, when several
+agents are interacting with each other in an environment without real-time commu-
+nication, the lack of communication deteriorates policy learning. In order to alleviate
+this problem, we propose to share information during training to learn a policy that
+implicitly considers other agentsâ intentions to interact with them in a cooperative
+manner. For example, in applications like autonomous driving and in an intersec-
+tion, knowing about other carsâ intentions can improve the performance, safety, and
+collaboration between agents.
+
+A standard paradigm for multi-agent planning is to use the centralized training
+
+and decentralized execution approach [7, 8, 9, 10], also taken in this work.
+
+In this work, we propose a new cooperative multi-agent reinforcement learning al-
+gorithm, which is an extension to Proximal Policy Optimization (PPO), called Multi-
+Agent Cooperative Recurrent Proximal Policy Optimization (MACRPO). MACRPO
+combines and shares information across multiple agents in two ways: First, in net-
+work architecture using long short term memory (LSTM) layer and train it by creating
+a meta-trajectory from trajectories collected by agents, as shown in Fig 1. This allows
+the critic to learn the cooperation and dynamics of interactions between agents, and
+also handle the partial observability. Second, in the advantage function estimator by
+considering other agentsâ rewards and value functions.
+
+Combinator(to create a meta-trajectory)Actor's LSTMtrainingCentralizedCritic's LSTMtrainingmeta-trajectoryoruoruoru...agent 1agent 2agent Ntime-step 1oruoruoru...agent 1agent 2agent Ntime-step T......Our Proposed MethodTrajectory Collectionagent 1agent 2agent N...Actor's LSTMtrainingCentralizedCritic's LSTMtraining...trajectory collected byagent Noruoruoru...t=1t=2t=Ttrajectory collected byagent 1oruoruoru...t=1t=2t=TUsed in the LiteratureMACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+3
+
+MACRPO uses a centralized training and decentralized execution paradigm that
+the centralized critic network uses extra information in the training phase and switches
+between agents sequentially to predict the value of a state for each agent. In the exe-
+cution time, only the actor networks are used, and each learned policy (actor network)
+only uses its local information (i.e., its observation) and acts in a decentralized man-
+ner.
+
+Moreover, in environments with multiple agents that are learning simultaneously
+during training, each agentâs policy and the dynamics of the environment, from each
+agentâs perspective, is constantly changing. This causes the non-stationarity prob-
+lem [5]. To reduce this effect, MACRPO uses an on-policy approach and the most
+recent collected data from the environment.
+
+In summary, our contributions are as follows: (1) proposing a cooperative on-
+policy centralized training and decentralized execution framework that is applicable
+for both discrete and continuous action spaces; (2) sharing information across agents
+using two ways: a recurrent component in the network architecture which uses a
+combination of trajectories collected by all agents and an advantage function estima-
+tor that uses a weighted combination of rewards and value functions of individual
+agents; (3) evaluating the method on three cooperative multi-agent tasks: DeepDrive-
+Zero [11], Multi-Walker [12], and Particle [13] environments, demonstrating similar
+or superior performance compared to the state-of-the-art.
+
+The rest of this paper is organized as follows. The review of related works in
+Section 2 demonstrates that while MARL has been extensively studied, existing ap-
+proaches do not address the dynamics of interaction between agents in detail. In Sec-
+tion 3, we provide the required background in Markov Games and Proximal Policy
+Optimization. The problem deï¬nition and the proposed method are described in Sec-
+tion 4, with emphasis on the two innovations, meta-trajectory for recurrent network
+training and joint advantage function. Then, Section 5 presents empirical evaluation
+in three multi-agent environments showing superior performance of the proposed ap-
+proach compared to state-of-the-art. Finally, in Section 6 we conclude that implicit
+information sharing can be used to improve cooperation between agents while dis-
+cussing its limitations in settings with high number of agents.
+
+2 RELATED WORK
+
+The most straightforward and maybe the most popular approach to solve multi-agent
+tasks is to use single-agent RL and consider several independent learning agents.
+Some prior works compared the performance of cooperative agents to independent
+agents, and tried independent Q-learning [14] and PPO with LSTM layer [15], but
+they did not work well in practice [16]. Also, [17] tried to learn a joint value function
+for two agents and used PPO with LSTM layer to improve the performance in multi-
+agent setting.
+
+In order to use single-agent RL methods for multi-agent setting, improve the per-
+formance, and speed up the learning procedure, some works used parameter sharing
+between agents [12, 18]. Especially in self-play games, it is common to use the cur-
+rent or older versions of the policy for other agents [2]. We will compare our proposed
+
+4
+
+Eshagh Kargar*, Ville Kyrki
+
+method with several state-of-the-art single-agent RL approaches with shared parame-
+ters between agents proposed in [18] in the experiments section. Our way of training
+the LSTM layer in the critic differs from parameter sharing used in the literature such
+that instead of using separate LSTMs for each agent, the LSTM layer in our method
+has a shared hidden state, which is updated using a combination of all agentsâ in-
+formation. This lets the LSTM layer to learn about the dynamics of interaction and
+cooperation between agents and across time.
+
+In addition to using single-agent RL methods with or without parameter sharing,
+some other works focused on designing multi-agent RL algorithms for multi-agent
+settings. In multi-agent environments, considering communication between agents
+will lead to designing multi-agent methods. The communication channel is often lim-
+ited, leading to methods that try to optimize the communication including message
+structure [19, 20]. However, in some environments, there is no explicit communica-
+tion channel between agents. For example, consider an autonomous driving environ-
+ment without connection between cars. Finding a solution to address this problem
+and decrease the lack of communication effect seems necessary.
+
+A recently popularized paradigm to share information between agents is to use
+centralized training and decentralized execution. In general, we can categorize these
+types of approaches into two groups: value-based and actor-critic-based. In value-
+based methods, the idea is to train a centralized value function and then extract the
+value functions for each agent from that to act in a decentralized manner in the ex-
+ecution time [21, 22]. On the other hand, the actor-critic-based methods have actor
+and critic networks [9, 10]. The critic network has access to data from all agents and
+is trained in a centralized way, but the actors have only access to their local infor-
+mation. They can act independently in the execution time. The actors can be inde-
+pendent with individual weights [9] or share the policy with shared weights [10]. In
+this work, we use an actor-critic-based method with centralized training and decen-
+tralized execution, providing two innovations to improve information sharing without
+communication channel between agents during execution.
+
+In [10], which is one of the works near ours, the actor is recurrent, but the critic
+is a feed-forward network, whereas our actor and critic are both recurrent, and the
+recurrent layer in our critic has a crucial role in our method. Their method is also for
+settings with discrete action spaces, whereas we test our method on three environ-
+ments with both discrete and continuous action spaces.
+
+The other similar work to ours, which is one of the most popular MARL methods,
+is the multi-agent deep deterministic policy gradient (MADDPG) [9] that proposed
+similar frameworks with centralized training and decentralized execution. They tested
+their method on some Particle environments [13]. Their approach differs from ours in
+the following ways: (1) They do not have the LSTM (memory) layer in their network,
+whereas the LSTM layer in the critic network plays a critical role in our method. It
+helps to learn the interaction and cooperation between agents and also mitigate the
+partial observability problem. (2) They tested their method on environments with
+discrete action spaces, but we test our method on environments with both continuous
+and discrete action spaces. (3) They consider separate critic networks for each agent,
+which is beneï¬cial for competitive scenarios, whereas we use a single critic network
+and consider the cooperative tasks. (4) Their method is off-policy with replay buffer,
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+5
+
+and they combat the non-stationarity problem by centralized training. In contrast, our
+approach, in addition to centralized training, is an on-policy method without replay
+buffer allowing the networks to use the most recent data from the environment. We
+will compare our method with MADDPG and show that ours has comparable or su-
+perior performance. [23] extends the MADDPG idea and adds a recurrent layer into
+the networks, but they have separate actors and critics for agents, similar to MAD-
+DPG, and recurrent hidden states of critics are isolated, and there is no combination
+of information in them. They also tested their method on one environment with a
+discrete action space.
+
+3 BACKGROUND
+
+3.1 MARKOV GAMES
+
+In this work, we consider a multi-agent extension of Partially Observable Markov
+Decision Processes (MPOMDPs) which is also called partially observable Markov
+games [24]. A Markov game for N agents is deï¬ned by a set of states S describing
+the possible conï¬gurations of all agents, a set of actions U1, . . . , UN and a set of
+observations O1, . . . , ON for each agent. A transition function T : S Ã U1 Ã . . . Ã
+UN â S gives the probability distribution of the next state as a function of current
+state and actions. Each agent i uses a stochastic policy ÏÎ¸i : Oi Ã Ui â [0, 1] to
+choose action and go to the next state based on the transition function and achieve
+reward ri : S Ã Ui â R. We consider games where the reward can be decomposed
+into individual agent rewards ri. Each agent i aims to maximize the rewards for all
+agents in a cooperative way [9].
+
+3.2 Proximal Policy Optimization
+
+Proximal Policy Optimization (PPO) is a family of policy gradient methods for solv-
+ing reinforcement learning problems, which alternate between sampling data through
+interaction with the environment, and optimizing a surrogate objective function us-
+ing stochastic gradient descent while ensuring the deviation from the policy used to
+collect the data is relatively small. One of the differences between PPO and stan-
+dard policy gradients is that standard policy gradient methods perform one gradient
+update per data sample, while PPO does multiple epochs of minibatch updates. The
+main objective that PPO tries to maximize is
+
+LCLIP (Î¸) = ËEt[min(ft(Î¸) ËAt, clip(ft(Î¸), 1 â (cid:15), 1 + (cid:15)) ËAt)]
+
+where ËAt is the Generalized Advantage Estimation (GAE), (cid:15) is a hyperparameter
+ÏÎ¸old (ut|ot) . This objective prevents
+
+and ft(Î¸) denotes the probability ratio ft(Î¸) = ÏÎ¸(ut|ot)
+large policy updates by clipping the ratio between [1 â (cid:15), 1 + (cid:15)].
+
+The total objective function for PPO is
+
+LCLIP +V F +S
+
+t
+
+(Î¸) = ËEt[LCLIP
+
+t
+
+(Î¸) â c1LV F
+
+t
+
+(Î¸) + c2S[ÏÎ¸](ot)]
+
+6
+
+Eshagh Kargar*, Ville Kyrki
+
+where c1, c2 are coefï¬cients, S denotes an entropy bonus, and LV F
+loss for critic network:
+
+t
+
+is a squared-error
+
+LV F
+t
+
+(Î¸) = (VÎ¸(ot) â V targ
+
+t
+
+)2
+
+(1)
+
+In the above equations, VÎ¸(ot) is the state-value function and Î¸ denotes the combined
+parameter vector of actor and critic networks [25].
+
+4 Method
+
+In this section, we ï¬rst explain the problem setting and review the proposed ideas to
+solve it. We then proceed with describing the proposed framework used in MACRPO
+for training the LSTM layer. Finally, we present a detailed description of MACRPO
+objective function including the novel advantage estimation approach and the learn-
+ing algorithm.
+
+4.1 Problem Setting and Solution Overview
+
+Information sharing across agents can help to improve the performance and speed up
+the learning procedure [12, 10, 18]. In this work, we focus on improving information
+sharing between agents in multi-agent settings in addition to just sharing parameters
+across actors. We propose Multi-Agent Cooperative Recurrent Proximal Policy Op-
+timization (MACRPO) algorithm, which is a multi-agent cooperative algorithm and
+uses the centralized learning and decentralized execution framework. In order to im-
+prove information sharing between agents, MACRPO, in addition to use parameter
+sharing, uses two novel ideas: (a) a recurrent component in the critic architecture
+which uses a meta-trajectory, created by a combination of trajectories collected by all
+agents, to train and is described in Section 4.2, (b) an advantage function estimator
+that uses a weighted combination of rewards and value functions of individual agents,
+which is explained in Section 4.3.
+
+We consider the case where each agent has its local reward and wants to cooper-
+ate with other agents to solve a task. In other words, each agent wants to maximize
+its future cumulative reward while considering maximizing all agentsâ total reward
+together in a collaborative way. This paper does not solve the credit assignment prob-
+lem in multi-agent cooperative games, where all agents in a team have the same team
+reward. This algorithm can be applied to that kind of problem, but it is not optimized
+for that setting.
+
+4.2 MACRPO Framework
+
+Fig 1 shows the proposed framework for training MACRPOâs actor and critic. This
+framework has one critic network and one actor network. To consider the partial
+observability of multi-agent settings, we use LSTM layers in the neural network ar-
+chitectures, both in actor and critic networks.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+7
+
+(a)
+
+(b)
+
+Fig. 2: Actor and critic network architectures. (a) Actor network architecture for agent i which uses the
+collected trajectory by itself, (b) The centralized critic network architecture which uses the created meta-
+trajectory. Note that u and v denote action and value, respectively.
+
+The actor is trained using trajectories collected by all agent. We denote the shared
+weights of actors with Î¸a and use the same and the latest trained weights for all
+agents. The agents will behave differently in the execution time because of different
+inputs.
+
+The trajectory data for one episode with length T for agent i, which is used for
+
+training actor is denoted as
+
+1, ui
+oi
+
+1, ri
+
+1, . . . , oi
+
+T , ui
+
+T , ri
+T
+
+To allow the critic network to integrate information across agents and across time,
+we use all agentsâ trajectories in one roll-out and puts them in a sequence to create
+a meta-trajectory, and train its network using thatâ ï¬rst data from agent 1, then
+agent 2, then agent 3, and so on. See Fig 1. We denote the criticâs weights with
+Î¸c. To remove the dependency to agentsâ orders, we randomize agentsâ orders in
+environments with more than two agents. So the LSTM layer in each time-step, which
+we have data from N agents, will switch between all agents and get their observation,
+or any other additional input that we want to feed into the critic, such as the previous
+action of that agent. The meta-trajectory for training the critic network is
+
+(o1
+
+1, . . . , oN
+, (o1
+
+1 ), (u1
+
+1, . . . , uN
+
+1 ), (r1
+
+1, . . . , rN
+
+T , . . . , oN
+
+T ), (u1
+
+T , . . . , uN
+
+T ), (r1
+
+1 ), . . .
+T , . . . , rN
+T )
+
+By using the above meta-trajectory, the critic network can use the data from all
+agents and learn about the agentsâ history, the interaction between agents, and some-
+how the environmentâs dynamic using its hidden state. In other words, MACRPO is
+able to consider temporal dynamics using the LSTM layer, which incorporates a his-
+tory of states and actions across all agents. Modeling temporal dynamics allows the
+latent space to model differential quantities such as the rate of change (derivative) be-
+tween the distance of two agents and integral quantities such as the running average
+of the distance.
+
+Additionally, the hidden state of recurrent networks can be viewed as a communi-
+cation channel that allows information to ï¬ow between agents to create richer training
+
+LSTMLSTM h, c oi1oi2...EmbeddingEmbeddingLinearui1Linearui2LSTM h, c oiTEmbeddingLinearuiTtrajectory collected by agent iLSTMLSTM h, c <o11, a11><oN1, aN1>EmbeddingEmbeddingLinearv11LinearvN1...LSTMLSTM<o1T, a1T><oNT, aNT>EmbeddingEmbeddingLinearv1TLinearvNTtime-step 1time-step T h, c ... h, c ...meta-trajectory8
+
+Eshagh Kargar*, Ville Kyrki
+
+signals for actors during training. The network will update the hidden state in each
+time-step by getting the previous hidden state and the data from the agent i in that
+time-step. The network architectures for actor and critic are shown in Fig 2.
+
+4.3 Objective Function
+
+In addition to the LSTM layer, we propose a novel advantage function estimator and
+discounted return equations to integrate information across all agents. We consider
+the V targ
+in Equation (1) as discounted return and calculate it for agent i at time t as
+t
+
+Ri
+
+t = rt + Î³rt+1 + . . . + Î³T ât+1V (oi
+
+T )
+
+where
+
+rt =
+
+t + Î² (cid:80)
+ri
+N
+
+j(cid:54)=i rj
+
+t
+
+,
+
+V (oi
+
+T ) =
+
+V (oi
+
+T ) + Î² (cid:80)
+N
+
+j(cid:54)=i V (oj
+T )
+
+(2)
+
+(3)
+
+where ri
+weight for other agents data to calculate a weighted mean, and V (oi
+the ï¬nal state of agent i.
+
+t is the reward value for agent i at time t, Î³ is the discount factor, Î² is a
+T ) is the value for
+
+Also, the advantage for each agent i is calculated as
+
+ËAi
+
+t = Î´i
+
+t + (Î³Î»)Î´i
+
+t+1 + . . . + . . . + (Î³Î»)T ât+1Î´i
+
+T â1
+
+where
+
+1
+N
++Î²
+
+Î´i
+t =
+
+[ri
+
+t + Î³V (oi
+
+t+1) â V (oi
+
+t)+
+t+1) â V (oj
+
+t ))]
+
+(cid:88)
+
+(rj
+
+t + Î³V (oj
+
+(4)
+
+(5)
+
+j(cid:54)=i
+
+where Î» is for GAE algorithm, and V (oi
+t) is the state-value at time t for agent i. The
+intuition behind considering other agentsâ information is, that agent i by doing action
+ui
+t affects the rewards and values of the other agents in addition to its own.
+
+It is worth mentioning that in MACRPO, we use separate networks for actor and
+critic. Therefore, the objective functions of the actor and critic networks are separate.
+
+The actorâs objective function in the shared weights case is deï¬ned as
+
+LCLIP +S
+
+t
+
+(Î¸a) = ËEt[LCLIP
+
+t
+
+(Î¸a) + cS[ÏÎ¸a ](ot)]
+
+and the critic objective function is
+
+LV F
+t
+
+(Î¸) = (VÎ¸c(ot) â V targ
+
+t
+
+)2.
+
+(6)
+
+(7)
+
+The MACRPO algorithm with parallelized implementation is shown in Algo-
+
+rithm 1.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+9
+
+Algorithm 1 MACRPO
+1: Randomly initialize actor and critic networksâ parameters Î¸c and Î¸a
+2: for iteration=1, 2, ... do
+3:
+4:
+
+for environment=1, 2, ..., E do
+
+Run all N agents with latest trained weights in the environment for T time-steps and collect data
+
+Combine collected trajectories by all agents according to Fig 1
+Compute discounted returns and advantage estimates using Equations (4, 2)
+
+end for
+for epoch=1, ..., K do
+
+for minibatch=1, ..., M do
+
+5:
+6:
+7:
+8:
+9:
+10:
+11:
+12:
+13:
+14: end for
+
+end for
+
+end for
+
+Calculate the loss functions using Equations (6, 7)
+Update Actor and Critic parameters via Adam
+
+5 EXPERIMENTS
+
+This section presents empirical results that compare the performance of our proposed
+method, MACRPO, with several ablations to see the effect of each proposed novelty.
+We also compare our method with recent advanced RL methods in both single-agent
+domain with shared parameters between agents [12, 18] and multi-agent domain like
+MADDPG [9] and QMIX [22].
+
+5.1 Test Environments
+
+We test our method in three MARL environments. In two of them, DeepDrive-Zero [11]
+and Multi-Walker [26] environments, the action space is continuous, and in the third
+environment, the Particle environment [13], the action space is discrete.
+
+(a)
+
+(b)
+
+(c)
+
+Fig. 3: Considered MARL simulation environments (a) DeepDrive-Zero environment: an unprotected left
+turn scenario, (b) Multi-Walker environment, (c) Particle environment: cooperative navigation.
+
+DeepDrive-Zero Environment: DeepDrive-Zero environment [11] is a 2D simulation
+environment for self-driving cars which uses a bike model for the cars. We use the
+unsignalized intersection scenario in this work, which is shown in Fig 3a. To test our
+
+10
+
+Eshagh Kargar*, Ville Kyrki
+
+algorithm, we consider two cars in the environment, one starts from the south and
+wants to follow the green waypoints to do an unprotected left-turn, and the other one
+starts from the north and wants to go to the south and follow the orange waypoints.
+The agents need to learn to cooperate and negotiate to reach their destination without
+any collision.
+
+The observation space is a vector with continuous values. Each agent in the en-
+vironment receives some information about itself, as well as information from other
+agents. This information can come from some modules like Perception, Localization,
+and HDMap in a self-driving car and be used by the decision making and control
+modules. The observation vector for each agent contains some information about the
+agent itself like distance and angle to waypoints, velocity, acceleration, and distance
+to left and right lanes, and also some information about the other agents like the rela-
+tive velocity of the other agent to the ego agent, velocity and acceleration of the other
+car, angles to corners of the other agent, and distance to corners of the other agent.
+
+Each action vector element is continuous from -1 to 1: steering, acceleration,
+and braking. Negative acceleration can be used to reverse the car, and the network
+outputs are scaled to reï¬ect physically realistic values. This environment also has a
+discretized version that we used in discrete action methods.
+
+The reward function is a weighted sum of several terms like speed, reaching the
+destination, collision, G-force, jerk, steering angle change, acceleration change, and
+staying in the lane. Initially, we used 0.5, 1, 4, 1 Ã 10â7, 6 Ã 10â6, 0.0001, 0.0001,
+0.001 as weights, then used curriculum learning to smooth the driving behavior.
+
+Multi-Walker Environment: The multi-walker environment is a multi-agent contin-
+uous control locomotion task introduced in [12]. The environment contains agents
+(bipedal walkers) that can actuate the joints in each of their legs and convey objects
+on top of them. Fig 3b shows a snapshot from the environment. To keep the package
+balanced and move it as far to the right as possible, the walkers must coordinate their
+movements. A positive reward is given to each walker locally, based on the change in
+the package distance summed with 130 times the change in the walkerâs position. A
+walker is given a reward of -100 if they fall, and all walkers receive a reward of -100
+if the package falls while moving forward has a reward of 1. By default, the environ-
+ment is done whenever a walker or package falls or when the walkers reach the edge
+of the terrain. The action space is continuous, with four values for torques applied to
+each walkerâs leg. The observation vector for each walker is a 32-dimensional vec-
+tor that contains information about nearby walkers as well as data from some noisy
+LiDAR sensors.
+
+Cooperative Navigation in Particle Environment: Using the particle environment
+package from OpenAI [9], we created a new environment based on the coopera-
+tive navigation environment. This new environment consists of N agents and N land-
+marks, and agents must avoid collisions and cooperate to reach and cover all land-
+marks. We assign each agent a landmark and calculate its local reward based on its
+proximity to its landmark and collisions with other agents. As a result, agents will
+have different reward values; not one shared reward. Each agentâs observation data is
+its position and velocity, as well as the relative position of other agents and landmarks.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+11
+
+There are ï¬ve discrete actions in the action space: up, down, left, right, and no move.
+After 25 time-steps, the episode ends. Fig 3c shows the simulation environment.
+
+5.2 Ablation Study
+
+Four ablations were designed to evaluate each novelty. In all cases, the parameter
+sharing proposed in [12, 18] was used:
+
+FF-NIC (Feed-forward multi-layer perceptron (MLP) network + no information com-
+bination): two feed-forward neural networks for actor and critic. The GAE is calcu-
+lated using the single-agent PPO GAE equation [25].
+
+FF-ICA (Feed-forward MLP network + information combination using the advan-
+tage estimation function): This case is similar to the previous case, but the GAE is
+calculated using Equation (4).
+
+LSTM-NIC (LSTM network + no information combination): two networks with LSTM
+layers for actor and critic. There is no information sharing between agents through
+GAE calculation or the LSTMâs hidden state. The GAE is calculated using the single-
+agent PPO GAE equation [25].
+
+LSTM-ICA (LSTM network + information combination using the advantage estima-
+tion function but not through the LSTM layer): This case is identical to the previous
+case, but the GAE is calculated using Equation (4).
+
+LSTM-ICF (LSTM network + information sharing using both the advantage estima-
+tion function and an LSTM layer in the critic network (full proposed method)): two
+networks with LSTM layers for actor and critic. In addition to parameter sharing
+between actors, the information integration is done through both the advantage esti-
+mation function and the LSTMâs hidden state in the centralized critic network, shown
+in Fig 1.
+
+Also, in order to see the effect of the Î² value in Equations (3, 5), the proposed
+
+method was evaluated with different Î² values.
+
+All experiments were repeated with identical random seeds for each method to
+
+reduce the effect of randomness.
+
+DeepDrive-Zero Environment: We ran all ablations for ten random seeds in the DeepDrive-
+Zero environment to test our proposed method. We used self-play in simulations and
+used the latest set of parameters for actors in each episode. The results are shown
+in Fig 4a. The x-axis shows the number of training iterations. In each iteration, we
+ran 100 parallel environments for 3000 steps and collected data. Next, we updated
+actors and critic networks using the collected data. After each iteration, we ran the
+agents for 100 episodes, took the mean of these episodesâ rewards (sum of all agentsâ
+rewards), and plotted them. The shaded area shows one standard deviation of episode
+
+12
+
+Eshagh Kargar*, Ville Kyrki
+
+rewards. The hyperparameters used in the MACRPO algorithm are listed in Table 2
+in Appendix A.
+
+The proposed algorithm, LSTM-ICF, outperforms the ablations. The next best
+performances are for LSTM-ICA and FF-ICA, which are almost the same. More-
+over, information integration in the advantage function, in both FF-ICA and LSTM-
+ICA, improves the performance compared to FF-NIC and LSTM-NIC; however,
+the achieved performance gain in the fully connected case is higher. The FF-ICA
+surpasses LSTM-NIC, which shows the effectiveness of sharing information across
+agents through the proposed advantage function, even without an LSTM layer. Fur-
+thermore, the addition of LSTM layer to add another level of information integration,
+LSTM-ICF, boosts performance when compared to FF-ICA. Fig 4b shows the anal-
+ysis of the effect of different Î² values in Equations (2, 3, 5). The best performance
+is for Î² = 1, and as the value of Î² is reduced, the agentsâ performance decreases.
+We demonstrate the effect of different Î² values in this environment, but for other
+environments, the results will be provided for Î² â {0, 1} only.
+
+To achieve smooth driving performance, a curriculum-based learning method and
+gradual weight increase of reward factors were used. The weights of Jerk, G-force,
+steering angle change, acceleration change, and going out of the lane in the reward
+function were gradually increased to 3.3 Ã 10â6, 0.1, 3, 0.05, and 0.3, respectively.
+We then added termination of episodes for lane violation to force cars to stay be-
+tween the lanes. After curriculum learning and smoothing the driving behavior, the
+cars follow the waypoints to reach their destination. The car that starts from the bot-
+tom and wants to make a left-turn yields nicely for the other agent if they reach the
+intersection simultaneously and then make the left-turn, and if it has time to cross the
+intersection before the other agent arrives, it does. A video of the ï¬nal result can be
+found in the supplementary materials.
+
+Multi-Walker Environment: We ran 20 parallel environments and 2500 time-steps
+during each update iteration for the Multi-Walker environment. After each iteration,
+we ran agents for 100 episodes and plotted the mean of these episodesâ rewards. Each
+episodeâs reward is the sum of all the agentsâ rewards. Ten different random seeds are
+used for each ablation. We also used the latest set of parameters for all actors. The
+hyperparameters used in the MACRPO algorithm are listed in Table 2 in Appendix A.
+Fig 5 shows a massive performance improvement of our proposed method, LSTM-
+ICF with Î² = 1, when compared to ablations. LSTM-ICF with Î² = 0, information
+integration through only the LSTM layer, has the next best performance. After these
+two, LSTM-ICA, which does the information integration using the advantage esti-
+mation function, performs better than FF-ICA, FF-NIC, and LSTM-NIC cases. The
+effect of Î² value and information sharing through the advantage estimation function
+in performance improvement can be seen as we move from LSTM-ICF with Î² = 0
+to LSTM-ICF with Î² = 1 and from FF-NIC to FF-ICA. By comparing FF-ICA and
+LSTM-ICF, we can also see the impact of information integration using the LSTM
+layer. Note that the Î² value in FF-ICA is equal to 1. A video of the trained model can
+be found in the supplementary materials.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+13
+
+(a)
+
+(b)
+
+Fig. 4: Simulation results in DeepDrive-Zero environment. (a) Mean episode reward for different ablations,
+(b) mean episode reward for different Î² values. The shaded area shows one standard deviation.
+
+Cooperative Navigation in Particle Environment: In the particle environment, in
+each iteration, we ran 20 parallel environments to collect data for 2500 time steps and
+used that data to update the network. The agents were then evaluated using the trained
+weights for 100 episodes. We ran the simulation with six random seeds. MACRPO
+hyperparameters are shown in Table 2 in Appendix A.
+
+The results of this environment are depicted in 6. Similar to the other two envi-
+ronments, the proposed LSTM-ICF with Î² = 1 outperforms ablations. The next best
+performance is achieved with LSTM-ICF with Î² = 0, which only uses the LSTM
+layer that was trained using the created meta-trajectory. Moreover, the LSTM-ICAâs
+
+14
+
+Eshagh Kargar*, Ville Kyrki
+
+Fig. 5: Multi-Walker simulation results for different ablations.
+
+Fig. 6: Particle environment simulation results for different ablations.
+
+performance is almost identical to LSTM-ICF when Î² = 0. This shows that both
+novel ideas cause the same performance gain over LSTM-NIC. These results show
+that cases with LSTM layer perform better than feed-forward ones, even in the FF-
+ICA case, which integrates information through the advantage function. A video of
+the trained model can be found in the supplementary materials.
+
+Both ideas were evaluated in the ablation study, and the results clearly demon-
+strate the effect of the proposed ideas in performance improvement. Ablation stud-
+ies provide evidence that the ï¬ndings are not spurious, but are associated with the
+proposed enhancements. Î² = 1 corresponds to the total reward over all agents, the
+optimization goal. However, it is known that such a team reward causes a credit as-
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+15
+
+Table 1: Comparing performance of our method with state-of-the-art approaches. Numbers show max
+average reward in each environment for ten random seeds, except for the Multi-Walker environment which
+is 1000 random seeds.
+
+Method
+
+DeepDrive-
+Zero
+
+Multi-Walker
+
+Particle
+
+DQN
+RDQN
+A2C
+DDPG
+PPO
+SAC
+TD3
+APEX-DQN
+APEX-DDPG
+IMPALA
+MADDPG
+QMIX
+Ours (Î² = 0)
+Ours (full model)
+
+4
+6
+0.5
+2
+16
+-1.5
+-1
+8
+14
+-0.66
+-0.1
+-0.9
+17.3
+23.7
+
+-100000
+-100000
+-27.6
+-57.8
+41
+-16.9
+-8
+-100000
+-23
+-88
+-96
+-24
+24.2
+47.8
+
+-151.8
+153.2
+-148.6
+-
+-144.3
+-143.7
+-
+-136.2
+-
+-155.2
+-98.3
+-155.6
+-100.7
+-95.8
+
+signment problem since each agentâs contribution to the team reward could differ.
+Due to this, we wanted to experimentally study whether beta values less than one
+would alleviate the credit assignment problem to the extent that the suboptimality
+of the reward would be overcome. According to the results of the experiment, this
+wasnât the case, and Î² = 1 gave the best performance.
+
+Moreover, as the results illustrate, both proposed ideas result in a performance
+gain, but this is not the same for all environments. In the DeepDrive-Zero environ-
+ment, information integration through advantage function estimation improves the
+performance slightly more than the LSTM layer. However, in the Multi-Walker en-
+vironment, the LSTM layer is more effective, and in the Particle environment, their
+effect is almost the same.
+
+5.3 Comparison to State-of-the-Art Methods
+
+We compared the proposed method with several state-of-the-art algorithms in each
+environment. Our method is compared against several single-agent baselines with
+shared parameters across agents (DQN, RDQN, A2C, DDPG, PPO, SAC, TD3, APEX-
+DQN, APEX-DDPG, and IMPALA), which were tested in [18]. We also compared
+our method to state-of-the-art multi-agent approaches MADDPG [9] and QMIX [22].
+Each agentâs goal in MACRPO is to maximize the total reward of all agents,
+while the goal of other methods is to maximize the total reward of each agent without
+considering other agentsâ reward in their objective function. In order to have a more
+fair comparison, We report the result for our method when Î² = 0 too. The results are
+shown in Table 1. To get a better idea of the performance of the algorithms, the mean
+episode reward for different baseline algorithms in three environments are shown in
+Fig 7.
+
+16
+
+Eshagh Kargar*, Ville Kyrki
+
+DeepDrive-Zero Environment: In this environment, our full method and also the case
+with Î² = 0 achieved the most average reward. The next best was PPO with parameter
+sharing between agents followed by APEX-DQN and APEX-DDPG. An environment
+with discretized action space was used for algorithms with discretized action space.
+
+Multi-Walker Environment: Similar to the previous environment, the proposed method
+outperformed other methods by a large margin with an average reward of 47.8. Next,
+PPO with parameter sharing had the second-best performance with a maximum av-
+erage reward of 41. Our method with Î² = 0 achieved the third best average reward.
+The baselinesâ results reported for this environment in Table 1 are taken from [18].
+
+Cooperative Navigation in Particle Environment: As in both previous environments,
+our approach outperformed other approaches in this environment as well, although
+the difference was minor compared to MADDPG. Our method with Î² = 0 is in
+the third place after MADDPG with small margin. In this environment with discrete
+action space, we used a categorical distribution instead of a multivariate Gaussian
+distribution. Algorithms with continuous action spaces were not tested in this en-
+vironment, and are marked with a dash in the table. Adapting these algorithms for
+discrete action environments could be achieved using the same trick, but we did not
+make changes to the standard implementation for baselines from [18].
+
+For the multi-walker environment, we used the hyperparameters from [18]; for
+other environments, we started from the original parameters and further tuned them
+using grid search to improve performance. All hyperparameters for each algorithm
+are included in Appendix A.
+
+The results show that the performance beneï¬t given by the two proposed ways
+of sharing information across agents is signiï¬cant such that the method outperforms
+state-of-the-art algorithms.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+17
+
+(a)
+
+(b)
+
+(c)
+
+Fig. 7: Analysis of baseline algorithms proposed in [18] in three environments: (a) DeepDrive-Zero, (b)
+Multi-Walker, and (c) Particle environments.
+
+18
+
+Eshagh Kargar*, Ville Kyrki
+
+6 Conclusion & Future Work
+
+In this paper, MACRPO, a centralized training and decentralized execution frame-
+work for multi-agent cooperative settings was presented. The framework is applica-
+ble to both discrete and continuous action spaces. In addition to parameter sharing
+across agents, this framework integrates information across agents and time in two
+novel ways: network architecture and the advantage estimation function. An abla-
+tion study in three environments revealed that both ways of information sharing are
+beneï¬cial. Furthermore, the method was compared to state-of-the-art multi-agent al-
+gorithms such as QMIX and MADDPG, as well as single-agent algorithms that share
+parameters between agents, such as IMPALA and APEX. The results showed that the
+proposed algorithm performed signiï¬cantly better than state-of-the-art algorithms. A
+single recurrent network to summarize the state of all agents may be problematic
+when the number of agents is large. A potential solution to this problem could be to
+use an attention mechanism for the agent to learn on which other agents to pay at-
+tention to, warranting further study to realize the potential of the proposed approach
+with a high number of agents.
+
+ACKNOWLEDGMENT
+
+The authors wish to acknowledge CSC â IT Center for Science, Finland, for generous
+computational resources. We also acknowledge the computational resources provided
+by the Aalto Science-IT project.
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+19
+
+References
+
+[1] Shai Shalev-Shwartz, Shaked Shammah, and Amnon Shashua. âSafe, multi-
+
+agent, reinforcement learning for autonomous drivingâ. In: arXiv preprint arXiv:1610.03295
+(2016).
+
+[2] Christopher Berner et al. âDota 2 with large scale deep reinforcement learn-
+
+ingâ. In: arXiv preprint arXiv:1912.06680 (2019).
+
+[3] Oriol Vinyals et al. âGrandmaster level in StarCraft II using multi-agent rein-
+
+forcement learningâ. In: Nature 575.7782 (2019), pp. 350â354.
+
+[4] Wang Ying and Sang Dayong. âMulti-agent framework for third party logistics
+in E-commerceâ. In: Expert Systems with Applications 29.2 (2005), pp. 431â
+436.
+
+[5] Pablo Hernandez-Leal, Bilal Kartal, and Matthew E Taylor. âA survey and
+critique of multiagent deep reinforcement learningâ. In: Autonomous Agents
+and Multi-Agent Systems 33.6 (2019), pp. 750â797.
+
+[6] Thanh Thi Nguyen, Ngoc Duy Nguyen, and Saeid Nahavandi. âDeep rein-
+forcement learning for multiagent systems: A review of challenges, solutions,
+and applicationsâ. In: IEEE transactions on cybernetics (2020).
+
+[7] Landon Kraemer and Bikramjit Banerjee. âMulti-agent reinforcement learning
+as a rehearsal for decentralized planningâ. In: Neurocomputing 190 (2016),
+pp. 82â94.
+Jakob Foerster et al. âLearning to communicate with deep multi-agent rein-
+forcement learningâ. In: Advances in neural information processing systems.
+2016, pp. 2137â2145.
+
+[8]
+
+[9] Ryan Lowe et al. âMulti-agent actor-critic for mixed cooperative-competitive
+environmentsâ. In: Advances in neural information processing systems. 2017,
+pp. 6379â6390.
+Jakob Foerster et al. âCounterfactual multi-agent policy gradientsâ. In: arXiv
+preprint arXiv:1705.08926 (2017).
+
+[10]
+
+[12]
+
+[11] Craig Quiter. Deepdrive Zero. Version alpha. June 2020. DOI: 10 . 5281 /
+zenodo.3871907. URL: https://doi.org/10.5281/zenodo.
+3871907.
+Jayesh K Gupta, Maxim Egorov, and Mykel Kochenderfer. âCooperative multi-
+agent control using deep reinforcement learningâ. In: International Conference
+on Autonomous Agents and Multiagent Systems. Springer. 2017, pp. 66â83.
+Igor Mordatch and Pieter Abbeel. âEmergence of Grounded Compositional
+Language in Multi-Agent Populationsâ. In: arXiv preprint arXiv:1703.04908
+(2017).
+
+[13]
+
+[14] Ming Tan. âMulti-agent reinforcement learning: Independent vs. cooperative
+agentsâ. In: Proceedings of the tenth international conference on machine
+learning. 1993, pp. 330â337.
+
+[15] Trapit Bansal et al. âEmergent complexity via multi-agent competitionâ. In:
+
+arXiv preprint arXiv:1710.03748 (2017).
+
+[16] Laetitia Matignon, Guillaume J Laurent, and Nadine Le Fort-Piat. âIndepen-
+dent reinforcement learners in cooperative Markov games: a survey regarding
+coordination problems.â In: (2012).
+
+20
+
+Eshagh Kargar*, Ville Kyrki
+
+[18]
+
+[17] Weiwei Zhao et al. âResearch on the Multiagent Joint Proximal Policy Opti-
+mization Algorithm Controlling Cooperative Fixed-Wing UAV Obstacle Avoid-
+anceâ. In: Sensors 20.16 (2020), p. 4546.
+Justin K Terry et al. âParameter Sharing is Surprisingly Useful for Multi-Agent
+Deep Reinforcement Learningâ. In: arXiv preprint arXiv:2005.13625 (2020).
+[19] Hangyu Mao et al. âLearning multi-agent communication with double atten-
+tional deep reinforcement learningâ. In: Autonomous Agents and Multi-Agent
+Systems 34.1 (2020), pp. 1â34.
+
+[20] Kurtulus Kullu, UËgur GÂ¨udÂ¨ukbay, and Dinesh Manocha. âACMICS: an agent
+
+communication model for interacting crowd simulationâ. In: Autonomous Agents
+and Multi-Agent Systems 31.6 (2017), pp. 1403â1423.
+
+[21] Peter Sunehag et al. âValue-Decomposition Networks For Cooperative Multi-
+Agent Learning Based On Team Reward.â In: AAMAS. 2018, pp. 2085â2087.
+[22] Tabish Rashid et al. âQMIX: Monotonic value function factorisation for deep
+
+multi-agent reinforcement learningâ. In: arXiv preprint arXiv:1803.11485 (2018).
+
+[23] Rose E Wang, Michael Everett, and Jonathan P How. âR-maddpg for par-
+tially observable environments and limited communicationâ. In: arXiv preprint
+arXiv:2002.06684 (2020).
+
+[24] Michael L Littman. âMarkov games as a framework for multi-agent reinforce-
+
+ment learningâ. In: Machine learning proceedings 1994. Elsevier, 1994, pp. 157â
+163.
+John Schulman et al. âProximal policy optimization algorithmsâ. In: arXiv
+preprint arXiv:1707.06347 (2017).
+Justin K Terry et al. PettingZoo. https://github.com/PettingZoo-
+Team/PettingZoo. GitHub repository. 2020.
+
+[25]
+
+[26]
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+21
+
+A Hyperparameters
+
+Hyperparameters used in MACRPO for three environments are described in Table 2.
+
+Table 2: MACRPO hyperparameters for three MARL environments
+
+Param.
+
+actor hidden size
+critic hidden size
+batch size
+discount
+GAE lambda
+PPO clip
+PPO epochs
+max grad norm
+entropy factor
+learning rate
+recurrent sequence
+length (time-step)
+no. of recurrent layers
+
+DeepDrive-Zero
+
+64
+128
+512
+0.99
+0.94
+0.15
+4
+1.0
+0.001
+0.0002
+
+20
+
+1
+
+Multi-Walker
+
+32
+32
+32
+0.99
+0.95
+0.3
+4
+1.0
+0.01
+0.001
+
+40
+
+1
+
+Particle
+
+128
+128
+1500
+0.99
+0.95
+0.2
+10
+1.0
+0.01
+0.005
+
+3
+
+1
+
+The architecture and hyperparameters used for other baselines are taken from [18] with some ï¬ne-
+tuning to get better performance, and are shown in Tables 3, 4, and 5. Some hyperparameter values are
+constant across all RL methods for all environments. These constant values are reported in Table 6. We
+used the source code for all algorithms from [18] except for MADDPG which we used the original imple-
+mentation [9].
+
+22
+
+Eshagh Kargar*, Ville Kyrki
+
+Table 3: Hyperparameters for three MARL environments
+
+RL method
+
+Hyperparameter
+
+DeepDrive-Zero
+
+Multi-Walker
+
+Particle
+
+PPO
+
+IMPALA
+
+A2C
+
+SAC
+
+sample batch size
+train batch size
+sgd minibatch size
+lambda
+kl coeff
+entropy coeff
+num sgd iter
+vf clip param
+clip param
+vf share layers
+clip rewards
+batch mode
+
+sample batch size
+train batch size
+lr schedule
+clip rewards
+
+sample batch size
+train batch size
+lr schedule
+
+sample batch size
+train batch size
+Q model
+
+optimization
+
+clip actions
+exploration enabled
+no done at end
+normalize actions
+prioritized replay
+soft horizon
+target entropy
+tau
+n step
+evaluation
+interval
+metrics smoothing
+episodes
+target network
+update freq
+learning starts
+timesteps per
+iteration
+buffer size
+
+100
+5000
+500
+0.95
+0.5
+0.01
+10
+10.0
+0.1
+True
+True
+truncate episodes
+
+100
+5000
+500
+0.95
+0.5
+0.01
+10
+10.0
+0.1
+True
+True
+truncate episodes
+
+100
+5000
+1000
+0.95
+0.5
+0.001
+50
+1.0
+0.5
+True
+False
+truncate episodes
+
+20
+512
+[[0, 5e-3], [2e7, 1e-12]]
+True
+
+20
+512
+[[0, 5e-3], [2e7, 1e-12]]
+True
+
+20
+512
+[[0, 5e-3], [2e7, 1e-12]]
+False
+
+20
+512
+[[0, 7e-3], [2e7, 1e-12]]
+
+20
+512
+[[0, 7e-3], [2e7, 1e-12]]
+
+20
+512
+[[0, 7e-3], [2e7, 1e-12]]
+
+20
+512
+{activation:
+relu,
+layer sizes:
+[266, 256]}
+{actor lr:
+0.0003,
+actor lr:
+0.0003,
+entropy lr:
+0.0003,}
+False
+True
+True
+False
+False
+False
+auto
+0.005
+1
+
+1
+
+5
+
+1
+
+1000
+
+1000
+
+100000
+
+20
+512
+{activation:
+relu,
+layer sizes:
+[266, 256]}
+{actor lr:
+0.0003,
+actor lr:
+0.0003,
+entropy lr:
+0.0003,}
+False
+True
+True
+False
+False
+False
+auto
+0.005
+1
+
+1
+
+5
+
+1
+
+1000
+
+1000
+
+100000
+
+20
+512
+{activation:
+relu,
+layer sizes:
+[266, 256]}
+{actor lr:
+0.0003,
+actor lr:
+0.0003,
+entropy lr:
+0.0003,}
+False
+True
+True
+False
+False
+False
+auto
+0.005
+5
+
+1
+
+5
+
+1
+
+1000
+
+1000
+
+100000
+
+MACRPO: Multi-Agent Cooperative Recurrent Policy Optimization
+
+23
+
+Table 4: Hyperparameters for DeepDrive-Zero, Multi-Walker, and Particle environments
+
+RL method
+
+Hyperparameter
+
+DeepDrive-Zero
+
+Multi-Walker
+
+APEX-DQN
+
+Rainbow-DQN
+
+Plain DQN
+
+QMIX
+
+MADDPG
+
+sample batch size
+train batch size
+learning starts
+buffer size
+dueling
+double q
+
+sample batch size
+train batch size
+learning starts
+buffer size
+n step
+num atoms
+v min
+v max
+prioritized replay
+dueling
+double q
+parameter noise
+batch mode
+
+sample batch size
+train batch size
+learning starts
+buffer size
+dueling
+double q
+
+buffer size
+gamma
+critic lr
+lr
+grad norm clip
+optim alpha
+optim eps
+epsilon finish
+epsilon start
+
+lr
+batch size
+num envs
+num cpus
+buffer size
+steps per update
+
+20
+32
+1000
+100000
+True
+True
+
+20
+512
+1000
+100000
+True
+True
+
+Particle
+
+20
+5000
+1000
+100000
+True
+True
+
+20
+32
+1000
+100000
+2
+51
+0
+1500
+True
+True
+True
+True
+complete episodes
+
+20
+512
+1000
+100000
+2
+51
+0
+1500
+True
+True
+True
+True
+complete episodes
+
+20
+1000
+1000
+100000
+2
+51
+0
+1500
+True
+True
+True
+True
+complete episodes
+
+20
+32
+1000
+100000
+False
+False
+
+10000
+0.99
+0.001
+0.001
+10
+0.99
+0.00001
+0.02
+1.0
+
+0.001
+64
+1
+1
+1e5
+4
+
+20
+512
+1000
+100000
+False
+False
+
+3000
+0.99
+0.0005
+0.0005
+10
+0.99
+0.05
+0.05
+1.0
+
+0.0001
+512
+64
+8
+1e5
+4
+
+20
+5000
+1000
+100000
+False
+False
+
+100000
+0.99
+0.001
+0.001
+10
+0.99
+0.00001
+0.02
+1.0
+
+0.01
+500
+1
+1
+1e5
+4
+
+24
+
+Eshagh Kargar*, Ville Kyrki
+
+RL method
+
+APEX-DDPG
+
+Plain DDPG
+
+TD3
+
+Table 5: Hyperparameters for DeepDrive-Zero and Multi-Walker
+
+Hyperparameter
+
+DeepDrive-Zero Multi-Walker
+
+sample batch size
+train batch size
+lr
+beta annealing fraction
+exploration fraction
+final prioritized replay beta
+n step
+prioritized replay alpha
+learning starts
+buffer size
+target network update freq
+timesteps per iteration
+
+sample batch size
+train batch size
+learning starts
+buffer size
+critics hidden
+
+sample batch size
+train batch size
+critics hidden
+learning starts
+pure exploration steps
+buffer size
+
+20
+512
+0.0001
+1.0
+0.1
+1.0
+3
+0.5
+1000
+100000
+50000
+2500
+
+20
+512
+5000
+100000
+[256, 256]
+
+20
+512
+[256, 256]
+5000
+5000
+100000
+
+20
+512
+0.0001
+1.0
+0.1
+1.0
+3
+0.5
+1000
+100000
+50000
+25000
+
+20
+512
+5000
+100000
+[256, 256]
+
+20
+512
+[256, 256]
+5000
+5000
+100000
+
+Table 6: Variables set to constant values across all RL methods for all environments
+
+Variable
+
+Value set in all RL methods
+
+# worker threads
+# envs per worker
+gamma
+MLP hidden layers
+
+8
+8
+0.99
+[400, 300]
+
+

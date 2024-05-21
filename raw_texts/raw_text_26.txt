@@ -1,0 +1,4962 @@
+8
+1
+0
+2
+
+c
+e
+D
+3
+
+]
+
+A
+M
+
+.
+s
+c
+[
+
+1
+v
+0
+3
+1
+1
+0
+.
+2
+1
+8
+1
+:
+v
+i
+X
+r
+a
+
+1
+
+A Uniï¬ed Approach to Dynamic Decision
+
+Problems with Asymmetric Information -
+
+Part I: Non-Strategic Agents
+
+Hamidreza Tavafoghi, Yi Ouyang, and Demosthenis Teneketzis
+
+Abstract
+
+We study a general class of dynamic multi-agent decision problems with asymmetric information
+
+and non-strategic agents, which includes dynamic teams as a special case. When agents are non-strategic,
+
+an agentâs strategy is known to the other agents. Nevertheless, the agentsâ strategy choices and beliefs
+
+are interdependent over times, a phenomenon known as signaling. We introduce the notions of private
+
+information that effectively compresses the agentsâ information in a mutually consistent manner. Based
+
+on the notions of sufï¬cient information, we propose an information state for each agent that is sufï¬cient
+
+for decision making purposes. We present instances of dynamic multi-agent decision problems where we
+
+can determine an information state with a time-invariant domain for each agent. Furthermore, we present
+
+a generalization of the policy-independence property of belief in Partially Observed Markov Decision
+
+Processes (POMDP) to dynamic multi-agent decision problems. Within the context of dynamic teams
+
+with asymmetric information, the proposed set of information states leads to a sequential decomposition
+
+that decouples the interdependence between the agentsâ strategies and beliefs over time, and enables us
+
+to formulate a dynamic program to determine a globally optimal policy via backward induction.
+
+A preliminary version of this paper will appear in the Proceeding of the 57th IEEE Conference on Decision and Control
+
+is with the Department of Mechanical Engineering at
+
+(CDC), Miami Beach, FL, December 2018 [1].
+H. Tavafoghi
+the University of California, Berkeley (e-mail:
+tavaf@berkeley.edu). Y. Ouyang is with Preferred Networks America, Inc. (e-mail: ouyangyi@preferred-america.com). D.
+Teneketzis is with the Department of Electrical Engineering and Computer Science at the University of Michigan, Ann Arbor
+(e-mail: teneket@umich.edu)
+This work was supported in part by the NSF grants CNS-1238962, CCF-1111061, ARO-MURI grant W911NF-13-1-0421, and
+ARO grant W911NF-17-1-0232.
+
+November 23, 2018
+
+DRAFT
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+A. Background and Motivation
+
+I. INTRODUCTION
+
+Dynamic multi-agent decision problems with asymmetric information have been used to model
+
+many situations arising in engineering, economic, and socio-technological applications. In these
+
+applications many decision makers/agents interact with each other as well as with a dynamic
+
+system. They make private imperfect observations over time, and inï¬uence the evolution of the
+
+dynamic system through their actions that are determined by their strategies. An agentâs strategy
+
+is deï¬ned as a decision rule that the agent uses to choose his action at each time based on his
+
+realized information at that time.
+
+In this paper, we study a general class of dynamic decision problems with non-strategic agents.
+
+We say an agent is non-strategic if his strategy (not his speciï¬c action) is known to the other
+
+agents. In a companion paper [2] we study dynamic decision problems with strategic agents
+
+where an agentâs strategy is his private information and not known to the other agents.
+
+We consider an environment with controlled Markovian dynamics, where, given the agentsâ
+
+actions at every time, the system state at the next time is a stochastic function of the current
+
+system state. The instantaneous utility of each agent depends on the agentsâ joint actions as
+
+well as the system state. At every time, each agent makes a private noisy observation that
+
+depends on the current system state and past actions of all agents in the system. Therefore,
+
+agents have asymmetric and imperfect information about the system history. Moreover, each
+
+agentâs information depends on other agentsâ past actions and strategies; this phenomenon is
+
+known as signaling in the control theory literature. In such problems, the agentsâ decisions and
+
+information are coupled and interdependent over time because (i) an agentâs utility depends on the
+
+other agentsâ actions, (ii) the evolution of the system state depends, in general, on all the agentsâ
+
+actions, (iii) each agent has imperfect and asymmetric information about the system history, and
+
+(iv) at every time an agentâs information depends, in general, on the agentsâ (including himself)
+
+past actions and strategies.
+
+There are two main challenges in the study of dynamic multi-agent decision problems with
+
+asymmetric information. First, because of the coupling and interdependence among the agentsâ
+
+decisions and information over time, we need to determine the agentsâ strategies simultaneously
+
+for all times. Second, as the agents acquire more information over time, the domains of their
+
+strategies grow.
+
+November 23, 2018
+
+DRAFT
+
+3
+
+In this paper, we propose a general approach for the study of dynamic decision problems
+
+with non-strategic agents and address these two challenges. We propose the notion of sufï¬cient
+
+information and provide a set of conditions sufï¬cient to characterize a compression of the agentsâ
+
+private and common information in a mutually consistent manner over time. We show that such
+
+a compression results in an information state for each agentâs decision making problem. We
+
+show that restriction to the set of strategies based on this information state entails no loss of
+
+generality in dynamic decision problems with non-strategic agents.
+
+We identify speciï¬c instances of dynamic decision problems where we can discover a set of
+
+information states for the agents that have time-invariant domain. Within the context of dynamic
+
+teams, we further demonstrate that the notion of sufï¬cient information leads to a sequential
+
+decomposition of dynamic teams. This sequential decomposition results in a dynamic program
+
+the solution of which determines the agentsâ globally optimal strategies.
+
+B. Related Literature
+
+The Partially Observed Markov Decision Processes (POMDPs), i.e. centralized stochastic
+
+control problems, present the simplest form of dynamic decision problems with single agent
+
+[3], [4]. To analyze and identify properties of optimal strategies in POMDPs the notion of
+
+information state is introduced as the agentâs belief about the current system state conditioned on
+
+his information history. The information state provides a way to compress the agentâs information
+
+over time that is sufï¬cient for the decision-making purposes. When the agent has perfect recall,
+
+this information state is independent of the agentâs strategies over time; this result is known as
+
+the policy-independence belief property [3].
+
+Dynamic multi-agent decision problems with non-strategic agents are considerably more dif-
+
+ï¬cult compared to their centralized counterparts. This is because, due to signaling, they are
+
+(in general) non-convex functional optimization problems (see [5]â[8]). The difï¬culties present
+
+in these problems were ï¬rst illustrated by Witsenhausen [9], who showed that in a simple
+
+dynamic team problem with Gaussian primitive random variables and quadratic cost function
+
+where signaling occurs, linear strategies are suboptimal (contrary to the corresponding centralized
+
+problem where linear strategies are optimal). Subsequently, many researchers investigated control
+
+problems with various speciï¬c information structures such as: partially nested ( [10]â[15] and
+
+references therein), stochastic nested [16], randomized partially nested [17], delayed sharing (
+
+[11], [18]â[20] and references therein), information structures possessing the i-partition property
+
+November 23, 2018
+
+DRAFT
+
+4
+
+or the s-partition property [21], the quadratic invariance property [22], and the substitutability
+
+property [23].
+
+Currently, there are three approaches to the analysis of dynamic multi-agent decision problems
+
+with non-strategic agents: the agent-by-agent approach [24], the designerâs approach [25], and the
+
+common information approach [26]. We provide a brief discussion of these approaches here. We
+
+discuss them in details in Section VI-B, where we compare them with the sufï¬cient information
+
+approach we present in this paper and show that our approach is distinctly different from them.
+
+The agent-by-agent approach [24], is an iterative method. At each iteration, we pick an agent
+
+and ï¬x the strategy of all agents except that agent, and determine the best response for that
+
+agent and update his strategy accordingly. We proceed in a round robin fashion among the
+
+agents until a ï¬xed point is reached, that is, when no agent can improve his performance by
+
+unilaterally changing his strategy. The designerâs approach [25], considers the decision problem
+
+from the point of view of a designer who knows the system model and the probability distribution
+
+of the primitive random variables, and chooses the control strategies for all agents without
+
+having an information about the realization of the primitive random variables. The common
+
+information approach [26], assumes that at each time all agents possess private information and
+
+share some common information; it uses the common information to coordinate the agentsâ
+
+strategies sequentially over time.
+
+C. Contribution
+
+We develop a general methodology for the study and analysis of dynamic decision problems
+
+with asymmetric information and non-strategic agents. Our model includes problems with non-
+
+classical information structures [19] where signaling is present. We propose an approach that
+
+effectively compresses the agentsâ private and common information in a mutually consistent
+
+manner. As a result, we offer a set of information states for the agents which are sufï¬cient
+
+for decision making purposes. We characterize special instances where we can identify an
+
+information state with a time-invariant domain. Based on the proposed information state, we
+
+provide a sequential decomposition of dynamic teams over time. We show that the methodology
+
+developed in this paper generalizes the existing results for dynamic teams with non-classical
+
+information structure. Our results in this paper, along those appearing in the companion paper
+
+[2] present a set of information states sufï¬cient for decision making in strategic and non-strategic
+
+November 23, 2018
+
+DRAFT
+
+5
+
+settings. Therefore, we provide a uniï¬ed approach to decision making problems that can be used
+
+to study dynamic games and dynamic teams as well as dynamic games among teams of agents.
+
+D. Organization
+
+The rest of the paper is organized as follows. In Section II, we describe the model and
+
+present few examples. In Section III, we discuss the main challenges that are present in dynamic
+
+multi-agent decision problems with non-strategic agents. We present the sufï¬cient information
+
+approach in Section IV. We present the main results of the paper in Section V. We discuss an open
+
+problem associated with the sufï¬cient information approach in Section VI-A. In Section VI-B,
+
+we compare the sufï¬cient information approach with the existing approaches in the literature.
+
+We provide a generalization of the sufï¬cient information approach in Section VII. We present
+
+an extension of our results to inï¬nite-horizon dynamic multi-agent decision problems with non-
+
+strategic agents in Section VIII. We conclude in Section IX. The proofs of all the theorems and
+
+lemmas appear in the Appendix.
+
+Notation
+
+Random variables are denoted by upper case letters, their realizations by the corresponding
+
+lower case letters. In general, subscripts are used as time index while superscripts are used to
+
+index agents. For t1 â¤ t2, Xt1:t2 (resp. ft1:t2(Â·)) is the short hand notation for the random variables
+
+(Xt1,Xt1+1, ...,Xt2) (resp. functions (ft1(Â·), . . . ,ft2(Â·))). When we consider a sequence of random
+
+variables (resp. functions) for all time, we drop the subscript and use X to denote X1:T (resp.
+f (Â·) to denote f1:T (Â·)). For random variables X 1
+t (Â·)),
+we use Xt := (X 1
+t (Â·))) to denote the vector of the set
+,X n+1
+of random variables (resp. functions) at t, and X ân
+t ) (resp.
+t
+t
+f ân
+t (Â·))) to denote all random variables (resp. functions)
+t
+at t except that of the agent indexed by n. P(Â·) and E(Â·) denote the probability and expectation
+
+t ) (resp. ft(Â·) := (f 1
+
+(resp. functions f 1
+
+t (Â·), . . . ,f nâ1
+
+t , . . . ,X nâ1
+
+t (Â·), . . . ,f N
+
+t (Â·), . . . ,f N
+
+t , . . . ,X N
+t
+
+t , . . . ,X N
+
+(Â·), . . . ,f N
+
+(Â·),f n+1
+t
+
+(Â·) := (f 1
+
+, . . . ,X N
+
+:= (X 1
+
+t
+
+t
+
+of an event and a random variable, respectively. For a set X , â(X ) denotes the set of all
+beliefs/distributions on X . For random variables X,Y with realizations x,y, P(x|y) := P(X =
+x|Y = y) and E(X|y) := E(X|Y = y). For a strategy g and a belief (probability distribution)
+Ï, we use Pg
+
+Ï(Â·)) to indicate that the probability (resp. expectation) depends on the
+choice of g and Ï. We use 1{X=x} to denote the indicator function for event X = x. For sets A
+
+Ï(Â·) (resp. Eg
+
+and B we use A\B to denote all elements in set A that are not in set B. For random variables
+X and Y we write X dist.= Y when X and Y have an identical probability distribution.
+
+November 23, 2018
+
+DRAFT
+
+1) System dynamics: Consider N non-strategic agents who live in a dynamic Markovian world
+
+over a horizon T :={1,2, ...,T }, T < â. Let Xt â Xt denote the state of the world at t â T . At
+
+II. MODEL
+
+6
+
+time t, each agent, indexed by i â N := {1,2, ...,N }, chooses an action ai
+
+t â Ai
+
+t, where Ai
+
+the set of available actions to him at t. Given the collective action proï¬le At := (A1
+
+t denotes
+t ), the
+
+t , ...,AN
+
+state of the world evolves according to the following stochastic dynamic equation,
+
+Xt+1 = ft(Xt, At, W x
+
+t ),
+
+(1)
+
+where W x
+
+1:T â1 is a sequence of independent random variables. The initial state X1 is a random
+
+variable that has a probability distribution Î· â â(X1) with full support.
+
+At every time t â T , before taking an action, agent i receives a noisy private observation
+t â Y i
+Y i
+
+t of the current state of the world Xt and the action proï¬le Atâ1, given by
+
+t = Oi
+Y i
+
+t(Xt, Atâ1, W i
+
+t ),
+
+(2)
+
+where W i
+
+1:T , i â N , are sequences of independent random variables. Moreover, at every t â T ,
+all agents receive a common observation Zt â Zt of the current state of the world Xt and the
+
+action proï¬le Atâ1, given by
+
+Zt = Oc
+
+t (Xt, Atâ1, W c
+
+t ),
+
+(3)
+
+where W c
+
+1:T , is a sequence of independent random variables. We note that the agentsâ actions
+Atâ1 is commonly observable at t if Atâ1 â Zt. We assume that the random variables X1,
+
+W x
+
+1:T â1, W c
+
+1:T , and W i
+
+1:T , i â N are mutually independent.
+
+2) Information structure: Let Ht â Ht denote the aggregate information of all agents at time
+
+t. Assuming that agents have perfect recall, we have Ht = {Z1:t, Y 1:N
+1:t
+
+1:tâ1}, i.e. Ht denotes
+the set of all agentsâ past observations and actions. The set of all possible realizations of the
+agentsâ aggregate information is given by Ht := (cid:81)
+
+, A1:N
+
+Ï â¤t ZÏ Ã (cid:81)
+
+Ï Ã (cid:81)
+
+Ï <t Ai
+Ï .
+
+Ï â¤t Y i
+
+(cid:81)
+
+(cid:81)
+
+iâN
+
+iâN
+
+At time t â T , the aggregate information Ht is not fully known to all agents; each agent
+
+may have asymmetric information about Ht. Let Ct := {Z1:t} â Ct denote the agentsâ common
+information about Ht and P i
+Ht, where P i
+
+t denote agent iâs private information about
+t and Ct denote the set of all possible realizations of agent iâs private and common
+information at t, respectively. In this paper, we discuss several instances of information structures
+
+1:tâ1}\Ct â P i
+
+t := {Y i
+
+1:t,Ai
+
+November 23, 2018
+
+DRAFT
+
+that can be captured as special cases of our general model.
+
+7
+
+3) Strategies and Utilities: Let H i
+
+i at t, where Hi
+
+iâs strategy gi := {gi
+
+t } â Hi
+
+t := {Ct,P i
+
+t denote the information available to agent
+t denote the set of all possible realizations of agent iâs information at t. Agent
+t), t â T ,
+
+t, t â T }, is deï¬ned as a sequence of mappings gi
+t for every realization hi
+
+t â â(Ai
+t : Hi
+t of his history at t â T .
+
+t â Hi
+
+that determine agent iâs action Ai
+
+Agent iâs instantaneous utility at t depends on the state of the world Xt and the collective
+
+action proï¬le At and is given by ui
+
+t(Xt, At). Therefore, agent iâs total utility over the horizon
+
+T is given as
+
+U i(X1:T , A1:T ) :=
+
+(cid:88)
+
+tâT
+
+ui
+t(Xt, At).
+
+(4)
+
+We assume that agents are non-strategic. That is, each agentâs, say iâs, i â N , strategy choice
+
+gi is known to other agents. We note that these non-strategic agents may have different utilities
+
+over time. Therefore, the model includes a team of agents sharing the same utilities (see Sections
+
+V) as well as agents with general non-identical utilities. In [2] we build on our results in this
+
+paper to study dynamic decision problems with strategic agents where an agent may deviate
+
+privately from the commonly believed strategy, and gain by misleading the other agents.
+
+To avoid measure-theoretic technical difï¬culties and for clarity and convenience of exposition,
+
+we assume that all the random variables take values in ï¬nite sets.
+
+Assumption 1. (Finite game) The sets Xt, Zt, Y i
+
+t , Ai
+
+t, i â N , t â T , are ï¬nite.
+
+Special Cases:
+
+We present several instances of dynamic decision problems with asymmetric information that
+
+are special cases of the general model described above.
+
+1) Real-time source coding-decoding [27]: Consider a data source that generates a random
+
+sequence {X1,...,XT} that is k-th order Markov, i.e. for every sequence of realizations x1:T ,
+P{Xt+k:T = xt+k:T |x1:t+kâ1} = P{Xt+k:T = xt+k:T |xt:t+kâ1} for t â¤ T â k. There exists an encoder
+
+(agent 1) who observes Xt at every time t; the encoder has perfect recall. At every time t,
+
+based on his available data {X1,...,Xt}, the encoder transmits a signal Mt â Mt through a
+
+noiseless channel to a decoder (agent 2), where Mt denotes the transmission alphabet. At the
+
+receiving end, at every time t, the decoder wants to estimate the value of Xtâ1âÎ´ (with delay Î´)
+as ËXtâ1âÎ´ based on his available data M1:tâ1; we assume that the decoder has perfect recall. The
+
+November 23, 2018
+
+DRAFT
+
+8
+
+encoder and decoder choose their joint coding-decoding policy so as to minimize the expected
+total distortion function given by (cid:80)T
+t=2+Î´ dt(Xt, ËXt), where dt(Â·, Â·) denotes the instantaneous
+distortion function. To capture the above-described model within the context of our model,
+we need to deï¬ne an augmented system state ËXt that includes the last max(k, Î´ + 1) states
+realizations as ËXt := {Xtâmax(k,Î´+1)+1,...,Xt}. Moreover, the encoderâs (agent 1âs) observation is
+given by Y 1
+t =
+t ) = (Mt, ËXtâ1âÎ´). The encoderâs and decoderâs instantaneous
+
+t ( ËXt, Atâ1) = Xt and the decoderâs (agent 2âs) observation is given by Y 2
+
+t ( ËXt,Atâ1) = Mtâ1, where (A1
+
+t = O1
+
+t ,A2
+
+O2
+
+utility are given by a distortion function uteam
+
+t
+
+( ËXt,At) = dt(Xtâ1âÎ´, ËXtâ1âÎ´).
+
+2) Delayed sharing information structure [18]â[20], [28]: Consider a N -agent decision prob-
+
+lem where agents observe each othersâ observations and actions with d-step delay. We note that
+
+in our model we assume that the agentsâ common observation Zt at t is only a function of Xt and
+
+and Atâ1. Therefore, to describe the decision problem with delayed sharing information structure
+
+within the context of our model we need to augment our state space to include the agentsâ last
+d observations and actions as part of the augmented state. Deï¬ne ËXt := {Xt, M 1
+t , ..., M d
+t }
+t := {Atâi, Ytâi} â Atâi Ã Ytâi, i â N ; that is, M i
+as the augmented system state where M i
+t
+serves as a temporal memory for the agentsâ observations Ytâi and actions Atâi at tâi. Then,
+we have ËXt+1 = {Xt+1, M 1
+Zt = {M d
+
+t+1} = {ft(Xt, At, W x
+
+t ), (Yt, At), M 1
+
+t , ..., M dâ1
+
+t+1, ..., M d
+
+t } = {Ytâd, Atâd}.
+
+t+1, M 2
+
+t , M 2
+
+} and
+
+t
+
+3) Real-time multi-terminal communication [29]: Consider a real-time communication system
+
+with two encoders (agents 1 and 2) and one receiver (agent 3). The two encoders make distinct
+
+t and X 2
+
+observations X 1
+
+t of a Markov source. The encodersâ observation are conditionally
+independent Markov chains. That is, there is an unobserved random variable variable R such
+that P{X 1
+
+1 |R}P{R}, and
+
+1,R} = P{X 1
+
+1 |R}P{X 2
+
+1,X 2
+
+P{X 1
+
+t+1, X 2
+
+t+1|X 1
+
+t , X 2
+
+t , R} = P{X 1
+
+t+1|X 1
+
+t , R}P{X 2
+
+t+1|X 2
+
+t , R}.
+
+Markov
+
+source
+
+X 1
+
+t , X t
+2
+
+X 1
+t
+
+X 2
+t
+
+Encoder 1
+1:t,M 1
+
+t(X 1
+g1
+
+1:tâ1)
+
+Encoder 2
+1:t,M 2
+
+t(X 2
+g1
+
+1:tâ1)
+
+M 1
+t
+
+M 2
+t
+
+Channel 1
+t |M 1
+t (Y 1
+
+tâ1)
+
+Q1
+
+Channel 2
+t |M 2
+t (Y 2
+
+tâ1)
+
+Q2
+
+Y 1
+t
+
+Receiver
+
+ËXt
+
+Y 2
+t
+
+t(Y 1:2
+g3
+
+1:tâ1)
+
+Each encoder encodes, in real-time, its observations into a sequence of discrete symbols and
+
+November 23, 2018
+
+DRAFT
+
+9
+
+sends it through a memoryless noisy channel characterized by a transition matrix Qi
+t(Â·|Â·), i = 1, 2.
+The receiver wants to construct, in real time, an estimate ËXt of the state of the Markov source
+based on the channelsâ output Y 1
+a distortion function dt(Xt, ËXt).
+
+1:t. All agents have the same instantaneous utility given by
+
+1:t,Y 2
+
+4) Optimal remote and local controller [30], [31]: Consider a decentralized control problem
+
+for a Markovian plant with two controllers, a local controller (agent 1) and a remote controller
+
+(agent 2).
+
+A2
+t
+
+Plant
+ft(Xt, A1
+
+t , A2
+t )
+
+A1
+t
+
+Remote Controller
+gt(Y1:t, A2
+
+1:tâ1)
+
+Xt
+
+Local Controller
+
+Yt
+
+Xt
+
+gt(X1:t, Y1:t, A1
+
+1:tâ1)
+
+The local controller observes perfectly the state Xt of the Markov chain, and sends his obser-
+
+vation through a packet-drop channel to the remote controller. The transmission is successful,
+
+i.e. Yt = Xt, with probability p > 0 and is not successful, i.e. Yt = â, with probability 1âp â¥ 0.
+
+We assume that the local controller receives an acknowledgment every time the transmission is
+
+successful. The controllersâ joint instantaneous utility is given by a uteam
+
+t
+
+(Xt,A1
+
+t ,A2
+
+t ).
+
+III. STRATEGIES AND BELIEFS
+
+In a dynamic decision problem with asymmetric information agents have private information
+
+about the evolution of the system, and they do not observe the complete history {Ht, Xt}, t â T .
+
+Therefore, at every time t â T , each agent, say agent i â N , needs to form (i) an appraisal about
+the current state of the system Xt and the other agentsâ information H âi
+t
+
+(appraisal about the
+
+history), and (ii) an appraisal about how other agents will play in the future (appraisal about the
+
+future), so as to evaluate the performance of his strategy choices.
+
+When agents are non-strategic, the agentsâ strategies g1:N
+
+agent i â N can form these appraisals by using his private information H i
+
+1:T are known to all agents. Therefore,
+t along with the
+t at
+t â T , along with (i) the past strategies g1:tâ1 and (ii) the future strategies gt:T to form these
+
+commonly known strategies gâi. Speciï¬cally, agent i can utilize his own information H i
+
+appraisals about the history and the future of the overall system, respectively. As a result, the
+
+November 23, 2018
+
+DRAFT
+
+10
+
+outcome of decision problems with non-strategic agents can be fully characterized by the agentsâ
+
+strategy proï¬le g.2
+
+However, we need to know the entire strategy proï¬le g for all agents and at all times to
+
+form these appraisals so as to evaluate the performance of an arbitrary strategy gi
+
+t, at any time
+t â T and for any agent i â N . Therefore, we must work with the strategy proï¬le g as a whole
+
+irrespective of the length of the time horizon T . Consequently, the computational complexity of
+
+determining a strategy proï¬le that satisï¬es certain conditions (e.g. an optimal strategy proï¬le in
+
+teams) grows doubly exponentially in |T | since the domain of agentsâ strategy (i.e. |Hi
+
+t|) and
+the number of temporally interdependent decision problems (one for each time instance) grows
+
+with |T |. As a result, the analysis of such decision problems is very challenging in general [32].
+
+An alternative conceptual approach for the analysis of decision problems is to deï¬ne a belief
+
+deï¬ne Âµi
+
+t(hi
+that is, Âµ(hi
+
+system Âµ along with the strategy proï¬le g. For every agent i â N , at every time t â T ,
+t } conditioned on the realization of hi
+t,
+t}. The belief Âµi
+t provides an intermediate
+instrument that encapsulates agent iâs appraisal about the past. Therefore, agent i can evaluate the
+
+t) as the agent iâs belief about {Xt,P âi
+t)(xt,pâi) := Pg1:tâ1{Xt = xt,P âi
+|hi
+
+t = pâi
+t
+
+performance of any action ai
+
+t using only the belief Âµi
+t) along with the future strategy proï¬le
+t)(xt,pâi) is dependent on g1:tâ1 in general since the probability
+t = pâi
+t} depends on g1:tâ1. Therefore, the introduction of a
+t
+belief system offers an equivalent problem formulation that does not necessarily break the inter-
+
+gt:T . However, the belief Âµ(hi
+distribution Pg1:tâ1{Xt = xt,P âi
+
+t(hi
+
+|hi
+
+temporal dependence between g1:tâ1 and gt:T and does not simplify the analysis of decision
+
+problems.
+
+Nevertheless, the deï¬nition of a belief system has been shown to be suitable for the analysis of
+
+single-agent decision making problems (POMDP) for the following reasons. First, in POMDPs,
+under perfect recall, the probability distribution Pg1:tâ1{Xt = xt|ht} is independent of g1:tâ1;
+
+this is known as the policy-independence property of beliefs in stochastic control. Second, the
+
+complexity of the belief function does not grow over time since at every time t the agent
+
+only needs to form a belief about Xt, which has a time-invariant domain. As a result, we can
+
+sequentially decompose the problem over time to a sequence of static decision problems with
+
+time-invariant complexity; such a decomposition leads to a dynamic program. At each stage
+
+2We discuss the decision problems with strategic agents in the companion paper [2].When agents are strategic each agent
+may have incentive to deviate an any time from the strategy the other agents commonly believe he uses if it is proï¬table to him
+(see [2] for more discussion).
+
+November 23, 2018
+
+DRAFT
+
+11
+
+t â T of the dynamic program, we specify gt by determining an action for each realization of
+
+the belief Âµt(Â·) ï¬xing the future strategies gt+1:T . Therefore, the computational complexity of
+
+the analysis is reduced from being exponential in T to linear in T .
+
+Unfortunately, the above approach for POMDPs does not generalize to decision problems with
+
+many agents. This is because of three reasons. First, with many agents, currently in the literature,
+
+there exists no information state for each agent that provides a compression of the agentâs
+
+information, in a mutually consistent manner among the agents, that is sufï¬cient for decision
+
+making purposes. Therefore, an agentâs, say agent iâs, strategy gi
+
+t has a growing domain over
+time. Second, at every time t â T , each agent i â N needs to form a belief about the system state
+Xt as well as the other agentsâ private information P âi
+
+that has a growing domain. Therefore the
+
+t
+
+complexity of belief functions grows over time. Third, in decision problems with many agents,
+
+the policy-independence property of belief does not hold in general and the agentsâ beliefs at
+
+every time t depend on the past strategy proï¬le g1:tâ1. Therefore, the agentsâ beliefs Âµ1:N
+
+t
+
+(Â·) are
+
+correlated with one another. This correlation depends on g1:tâ1, and thus, it is not known a priori.
+
+Consequently, if we follow an approach similar to that of POMDP to sequentially decompose
+
+the problem, we need to solve the decision problem at every stage for every arbitrary correlation
+
+among the agentsâ belief functions, and such a problem is not tractable.3 Hence, the methodology
+
+proposed for the study of POMDPs is not directly applicable to decision problems with many
+
+agents and non-classical information structures.
+
+In the sequel, we propose a notion of sufï¬cient private information and sufï¬cient common
+
+information as a mutually consistent compression of the agentsâ information for decision making
+
+purposes. Therefore, we address (partially) the ï¬rst two problems on the growing domain of the
+
+agentsâ beliefs and strategies. We provide instances of decision problems where we can discover
+
+time-invariant information state for each agent. We then utilize the agentsâ sufï¬cient common
+
+information as a coordination instrument, and thus, capture the implicit correlation among the
+
+agentsâ beliefs over time. Accordingly, we present a sequential decomposition of the original
+
+decision problems such that at every stage the complexity of the decision problem is similar
+
+to that of a static decision multi-agent problem and the size of state variable at every stage is
+
+proportional to the dimension of the sufï¬cient private information; thus, we (partially) address
+
+the third problem discussed above.
+
+3Alternatively, one can consider arbitrary correlation among the agentsâ information rather than their beliefs. This is the main
+
+idea that underlies the designerâs approach proposed by Winstenhausen [25]. Please see Section VI-B for more discussion.
+
+November 23, 2018
+
+DRAFT
+
+12
+
+IV. SUFFICIENT INFORMATION
+
+We present the sufï¬cient information approach and characterize an information state that results
+
+from compressing the agentsâ private and common information in a mutually consistent manner.
+
+Therefore, we introduce a class of strategy choices that are simpler than general strategies as
+
+they require agents to keep track of only a compressed version of their information over time.
+
+We proceed as follows. In Section IV-A we provide conditions sufï¬cient to determine the subset
+
+of private information an agent needs to keep track of over time for decision making purposes. In
+
+Section IV-B, we introduce the notion of sufï¬cient common information as a compressed version
+
+of the agentsâ common information that along with sufï¬cient private information provides an
+
+information state for each agent. We then show, in Section V, that this compression of the agentsâ
+
+private and common information provides a sufï¬cient statistic in dynamic decision problems
+
+with non-strategic agents. In Section VII, we provide a generalization of sufï¬cient information
+
+approach presented here.
+
+A. Sufï¬cient Private Information
+
+The key ideas for compressing an agentâs private information appear in Deï¬nitions 1 and 2
+
+below. To motivate these deï¬nitions we ï¬rst consider the decision problem with single agent,
+
+that is, a Partially Observed Markov Decision Process (POMDP), which is a special case of the
+
+model described in Section II where N = 1, H 1
+
+t = P 1
+
+t and Ct = â for all t â T .
+
+In a POMDP, the agentâs belief about the system state Xt conditioned on his history realization
+
+hi
+t is an information state. We highlight the three main proprieties that underlie the deï¬nition of
+information state in POMDP (see [33], [34]): (1) the information state can be updated recursively,
+
+that is, at any time t the information state at t can be written as a function of the information
+
+state at t â 1 and the new information that becomes available at t, (2) the agentâs belief about
+
+the information state at the next time conditioned on the current information state and action is
+
+independent of his information history, and (3) at any time t and for any arbitrary action the
+
+agentâs expected instantaneous utility conditioned on the information state is independent of his
+
+information history.
+
+We generalize the key properties of information state for POMDPs, described above, to
+
+decision problems with many agents. We propose a set of conditions sufï¬cient to compress
+
+the agentsâ private information in two steps. First, we consider a decision problem with many
+
+agents where there is no signaling among them. Motivated by the deï¬nition of information state
+
+November 23, 2018
+
+DRAFT
+
+13
+
+in POMDPs, we describe conditions sufï¬cient to determine a compression of the agentsâ private
+
+information (Deï¬nition 1). Next, we build on Deï¬nition 1 as an intermediate conceptual step,
+
+and consider the case where agents are aware of possible signaling among them. Accordingly,
+
+we present a set of conditions sufï¬cient to determine a compression of the agentsâ private
+
+information in decision problems with many agents (Deï¬nition 2) .
+
+Therefore, we ï¬rst characterize subsets of an agentâs private information that are sufï¬cient for
+
+the agentâs decision making process when there is no signaling among the agents.
+
+Deï¬nition 1 (Private payoff-relevant information). Let P i,pr
+
+t , Ct) denote a private signal
+t and common information
+is a private payoff-relevant information for agent i if, for all open-loop strategy
+
+that agent i â N forms at t â T based on his private information P i
+Ct. We say P i,pr
+proï¬le (A1:N
+
+1:T ) and for all t â T ,
+
+1:T = Ëa1:N
+
+t = Â¯Î¶ i
+
+t (P i
+
+t
+
+(i) it can be updated recursively as
+
+t = Â¯Ïi
+P i,pr
+
+t(P i,pr
+
+tâ1 , H i
+
+t \H i
+
+tâ1)
+
+if t (cid:54)= 1,
+
+(ii) for all realizations {ct, pi
+
+t} it satisï¬es
+
+P(A1:N
+
+1:T =Ëa1:N
+
+1:T )(cid:110)
+
+(cid:12)
+pi,pr
+(cid:12)pi
+(cid:12)
+t+1
+
+(cid:111)
+t,ct,at
+
+= P(A1:N
+
+1:T =Ëa1:N
+
+1:T )(cid:110)
+
+(cid:12)
+pi,pr
+(cid:12)pi,pr
+(cid:12)
+t+1
+
+t
+
+(cid:111)
+,
+
+,ct,at
+
+(iii) for all realizations {ct, pi
+
+t} â Ct Ã P i
+
+t such that P(A1:N
+
+1:T =Ëa1:N
+
+1:T ){ct, pi
+
+t} > 0,
+
+E(A1:N
+
+1:tâ1=Ëa1:N
+
+(cid:12)
+1:t )(cid:110)
+(cid:12)ct,pi
+ui
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+t,at
+
+= E(Aâi
+
+1:tâ1=Ëaâi
+
+(cid:12)
+1:t)(cid:110)
+(cid:12)ct, pi,pr
+ui
+(cid:12)
+t(Xt,At)
+
+t
+
+(cid:111)
+
+.
+
+, at
+
+By assuming that all other agents play open-loop strategies we remove the interdependence
+
+between agents âiâs strategy choices and agent iâs information structure, thus, we eliminate
+
+signaling among the agents. Fixing the open-loop strategies of agents âi, agent i faces a
+centralized stochastic control problem. Deï¬nition 1 says that P i,pr
+relevant information for agent i if (i) it can be recursively updated, (ii) P i,pr
+
+, t â T , is a private payoff-
+
+includes all
+
+t
+
+t
+
+t that is relevant to P i,pr
+
+information in P i
+utility at any t â T is only a function of Ct,P i,pr
+
+t+1 and (iii) agent iâs instantaneous conditional expected
+t at t. These three conditions
+are similar to properties (1)-(3) for an information state in POMDP, but they concern only agent
+
+, and his action Ai
+
+t
+
+iâs private information P i
+t
+
+instead of the collection H i
+
+t = {Ct,P i
+
+t } of his private and common
+
+November 23, 2018
+
+DRAFT
+
+14
+
+information.4
+
+While the deï¬nition of private payoff-relevant information suggests a possible way to compress
+
+the information required for an agentâs decision making process, it assumes that other agents
+
+play open-loop strategies and do not utilize the information they acquire in real-time for decision
+
+making purposes (i.e. no signaling). However, open-loop strategies are not in general optimal
+
+for agents âi. As a result, to evaluate the performance of any strategy choice gi agent i needs
+
+also to form a belief about the information that other agents utilize to make decisions.
+
+Deï¬nition 2 (Sufï¬cient private information). We say Si
+
+t = Î¶ i
+
+t (P i
+
+t , Ct; g1:tâ1), i â N , t â T , is
+
+sufï¬cient private information for the agents if,
+
+(i) it can be updated recursively as
+
+t = Ïi
+Si
+
+t(Si
+
+tâ1, H i
+
+t \H i
+
+tâ1; g1:tâ1) for t â T \{1},
+
+(5)
+
+(ii) for any strategy proï¬le g and for all realizations {ct, pt, pt+1, zt+1, at} â CtÃPtÃPt+1ÃZt+1
+
+of positive probability,
+
+Pg1:t
+
+(cid:12)
+(cid:111)
+(cid:110)
+(cid:12)
+(cid:12)pt,ct,at
+st+1,zt+1
+
+= Pg1:t
+
+(cid:12)
+(cid:111)
+(cid:110)
+(cid:12)
+(cid:12)st,ct,at
+st+1,zt+1
+
+,
+
+(6)
+
+where s1:N
+
+Ï = Î¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+,cÏ ;g1:Ï â1) for Ï â T ;
+
+(iii) for every strategy proï¬le Ëg of the form Ëg := {Ëgi
+
+t : S i
+
+t Ã Ct â â(Ai
+
+t), i â N,t â T } and at â At,
+
+t â T ;
+
+EËg1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)ct,pi
+ui
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+t,at
+
+= EËg1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)ct,si
+ui
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+,
+t,at
+
+for all realizations {ct,pi
+
+t}â Ct Ã P i
+
+t of positive probability where s1:N
+
+Ï = Î¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+for Ï â T ;
+
+(7)
+
+,cÏ ; Ëg1:Ï â1)
+
+(iv) given an arbitrary strategy proï¬le Ëg of the form Ëg := {Ëgi
+
+t : S i
+
+t Ã Ct â â(Ai
+
+t), i â N , t â T },
+
+i â N , and t â T ,
+
+PËg1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)pi
+sâi
+(cid:12)
+t
+
+(cid:111)
+t,ct
+
+= PËg1:tâ1
+
+(cid:110)
+
+(cid:12)
+(cid:111)
+(cid:12)si
+sâi
+(cid:12)
+t,ct
+t
+
+,
+
+(8)
+
+4We note that we interpret a centralized control problem as a special case of our model where N =1, H 1
+
+t =Pt and Ct =â for
+all tâT , Deï¬nition 1 coincides with the deï¬nition of information state for the single agent decision problem. We would like to
+point out that conditions (i)-(iii) can have many solutions including the trivial solution P i,pr
+
+t =P i
+
+t . 5
+
+November 23, 2018
+
+DRAFT
+
+for all realizations {ct,pi
+
+t} â CtÃP i
+
+t of positive probability where s1:N
+
+Ï = Î¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+15
+
+,cÏ ; Ëg1:Ï â1)
+
+for Ï â T .
+
+There are four key differences between the deï¬nition of sufï¬cient private information and that
+
+of private payoff relevant information. First, we allow that the deï¬nition and the update rule
+
+of sufï¬cient information Si
+
+t to depend on the agentsâ strategies g1:tâ1. Second, comparing to
+part (ii) of Deï¬nition 1, part (ii) of Deï¬nition 2 requires that sufï¬cient information St includes
+
+all information relevant to the realization of Zt+1 in addition to the information relevant to the
+
+realization of St+1. As we discuss further in Section VI, this is because when signaling occurs in
+
+a multi-agent decision problems agents need to have a consistent view about future commonly
+
+observable events. Third, comparing part (iii) of Deï¬nition 2 to part (iii) of Deï¬nition 1, we
+
+note that the probability measures in Deï¬nition 2 depend on the strategy proï¬le g instead of the
+
+ope-loop strategy proï¬le (A1:N
+
+1:T = Ëa1:N
+condition requiring that agent iâs sufï¬cient private information Si
+he can form beliefs about agents âiâs sufï¬cient private information Sâi
+
+1:T ). Fourth, in part (iv) of Deï¬nition 2 there is an additional
+t must be rich enough so that
+; such a condition is
+
+t
+
+absent in Deï¬nition 1.
+
+In general, the notion of sufï¬cient private information S1:N
+
+t
+
+is more restrictive than that of
+
+private payoff relevant information P 1:N,pr
+
+t
+
+. This is because, S1:N
+
+t
+
+, t â T , needs to satisfy the
+
+additional condition (iv), and furthermore, open-loop strategies are a strict subset of closed loop
+
+strategies. Deï¬nition 2 provides (sufï¬cient) conditions under which agents can compress their
+
+private information in a âmutually consistentâ manner. We would like to point out that conditions
+
+(i)-(iv) of Deï¬nition 2 can have many solutions including the trivial solution Si
+
+t = P i
+t .6
+
+B. Sufï¬cient Common Information
+
+Based on the characterization of sufï¬cient private information, we present a statistic (com-
+
+pressed version) of the common information Ct that agents need to keep track of over time for
+
+decision making purposes.
+
+possible realizations of Si
+
+Fix a choice of sufï¬cient private information S1:N
+
+t to be the set of all
+t . Given the agentsâ strategy proï¬le g, let Î³t : Ct â
+â(Xt Ã St) denote a mapping that determines a conditional probability distribution over the
+
+t, and St := (cid:81)N
+
+, t â T . Deï¬ne S i
+
+i=1 S i
+
+t
+
+6We do not discuss the possibility of ï¬nding a minimal set of sufï¬cient private information in this chapter, and leave it for
+
+future research as such investigation is beyond the scope of this chapter.
+
+November 23, 2018
+
+DRAFT
+
+16
+
+system state Xt and all the agentsâ sufï¬cient private information St conditioned on the common
+
+information Ct at time t as
+
+Î³t(ct)(xt, st) = Pg1:tâ1{Xt = xt, St = st|ct},
+
+(9)
+
+for all ct â Ct, xt â Xt, st â St.
+
+We call the collection of mappings Î³ := {Î³t, t â T } a sufï¬cient information based belief
+
+system (SIB belief system). Note that Î³t is only a function of the common information Ct, and
+thus, it is computable by all agents. Let Î Î³
+based belief that agents hold under belief system Î³ at t. We can interpret Î Î³
+
+t := Î³t(Ct) denote the (random) common information
+
+t as the common belief
+
+that each agent holds about the system state Xt and all the agentsâ (including himself) sufï¬cient
+
+private information St at time t. We call the SIB belief Î t a sufï¬cient common information for
+
+the agents. In the rest of the paper, we write Î t and drop the superscript Î³ whenever such a
+
+simpliï¬cation in notation is clear. Moreover, we use the terms sufï¬cient common information
+
+and SIB belief interchangeably.
+
+C. Sufï¬cient Information based Strategy
+
+The combination of sufï¬cient private information S1:N
+
+t
+
+and sufï¬cient common information
+
+distribution for agent iâs action Ai
+
+Information Based (SIB) strategy for agent i at time t. A SIB strategy Ïi
+
+(the SIB belief) Î t offers a mutually consistent compression of the agentsâ private and common
+information. Consider a class of strategies that are based on the information given by (Î t, Si
+each agent i â N at time t â T . We call the mapping Ïi
+
+t) for
+t) a Sufï¬cient
+t determines a probability
+t). A SIB strategy is
+a strategy where agents only use the sufï¬cient common information Î t = Î³t(Ct) (instead of
+complete common information Ct), and the sufï¬cient private information Si
+(instead of complete private information P i
+
+t , Ct; g1:tâ1)
+1:T } is
+called a SIB strategy proï¬le Ï. The set of SIB strategies is a subset of general strategies, deï¬ned
+
+t = Î¶ i
+t ). A collection of SIB strategies {Ï1
+
+t at time t given his information (Î t, Si
+
+t (P i
+1:T , ..., ÏN
+
+t : â(Xt Ã St) Ã S i
+
+t â â(Ai
+
+in Section II, as we can deï¬ne,
+
+g(Ï,Î³),i
+t
+
+(hi
+
+t) := Ïi
+
+t(ÏÎ³
+
+t , si
+
+t) ât â T
+
+We note that from Deï¬nition 2 and (9), the realizations Ït and s1:N
+Therefore, strategies g(Ï,Î³),i
+t
+for t = 1, g(Ï,Î³),i
+1) = Ïi
+
+, deï¬ned above via (10) needs to be determined iteratively as follows;
+1 , Î¶ i
+
+1, C1)); for t = 2, g(Ï,Î³),i
+
+2, C2; g(Ï,Î³)
+
+2) = Ïi
+
+)); ...;
+
+2(ÏÎ³
+
+1(ÏÎ³
+
+2(P i
+
+1(P i
+
+2 , Î¶ i
+
+(hi
+
+(hi
+
+1
+
+1
+
+2
+
+t
+
+(10)
+
+at t only depends on g1:tâ1.
+
+November 23, 2018
+
+DRAFT
+
+for t = T , g(Ï,Î³),i
+
+t
+
+t â T and i â N .
+
+(hi
+
+t) = Ïi
+
+t(ÏÎ³
+
+t , Î¶ i
+
+2(P i
+
+t , Ct; g(Ï,Î³)
+
+tâ1 )). Therefore, strategy g(Ï,Î³),i
+
+t
+
+17
+
+is well-deï¬ned for all
+
+D. Sufï¬cient Information based Update Rule
+
+When the agents play a SIB strategy proï¬le Ï, it is possible to determine the SIB belief Î t
+
+recursively over time based on Î tâ1 and the new common information Zt via Bayesâ rule. Let
+ÏÏtâ1
+t
+
+: â(Xtâ1ÃStâ1)ÃZt â â(XtÃSt) describe such a update rule for time t + 1 â T /{1} so
+
+that
+
+Î t = ÏÏtâ1
+
+t
+
+(Î tâ1, Zt).
+
+(11)
+
+We note that the SIB update rule ÏÏtâ1
+
+t
+
+depends on the SIB strategy proï¬le Ïtâ1 at tâ1. In
+
+the rest of the paper, we drop the superscript Ï whenever such a simpliï¬cation in notation is
+
+clear.
+
+E. Special Cases
+
+We consider the special cases (1)-(3) of the general model we presented in Section II,
+
+and identify the sufï¬cient private information S1:N
+
+1:T ; we discuss the application of sufï¬cient
+
+information approach to special case (4) in Section VII.
+
+given by P 1
+
+t = {X1:t} and P 2
+
+given by Ct = {M1:tâ1}. We can verify that S1
+
+1) Real-time source coding-decoding: The encoderâs and decodersâ private information are
+t = { ËX1:tâ1âÎ´}, respectively. The agentsâ common information is
+t = â satisfy
+the conditions of Deï¬nition 2 ; this is similar to the structural results in [27, Sections III and
+VI]. Consequently, the common information based belief is Î t = Pg{Xtâmax(k,Î´+1)+1:t|M1:tâ1}.
+
+t = ËX = {Xtâmax(k,Î´+1)+1,...,Xt} and S2
+
+2) Delayed sharing information structure: We have P i
+
+tâd+1:t} and Ct = {Y1:tâd,
+A1:tâd}. Since we do not assume any speciï¬c structure for the system dynamics and the agentsâ
+
+tâd+1:t,Ai
+
+t = {Y i
+
+observations, agent iâs complete private information P i
+t
+
+is payoff-relevant for him. Therefore,
+t . Consequently, we have Î t = Pg{Xt,Ytâd+1:t,Atâd+1:t|Y1:tâd,A1:tâd}. The above
+
+we set Si
+
+t = P i
+
+sufï¬cient information appears in the ï¬rst structural result in [18].
+
+3) Real-time multi-terminal communication: We have P 1
+1:t, ËX1:tâ1}, and Ct = â. It is easy to verify that S1
+t = {Y 1
+P 3
+t = (X 2
+S2
+the structural results that appear [29].
+
+1:t,Y 2
+t ,P{R|X 2
+
+1:tâ1}), and S3
+
+1:t},P{Y 2
+
+1:tâ1|M 2
+
+t = P 3
+
+1:tâ1}, P 2
+
+t = {X 1
+t = (X 1
+
+1:tâ1},
+1:tâ1}),
+t ; this sufï¬cient information corresponds to
+
+1:t,M 1
+t ,P{R|X 1
+
+1:t,M 2
+1:tâ1|M 1
+
+1:t},P{Y 1
+
+t = {X 2
+
+November 23, 2018
+
+DRAFT
+
+18
+
+V. MAIN RESULTS
+
+In this section, we present our main results for the analysis of dynamic decision problems with
+
+asymmetric information and non-strategic agents using the notion of sufï¬cient information. We
+
+ï¬rst provide a generalization of the policy-independence property of beliefs to decision problems
+
+with many agents (Theorem 1). Second, we show that the set of SIB strategies are rich enough
+
+so that restriction to them is without loss of generality (Theorem 2). That is, given any strategy
+
+proï¬le g, there exists a SIB strategy proï¬le Ï such that every agent gets the same ï¬ow of
+
+utility over time under Ï as the one under g. Third, we consider dynamic team problems with
+
+asymmetric information. We show that using the SIB strategies, we can decompose the problem
+
+sequentially over time, formulate a dynamic program, and determine a globally optimal policy
+
+via backward induction (Theorem 3).
+
+Theorem 1 (Policy-independence belief property).
+
+(i) Consider a general strategy proï¬le g. If agents âi play according to strategies gâi, then
+
+for every strategy gi that agent i plays,
+
+Pg (cid:110)
+
+xt, pâi
+t
+
+(cid:111)
+
+(cid:12)
+(cid:12)hi
+(cid:12)
+
+t
+
+= Pgâi (cid:110)
+
+xt, pâi
+t
+
+(cid:111)
+
+(cid:12)
+(cid:12)hi
+(cid:12)
+
+t
+
+.
+
+(12)
+
+(ii) Consider a SIB strategy proï¬le Ï along with the associated update rule Ï. If agents âi
+
+play according to SIB strategies Ïâi, then for every general strategy gi that agent i plays,
+
+PÏâi,gi
+Ï
+
+(cid:110)
+xt, pâi
+t
+
+(cid:12)
+(cid:111)
+(cid:12)hi
+(cid:12)
+t
+
+= PÏâi
+Ï
+
+(cid:110)
+xt, pâi
+t
+
+(cid:12)
+(cid:111)
+(cid:12)hi
+(cid:12)
+.
+t
+
+(13)
+
+Theorem 1 provides a generalization of the policy-independence belief property for the central-
+
+ized stochastic control problem [3] to multi-agent decision making problems. Part (i) of Theorem
+
+1 states that, under perfect recall, agent iâs belief is independent of his actual strategy gi. Part (ii)
+
+of Theorem 1 refers to the case where agents âi play SIB strategies Ïâi and update their SIB
+
+belief according to SIB update rule Ï. The update rule Ï is determined based on (Ïâi, Ïi) via
+
+Bayesâ rule, where Ïi denotes the SIB strategy that agents âi assume agent i utilizes. Equation
+
+(13) states that even if agent i unilaterally and privately deviates from his SIB strategy, his belief
+
+is independent of his actual strategy gi, and only depends on the other agentsâs strategy Ïâi as
+
+well as the other agentsâ assumption about the SIB strategy Ïi (or equivalently the SIB update
+
+November 23, 2018
+
+DRAFT
+
+19
+
+rule Ï).7
+
+In POMDPs it is shown that restriction to Markov strategies is without loss of optimality.
+
+We provide a generalization of this result to decision problems with many agents. We show
+
+that restriction to SIB strategies is without loss of generality in non-strategic settings given that
+
+the agents have access to a public randomization device. We say that the agents have access
+
+to a public randomization device if at every time t â T they observe a public random signal
+
+Ït that is completely independent of all events and primitive random variables in the decision
+
+problem and is uniformly distributed on [0,1], and is independent across time. As a result, in
+
+general, at every t â T , all agents can condition their actions on the realization of Ït as well as
+
+their own information. In other words, a public randomization device enables the agents to play
+
+correlated randomized strategies. We denote by Ïi
+
+t(Î t, Si
+public randomization device for every i â N and t â T .
+
+t, Ït) agent iâs SIB strategy using the
+
+Theorem 2. Assume that the non-strategic agents have access to a public randomization device.
+
+Then, for any strategy proï¬le g there exists an equivalent SIB strategy proï¬le Ï that results in
+
+the same expected ï¬ow of utility, i.e.
+
+(cid:40) T
+
+(cid:88)
+
+Eg
+
+Ï =t
+
+(cid:41)
+
+ui
+Ï (g1:N
+Ï
+
+(H 1:N
+Ï
+
+),XÏ)
+
+= EÏ
+
+(cid:40) T
+
+(cid:88)
+
+Ï =t
+
+u1:N
+Ï
+
+for all i â N and t â T .
+
+(Ïi
+
+Ï(Î Ï,S1:N
+
+Ï
+
+(cid:41)
+,
+
+, ÏÏ ),XÏ)
+
+(14)
+
+We provide an intuitive explanation for the result of Theorem 2 below. For every agent
+
+i â N , his complete information history H i
+
+t at any time t â T consists of two components: (i)
+one component captures his information about past events that is relevant to the continuation
+
+decision problem; and (ii) another component that, given the ï¬rst component, captures the
+
+information about past events that is irrelevant to the continuation decision problem. We show
+
+that the combination of sufï¬cient private information Si
+
+t and sufï¬cient common information Î t
+contains the ï¬rst component. Nevertheless, in general, the agents can coordinate their action by
+
+incorporating the second component into their decision since their information about the past
+t denote the part of agent iâs information H i
+
+events is correlated. Let Ri
+
+(Î t, Si
+
+t). We show that the set of {R1
+
+t , ..., RN
+
+t } are jointly independent of {(Î t, Si
+
+T that is not captured by
+t )}
+
+t), ..., (Î t, SN
+
+7The results of Theorem 1 provides a crucial property for the analysis of decision problems with strategic agents. This is
+because it ensures that an agentâs unilateral deviation does not inï¬uence his belief (see the companion paper [2] for more details).
+
+November 23, 2018
+
+DRAFT
+
+20
+
+t , ..., ËRN
+
+identically distributed as {R1
+
+(Lemma 2 in the Appendix). Therefore, at every time t â T , we can generate a set of signals
+{ ËR1
+
+t }, one for each agent, using the public randomization device Ï so that they are
+t } along with the information
+t) for every agent i â N , we can thus recreate a (simulated) history that is identically
+t . This implies that, given a public randomization device Ï, it is sufï¬cient for
+each agent i â N to only keep track of (Î t, Si
+t , and play a
+SIB strategy Ïi to achieve an identical (in distribution) sequence of outcomes per stage as those
+
+state (Î t, Si
+distributed to H i
+
+t) instead of his complete history H i
+
+t }. Using the signals { ËR1
+
+t , ..., ËRN
+
+t , ..., RN
+
+under the strategy proï¬le g.
+
+The result of Theorem 2 states that the the class of SIB strategies characterizes a set of simpler
+
+strategies where the agents only keep track of a compressed version of their information rather
+
+than their entire information history. Moreover, the restriction to the class of SIB strategies is
+
+without loss of generality. Thus, along with results appearing in the companion paper [2], the
+
+result of Theorem 2 suggests that the sufï¬cient information approach proposed in this paper
+
+presents a uniï¬ed methodology for the study of decision problems with many non-strategic or
+
+strategic agents and asymmetric information.
+
+We would like to discuss the implication of Theorem 2 for two special instances of our model.
+
+First, when N = 1, there is no need for a public randomization device since the single decision
+
+maker does not need to correlate the outcome of his randomized strategy with any other agent.
+
+Therefore, the result of Theorem 2 states that the restriction to Markov strategies in POMDPs
+
+is without loss of generality. Second, when N > 1 and the agents have identical utilities, i.e.
+
+dynamic teams, utilizing a public randomization device does not improve the performance. This
+
+is because, in dynamic teams a randomized strategy proï¬le is optimal if and only if it is optimal
+
+for every realization of the randomization. Therefore, the restriction to SIB strategies in dynamic
+
+teams is without loss of optimality.
+
+Using the result of Theorem 2, we present below a sequential decomposition of dynamic
+
+teams over time. We formulate a dynamic program that enables us to determine a globally
+
+optimal strategy proï¬le via backward induction.
+
+Theorem 3. A SIB strategy proï¬le Ï is a globally optimal solution to a dynamic team problem
+
+with asymmetric information if it solves the following dynamic program:
+
+VT +1(Ït+1) := 0,
+
+âÏt+1, âi â N ;
+
+(15)
+
+DRAFT
+
+November 23, 2018
+
+at every t â T , and for every Ït,
+
+Ï1:N
+t
+
+(Ït,Â·) â arg max
+Î±1:N :S1:N
+
+EÏt
+)
+
+Vt(Ït) :=
+
+Î±1:N :S1:N
+
+t
+
+t ââ(A1:N
+EÏt
+)
+
+max
+t ââ(A1:N
+
+t
+
+(cid:8)uteam
+
+t
+
+(Xt,Î±1:N (S1:N
+
+t
+
+)) + Vt+1(ÏÏt
+
+t (Ït,Î±1:N,Zt+1))(cid:9),
+
+(cid:8)uteam
+
+t
+
+(Xt,Î±1:N (S1:N
+
+t
+
+)) + Vt+1(ÏÏt
+
+t (Ït,Î±1:N,Zt+1))(cid:9).
+
+21
+
+(16)
+
+(17)
+
+The results of Theorems 2 and 3 extend the results of [18], [26] for the study of dynamic
+
+teams in two directions. First, they state that restriction to the set of SIB strategies is without
+
+loss of generality, while the results of [18], [26] only state that this restriction is without loss
+
+of optimality. Second, the deï¬nition of Common Information Based strategies, ï¬rst presented in
+
+[18], [26], requires the agents to use all of their private information P i
+
+t , i â N (or all their private
+memory that is a predetermined function of their private information if they do not have perfect
+
+recall); the result of Theorem 3 holds for SIB strategies where the agentsâ private information
+
+is effectively compressed , thus, it generalizes/extends the deï¬nition of CIB strategies proposed
+
+in [18], [26].
+
+A. Constructive algorithm
+
+VI. DISCUSSION
+
+The sufï¬cient information approach described in Sections IV and V, presents a generalization
+
+of the notion of information state to dynamic multi-agent decision problems with non-classical
+
+information structure. Nevertheless, we would like to point out that our approach does not address
+
+all the issues present in the study of dynamic multi-agent decision problems. We discuss the
+
+main limitation of our approach below.
+
+In POMDPs, an information state with time-invariant domain can be determined by forming
+
+the probability distribution over the system state conditioned on the current information. Our
+
+approach does not offer an explicit constructive algorithm that determines a mutually-consistent
+
+set of information states, one for each agent, with time-invariant domains in dynamic multi-agent
+
+decision problems. Speciï¬cally, Deï¬nition 2 describes only a set of sufï¬cient conditions that one
+
+can use to evaluate whether a speciï¬c compression of agentsâ private information is sufï¬cient for
+
+decision making purposes; it does not offer a constructive algorithm to determine a compression
+
+of the agentsâ private information that leads to an information state with time-invariant domain.
+
+Given a set of sufï¬cient private information with time-invariant domain for the agents, we
+
+achieve, through the formation of SIB beliefs, a compression of the agentsâ common information
+
+November 23, 2018
+
+DRAFT
+
+22
+
+that results in a set of information states with time-invariant domains. In Sections II and IV, we
+
+presented instances of multi-agent decision problems where we can discover a set of information
+
+states with time-invariant domains. Nonetheless, it is not clear if such a set of mutually-consistent
+
+information states with time-invariant domains exist for every dynamic multi-agent decision
+
+problem. Therefore, an interesting, but challenging, future direction would be to identify classes
+
+of dynamic decision problems with non-classical information structure where we can guarantee
+
+the existence of a set of mutually-consistent information states with time-invariant domains, and
+
+prescribe a constructive methodology for their identiï¬cation. Moreover, we would like to point
+
+out that the sufï¬cient information approach presented here provide sufï¬cient conditions that can
+
+be used to evaluate an educated-guess one may have for speciï¬c multi-agent problems.
+
+B. Comparison with other Approaches
+
+The sufï¬cient information approach proposed in this paper shares similarities and also has
+
+differences with existing conceptual approaches to the study of dynamic multi-agent decision
+
+problems. Below, we brieï¬y discuss these approaches and compare them with the sufï¬cient
+
+information approach.
+
+1) Comparison with Agent-by-Agent Approach: The agent-by-agent approach proceeds as
+
+follows: start with an initial guess of a strategy proï¬le g for all agents. At each iteration, select
+
+one agent, say agent i. and update his strategy to a best response strategy given the strategy gâi
+
+of all other agents. Repeat the process until a ï¬xed point is reached, that is, when no agent can
+
+improve performance by unilaterally changing his strategy.
+
+If the above-described iterative process converges, the resulting strategy proï¬le determines an
+
+agent-by-agent optimal strategy proï¬le; however, such an agent-by-agent optimal strategy proï¬le,
+
+in general, is not a globally optimal strategy proï¬le [24]. This is because the multi-agent decision
+
+problems are, in general, not convex in the agentsâ strategies [5]. Therefore, the above-described
+
+iterative process does not necessarily converge, or it may converge to a locally optimal strategy
+
+proï¬le that is not a globally optimal strategy proï¬le. In contrast to agent-by-agent approach, the
+
+sufï¬cient information approach determines a globally optimal strategy proï¬le for multi-agent
+
+decision problems with non-strategic agents.
+
+The agent-by-agent approach can be used to discover qualitative properties of optimal strate-
+
+gies. Speciï¬cally, we ï¬x the strategies of all agents except one, say agent i, to an arbitrary set
+
+of strategies gâi, and solve for agent iâs best response; to determine agent iâs best response we
+
+November 23, 2018
+
+DRAFT
+
+23
+
+need to solve a POMDP, where the system state and system dynamics, in general, depend on
+
+gâi. If agent iâs best response possesses a property that holds for every choice of gâi, then a
+
+globally optimal strategy for agent i possesses the same property. In contrast to the agent-by-
+
+agent approach where one need to solve a POMDP parameterized by gâi, to discover qualitative
+
+properties of a globally optimal strategy proï¬le using the sufï¬cient information approach we only
+
+need to check the set of conditions appearing in Deï¬nition 2 (or equivalently a more general
+
+Deï¬nition 3 that will appear in Section VII).
+
+Moreover, using the sufï¬cient information approach we can discover qualitative properties
+
+of optimal strategies that cannot be discovered by the agent-by-agent approach. For instance,
+
+consider the following example.
+
+Example. Consider a team problem with two agents and observable actions, where agent 2âs
+
+action A2
+
+t does not affect the evolution of Xt for all t, i.e. Xt+1 = ft(Xt,A1
+i, i = 1, 2, has an imperfect private observation of state Xt at t given by Y i
+arbitrary choice of strategy gi
+
+t,Wt). Each agent
+t(Xt, W i
+t = Oi
+t ). An
+t for agent i at t depends, in general, on his complete information
+1:t, A1:tâ1}. Therefore, following the agent-by-agent approach, if agent iâs
+Ï for some Ï , 1 â¤ Ï â¤ t â 1, then agent jâs, j (cid:54)= i, best response
+1:tâ1 as
+irrelevant information for decision making purposes for agents 1 and 2. However, using the
+
+Ï . Consequently, the agent-by-agent approach fails to characterize A2
+
+strategy depends on A2
+
+history given by {Y i
+
+also depends on A2
+
+sufï¬cient information approach we can simply show that a globally optimal strategy proï¬le
+depend only on P{Xt|Y i
+
+1:t} for agent i.
+
+1:t,A1
+
+2) Comparison with the Designerâs Approach: The designerâs approach was originally pro-
+
+posed by Witsenhausen in [25], and was further investigated in [35]. This approach considers the
+
+decision problem from the point of view of a designer (she) who knows the system model and the
+
+probability distribution of the primitive random variables, and chooses control/decision strategies
+
+for all agents; she chooses these strategies without having any observation/knowledge about the
+
+realizations of primitive random variables (i.e. she chooses these strategies before the system
+
+evolution starts). Therefore, the designer effectively solves a centralized panning problem. The
+
+designerâs approach proceeds by: (i) formulating the centralized planning problem as a multi-
+
+stage, open-loop stochastic control problem in which the designerâs decision at each time is a
+
+set of control strategies for all agents; (ii) using the standard techniques in centralized stochastic
+
+control to obtain a dynamic programming decomposition of the decision problem. Each step of
+
+the resulting dynamic program is a functional optimization problem.
+
+November 23, 2018
+
+DRAFT
+
+24
+
+The designerâs approach breaks the interdependencies between the agentsâ decision and infor-
+
+mation over time by transferring all the complexity that arises due to non-classical information
+
+structure and signaling to a larger information state which at each time is given by a probability
+
+distribution on Ht, the domain of which increases with time as agents have perfect recall.8 There-
+
+fore, the sequential decomposition resulting from the designerâs approach is not, in general, very
+
+practical for the study of multi-agent dynamic decision problems with asymmetric information.
+
+In contrast to the designerâs approach, the sufï¬cient information approach provides a sequential
+
+decomposition of the decision problem over time where at each time t each agent makes decision
+
+based on only a compression of his information H i
+
+t . Therefore, it leads to a dynamic program
+where the state variable at each step of the program is a probability distribution on St instead
+
+of a probability distribution on Ht in the designerâs approach.
+
+3) Comparison with the Common Information Approach: The common information approach,
+
+proposed in [18], [26], addresses some of the drawbacks of designerâs approach by modeling the
+
+decision problem as a closed-loop centralized planning problem (POMDP) in which a coordinator
+
+observes perfectly the common information Ct at each time t and, based on this knowledge,
+
+chooses a set of partial control strategies/prescriptions that determine how each agent takes
+
+an action based on his private information at time t. The coordinatorâs information state at
+
+time t is his belief on (Xt, Pt) conditioned Ct. As shown in [26], the dynamic programming
+
+decomposition achieved by the common information approach is simpler than that achieved by
+
+the designerâs approach. In the common information approach the agentsâ private information
+
+remains intact. Therefore, the resulting decomposition is not very practical whenever the agentsâ
+
+private information grows in time (see special cases 1,3 and 4 in Section II). Furthermore, the
+
+common information approach becomes identical to the designerâs approach whenever the agents
+
+do not share any common information over time (see special case 3).
+
+In the sufï¬cient information approach, we provide conditions sufï¬cient to identify mutually-
+
+consistent compressions of the agentsâ private information that are sufï¬cient for decision making
+
+purposes and do not result in any loss in system performance. Thus, the sufï¬cient information
+
+approach gives rise to a dynamic program that is simpler than the one resulting from the common
+
+information approach. As we show in Section VII, these conditions are the core of sufï¬cient
+
+information approach; they are generalized by Deï¬nition 3 to captures a mutually-consistent
+
+8An instance where the domain of the control law is time-invariant is presented in [35].
+
+November 23, 2018
+
+DRAFT
+
+25
+
+joint compressions of the agentsâ private and common information. Moreover, in the model of
+
+Section II, we do not assume that the agents share a common objective. Therefore, we do not
+
+reformulate the original multi-agent decision problem as a centralized planning problem from the
+
+coordinatorâs point of view when signaling occurs. Alternatively, we provide conditions sufï¬cient
+
+to identify compression of the agentsâ information in a mutually-consistent manner on individual
+
+level. As a result, our approach is applicable to both strategic and non-strategic settings (see our
+
+companion paper [2] for strategic settings).
+
+VII. GENERALIZATION
+
+In the sufï¬cient information approach presented in Section IV, we treat the agentsâ private
+
+information and common information separately. This is because the main challenge in the
+
+study of dynamic decision problems with non-strategic agents is due to the presence of the
+
+agentsâ private information. Nevertheless, such a separate treatment of private and common
+
+information is not necessary. Using the same rationale that leads to Deï¬nition 2, we present
+
+below a set of conditions sufï¬cient to characterize a mutually consistent compression of agentsâ
+
+information, without separating private and common components, that is sufï¬cient for decision
+
+making purposes.
+
+Deï¬nition 3 (Sufï¬cient information). We say Li
+
+t = ËÎ¶ i
+
+t (P i
+
+t , Ct, g1:tâ1) â Li
+
+t, i â N , t â T , is
+
+sufï¬cient information for the agents if,
+
+(i) it can be updated recursively as
+
+t = ËÏi
+Li
+
+t(Li
+
+tâ1, H i
+
+t \H i
+
+tâ1, g1:tâ1) for t â T \{1},
+
+(18)
+
+(ii) for any strategy proï¬le g and for all realizations {ct, pt, pt+1, zt+1, at} â CtÃPtÃPt+1ÃZt+1
+
+with positive probability,
+
+Pg1:t
+
+(cid:12)
+(cid:110)
+(cid:111)
+(cid:12)
+(cid:12)pt,ct,at
+lt+1
+
+= Pg1:t
+
+(cid:12)
+(cid:110)
+(cid:111)
+(cid:12)
+(cid:12)lt,at
+lt+1
+
+,
+
+(19)
+
+,cÏ ;g1:Ï â1) for Ï â T ;
+
+where l1:N
+
+Ï = ËÎ¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+(iii) for every strategy proï¬le Ëg of the form Ëg := {Ëgi
+
+t : Li
+
+t â â(Ai
+
+t), i â N,t â T } and at â At,
+
+t â T ;
+
+November 23, 2018
+
+EËg1:tâ1
+
+(cid:12)
+(cid:110)
+ui
+(cid:12)ct,pi
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+t,at
+
+= EËg1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:111)
+ui
+(cid:12)li
+(cid:12)
+t(Xt,At)
+,
+t,at
+
+(20)
+
+DRAFT
+
+for all realizations {ct,pi
+
+t} â CtÃP i
+
+t of positive probability where l1:N
+
+Ï = ËÎ¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+26
+
+,cÏ ; Ëg1:Ï â1)
+
+for Ï â T ;
+
+(iv) given an arbitrary strategy proï¬le Ëg of the form Ëg := {Ëgi
+
+t : Li
+
+t â â(Ai
+
+t), i â N , t â T },
+
+i â N , and t â T ,
+
+PËg1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)pi
+lâi
+(cid:12)
+t
+
+(cid:111)
+t,ct
+
+= PËg1:tâ1
+
+(cid:110)
+
+(cid:12)
+(cid:111)
+(cid:12)li
+lâi
+(cid:12)
+t
+t
+
+,
+
+for all realizations {ct,pi
+
+t} â CtÃP i
+
+t with positive probability where l1:N
+
+Ï = ËÎ¶ 1:N
+
+Ï
+
+(p1:N
+Ï
+
+(21)
+
+,cÏ ; Ëg1:Ï â1)
+
+for Ï â T .
+
+The conditions of Deï¬nition 3 are similar to those of Deï¬nition 2, but they concern agentsâ
+
+private and common information rather than just their private information. Throughout the paper,
+
+we do not make any assumption that the agentsâ private observations are necessarily disjoint.
+
+Therefore, one can deï¬ne P i
+
+t = â, for all i â N and t â T , in which case
+Deï¬nition 3 would be the same as Deï¬nition 2. Consequently, all the results appearing in this
+
+t and C i
+
+t = H i
+
+paper (Theorems 1-6) also hold for sufï¬cient information characterized by Deï¬nition 3.
+
+We show below that the set of information states (Si
+
+t, Î t), i â N } proposed in Section IV
+satisï¬es the conditions of Deï¬nition 3. Therefore, Deï¬nition 3 provides a generalization of the
+
+sufï¬cient information approach presented in Section IV as it does not require to compress the
+
+agentsâ private and common information separately.
+
+Theorem 4. The set of information states Li
+
+t := (Si
+
+t, Î t), i â N , t â T , satisï¬es Deï¬nition 3.
+
+Compared to Deï¬nition 2, Deï¬nition 3 provides conditions sufï¬cient for a mutually-consistent
+
+joint compression of the agentsâ private and common information. However, similar to the
+
+discussion in Section VI-A, it does not provide a constructive algorithm to determine a set
+
+of sufï¬cient information Li
+
+t, i â N , t â T , with time-invariant domain.
+
+Remark 1. In view of Deï¬nition 3, one can replace condition (ii) of Deï¬nition 2 with a weaker
+
+one that requires that St include all the information necessary to form a belief about the
+
+realizations (of parts) of Zt+1 only if (those parts of) Zt+1 affect the realization of Î t+1 given
+
+Î t.
+
+Using Deï¬nition 3 we identify a set of sufï¬cient information for special case 4 described in
+
+Section II.
+
+November 23, 2018
+
+DRAFT
+
+Special Case:
+
+27
+
+{A2
+
+4) Optimal remote and local controller: We have Ct = {Y1:t}, P 1
+
+t =
+1:tâ1}. Let Ï â¤ t denote the last time the data transmission was successful between the local
+and remote controllers. We can restrict attention, without loss of optimality, to the class of pure
+t = {Xt,{Pg{Xt = xt|XËÏ},âxt â Xt}}
+t = {Pg{Xt = xt|XËÏ},âxt â Xt} satisfy the conditions of Deï¬nition 3; this is similar to the
+
+strategies for both controllers. Therefore, one can show that L1
+
+1:tâ1}\Ct, and P 2
+
+t = {X1:t,A1
+
+and L2
+
+structural results in [30], [31].
+
+VIII. EXTENSION TO INFINITE HORIZON
+
+In the model of Section II, we assume that the horizon T is ï¬nite. We present a model similar
+
+to that of Section II with inï¬nite horizon, i.e. T = â, and provide the extensions of our results
+
+to dynamic decision problems with inï¬nite horizon.
+
+Inï¬nite Horizon Dynamic Decision Problem: There are N non-strategic agents who live
+
+in a dynamic Markovian world over an inï¬nite horizon. Consider a time-invariant model where
+
+the system state, actions, and observations spaces are ï¬nite and time-invariant, i.e. Xâ = Xt,
+Aâ = At, Zâ = Zt, and Yâ = Yt for all t â N. Let Xt â Xâ denote the system state at
+t â N. Given the agentsâ actions At at t, the system state evolution is given by
+
+Xt+1 = fâ(Xt, At, W x
+
+t ),
+
+(22)
+
+where {W x
+
+t , t â N} is a sequence of independent and identically distributed random variables.
+The initial state X1 is a random variable with probability distribution Î· â â(Xâ) with full
+
+support that is common knowledge among the agents.
+
+At every time t â N, each agent i â N , receives a noisy observation Y i
+
+t given by
+
+t = Oi
+Y i
+
+â(Xt, Atâ1, W i
+
+t ),
+
+(23)
+
+where {W i
+
+t , t â N, i â N } is a sequence of independent and identically distributed random
+
+variables.
+
+In addition, at every t â N all agents receive a common observation Zt â Zâ given by
+
+Zt = Oc
+
+â(Xt, Atâ1, W c
+
+t ),
+
+(24)
+
+DRAFT
+
+November 23, 2018
+
+28
+
+where {W c
+
+t , t â N} is a sequence of independent and identically distributed random variables;
+t , t â N, i â N } and the initial state X1 are
+
+t , t â N}, and {W i
+
+t , t â N}, {W c
+
+the sequences {W x
+
+mutually independent.
+
+Similar to the model of Section II, let P i
+
+t and Ct denote agent iâs, i â N , private and common
+information at t â N, respectively. Agent i has a time-invariant instantaneous utility function
+
+Î´tâ1ui
+
+â(Xt, At), and his total discounted utility is given by
+
+U i
+
+in(X, A) :=
+
+â
+(cid:88)
+
+t=1
+
+Î´tâ1ui
+
+â(Xt, At),
+
+(25)
+
+where Î´ denotes the discount factor.
+
+We provide an extension of our results to inï¬nite horizon dynamic decision problems with non-
+
+strategic agents. For that matter, we ï¬rst present a generalization of the deï¬nition of sufï¬cient
+
+private information to inï¬nite horizon decision problems.
+
+Deï¬nition 4 (Time-invariant sufï¬cient private information). We say Si
+
+t, i â N , t â N, is a
+time-invariant sufï¬cient private information if it is a sufï¬cient private information and has a
+
+time-invariant domain denoted by S i
+
+â, i â N .
+
+We note that for the special cases presented in Section IV, the characterized sufï¬cient private
+
+information is time-invariant.
+
+Following an argument similar to the one presented in Section V, we extend the result of
+
+Theorem 2 to inï¬nite horizon dynamic decision problems with non-strategic agents.
+
+Theorem 5. Consider an inï¬nite horizon dynamic decision problem with non-strategic agents
+
+having access to a public randomization device. Then, for any arbitrary strategy proï¬le g there
+
+exists an equivalent stationary SIB strategy proï¬le Ï that results in the same expected ï¬ow of
+
+utility, i.e.,
+
+(cid:40) â
+(cid:88)
+
+Eg
+
+Ï =t
+
+Î´tâ1ui
+
+â(g1:N
+Ï
+
+(H 1:N
+Ï
+
+),XÏ)
+
+= EÏâ
+
+(cid:41)
+
+(cid:40) â
+(cid:88)
+
+Ï =t
+
+Î´tâ1ui
+
+â(Ï1:N
+Ï
+
+(Î Ï,S1:N
+
+Ï
+
+, ÏÏ ),XÏ)
+
+,
+
+(26)
+
+(cid:41)
+
+for all i â N and t â N.
+
+Next, we consider the case where agents share the same objective ui
+
+â (Â·, Â·) for
+all i â N ., i.e. an inï¬nite horizon dynamic team problem. It is shown that in inï¬nite horizon
+
+â(Â·, Â·) = uteam
+
+November 23, 2018
+
+DRAFT
+
+POMDPS we can restrict attention, without loss of generality, to stationary Markov policies [3].
+
+We provide a generalization of this results to dynamic multi-agent decision problems below.
+
+Given a set of time-invariant sufï¬cient private information, let Î t â â(Xâ ÃSâ) denote the
+
+29
+
+SIB belief about (Xt, St) at time t. We call the mapping Ïi
+a stationary SIB strategy for agent i if Si
+
+â)
+t, i â N , t â N, is a time-invariant sufï¬cient private
+information. Similarly, given a stationary SIB strategy proï¬le Ïâ, we deï¬ne a stationary SIB
+
+â : â(Xâ Ã Sâ) Ã S i
+
+â â â(Ai
+
+update rule as a time-invariant mapping Î·Ïâ
+recursively determines the SIB belief via Bayesâ rule for all t â N. Similarly, let Ïi
+
+â : â(Xâ Ã Sâ) Ã Zâ â â(Xâ Ã Sâ), that
+t, Ït)
+denote agent iâs stationary SIB strategy using the public randomization device for every i â N
+
+â(Î t, Si
+
+and t â T , when the agents have access to a public randomization device Ït for every t â T .
+
+We provide a sequential decomposition similar to that of Theorem 3 for inï¬nite horizon
+
+dynamic teams below.
+
+Theorem 6. A stationary SIB strategy proï¬le Ïâ is an optimal solution to an inï¬nite horizon
+
+dynamic team problem with asymmetric information if it solves the following Bellman equation:
+
+Vâ(Ït) :=
+
+max
+â âA1:N
+â
+
+Î±1:N :S1:N
+
+EÏ
+
+(cid:8)uteam
+
+â (Xt,Î±1:N (S1:N
+
+t
+
+)) + Vâ(Î·â(Ït,Î±1:N,Zt+1))(cid:9),
+
+(27)
+
+for all Ït â â(Xâ Ã Sâ).
+
+The result of Theorem 6 provide a generalization of Bellman equation for POMDPS (see [3,
+
+Ch. 8]) to decision problems with many agents and asymmetric information.
+
+IX. CONCLUSION
+
+We presented a general approach to study a general class of dynamic multi-agent decision
+
+making problems with non-strategic agents. We proposed the notion of sufï¬cient information
+
+that enables us to compress effectively the agentsâ (private and common) information in a
+
+mutually consistent manner for decision making purposes. We showed that the restriction to
+
+the class of SIB strategies are without loss of generality. Accordingly, we provided a sequential
+
+decomposition of dynamic decision problems with non-strategic agents, and formulated a dy-
+
+namic program to determine a globally optimal strategy proï¬le in dynamic teams. The proposed
+
+sufï¬cient information approach presented in this paper generalizes a set of existing results in
+
+the literature for the study of dynamic multi-agent decision making problems with non-strategic
+
+agents. Our results in this paper, along with those appearing in the companion paper [2], provide
+
+November 23, 2018
+
+DRAFT
+
+30
+
+a uniï¬ed appraoch to study dynamic decision problems with non-strategic agents (teams) and
+
+strategic agents (games). For future directions, we will investigate the problem of determining a
+
+constructive algorithm that enables us to identify sufï¬cient (private) information in a systematic
+
+way.
+
+REFERENCES
+
+[1] H. Tavafoghi, Y. Ouyang, and D. Teneketzis, âA sufï¬cient information approach to decentralized decision making,â in 57th
+
+IEEE Conference on Decision and Control (CDC), 2018.
+
+[2] H. Tavafoghi, Y. Ouyang, and D. Teneketzis, âA uniï¬ed approach to dynamic multi-agent decision problems with
+
+asymmetric information - part i: Strategic agents,â working paper, 2018.
+
+[3] P. Kumar and P. Varaiya, Stochastic Systems: Estimation Identiï¬cation and Adaptive Control. Prentice-Hall, Inc., 1986.
+
+[4] D. P. Bertsekas, Dynamic Programming and Optimal Control, vol. 1. Belmont, MA: Athena Scientiï¬c, 1995.
+
+[5] A. Mahajan, N. C. Martins, M. C. Rotkowitz, and S. YÂ¨uksel, âInformation structures in optimal decentralized control,â in
+
+51st IEEE Conference on Decision and Control (CDC), pp. 1291â1306, 2012.
+
+[6] A. A. Kulkarni and T. P. Coleman, âAn optimizerâs approach to stochastic control problems with nonclassical information
+
+structures,â IEEE Transactions on Automatic Control, vol. 60, no. 4, pp. 937â949, 2015.
+
+[7] L. Lessard and S. Lall, âConvexity of decentralized controller synthesis,â IEEE Transactions on Automatic Control, vol. 61,
+
+no. 10, pp. 3122â3127, 2016.
+
+[8] S. YÂ¨uksel and N. Saldi, âConvex analysis in decentralized stochastic control and strategic measures,â in 55th IEEE Annual
+
+Conference on Decision and Control (CDC), pp. 6050â6055, 2016.
+
+[9] H. S. Witsenhausen, âA counterexample in stochastic optimum control,â SIAM Journal of Optimal Control, vol. 6, no. 1,
+
+pp. 131â147, 1968.
+
+[10] Y.-C. Ho and K.-C. Chu, âTeam decision theory and information structures in optimal control problemsâpart i,â IEEE
+
+Transactions on Automatic Control, vol. 17, no. 1, pp. 15â22, 1972.
+
+[11] A. Lamperski and J. C. Doyle, âOn the structure of state-feedback lqg controllers for distributed systems with
+
+communication delays,â in 50th IEEE Conference on Decision and Control and European Control Conference (CDC-
+
+ECC), pp. 6901â6906, 2011.
+
+[12] L. Lessard and A. Nayyar, âStructural results and explicit solution for two-player LQG systems on a ï¬nite time horizon,â
+
+in 52nd IEEE Conference on Decision and Control (CDC), pp. 6542â6549, 2013.
+
+[13] P. Shah and P. Parrilo, âH2-optimal decentralized control over posets: A state-space solution for state-feedback,â vol. 58,
+
+pp. 3084â3096, Dec. 2013.
+
+[14] A. Nayyar and L. Lessard, âStructural results for partially nested LQG systems over graphs,â in American Control
+
+Conference (ACC), 2015, pp. 5457â5464, 2015.
+
+[15] L. Lessard and S. Lall, âOptimal control of two-player systems with output feedback,â IEEE Transactions on Automatic
+
+Control, vol. 60, no. 8, pp. 2129â2144, 2015.
+
+[16] S. Yuksel, âStochastic nestedness and the belief sharing information pattern,â IEEE Transactions on Automatic Control,
+
+vol. 54, no. 12, pp. 2773â2786, 2009.
+
+[17] Y. Ouyang, S. M. Asghari, and A. Nayyar, âStochastic teams with randomized information structures,â in 56th IEEE
+
+Conference on Decision and Control (CDC), 2017.
+
+November 23, 2018
+
+DRAFT
+
+31
+
+[18] A. Nayyar, A. Mahajan, and D. Teneketzis, âOptimal control strategies in delayed sharing information structures,â IEEE
+
+Transactions on Automatic Control, vol. 56, no. 7, pp. 1606â1620, 2011.
+
+[19] H. Witsenhausen, âSeparation of estimation and control for discrete time systems,â Proceedings of the IEEE, vol. 59,
+
+no. 11, pp. 1557â1566, 1971.
+
+[20] P. Varaiya and J. Walrand, âOn delayed sharing patterns,â IEEE Transactions on Automatic Control, vol. 23, no. 3, pp. 443â
+
+445, 1978.
+
+[21] T. Yoshikawa, âDecomposition of dynamic team decision problems,â IEEE Transactions on Automatic Control, vol. 23,
+
+no. 4, pp. 627â632, 1978.
+
+[22] M. Rotkowitz and S. Lall, âA characterization of convex problems in decentralized control,â IEEE Transactions on
+
+Automatic Control, vol. 50, no. 12, pp. 1984â1996, 2005.
+
+[23] S. M. Asghari and A. Nayyar, âDynamic teams and decentralized control problems with substitutable actions,â 2016.
+
+[24] Y. Ho, âTeam decision theory and information structures,â Proceedings of the IEEE, vol. 68, no. 6, pp. 644â654, 1980.
+
+[25] H. S. Witsenhausen, âA standard form for sequential stochastic control,â Mathematical Systems Theory, vol. 7, no. 1,
+
+pp. 5â11, 1973.
+
+[26] A. Nayyar, A. Mahajan, and D. Teneketzis, âDecentralized stochastic control with partial history sharing: A common
+
+information approach,â IEEE Transactions on Automatic Control, vol. 58, no. 7, pp. 1644â1658, 2013.
+
+[27] H. Witsenhausen, âOn the structure of real-time source coders,â The Bell System Technical Journal, vol. 58, no. 6, pp. 1437â
+
+1451, 1979.
+
+[28] B. Kurtaran, âCorrections and extensions toâ decentralized stochastic control with delayed sharing information patternâ,â
+
+IEEE Transactions on Automatic Control, vol. 24, no. 4, pp. 656â657, 1979.
+
+[29] A. Nayyar and D. Teneketzis, âOn the structure of real-time encoding and decoding functions in a multiterminal
+
+communication system,â IEEE Transactions on Information Theory, vol. 57, no. 9, pp. 6196â6214, 2011.
+
+[30] Y. Ouyang, S. Asghari, and A. Nayyar, âOptimal local and remote controllers with unreliable communication,â in 55th
+
+IEEE Conference on Decision and Control (CDC), pp. 6024â6029, 2016.
+
+[31] S. M. Asghari, Y. Ouyang, and A. Nayyar, âOptimal local and remote controllers with unreliable uplink channels,â IEEE
+
+Transactions on Automatic Control, forthcoming.
+
+[32] D. S. Bernstein, R. Givan, N. Immerman, and S. Zilberstein, âThe complexity of decentralized control of markov decision
+
+processes,â Mathematics of operations research, vol. 27, no. 4, pp. 819â840, 2002.
+
+[33] A. Mahajan and M. Mannan, âDecentralized stochastic control,â Annals of Operations Research, vol. 241, no. 1-2, pp. 109â
+
+126, 2016.
+
+[34] S. YÂ¨uksel and T. BasÂ¸ar, Stochastic Networked Control Systems: Stabilization and Optimization under Information
+
+Constraints. Springer Science & Business Media, 2013.
+
+[35] A. Mahajan and D. Teneketzis, âOptimal design of sequential real-time communication systems,â IEEE Transactions on
+
+Information Theory, vol. 55, no. 11, pp. 5317â5338, 2009.
+
+November 23, 2018
+
+DRAFT
+
+Proof of Theorem 1. We prove the result of part (i) by induction. For t = 1 the result holds
+
+since the agents have not taken any action yet. Suppose that (12) holds for t â 1. Then,
+
+APPENDIX
+
+32
+
+Pg(cid:8)xt,hâi
+
+t
+
+(cid:9) =
+
+|hi
+t
+
+(cid:88)
+
+xtâ1
+
+Pg(cid:8)xt, xtâ1, hâi
+
+t
+
+(cid:9) =
+
+|hi
+t
+
+(cid:88)
+
+xtâ1
+
+Pg (cid:8)xt, xtâ1, hâi
+
+tâ1, aâi
+
+tâ1, yâi
+t
+
+|hi
+
+tâ1, ai
+
+tâ1, yi
+
+(cid:9)
+t, zt
+
+(cid:88)
+
+=
+
+P{yâi
+t
+
+|xt,atâ1}Pg(cid:8)xt,xtâ1,hâi
+
+tâ1,aâi
+
+tâ1|hi
+
+tâ1,ai
+
+tâ1,yi
+
+(cid:9)
+t,zt
+
+xtâ1
+(cid:104)
+(cid:88)
+P{yâi
+t
+
+=
+
+xtâ1
+(cid:104)
+(cid:88)
+P{yâi
+t
+
+=
+
+xtâ1
+
+(cid:104)
+(cid:88)
+P{yâi
+t
+
+=
+
+xtâ1
+
+|xt,atâ1}P{xt|xtâ1,atâ1}Pg (cid:8)xtâ1,hâi
+
+tâ1,aâi
+
+tâ1|hi
+
+tâ1,ai
+
+tâ1,yi
+
+t,zt
+
+(cid:9) (cid:105)
+
+|xt, atâ1}P{xt|xtâ1, atâ1}gâi
+
+tâ1(hâi
+
+tâ1)(aâi
+
+tâ1)Pg(cid:8)xtâ1, hâi
+
+tâ1|hi
+
+tâ1, ai
+
+tâ1, yi
+
+t, zt
+
+(cid:9)(cid:105)
+
+|xt, atâ1}P{xt|xtâ1, atâ1}gâi
+
+tâ1(hâi
+
+tâ1)(aâi
+
+tâ1)
+
+Pg(cid:8)xtâ1, hâi
+Pg(cid:8)yi
+
+tâ1, yi
+t, zt|hi
+
+t, zt|hi
+tâ1, ai
+
+tâ1, ai
+(cid:9)
+
+tâ1
+
+tâ1
+
+(cid:9)
+(cid:105)
+
+.
+
+(28)
+
+Consider the term Pg(cid:8)xtâ1, hâi
+have,
+
+tâ1, yi
+
+t, zt|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:9) in the nominator of the expression above. We
+
+tâ1, yi
+
+t, zt|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:9)
+
+Pg(cid:8)xtâ1, hâi
+(cid:104)
+(cid:88)
+P{yi
+
+t, zt|xt, aâi
+
+tâ1, ai
+
+tâ1}P{xt|xtâ1, aâi
+
+tâ1, ai
+
+tâ1}gâi
+
+tâ1(hâi
+
+tâ1)(aâi
+
+tâ1)Pg(cid:8)xtâ1, hâi
+
+tâ1|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:9)(cid:105)
+
+aâi
+tâ1,xt
+(cid:104)
+(cid:88)
+P{yi
+
+t, zt|xt, aâi
+
+tâ1, ai
+
+tâ1}P{xt|xtâ1, aâi
+
+tâ1, ai
+
+tâ1}gâi
+
+tâ1(hâi
+
+tâ1)(aâi
+
+tâ1)Pgâi(cid:8)xtâ1, hâi
+
+tâ1|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:9)(cid:105)
+
+=
+
+=
+
+aâi
+tâ1,xt
+
+=Pgâi(cid:8)xtâ1, hâi
+
+tâ1, yi
+
+t, zt|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:9)
+
+(29)
+
+where the second equality follows from the induction hypothesis (12) for tâ1. Consequently,
+
+we also have,
+
+Pg(cid:8)yi
+
+t,zt|hi
+
+tâ1,ai
+
+tâ1
+
+(cid:9) =
+
+(cid:88)
+
+Pg(cid:110)
+t, zt, Ëxtâ1, Ëhâi
+yi
+
+tâ1|hi
+
+tâ1, ai
+
+tâ1
+
+(cid:111)
+
+Ëhâi
+tâ1,Ëxt
+
+by (29)=
+
+(cid:88)
+
+Pgâi(cid:110)
+t,zt,Ëxtâ1,Ëhâi
+yi
+
+tâ1|hi
+
+tâ1,ai
+
+tâ1
+
+(cid:111)
+
+Ëhâi
+tâ1,Ëxt
+
+November 23, 2018
+
+= Pgâi(cid:8)yi
+
+t,zt|hi
+
+tâ1,ai
+
+(cid:9)
+tâ1
+
+(30)
+
+DRAFT
+
+Substituting (29) and (30) in (28),
+
+Pg(cid:8)xt,hâi
+
+t
+
+(cid:9)
+|hi
+t
+
+(cid:104)
+(cid:88)
+P{yâi
+t
+
+=
+
+xtâ1
+
+|xt, atâ1}P{xt|xtâ1, atâ1}gâi
+
+tâ1(hâi
+
+tâ1)(aâi
+
+tâ1)
+
+Pgâi(cid:8)xtâ1,hâi
+Pgâi(cid:8)yi
+
+tâ1,yi
+t, zt|hi
+
+t,zt|hi
+tâ1, ai
+
+tâ1,ai
+(cid:9)
+
+tâ1
+
+tâ1
+
+33
+
+(cid:9)
+(cid:105)
+
+=Pgâi(cid:8)xt,hâi
+
+t
+
+(cid:9)
+|hi
+t
+
+which establishes the induction step for t.
+
+Given the result of part (i), the result of part (ii) follows directly from the deï¬nition of SIB
+
+strategies (10) and SIB update rule (11).
+
+To provide the proof for Theorem 2, we need the following result.
+
+Lemma 1. Given a SIB strategy proï¬le Ï and update rule Ï consistent with Ï,
+
+Ï{st+1, Ït+1|pt, ct, at} = PÏ
+PÏ
+
+Ï{st+1, Ït+1|st, Ït, at},
+
+(31)
+
+for all st+1, Ït+1, st, Ït, at.
+
+Proof of Lemma 1. Let gÏ denote the strategy proï¬le, given by (10), that corresponds to SIB
+
+strategy proï¬le Ï. We have,
+
+PÏ
+
+Ï{st+1,Ït+1|pt,ct,at}
+
+Ït=Î³t(ct)
+
+= PÏ
+
+Ï{st+1,Ït+1|pt,ct,at,Ït}
+
+using update rule (11)
+=
+
+(cid:104)
+PÏ
+
+Ï{st+1, zt+1|pt, ct, at, Ït}1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+(cid:88)
+
+zt+1
+
+by (6)=
+
+(cid:104)
+PÏ
+
+Ï{st+1, zt+1|st, ct, at, Ït}1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+(cid:88)
+
+zt+1
+
+=
+
+(cid:88)
+
+(cid:104)
+PÏ
+
+Ï{st+1, zt+1, yt+1, xt+1, xt|st, ct, at, Ït}1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+yt+1,xt+1,xt,zt+1
+
+by system dynamics (1) and (2)
+=
+
+November 23, 2018
+
+DRAFT
+
+(cid:88)
+
+(cid:104)
+
+PÏ
+
+Ï{st+1|st, ct, at, Ït, zt+1, yt+1, xt+1, xt}
+
+yt+1,xt+1,xt,zt+1
+
+P{zt+1, yt+1|at, xt+1}P{xt+1|xt, at}PÏ{xt|st, ct, at, Ït}1{Ït+1=Ït+1(Ït,zt+1)}
+
+34
+
+(cid:105)
+
+(cid:88)
+
+(cid:104)(cid:16) (cid:89)
+
+yt+1,xt+1,xt,zt+1
+
+j
+
+1{sj
+
+by (5)=
+
+(cid:17)
+
+t+1=Ïj
+
+t+1(sj
+
+t ,{yj
+
+t+1,zt+1,aj
+
+t };gÏ)}
+
+P{zt+1, yt+1|at, xt+1}P{xt+1|xt, at}PÏ
+
+Ï{xt|st, ct}1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+(cid:88)
+
+(cid:104)(cid:16) (cid:89)
+
+yt+1,zt+1,xt+1,xt
+
+j
+
+1{sj
+
+by Bayesâ rule=
+
+(cid:17)
+
+t+1=Ïj
+
+t+1(sj
+
+t ,{yj
+
+t+1,zt+1,aj
+
+t };gÏ)}
+
+P{zt+1, yt+1|at, xt+1}P{xt+1|xt, at}
+
+PÏ
+
+Ï{xt, st|ct}
+PÏ
+Ï{st|ct}
+
+1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+(cid:88)
+
+(cid:104)(cid:16) (cid:89)
+
+yt+1,zt+1,xt+1,xt
+
+j
+
+1{sj
+
+=
+
+(cid:17)
+
+t+1=Ïj
+
+t+1(sj
+
+t ,{yj
+
+t+1,zt+1,aj
+
+t };gÏ)}
+
+P{zt+1, yt+1|at, xt+1}P{xt+1|xt, at}
+
+Ït(xt, st)
+
+(cid:80)
+
+Ëxt
+
+Ït(Ëxt, st)
+
+1{Ït+1=Ït+1(Ït,zt+1)}
+
+(cid:105)
+
+=
+
+PÏ
+
+Ï{st+1, Ït+1|st, Ït, at}.
+
+Proof of Theorem 2. Consider an arbitrary strategy proï¬le g. We prove the existence of SIB
+
+strategy proï¬le that is equivalent to g by construction.
+
+With some abuse of notation, let Ïi(Î t, Si
+
+t, Ït) denote agent iâs strategy using the public
+randomization device Ït. We construct a SIB strategy proï¬le Ït that has the following properties:
+
+(a) the induced distribution on {Î t+1, St+1} under Ï coincides with one under g, i.e.
+
+PÏ1:t {Ït+1, st+1} = Pg1:t {Ït+1, st+1} .
+
+(32)
+
+(b) the continuation payoff for all the agents under Ï is the same as that under g, i.e. for all
+
+November 23, 2018
+
+DRAFT
+
+35
+
+i â N ,
+
+(cid:40) T
+
+(cid:88)
+
+Eg
+
+Ï =t
+
+(cid:41)
+
+ui
+Ï (XÏ , gÏ (HÏ ))
+
+= EÏ
+
+(cid:40) T
+
+(cid:88)
+
+Ï =t
+
+ui
+Ï (XÏ , ÏÏ (Î Ï , SÏ , ÏÏ ))
+
+.
+
+(33)
+
+(cid:41)
+
+We prove condition (a) by forward induction and condition (b) by backward induction. We
+
+note that condition (a) is satisï¬ed for t = 1, since at t = 1 no action has been taken. Moreover,
+
+condition (b) is satisï¬ed for t = T + 1 since there is no future.
+
+Assume that condition (a) is satisï¬ed from 1 to t, t â T . We construct Ït below such that
+
+condition (a) is satisï¬ed at t+1.
+
+To construct Ït, we ï¬rst deï¬ne below a random vector R1:N
+, and (ii) H i
+
+is independent of Î t and S1:N
+
+every i â N , (i) R1:N
+
+t
+
+based on H 1:N
+
+, such that for
+t can be reconstructed using Ri
+t
+
+t
+
+t
+
+t
+
+along with Î t and Si
+t.
+
+We proceed as follows. For every time t â T , let (Ït, s1:N
+
+t
+
+) denote the realization of the agentsâ
+
+sufï¬cient common information and private information, respectively. Let Hi
+
+denote the set of all histories of agent i at time t, where |Hi
+
+ble realizations of agent iâs history at time t. Conditioned on the realization of (Ït, si
+{p(hi,k
+t
+
+t |)} denote the probability mass function on Hi
+
+t), 1 â¤ k â¤ |H i
+
+|Ït, si
+
+for agent i. Deï¬ne the random variable Ri
+
+t on [0, 1] as follows:
+
+1)
+
+P
+
+(cid:110)
+
+0 â¤ Ri
+
+t â¤ p(hi,1
+
+t
+
+(cid:111)
+|Ït,si
+t)
+
+= p(hi,1
+t
+
+|Ït,si
+
+t),
+
+and conditioned on the event
+
+(cid:110)
+
+0â¤Ri
+
+tâ¤p(hi,1
+
+(cid:111)
+t |Ït,si
+t)
+
+, Ri
+
+t is uniformly distributed on [0,p(hi,1
+
+t
+
+(34)
+
+|Ït,si
+
+t)].
+
+2) For 1 < k â¤ |Hi
+t|,
+
+(cid:110) kâ1
+(cid:88)
+
+P
+
+j=1
+
+p(hi,j
+
+t |Ït,si
+
+t) â¤ Ri
+
+t â¤
+
+p(hi,j
+
+(cid:111)
+t |Ït,si
+t)
+
+= p(hi,k
+t
+
+|Ït,si
+
+t),
+
+(35)
+
+k
+(cid:88)
+
+j=1
+
+and conditioned on the event
+j=1 p(hi,j
+
+distributed on
+
+(cid:104)(cid:80)kâ1
+
+t |Ït,si
+
+t |Ït,si
+
+j=1 p(hi,j
+t), (cid:80)k
+
+j=1 p(hi,j
+
+t) â¤ Ri
+(cid:105)
+t |Ït,si
+t)
+
+.
+
+(cid:110)(cid:80)kâ1
+
+t â¤ (cid:80)k
+
+j=1 p(hi,j
+
+(cid:111)
+t |Ït,si
+t)
+
+, Ri
+
+t is uniformly
+
+Therefore, Ri
+
+t is uniformly distributed on [0, 1] and is independent of (Î t, Si
+
+t). Furthermore,
+
+November 23, 2018
+
+DRAFT
+
+t
+
+t
+
+}
+
+, ..., hi,|Hi
+t|
+
+t := {hi,1
+t| denote the number of possi-
+t), let
+t that leads to (Ït, si
+t)
+
+for any realization (Ït, si
+
+t, ri
+
+t) we can uniquely determine hi,l
+
+t where
+
+l := min{k : ri
+
+t â¥
+
+kâ1
+(cid:88)
+
+j=1
+
+p(hi,j
+
+t |Ït, si
+
+t)}.
+
+36
+
+(36)
+
+Therefore, the random variable Ri
+
+t deï¬ned above, satisï¬es the mentioned-above conditions (i)
+
+and (ii) when H i
+
+t takes ï¬nite values.
+
+We show below that Ri
+
+t is independent of St.
+
+Lemma 2. The random variable Ri
+
+t, i â N , is independent of Î t and St for all t â T .
+
+...,(sN
+
+Proof of Lemma 2. Consider an arbitrary realization (h1
+t )) denote the realization of ((S1
+
+t , Î t, R1
+t as it is deï¬ned above for every i â N .
+
+t ,Ït, rN
+responds to hi
+
+t,...,hN
+t ), ..., (SN
+
+t ) of (H 1
+t , Î t, RN
+
+t ,...,H N
+t )) where (si
+
+t ). Let ((s1
+t, Ït, ri
+
+t,Ït, r1
+t ),
+T ) cor-
+
+For every i â N we have,
+
+Pg{ri
+
+t|Ït, st} = Pg{rt|Ït, si
+
+t, sâi
+
+T } =
+
+Pg{ri
+t, sâi
+|Ït, si
+t}
+t
+Pg{sâi
+|Ït, si
+t}
+t
+
+=
+
+Pg{sâi
+t
+
+t, Ït, si
+|ri
+Pg{sâi
+t
+
+t}Pg{ri
+|Ït, si
+t}
+
+t|Ït, si
+t}
+
+(Ït, si
+
+replace
+t) by hi
+t, ri
+t
+=
+
+Pg{sâi
+|hi
+t
+Pg{sâi
+t
+
+t}Pg{ri
+t|Ït, si
+t}
+|Ït, si
+t}
+
+(37)
+
+The last equality holds because H i
+
+t is uniquely determined by (Î t, Si
+
+t, Ri
+
+t) and vice versa; see
+
+(34)-(36). Moreover,
+
+Pg{sâi
+t
+
+|ht}
+
+by (8)
+= Pg{sâi
+t
+
+|st, ct} =
+
+Pg{sâi
+t
+Pg{si
+
+, si
+t|ct}
+
+t|ct}
+
+=
+
+Ïg
+t (sâi
+, si
+t)
+t
+Ïg
+t (Ësâi
+, si
+t)
+t
+
+Ësâi
+t
+
+(cid:80)
+
+= P{sâi
+t
+
+|st, Ïg
+
+t }.
+
+(38)
+
+Combining (37) and (38)
+
+Pg{ri
+
+t|Ït, st} =
+
+Pg{sâi
+t
+
+t, Ïg
+|si
+Pg{sâi
+t
+
+t }Pg{ri
+t|Ït, si
+t}
+|Ït, si
+t}
+
+= Pg{ri
+
+t|Ït, si
+
+t} = Pg{ri
+t}
+
+(39)
+
+where the last equality is true since by deï¬nition Ri
+
+t is independent of (Î t, Si
+
+t). Therefore, by
+
+(39), Ri
+
+t is independent of Î t and St for all i â N .
+
+Using the result of Lemma 2, we prove that for every i â N , (i) R1:N
+t can be reconstructed using Ri
+t along with Î t and Si
+t.
+
+, and (ii) H i
+
+and S1:N
+
+t
+
+t
+
+is independent of Î t
+
+In the following, we construct a SIB strategy proï¬le Ït equivalent to gt as follows. Let ËR1:N
+denote a random vector the agents construct using the public randomization device Ït that has
+
+(Ït)
+
+t
+
+November 23, 2018
+
+DRAFT
+
+an identical joint cumulative distribution to that of R1:N
+
+t
+
+. Note that by Lemma 2, the distribution
+
+of R1:N
+t
+
+is independent of St and Î t.
+
+37
+
+Deï¬ne,
+
+Then,
+
+t(Î t, Si
+Ïi
+
+t, Ït) := gi
+
+t(F â1
+t|Si
+Ri
+
+t,Î t
+
+( ËRi
+
+t(Ït), Î t, Si
+
+t)).
+
+(40)
+
+Pg1:t{Ït+1, st+1|Ht} =Pg1:t{Ït+1, st+1|Î t, St, Rt}
+
+distribution= Pg1:t{Ït+1, st+1|Î t, St, ËRt}
+
+=PÏ1:t{Ït+1, st+1|Î t, St, ËRt}.
+
+Taking the expectation of the left and right hand sides with respect to Ït and Rt, respectively,
+
+and using the fact that ËRt(Ït) and Rt are independent of St and Î t (Lemma 2), we obtain
+
+PÏ1:t {Ït+1, st+1|Î t, St} = Pg1:t {Ït+1, st+1|Î t, St} w.p.1.
+
+(41)
+
+By the induction hypothesis, we have PÏ1:tâ1 {Ït, st} = Pg1:tâ1 {Ït, st}. Therefore, taking the
+
+expectation of both sides of (41) with respect to Î t, St, we establish that condition (a) holds for
+
+time t + 1.
+
+Next, we prove condition (b) by backward induction. We have,
+
+Eg{ui
+
+t(Xt, At)|Ht} =Eg{ui
+
+t(Xt, At)|Î t, St, Rt}
+
+distribution= Eg{ui
+
+t(Xt, At)|Î t, St, ËRt}
+
+=EÏ{ui
+
+t(Xt, At)|Î t, St, ËRt}
+
+(42)
+
+Using (42) for t = T , we have condition (b) is satisï¬ed for t = T .
+
+Now we assume that condition (b) is satisï¬ed from t + 1 to T , t â T . We prove that condition
+
+(b) is satisï¬ed at t.
+
+Using condition (a) at time t, i.e PÏ1:tâ1{st, Ït} = Pg1:tâ1{st, Ït}, the induction hypothesis on
+condition (b) for t + 1 along with equation (42) for t, and the fact that Rt and ËRt are identically
+distributed and independent of Î t and St, we obtain
+
+(cid:40) T
+
+(cid:88)
+
+Eg
+
+Ï =t
+
+(cid:41)
+
+ui
+Ï (XÏ , gÏ (HÏ ))
+
+= EÏ
+
+(cid:40) T
+
+(cid:88)
+
+Ï =t
+
+ui
+Ï (XÏ , ÏÏ (Î Ï , SÏ , ÏÏ ))
+
+(cid:41)
+.
+
+November 23, 2018
+
+DRAFT
+
+38
+
+Proof of Theorem 3. By the result of Theorem 2, we can restrict attention to SIB strategies
+
+with public randomization device without loss of generality. Moreover, since by Assumption 1
+
+all space are ï¬nite, we can restrict attention to SIB strategies (with no public randomization
+
+device) without loss of generality. The proof of Theorem 3 then follows from an argument
+
+identical to the one given for dynamic programming for POMDP (see [3, Ch. 6.7]).
+
+The dynamic program described by (15-17) can be viewed as a solution to the following
+
+decision problem that is equivalent to the original dynamic team problem. Consider a âsuper
+
+agentâ that knows the functional forms of system dynamics and the agentsâ utilities, and the set
+
+of spaces Xt, A1:N
+
+t
+
+, S 1:N
+t
+
+for all t. The super agent coordinates the agentsâ decisions at each time
+
+as follows. The super agent observes Ït (which is common knowledge among all agents) but
+
+does not know the realizations s1:N
+
+t
+
+of the agentsâ sufï¬cient private information. Based on his
+
+information, the super agent chooses a joint set of prescriptions/partial functions Ï1:N
+
+t
+
+(Ït, Â·), one
+
+for each agent, that determine agent iâs action for every realization si
+
+t) for ât, i. The
+dynamic program described by (15-17) determines an optimal solution for the above-described
+
+t(Ït, si
+
+t as Ïi
+
+super agent, and thus, equivalently, determine the optimal strategy for the original dynamic team
+
+problem.9
+
+Proof of Theorem 4. We show below that Li
+
+t := (Si
+
+t, Î t), i â N , t â T satisï¬es conditions
+
+(i)-(iv) of Deï¬nition 3.
+
+Condition (i) is satisï¬ed since both S1:N
+
+t
+
+and Î t can be updated recursively via update rules
+
+Ï1:N
+t
+
+and Ït, respectively, for every t â T .
+
+Condition (ii) is satisï¬ed by Lemma 1.
+
+To prove condition (iii), we have
+
+P{xt|ct, st} =
+
+Therefore,
+
+P{xt, st|ct}
+
+(cid:80)
+
+Ëxt
+
+P{Ëxt, st|ct}
+
+= P{xt|Ït, st}.
+
+(43)
+
+9The above interpretation of the dynamic program from the point of view of a super agent is similar to the coordinator
+
+problem formulated in [18], [26].
+
+November 23, 2018
+
+DRAFT
+
+EËgâi
+
+1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)ct,pi
+ui
+(cid:12)
+t(Xt,At)
+
+t,at
+
+(cid:111) by (7)= EËgâi
+
+1:tâ1
+
+39
+
+(cid:12)
+(cid:110)
+(cid:12)ct,si
+ui
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+t,at
+
+EËgâi
+
+1:tâ1
+
+EËgâi
+
+1:tâ1
+
+(cid:40)
+
+EËgâi
+
+1:tâ1
+
+=
+
+(cid:12)
+(cid:111)
+(cid:110)
+ui
+(cid:12)
+(cid:12)Xt,at
+t(Xt,At)
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+ct, si
+
+t, at
+
+(cid:40)
+
+EËgâi
+
+1:tâ1
+
+by (43)=
+
+(cid:12)
+(cid:111)
+(cid:110)
+ui
+(cid:12)
+(cid:12)Xt,at
+t(Xt,At)
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+=
+
+Ït, si
+
+t, at
+
+(cid:41)
+
+(cid:41)
+
+EËgâi
+
+1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)Ït,pi
+ui
+(cid:12)
+t(Xt,At)
+
+(cid:111)
+t,at
+
+Condition (iv) holds since,
+
+PËgâi
+
+1:tâ1,Ëgi
+
+1:tâ1
+
+(cid:12)
+(cid:110)
+(cid:12)pi
+lâi
+(cid:12)
+t
+
+(cid:111)
+t,ct
+
+= PËgâi
+
+1:tâ1
+
+(cid:111) by (7)= PËgâi
+
+1:tâ1
+
+t,ct
+
+(cid:12)
+(cid:110)
+(cid:12)pi
+sâi
+(cid:12)
+t
+(cid:12)
+(cid:111)
+(cid:110)
+(cid:12)si
+sâi
+(cid:12)
+t,Ït
+t
+
+(cid:12)
+(cid:110)
+(cid:111)
+(cid:12)si
+sâi
+(cid:12)
+t,ct
+t
+(cid:12)
+(cid:111)
+(cid:110)
+(cid:12)li
+lâi
+(cid:12)
+t
+t
+
+by (43)= PËgâi
+
+1:tâ1
+
+= PËgâi
+
+1:tâ1
+
+=
+
+PËgâi
+
+1:tâ1{st|ct}
+1:tâ1{si
+
+t|ct}
+
+PËgâi
+
+1:tâ1,gi
+
+Proof of Theorem 5. Consider the SIB strategy Ït constructed in the proof of Theorem 2 for
+every t â N. We show below that Ït satisï¬es (26).
+
+By the proof of Theorem 2, condition (32) holds for all t â N. To prove (26), we show that
+
+under strategy Ït, t â N, we have
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+(cid:40) â
+(cid:88)
+
+Eg
+
+Ï =t
+
+for all (cid:15) > 0.
+
+Î´tâ1ui
+
+â(g1:N
+Ï
+
+(H 1:N
+Ï
+
+),XÏ)
+
+â EÏâ
+
+(cid:41)
+
+(cid:40) â
+(cid:88)
+
+Ï =t
+
+Î´tâ1ui
+
+â(Ï1:N
+
+â (Î Ï,S1:N
+
+Ï
+
+),XÏ)
+
+(cid:41) (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+â¤ (cid:15)
+
+(44)
+
+Let M = maxat,xt,i |ui
+for any arbitrary strategy Ëg,
+
+â(xt, at)|. For every (cid:15) > 0, choose T â N such that
+
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+(cid:40) â
+(cid:88)
+
+EËg
+
+Ï =T
+
+Î´tâ1ui
+
+â(Ëg1:N
+Ï
+
+(H 1:N
+Ï
+
+),XÏ)
+
+(cid:41) (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+â¤
+
+(cid:15)
+2
+
+.
+
+Î´T
+1âÎ´ M â¤ (cid:15)
+
+2. Then,
+
+(45)
+
+Therefore, for every t < T , condition (44) is satisï¬ed by (45) and the triangle inequality.
+
+November 23, 2018
+
+DRAFT
+
+For t > T , consider a ï¬nite decision problem with horizon T resulting by the truncation of
+
+the original inï¬nite-horizon decision problem at T . Then, by Theorem 2,
+
+40
+
+(cid:40) T
+
+(cid:88)
+
+Eg
+
+Ï =t
+
+(cid:41)
+
+Ï (g1:N
+ui
+Ï
+
+(H 1:N
+Ï
+
+),XÏ)
+
+= EÏ
+
+(cid:40) T
+
+(cid:88)
+
+Ï =t
+
+u1:N
+Ï
+
+(Ïi
+
+Ï(Î Ï,S1:N
+
+Ï
+
+(cid:41)
+
+),XÏ)
+
+,
+
+(46)
+
+for all i â N and t â T . Combining (46) with the result for t > T , we show that (26) is satisï¬ed
+
+for t.
+
+Proof of Theorem 6. By Theorem 5, we can restrict attention to stationary SIB strategies with
+
+public randomization device without loss of generality. Moreover, since by Assumption 1 all
+
+space are ï¬nite, we can restrict attention to SIB strategies (with no public randomization device)
+
+without loss of optimality. Consequently, following the same rationale as the one given in the
+
+proof of Theorem 3, the result of Theorem 6 follows from an argument identical to the one
+
+given for dynamic programming in inï¬nite-horizon Markovian Decision Processes (see [3, Ch.
+
+8.2 and Ch.8.3]).
+
+November 23, 2018
+
+DRAFT
+
+

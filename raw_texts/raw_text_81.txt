@@ -1,0 +1,3177 @@
+3
+1
+0
+2
+
+r
+p
+A
+5
+1
+
+]
+
+Y
+S
+.
+s
+c
+[
+
+1
+v
+2
+7
+9
+3
+.
+4
+0
+3
+1
+:
+v
+i
+X
+r
+a
+
+Reaching a Consensus in Networks of
+
+High-Order Integral Agents under Switching
+
+1
+
+Directed Topology
+
+Long Cheng, Zeng-Guang Hou, and Min Tan
+
+Abstract
+
+Consensus problem of high-order integral multi-agent systems under switching directed topology is
+
+considered in this study. Depending on whether the agentâs full state is available or not, two distributed
+
+protocols are proposed to ensure that states of all agents can be convergent to a same stationary value.
+
+In the proposed protocols, the gain vector associated with the agentâs (estimated) state and the gain
+
+vector associated with the relative (estimated) states between agents are designed in a sophisticated
+
+way. By this particular design, the high-order integral multi-agent system can be transformed into
+
+a ï¬rst-order integral multi-agent system. And the convergence of the transformed ï¬rst-order integral
+
+agentâs state indicates the convergence of the original high-order integral agentâs state if and only if
+
+all roots of the polynomial, whose coefï¬cients are the entries of the gain vector associated with the
+
+relative (estimated) states between agents, are in the open left-half complex plane. Therefore, many
+
+analysis techniques in the ï¬rst-order integral multi-agent system can be directly borrowed to solve the
+
+problems in the high-order integral multi-agent system. Due to this property, it is proved that to reach
+
+a consensus, the switching directed topology of multi-agent system is only required to be âuniformly
+
+jointly quasi-strongly connectedâ, which seems the mildest connectivity condition in the literature. In
+
+addition, the consensus problem of discrete-time high-order integral multi-agent systems is studied.
+
+The corresponding consensus protocol and performance analysis are presented. Finally, three simulation
+
+examples are provided to show the effectiveness of the proposed approach.
+
+The authors are with the State Key Laboratory of Intelligent Control and Management of Complex Systems, Institute of
+
+Automation, Chinese Academy of Sciences, Beijing 100190, China.
+
+Please address all correspondences to Dr. Long Cheng: chenglong@compsys.ia.ac.cn, Phone: +86-10-62568112, Fax: +86-
+
+10-82629972.
+
+October 9, 2018
+
+DRAFT
+
+ 
+ 
+ 
+ 
+ 
+ 
+Index Terms
+
+2
+
+Multi-agent systems, high-order integral agent, linear dynamics, switching directed topology, con-
+
+sensus.
+
+I. INTRODUCTION
+
+Recent years have witnessed a rapid development on the consensus or state agreement of
+
+multi-agent systems due to its central role in distributed coordination tasks. Roughly speaking,
+
+the consensus problem means that the states of all agents are convergent to a same value in
+
+a distributed manner. In control community, considerable research efforts have been made to
+
+address this problem from different aspects such as the dynamics of agent [1], [2], connectivity
+
+of communication topology [3], and communication constraints [4], [5]. It is noted that for the
+
+convenience of studying the last two aspects, most results assume that the agent is modeled by
+
+the ï¬rst-order/second-order integral dynamics. However, due to the diversity of real-world agents,
+
+these simple dynamics are insufï¬cient to fully describe the agentâs dynamical behavior. To ï¬ll
+
+this gap, an intuitive way is to investigate the agent described by the high-order integral/general
+
+linear time-invariant dynamics ï¬rst.
+
+In the literature, consensus problems of high-order integral/linear multi-agent systems have
+
+been addressed in [6]â[23], to name a few. Some early results are presented in [6] where a state-
+
+feedback based consensus protocol is proposed for linear time-invariant multi-agent systems
+
+under ï¬xed communication topology. Since the full state of linear agents may be unavailable in
+
+some scenarios, several output-feedback based consensus protocols have been proposed as well,
+
+for example, the static output-feedback based protocol [7] and the dynamic output-feedback based
+
+protocols [8]. And the consensusability of linear multi-agent systems under these output-feedback
+
+protocols is analyzed. In [9], [10], uncertainties in the dynamics of high-order integral/linear
+
+agents are considered, and the consensus can still be achieved by employing the internal model
+
+approach and the neural-network-based adaptive approach, respectively. An interesting leader-
+
+following consensus protocol is proposed for linear multi-agent systems in [11]. Furthermore,
+
+in [12], [13], the relationship between the consensus of high-order integral/linear multi-agent
+
+systems and the synchronization in complex networks is discussed, and the concept of consensus
+
+region is introduced. In addition, there are also some papers considering the consensus of high-
+
+order integral/linear multi-agent systems with communication constraints such as communication
+
+October 9, 2018
+
+DRAFT
+
+3
+
+noises [14], communication delays [15], and quantization effect [16]. It is noted that all above
+
+results assume that the multi-agent system works under ï¬xed communication topology. However,
+
+in some applications of mobile agents, the creation and loss of communication links frequently
+
+occur due to the sensorâs limited working region. Therefore, the study on the consensus of
+
+high-order integral/linear multi-agent systems under switching topology is of more practical use.
+
+Some attempts in this direction have been made in [17]â[23]. One common assumption of these
+
+papers is that the topology needs to be undirected, which requires the bidirectional information
+
+exchange between agents. Furthermore, in [17], the communication topology is required to be
+
+âfrequently connectedâ rather than âjointly connectedâ. In [18]â[20], to design the control gain,
+
+the eigenvalues of graph Laplacian matrix (a certain global information) should be known. In
+
+[21], [22], the result is highly dependent on the doubly stochastic property of Laplacian matrix
+
+of undirected graph. In [23], the consensus tracking problem of linear multi-agent systems under
+
+switching topologies is investigated, however, all agents need to know the system matric in the
+
+so-called exosystem which generates the tracking reference signal. It is also noted that consensus
+
+of ï¬rst-order integral multi-agent systems with switching directed topology has been extensively
+
+studied. The mildest connectivity condition on the switching directed topology seems âuniformly
+
+jointly quasi-strongly connectedâ [24], [25]. Then a question arises consequently: is it possible
+
+to obtain the counterpart result in the high-order integral/linear multi-agent systems?
+
+This paper tries to give a positive answer to the above question. Two novel protocols, the
+
+state-feedback based protocol and the output-feedback based protocol, are proposed to solve the
+
+consensus problem of continuous-time high-order integral multi-agent systems. By the proposed
+
+protocol, it is interesting to ï¬nd that the original high-order integral multi-agent system can be
+
+transformed into a ï¬rst-order integral multi-agent system. And the convergence of the transformed
+
+ï¬rst-order integral agentâs state implies the convergence of the high-order integral agentâs state if
+
+and only if all roots of the polynomial, whose coefï¬cients are the entries of control gain vector
+
+of the proposed protocol, are in the open left-half complex plane. Therefore, most results in the
+
+ï¬rst-order integral multi-agent system can be generalized to the high-order integral multi-agent
+
+system directly. Then it is proved that the connectivity condition on the consensus of high-
+
+order integral multi-agents under switching directed topology is that the switching topology is
+
+uniformly jointly quasi-strongly connected. To the best of the authorsâ knowledge, it seems the
+
+mildest connectivity condition in the literature of high-order integral multi-agent systems. In
+
+October 9, 2018
+
+DRAFT
+
+4
+
+addition, results obtained in the continuous-time domain can be extended to the discrete-time
+
+domain as well. Finally, the theoretical analysis is validated by three illustrative examples.
+
+The reminder of this paper is organized as follows. Section II introduces the problem formu-
+
+lation and some preliminary results. Section III presents the consensus protocol for high-order
+
+multi-agent systems in the continuous-time domain and gives the corresponding performance
+
+analysis. Section IV extends the results in the continuous-time domain to the discrete-time
+
+domain. Illustrative examples are provided in Section V. Section VI concludes this paper with
+
+ï¬nal remarks.
+
+The following notations are used throughout this paper: R denotes the set of real numbers; N
+
+denotes the set of natural number; 1n = (1, Â· Â· Â· , 1)T â Rn; 0n = (0, Â· Â· Â· , 0)T â Rn; Ck
+
+k!(nâk)!;
+In denotes the n Ã n dimensional identity matrix; â denotes the Kronecker operator; For a
+given matrix X, X T denotes its transpose; kXk2 denotes its Euclidean norm; kXkF denotes its
+
+n = n!
+
+Frobenius norm.
+
+II. PROBLEM FORMATION AND PRELIMINARIES
+
+In the literature, the graph theory is commonly employed to describe the communication among
+
+agents. Let G = {VG, EG} be a digraph where VG = {v1, Â· Â· Â· , vN } is the node set and EG â VGÃVG
+
+is the edge set. The ith agent in the network is represented by the node vi. The edge eij starting
+
+from vj to vi belongs to EG if and only if the ith agent can receive information from the jth agent.
+
+In this paper, it is assumed that there is no self-edge in the graph, i.e., eii /â EG, i = 1, Â· Â· Â· , N.
+
+The neighbor set of the ith agent is deï¬ned as Ni = {vj â VG|eij â EG}. A directed path in G
+
+is a sequence of distinct nodes vi1, vi2, Â· Â· Â· , vim such that eis+1is â EG, s = 1, Â· Â· Â· , m â 1. The
+
+directed graph G is called strongly connected if for any two distinct nodes vi and vj there is a
+
+directed path starting from vj to vi. A node is called a center/root if there are directed paths
+
+starting from this node to any other nodes in VG. The directed graph G is called quasi-strongly
+
+connected if G has at least one center node.
+
+Due to the link failure and packet loss, the communication channel of multi-agent systems
+
+is usually time-variant. Therefore, it is assumed in this paper that the communication topology
+
+is modeled by a set of graphs GÏ(t) = {VG, EGÏ(t)}. Ï(Â·) : [0, â) â S is a piecewise constant
+function whose value at time t is the index of the graph representing the agentâs communication
+
+topology at time t. S denotes the index set of all possible graphs and S has ï¬nite elements
+
+October 9, 2018
+
+DRAFT
+
+5
+
+because the node set VG is a ï¬nite set. The following assumption is applied to the switching
+
+signal Ï(Â·), which means that the communication topology does not change too fast.
+
+Assumption 1: Let (t0, t1, Â· Â· Â· ) be the sequence of time points at which the piecewise constant
+
+function Ï(t) switches. The dwell times Ïi = ti+1 âti (i = 0, 1, Â· Â· Â· ) have a uniform lower bound
+
+ÏD > 0.
+
+The union graph of GÏ(t) over the time interval [t1, t2) is deï¬ned as G[t1,t2) = (VG,
+
+tâ[t1,t2) EGÏ(t)).
+
+One concept on the connectivity of the union graph is given in the following.
+
+S
+
+Deï¬nition 1: GÏ(t) is said to be uniformly jointly quasi-strongly connected if there exists a
+
+constant T > 0 such that G[t,t+T ) is quasi-strongly connected for any t > 0.
+
+The above section introduces the communication topology of the network of N agents. The
+
+other essential part of modeling the multi-agent system is the agentâs dynamics. In this paper,
+
+the dynamical behavior of each agent is described by the following m-dimensional high-order
+
+integral dynamics
+
+Ëxi,1(t) = xi,2(t),
+
+...
+
+Ëxi,mâ1(t) = xi,m(t),
+
+Ëxi,m(t) = ui(t),
+
+ï£±
+
+ï£´ï£´ï£´ï£´ï£´ï£´ï£´ï£´ï£²
+ï£´ï£´ï£´ï£´ï£´ï£´ï£´ï£´ï£³
+
+which can be written in the compact form
+
+Ëxi(t) = Axi(t) + Bui(t),
+
+0mâ1
+
+A = ï£«
+
+0
+
+ï£­
+
+Imâ1
+0T
+mâ1
+
+ï£¶
+
+,
+
+ï£¸
+
+B = (0, Â· Â· Â· , 0, 1)T , xi(t) = (xi,1(t), Â· Â· Â· , xi,m(t))T .
+
+(1)
+
+(2)
+
+The control objective is to solve the distributed consensus problem of this high-order integral
+
+multi-agent system which is deï¬ned as follows.
+
+Deï¬nition 2: The multi-agent system is said to reach a consensus if under certain protocol
+
+ui(t), there exists a vector xâ â Rm such that
+
+xi(t) = xâ,
+
+i = 1, Â· Â· Â· , N.
+
+lim
+tââ
+
+If the consensus protocol ui(t) only employs the information from the neighbor agents j â Ni,
+
+then this protocol is called a distributed consensus protocol.
+
+October 9, 2018
+
+DRAFT
+
+6
+
+Before closing this section, the following result on the robust consensus of ï¬rst-order integral
+
+multi-agents is provided [25].
+
+Lemma 1: For the ï¬rst-order integral multi-agent system with external disturbances
+
+Ëri(t) =
+
+XjâNi(Ï(t))
+
+Î±ij
+Ï(t)(rj(t) â ri(t)) + Ïi(t),
+
+i = 1, Â· Â· Â· , N,
+
+(3)
+
+where ri(t) â R denotes the state of the ith ï¬rst-order integral agent, Ni(Ï(t)) denotes the
+neighbor set of agent i at time t, Î±ij
+Ï(t) > 0 is the weight constant associated with the edge
+eij in graph GÏ(t), and Ïi(t) â R is the continuous disturbance signal. For âri(0) and âÏi(t)
+satisfying suptâ[0,â) |Ïi(t)| < â and limtââ Ïi(t) = 0, then limtââ(ri(t) â rj(t)) = 0 if GÏ(t)
+is uniformly jointly quasi-strongly connected;
+
+Proof: See the proof of Proposition 1 in [25].
+
+III. CONSENSUS PROTOCOL AND RELATED ANALYSIS
+
+A. State-Feedback Based Consensus Protocol
+
+In this subsection, it is assumed that the full state information of each agent is available
+
+for designing the consensus protocol. Inspired by the results presented in [14], the following
+
+consensus protocol is proposed
+
+ui(t) = K1xi(t) â
+
+XjâNi(Ï(t))
+
+Î±ij
+Ï(t)K2(xi(t) â xj(t)),
+
+(4)
+
+where K1 = (0, âa1, âa2, Â· Â· Â· , âamâ1) â R1Ãm and K2 = (a1, a2, Â· Â· Â· , amâ1, 1) â R1Ãm. The
+parameters (a1, Â· Â· Â· , amâ1) are constant control gains to be designed later. Î±ij
+Ï(t) is deï¬ned in (3).
+
+Substituting (4) into (1) obtains that
+
+ËX(t) = (IN â (A + BK1) â LGÏ(t) â (BK2))X(t),
+
+(5)
+
+where X(t) = (xT
+
+1 (t), Â· Â· Â· , xT
+diagonal entry (i, i) of LGÏ(t) is
+the graph GÏ(t).
+
+P
+
+N (t))T , the off-diagonal entry (i, j) of LGÏ(t) is âÎ±ij
+
+Ï(t), and the
+Ï(t). Here LGÏ(t) is called the Laplacian matrix of
+
+jâNi(Ï(t)) Î±ij
+
+October 9, 2018
+
+DRAFT
+
+Let Â¯X(t) = (IN â K2)X(t) â¡ (Â¯x1(t), Â· Â· Â· , Â¯xN (t))T â RN , then multiplying (IN â K2) at the
+
+both sides of (5) obtains that
+
+7
+
+ËÂ¯X(t)= (IN â K2(A + BK1) â LGÏ(t) â (K2BK2))X(t)
+
+= â(LGÏ(t) â (K2))X(t)
+
+= â(LGÏ(t) â 1)(IN â K2)X(t) = âLGÏ(t)
+
+Â¯X(t).
+
+(6)
+
+From (6), it is interesting to ï¬nd that under the proposed protocol, the original high-order
+
+integral multi-agent system has been transformed into a ï¬rst-order integral multi-agent system.
+
+Before proceeding with proving that Â¯xi(t) = K2xi(t) (i = 1, Â· Â· Â· , N) can reach a consensus, we
+
+should ï¬rst study whether the convergence of Â¯xi(t) implies the convergence of xi(t), which is
+
+answered by the following lemma.
+
+Lemma 2: Consider the following non-homogeneous linear differential equation
+
+r(mâ1)(t) + amâ1r(mâ2)(t) + Â· Â· Â· + a2r(1)(t) + a1r(t) = f (t),
+
+(7)
+
+where r(t) â R and f (t) â R is a continuous function satisfying limtââ f (t) = f â. Let the
+characteristic equation associated with (7) be
+
+smâ1 + amâ1smâ2 + Â· Â· Â· a2s + a1 = 0.
+
+(8)
+
+Then, for any initial state (r(0), Â· Â· Â· , r(mâ2)(0)), (r(t), Â· Â· Â· , r(mâ2)(t)) are convergent if and only
+
+if all roots of (8) are in the open left-half complex plane. In addition, lim
+tââ
+
+(r(t), r(1)(t), Â· Â· Â· , r(mâ2)(t)) =
+
+(f â/a1, 0, Â· Â· Â· , 0).
+
+Proof: See the proof in the Appendix.
+
+Then the following main result can be obtained by Lemmas 1 and 2.
+
+Theorem 1: The proposed protocol deï¬ned by (4) can solve the consensus problem of high-
+
+order integral multi-agent systems if all roots of (8) are in the open left-half complex plane and
+
+the communication topology GÏ(t) is uniformly jointly quasi-strongly connected.
+
+Proof: First, if GÏ(t) is uniformly jointly quasi-strongly connected, by (6) and Lemma 1,
+
+it follows that for âÂ¯xi(0), Â¯xj(0), limtââ(Â¯xi(t) â Â¯xj(t)) = 0, because Ïi(t) = 0 satisï¬es the
+
+conditions required in Lemma 1.
+
+Next, it is proved that there exists Â¯xâ such that limtââ Â¯xi(t) = Â¯xâ, i = 1, Â· Â· Â· , N if and only if
+
+limtââ(Â¯xi(t) â Â¯xj(t)) = 0, âi, j = 1, Â· Â· Â· , N. The sufï¬ciency is obvious. To prove the necessity,
+
+October 9, 2018
+
+DRAFT
+
+8
+
+let Â¯xmax(t) = max{Â¯x1(t), Â· Â· Â· , Â¯xN (t)} and Â¯xmin(t) = min{Â¯x1(t), Â· Â· Â· , Â¯xN (t)}. By (6), it follows
+that ËÂ¯xmax(t) â¤ 0 and ËÂ¯xmin(t) â¥ 0, ât â¥ 0. This together with limtââ(Â¯xi(t) â Â¯xj(t)) = 0 lead to
+that there exits Â¯xâ such that limtââ Â¯xi(t) = Â¯xâ, i = 1, Â· Â· Â· , N.
+
+If all roots of (8) are in the open left-half complex plane, it can be obtained by Lemma 2
+
+that limtââ xi(t) = xâ, i = 1, Â· Â· Â· , N where xâ = (Â¯xâ/a1, 0, Â· Â· Â· , 0)T , which means that the
+
+proposed protocol can solve the consensus problem. In addition, âall roots of (8) are in the open
+
+left-half complex planeâ is also necessary for solving the consensus problem by the necessity
+
+proof of Lemma 2.
+
+Remark 1: The most interesting feature of the consensus protocol deï¬ned by (4) is that under
+
+the proposed protocol, the consensus problem of high-order integral multi-agent systems is
+
+equivalent with the consensus problem of ï¬rst-order integral multi-agent systems. Therefore,
+
+many existing results (for example, the consensus problem with delayed communication [26])
+
+in the literature can be generalized to the high-order integral case directly.
+
+Remark 2: The group decision value xâ is determined by two factors: the agentsâ initial states
+
+and the communication topology GÏ(t). In the switching topology case, it is usually hard to give an
+explicit solution to xâ. However, if GÏ(t) is balanced at any time (the graph GÏ(t) is called balanced
+Â¯X(0). This
+Â¯X(t) = 0T
+Â¯X(t) = 1T
+if 1T LGÏ(t) = 0T
+N ), then by (6), 1T
+N
+N
+N
+together with limtââ Â¯xi(t) = Â¯xâ, i = 1, Â· Â· Â· , N leads to Â¯xâ = 1
+i=1 K2xi(0).
+N
+Then xâ = ( 1
+i=1 K2xi(0), 0, Â· Â· Â· , 0)T .
+a1N
+
+N . Hence 1T
+N
+N
+
+i=1 Â¯xi(0) = 1
+
+ËÂ¯X(t) = â1T
+
+N LGÏ(t)
+
+P
+
+P
+
+N
+
+N
+
+P
+
+B. Output-Feedback Based Consensus Algorithm
+
+In this subsection, it is assumed that the agentâs full state is not available any more. Instead,
+
+only the agentâs output can be used for the consensus protocol design, which is modeled by the
+
+following equation
+
+yi(t) = Cxi(t),
+
+(9)
+
+where C = (c1, Â· Â· Â· , cm). Here it is assumed that the pair (A, C) is detectable.
+
+Motivated by the dynamic output feedback consensus protocol proposed in [8], the following
+
+protocol is proposed
+
+ui(t) = K1si(t) â
+
+Î±ij
+Ï(t)K2(si(t) â sj(t)),
+
+XjâNi(Ï(t))
+Ësi(t) = (A + K3C)si(t) + Bui(t) â K3yi(t),
+
+October 9, 2018
+
+(10a)
+
+(10b)
+
+DRAFT
+
+where K1 and K2 are deï¬ned in (4), K3 â RmÃ1 is designed in such a way that A + K3C is
+Hurwitz. The basic idea behind this protocol is that design an observer (10b) to dynamically
+
+estimate the agentâs full state, and then use the estimated state to replace the actual state in (4),
+
+9
+
+which results in (10a).
+
+By (2) and (10b), it follows that
+
+d(xi(t) â si(t))/dt = (A + K3C)(xi(t) â si(t)).
+
+Then
+
+xi(t) = si(t) + exp((A + K3C)t)(xi(0) â si(0)).
+
+(11)
+
+Since A+K3C is Hurwitz, it can be proved that limtââ(xi(t)âsi(t)) = 0. Therefore, to prove
+
+that xi(t) (i = 1, Â· Â· Â· , N) can reach a consensus is equivalent to prove that si(t) (i = 1, Â· Â· Â· , N)
+
+can reach a consensus. Substituting (11) into (10b) obtains that
+
+ËS(t) = (IN â (A + BK1) â LGÏ(t) â BK2)S(t)
+
+â (IN â (K3C exp((A + K3C)t)))(X(0) â S(0)),
+
+(12)
+
+where S(t) = (sT
+
+1 (t), Â· Â· Â· , sT
+
+N (t))T and X(t) is deï¬ned in (5).
+
+Similarly, let Â¯S(t) = (IN â K2)S(t) â¡ (Â¯s1(t), Â· Â· Â· , Â¯sN (t))T â RN , then multiplying (IN â K2)
+
+at the both sides of (13) obtains that
+
+ËÂ¯S(t) = â(IN â (K2K3C exp((A + K3C)t)))(X(0) â S(0))
+
+â LGÏ(t)
+
+Â¯S(t) â¡ âLGÏ(t)
+
+Â¯S(t) + Â¯Ï(t),
+
+(13)
+
+where Â¯Ï(t) = (Â¯Ï1(t), Â· Â· Â· , Â¯ÏN (t))T and Â¯Ïi(t) = (K2K3C exp((A + K3C)t))(xi(0) â si(0)).
+
+From (13), the original consensus problem has been transformed into the robust consensus
+
+problem of ï¬rst-order integral multi-agent systems. Similar with the method employed in Theo-
+
+rem 1, the following result shows that the output-feedback based consensus protocol deï¬ned by
+
+(10) can also solve the consensus problem under the same conditions of Theorem 1.
+
+Theorem 2: Assume that A + K3C is Hurwitz. The proposed protocol deï¬ned by (10) can
+
+solve the consensus problem of high-order integral multi-agent systems if all roots of (8) are
+
+in the open left-half complex plane and the communication topology GÏ(t) is uniformly jointly
+
+quasi-strongly connected.
+
+October 9, 2018
+
+DRAFT
+
+10
+
+Proof: First, let Î¦ Â¯S(t, s) be the state transition matrix of (13). Due to Assumption 1, Î¦ Â¯S(t, s)
+
+can be written as
+
+Î¦ Â¯S(t, s) = exp(âLGÏ(tp)(t â tp)) exp(âLGÏ(tpâ1)(tp â tpâ1))
+
+Ã Â· Â· Â· Ã exp(âLGÏ(tq )(tq+1 â s)), t â¥ s,
+
+(14)
+
+where tp is the largest time switching point smaller than t and tq is the largest time switching
+
+point smaller than s. In [27], it has been proved that for any â â¥ 0, exp(âLGÏ(ti)â) is a stochastic
+matrix. Then Î¦ Â¯S(t, s) is also a stochastic matrix. Therefore, kÎ¦ Â¯S(t, s)kF â¤ N 2, ât â¥ s.
+
+If GÏ(t) is uniformly jointly quasi-strongly connected, by the same analysis in the proof of
+ËÂ¯S(t) =
+
+Theorem 1, the solution to the homogeneous differential equation associated with (13),
+
+Â¯S(t), is convergent under any initial states. Therefore, there exists a matrix Î¦â
+
+Â¯S such that
+
+âLGÏ(t)
+limtââ Î¦ Â¯S(t, 0) = Î¦â
+Â¯S.
+The solution to (13) can be written as
+
+Â¯S(t) = Î¦ Â¯S(t, 0) Â¯S(0) +
+
+t
+
+Z
+0
+
+Î¦ Â¯S(t, s)Â¯Ï(s)ds.
+
+(15)
+
+Next, let Âµ1, Â· Â· Â· , Âµm be the eigenvalues of A + K3C. Then Â¯Ïk(t) in (13) is the linear
+combination of tjeÂµit, i, j = 1, Â· Â· Â· , m. Since the real parts of Âµ1, Â· Â· Â· , Âµm are all in the open
+left-half complex plane, it can be proved that limtââ tjeÂµit = 0 and
+tjeÂµitdt < â. Then
+
+suptâ[0,â) |Ïk(t)| < â, limtââ Â¯Ïk(t) = 0 and
+that
+
+â
+0 kÂ¯Ï(t)k2dt < M. Then for any Ç« > 0, there exists T1 such that
+R
+
+â
+0
+R
+
+â
+0
+R
+|Â¯Ïk(t)|dt < â, k = 1, Â· Â· Â· , N. It is assumed
+â
+T1
+R
+
+kÂ¯Ï(t)k2dt < Ç«. Due to
+
+the convergence of Î¦ Â¯S(t, 0), for any Ç« > 0, there exists T2 > T1 such that for any t1 â¥ t2 â¥ T2,
+kÎ¦ Â¯S(t1, T1) â Î¦ Â¯S(t2, T1)kF < Ç«. Then the convergence of Â¯S(t) can be proved by the Cauchyâs
+Convergence Theorem. That is
+
+k Â¯S(t1) â Â¯S(t2)k2 â¤kÎ¦ Â¯S(t1, 0) â Î¦ Â¯S(t2, 0)kF k Â¯S(0)k2 +
+
+T1
+
+Z
+0
+
+kÎ¦ Â¯S(t1, s) â Î¦ Â¯S(t2, s)kF kÂ¯Ï(s)k2ds
+
+t1
+
++
+
+Z
+
+T1
+
+kÎ¦ Â¯S(t1, s) â Î¦ Â¯S(t2, s)kF kÂ¯Ï(s)k2ds +
+
+t2
+
+Z
+
+t1
+
+kÎ¦ Â¯S(t2, s)kF kÂ¯Ï(s)k2ds
+
+â¤k Â¯S(0)k2N 2Ç« + 2N 2MÇ« + 2N 2Ç« + N 2Ç«.
+
+(16)
+
+Since limtââ Â¯Ïk(t) = 0, k = 1, Â· Â· Â· , N, by Lemma 1, it follows that limtââ(Â¯si(t)â Â¯sj(t)) = 0
+if GÏ(t) is uniformly jointly quasi-strongly connected. This together with the convergence of Â¯S(t)
+lead to that there exists Â¯sâ such that limtââ Â¯si(t) = Â¯sâ, i = 1, Â· Â· Â· , N. Because A + K3C is
+
+October 9, 2018
+
+DRAFT
+
+11
+
+Hurwitz, limtââ K2xi(t) = limtââ K2si(t) + limtââ K2 exp((A + K3C)t)(xi(0) â si(0)) =
+limtââ Â¯si(t) = Â¯sâ, âi = 1, Â· Â· Â· , N. If all roots of (8) are in the open left-half complex plane, by
+Lemma 2, it can be obtained that limtââ xi(t) = (Â¯sâ/a1, 0, Â· Â· Â· , 0), i = 1, Â· Â· Â· , N, which closes
+
+the proof of this theorem.
+
+C. General Linear Time-Invariant Multi-Agent Systems
+
+Consider the multi-agent system composed of the following general continuous-time linear
+
+time-invariant dynamical agent
+
+Ëxi(t) = Agxi(t) + Bgui(t),
+
+yi(t) = Cgxi(t),
+
+i = 1, Â· Â· Â· , N,
+
+(17)
+
+where xi(t) â Rm, Ag â RmÃm, Bg â Rm, and Cg â Rm (Cg is a row vector).
+
+If the pair (Ag, Bg) is controllable and the pair (Ag, Cg) is detectable, by Luenberger control-
+
+lable canonical, there exists a matrix Tg â RmÃm such that
+
+Â¯Ag = TgAgT â1
+
+g =
+
+, Â¯Bg = TgBg =
+
+.
+
+(18)
+
+0
+
+1
+
+0
+
+0
+0
+1
+...
+...
+...
+0
+0
+0
+g a3
+g a2
+a1
+g
+
+ï£«
+
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£­
+
+Â· Â· Â·
+
+Â· Â· Â·
+. . .
+
+Â· Â· Â·
+
+0
+
+0
+...
+1
+
+Â· Â· Â· am
+g
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+0
+ï£«
+0
+...
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+0
+ï£¬
+ï£¬
+1
+ï£¬
+ï£­
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+Let ag = (a1
+
+g )T . Then, by the similar proof of Theorem 2, the following protocol
+can solve the consensus problem of general linear multi-agent systems (17) if all roots of (8) are
+
+g, Â· Â· Â· , am
+
+g, a2
+
+in the open left-half complex plane and the communication topology GÏ(t) is uniformly jointly
+
+quasi-strongly connected.
+
+ui(t) = âaT
+
+g T â1
+
+g si(t) + K1T â1
+
+g si(t) â
+
+XjâNi(Ï(t))
+Ësi(t) = (Ag + K3Cg)si(t) + Bgui(t) â K3yi(t),
+
+Î±ij
+Ï(t)K2T â1
+
+g (si(t) â sj(t)),
+
+(19a)
+
+(19b)
+
+where K1 and K2 are deï¬ned in (4), and K3 satisï¬es that Ag + K3Cg is Hurwitz.
+
+IV. EXTENSIONS TO DISCRETE-TIME HIGH-ORDER INTEGRAL MULTI-AGENT SYSTEMS
+
+The results obtained in the continuous-time domain can also be extended to the discrete-time
+
+case. Assume that the ith agent is described by the following discrete-time high-order model
+
+xi[k + 1] = Axi[k] + Bui[k],
+
+yi[k] = Cxi[k],
+
+(20a)
+
+(20b)
+
+DRAFT
+
+October 9, 2018
+
+12
+
+where xi[k] = (xi,1[k], Â· Â· Â· , xi,m[k])T â Rm, ui[k] â R and yi[k] â R are the agentâs state, input
+and output at the kth step, respectively. The system matrices A, B and C are deï¬ned same as
+
+the ones in (2) and (9).
+
+The dynamic-output feedback based consensus protocol is proposed as follows
+
+ui[k] = K4zi[k] â
+
+1
+
+1 +
+
+jâNi[Ï[k]] Î±ij
+
+Ï[k] XjâNi[Ï[k]]
+
+Î±ij
+Ï[k]K5(zi[k] â zj[k]),
+
+P
+zi[k + 1] = (A + K6C)zi[k] + Bui[k] â K6yi[k],
+
+(21a)
+
+(21b)
+
+where Ï[k] denotes the index of the graph representing the agentâs communication topology at the
+kth step; GÏ[k], Ni[Ï[k]] and Î±ij
+Ï[k] have the similar meanings as the ones deï¬ned in the continuous-
+time case; K4 = (b1, b2 â b1, Â· Â· Â· , bmâ1 â bmâ2, 1 â bmâ1) â R1Ãm, K5 = (b1, b2, Â· Â· Â· , bmâ1, 1) â
+R1Ãm and K6 â RmÃ1 is designed in such a way that all eigenvalues of A + K6C are in the
+unit circle.
+
+By (21b), it follows that
+
+zi[k + 1] â xi[k + 1] = (A + K6C)(zi[k] â xi[k]),
+
+which results in
+
+zi[k] = (A + K6C)k(zi[0] â xi[0]) + xi[k].
+
+(22)
+
+(23)
+
+Then substituting (21a) and (23) into (21b) obtains that
+
+Z[k + 1] = (IN â (A + BK4))Z[k] â (S[k] â BK5)Z[k]
+
++ (IN â (K6C(A + K6C)k))(Z[0] â X[0]),
+
+(24)
+
+1 [k], Â· Â· Â· , zT
+where Z[k] = (zT
+and the (i, j)-entry (i 6= j) of S[k] is â(Î±ij
+
+N [k])T , the (i, i)-entry of S[k] is (
+
+Ï[k])/(1 +
+
+P
+jâNi[Ï[k]] Î±ij
+
+jâNi[Ï[k]] Î±ij
+Ï[k]).
+
+Ï[k])/(1 +
+
+jâNi[Ï[k]] Î±ij
+
+Ï[k])
+
+P
+
+Similar with the continuous-time case, multiplying IN â K5 at both sides of (24) obtains that
+
+P
+
+Â¯Z[k + 1] = (IN â S[k]) Â¯Z[k] + Ïd[k],
+
+(25)
+
+where Ïd[k] â¡ (IN â (K5K6C(A + K6C)k))(Z[0] â X[0]), Â¯Z[k] â¡ (Â¯z1[k], Â· Â· Â· , Â¯zN [k])T and
+Â¯zi[k] = K5zi[k] (i = 1, Â· Â· Â· , N).
+
+From (25), it can be seen that the original discrete-time high-order integral multi-agent system
+
+has been transformed into a discrete-time ï¬rst-order integral multi-agent system with a vanishing
+
+October 9, 2018
+
+DRAFT
+
+13
+
+disturbance. Similar with the continuous-time case, in the following section, this reduced-order
+
+multi-agent system is proved to reach a consensus ï¬rst, and then the consensus of the original
+
+multi-agent system can be ensured provided certain condition is applied to (b1, Â· Â· Â· , bmâ1).
+
+Lemma 3: The discrete-time ï¬rst-order integral multi-agent system deï¬ned by (25) can reach a
+
+consensus if GÏ[k] is uniformly jointly quasi-strongly connected in the discrete-time sense. (GÏ[k]
+
+is called to be uniformly jointly quasi-strongly connected in the discrete-time sense if there
+
+exists a constant M > 0 such that the union graph (VG,
+
+iâ{k,k+1,Â·Â·Â· ,k+M } EGÏ[i]) is quasi-strongly
+
+connected for any k > 0.)
+
+S
+
+Proof: Let the state transition matrix of (25) be
+
+jâ1
+
+Î¦d(j, i) =
+
+(IN â S[k]) âj > i, Î¦d(i, i) = IN .
+
+(26)
+
+Yk=i
+
+It is easy to verify that âk = 0, 1, Â· Â· Â· , IN â S[k] is a stochastic matrix with positive diagonal
+
+elements. Therefore, Î¦d(j, i) is also a stochastic matrix, which implies that kÎ¦d(j, i)kF < N 2,
+
+âj â¥ i â¥ 0. Then the solution to (25) is
+
+Â¯Z[k] = Î¦d(k, 0) Â¯Z[0] +
+
+kâ1
+
+Xi=0
+
+Î¦d(k, i)Ïd[i].
+
+(27)
+
+Next, two mathematical operators are deï¬ned, which play a key role in analyzing the convergence
+N
+of Â¯Z[k]. For a stochastic matrix P = {Pij} â RN ÃN , deï¬ne Ï (P ) = 0.5 maxi,j
+s=1 |Pis â Pjs|.
+For a vector p = (p1, Â· Â· Â· , pN )T â RN , deï¬ne âp = maxi,j |pi â pj|. By [28], for any vector
+r1 â RN and stochastic matrix P â RN ÃN , if r2 = P r1, then âr2 â¤ Ï (P )âr1. Therefore it can
+be obtained that
+
+P
+
+kâ1
+
+â Â¯Z[k] â¤ Ï (Î¦d(k, 0))â Â¯Z[0] +
+
+Ï (Î¦d(k, i))âÏd[i].
+
+(28)
+
+Xi=0
+
+By Lemma 3.9 in [24] and Theorem 3.1 in [29], the following properties hold for the state
+
+transition matrix Î¦d(Â·, Â·). That is: if the communication topology GÏ[k] is uniformly jointly quasi-
+
+strongly connected in the discrete-time sense, then
+
+â¢ there exists a vector c â RN satisfying 1T
+
+N c = 1 such that limtââ Î¦d(t, 0) = 1N cT ;
+
+â¢ for any integers k, h â¥ 0, there exist CM > 0 and 0 < Î»Î¦ < 1 such that Ï (Î¦d(k + h, k)) â¤
+
+CM Î»h
+Î¦.
+
+Let the maximal magnitude eigenvalue of A+K6C be Î»max. Since all eigenvalues of A+K6C
+
+are in the unit circle, then |Î»max| < 1. And there must exist a constant Ce such that â(Ïd[k]) =
+
+October 9, 2018
+
+DRAFT
+
+14
+
+â((IN â (K5K6C(A + K6C)k))(Z[0] â X[0])) < Ce|Î»max|k. Therefore,
+
+kâ1
+
+Xi=0
+
+Ï (Î¦d(k, i))âÏd[i] â¤
+
+kâ1
+
+Xi=0
+
+CM CeÎ»kâi
+
+Î¦ |Î»max|i â¤ (k â 1)CM Ce|Î»min|k,
+
+(29)
+
+where |Î»min| = max{Î»Î¦, |Î»max|} < 1. Then
+
+lim
+kââ
+
+kâ1
+
+Xi=0
+
+Ï (Î¦d(k, i))âÏd[i] = 0,
+
+(30)
+
+which results in that
+
+lim
+kââ
+
+â Â¯Z[k] â¤ lim
+kââ
+
+Ï (Î¦d(k, 0))â Â¯Z[0] + lim
+kââ
+
+kâ1
+
+Xi=0
+
+Ï (Î¦d(k, i))âÏd[i] = 0.
+
+(31)
+
+By the deï¬nition of the operator â, it follows that âk â¥ 0, â Â¯Z[k] â¥ 0. This together with (31)
+
+leads to
+
+lim
+kââ
+
+(Â¯zi[k] â Â¯zj[k]) = 0,
+
+â1 â¤ i, j â¤ N.
+
+(32)
+
+Similar with Theorem 2, the convergence of Â¯Z[k] is proved in the following part. From one
+
+side, since all eigenvalues of A + K3C are in the unit circle, it is easy to prove that there exists
+
+a constant Md such that
+
+â
+i=0 kÏd[i]k2 < Md. Therefore, âÇ« > 0, there exists M1 > 0 such
+kÏd[i]k2 < Ç«. From the other side, because of the convergence of Î¦d(k, 0), âÇ« > 0,
+
+P
+
+that
+
+â
+i=K1
+
+P
+
+there exists M2 > M1 such that for any k1 â¥ k2 â¥ M2, kÎ¦d(k1, M1) â Î¦d(k2, M1)kF < Ç«. By
+the above two facts, the convergence of Â¯Z(t) can also be proved by the Cauchyâs Convergence
+
+Theorem. That is
+
+k Â¯Z[k1] â Â¯Z[k2]k2 â¤kÎ¦d(k1, 0) â Î¦d(k2, 0)kF k Â¯Z[0]k2 +
+
+M1â1
+
+Xs=0
+
+kÎ¦d(k1, s) â Î¦d(k2, s)kF kÏd[s]k2
+
+k1â1
+
+k2
+
++
+
+kÎ¦d(k1, s) â Î¦d(k2, s)kF kÏd[s]k2 +
+
+kÎ¦d(k2, s)kF kÏd[s]k2
+
+Xs=M1
+
+Xs=k1
+
+â¤2k Â¯Z[0]k2N 2Ç« + 2N 2MdÇ« + 2N 2Ç« + N 2Ç«.
+
+(33)
+
+From (32) and (33), it can be obtained that there exists Â¯zâ such that limkââ |Â¯zi â Â¯zâ| = 0,
+
+i = 1, Â· Â· Â· , N.
+
+The next Lemma bridges the discrete-time ï¬rst-order integral multi-agent system and the orig-
+
+inal high-order multi-agent system, which plays a same role as its continuous-time counterpart
+
+(Lemma 2).
+
+October 9, 2018
+
+DRAFT
+
+15
+
+Lemma 4: Consider the following non-homogeneous linear difference equation
+
+r[k + m â 1] + bmâ1r[k + m â 2] + Â· Â· Â· + b2r[k + 1] + b1r[k] = f [k],
+
+(34)
+
+where r[k] â R and f [k] is a convergent sequence satisfying limkââ f [k] = f â. Let the
+characteristic equation associated with (7) be
+
+smâ1 + bmâ1smâ2 + Â· Â· Â· b2s + b1 = 0.
+
+(35)
+
+Then, for any initial state (r[0], r[1], Â· Â· Â· , r[m â 2]), r[k] is convergent to f â/(b1 + Â· Â· Â·+ bmâ1 + 1)
+
+if all roots of (35) are in the unit circle.
+
+Proof: See the proof in the Appendix.
+
+Theorem 3: Under the proposed consensus protocol deï¬ned by (21), the discrete-time high-
+
+order multi-agent system deï¬ned by (20) can reach a consensus if the communication topology
+
+GÏ[k] is uniformly jointly quasi-strongly connected in the discrete-time sense, all eigenvalues of
+
+A + K6C are in the unit circle and the control parameters (b1, Â· Â· Â· , bmâ1) in (21) are designed
+
+in such a way that all roots of (35) are in the unit circle.
+
+Proof: If GÏ[k] is uniformly jointly quasi-strongly connected in the discrete-time sense, by
+Lemma 3, there exists zâ â R such that limkââ Â¯Z[k] = zâ1N . Then by (23), limkââ Â¯Z[k] =
+limkââ(IN â K5)Z[k] = limkââ(IN â K5)((IN â (K6C(A + K6C)k))(Z[0] â X[0]) + X[k]) =
+
+limkââ(IN â K5)X[k] since all eigenvalues of A + K6C are in the unit circle. Therefore,
+limkââ K5xi[k] = zâ which implies that
+
+xi,1[k + m â 1] + bmâ1xi,1[k + m â 2] + Â· Â· Â· + b2xi,1[k + 1] + b1xi,1[k] = f i
+
+d[k],
+
+lim
+kââ
+
+f i
+d[k] = zâ,
+
+i = 1, Â· Â· Â· , N.
+
+(36)
+
+Since all roots of (35) are in the unit circle, it follows by Lemma 4 that limkââ xi,1[k] = zâ.
+Due to the relationship between xi,1[k], Â· Â· Â· , xi,m[k], it can be proved that limkââ xi[k] = zâ1N ,
+
+i = 1, Â· Â· Â· , N, which closes the proof of this Theorem.
+
+In this section, three simulation examples are provided to validate the correctness of theoretical
+
+V. SIMULATION EXAMPLES
+
+analysis.
+
+October 9, 2018
+
+DRAFT
+
+16
+
+A. Example One
+
+Consider a network of ï¬ve identical single-link ï¬exible-joint robots. A sketch of this robot is
+
+shown in Fig. 1. According to [30], the ith robot is modeled by the following dynamics
+
+ï£±
+ï£´ï£²
+
+I Â¨qi,1(t) + MgL sin qi,1(t) + k(qi,1(t) â qi,2(t)) = 0,
+
+J Â¨qi,2(t) â k(qi,1(t) â qi,2(t)) = Ïi(t),
+
+(37)
+
+where qi,1(t) denotes the angle of the robotic link; qi,2(t) represents the angle of actuator; I and
+
+ï£´ï£³
+
+J denote the inertia of the actuator and robotic link, respectively; M is the mass of the robotic
+
+link; L represents the length between the mass center and the joint mounting point; k denotes
+
+the springâs torsion coefï¬cient; Ïi(t) is the torque input. The communication topology switches
+
+between the following three cases (shown in Fig. 2). Ï(t) = mod (10t, 3) + 1. Then ât â¥ 0,
+
+the union graph G[t,t+0.3) is quasi-strongly connected which means that GÏ(t) is uniformly jointly
+
+quasi-strongly connected. And Î±21
+G3 =
+G3 = 1; and all other Î±ij
+Î±45
+Gk = 0, i, j = 1, Â· Â· Â· , N, k = 1, 2, 3. The control objective is to design
+a distributed protocol for each robot to drive all robotsâ joints to a same angle, i.e., there exists
+
+G2 = 1; Î±32
+
+G1 = 1; Î±15
+
+G3 = Î±34
+
+G2 = Î±24
+
+G1 = Î±53
+
+G2 = Î±23
+
+G1 = Î±41
+
+2 such that limtââ qi,1(t) = qâ
+1 and qâ
+qâ
+By the feedback linearization technique, let
+
+1 and limtââ qi,2(t) = qâ
+
+2, i = 1, Â· Â· Â· , 5.
+
+xi,1(t) = qi,1(t),
+
+xi,2(t) = Ëqi,1(t),
+
+xi,3(t) = âMgL sin(qi,1(t))/I â k(qi,1(t) â qi,2(t))/I,
+
+xi,4(t) = âMgL Ëqi,1(t) cos(qi,1(t))/I â k( Ëqi,1(t) â Ëqi,2(t))/I,
+
+(38)
+
+and
+
+Ïi(t) =
+
+IJ
+k (cid:18)
+
+ui(t) â
+
+MgL
+I
+
+sin(qi,1(t))( Ëq2
+
+i,1(t) +
+
+MgL
+I
+
+cos(qi,1(t)) +
+
++
+
+k
+I
+
+(qi,1(t) â qi,2(t))(
+
+k
+I
+
++
+
+k
+J
+
++
+
+)
+
+k
+I
+MgL
+I
+
+cos(qi,1(t)))
+
+(39)
+
+.
+(cid:19)
+
+The nonlinear robotic dynamics deï¬ned by (37) can be transformed into the following high-order
+
+integral dynamics
+
+Ëxi,1(t) = xi,2(t),
+
+Ëxi,2(t) = xi,3(t),
+
+Ëxi,3(t) = xi,4(t),
+
+Ëxi,4(t) = ui(t).
+
+(40)
+
+October 9, 2018
+
+DRAFT
+
+17
+
+Therefore, the consensus protocol ui(t) in (39) can be designed according to (4). K1 and K2
+
+in (4) are set as K1 = (0, â1, â3, â3) and K2 = (1, 3, 3, 1). It is easy to verify that under
+
+these control parameters, all roots of (7) are in the open left-half complex plane. By Theorem
+
+1, the control objective can be achieved. In the simulation, the parameters in (37) are set as
+
+follows: M = 1.5kg; g = 9.8m/s2; J = 3.2kgÂ·m2; I = 1kgÂ·m2; L = 0.8m; k = 2.5N/deg.
+
+The initial joint conï¬guration is set as q1,1(0) = 2.5deg, q1,2(0) = 1.5deg, q2,1(0) = 1.9deg,
+
+q2,2(0) = 3.14deg, q3,1(0) = â2.4deg, q3,2(0) = â2.6deg, q4,1(0) = 1.57deg, q4,2(0) = â1.5deg,
+
+q5,1(0) = â3.14deg, q5,2(0) = 0deg and Ëqi,1(0) = Ëqi,2(0) = 0deg/s. The simulation results are
+
+shown in Fig. 3. It can be seen that limtââ qi,1(t) = â3.255deg and limtââ qi,2(t) = â2.723deg,
+
+which means that the consensus problem is solved. Therefore, the correctness of Theorem 1 is
+
+illustrated by this example. In addition, this example also shows that the consensus problem of
+
+some nonlinear multi-agent systems can be solved by combining the proposed protocol and the
+
+feedback linearization approach.
+
+B. Example Two
+
+This example studies the attitude consensus problem of a group of four aircrafts. The schematic
+
+diagram of the aircraft is shown in Fig. 4. A simpliï¬ed dynamical model of the aircraft vertical
+
+motion is introduced in [30]. That is
+
+J Â¨Î±i + b ËÎ±i + (CZEl + CZW d)Î±i = CZElEi,
+
+mÂ¨hi = (CZE + CZW )Î±i â CZEEi,
+
+(41a)
+
+(41b)
+
+where hi denotes the aircraftâs attitude; Ei denotes the elevator rotation angle (control input); Î±i
+
+denotes the rotation angle of the aircraft about its mass center CG; b is the friction coefï¬cient;
+
+LW = CZW Î±i is the lifting force applied at the âcenter of liftâ CL; LE = CZE(Ei â Î±i) is the
+
+aerodynamic force on the elevator; m is the aircraftâs mass and J is its moment of inertia about
+
+CG. In [30], these parameters are set as J = 1, m = 1, b = 4, CZE = 1, CZW = 5, l = 3 and
+d = 0.2. Let xi = (xi,1, xi,2, xi,3, xi,4)T = (Î±i, ËÎ±i, hi, Ëhi)T , then equation (41) can be written in
+
+October 9, 2018
+
+DRAFT
+
+the form of (17) with
+
+Ag =
+
+0
+
+1
+
+0 0
+
+ï£«
+
+â4 â4 0 0
+
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£­
+
+0
+
+6
+
+0
+
+0
+
+0 1
+
+0 0
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+, Bg =
+
+0
+
+3
+
+0
+
+â1
+
+ï£«
+
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£­
+
+18
+
+.
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+In this example, it is assumed that only the aircraftâs attitude hi can be measured, which means
+
+that yi = Cgxi = hi with Cg = (0, 0, 1, 0) in (17). It is easy to verify that under these parameters,
+
+the attitude dynamics of aircraft is controllable and observable. The switch signal Ï(t) of the
+communication topology is Ï(t) = mod (10t, 4) + 1. And Î±ij
+Gk = 1 if eji â Gk; otherwise
+Î±ij
+Gk = 0, i, j â {1, Â· Â· Â· , N}, k â {1, 2, 3, 4}. And it is easy to see that GÏ(t) is uniformly jointly
+quasi-strongly connected. Therefore, by the analysis in Section III-C, the attitude consensus can
+
+be reached if the parameters in (19) are selected as follows
+
+K1 = (0, â1, â3, â3), K2 = (1, 3, 3, 1), K3 = (1/3, â2/3, â6, â7)T ,
+
+0
+
+0
+
+ï£«
+
+0
+
+0
+
+3
+
+0
+
+14 â4 â1
+
+T â1
+g =
+
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£­
+
+0
+
+14 â4 â1
+
+0
+
+3
+
+0
+
+.
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+In the simulation, four aircraftsâ initial states are x1(0) = (0, 0, 8000, 0)T , x1(0) = (0, 0, 6500, 0)T ,
+x1(0) = (0, 0, 7000, 0)T , x1(0) = (0, 0, 5000, 0)T ; and the initial estimated states are s1(0) =
+(0, 0, 10000, 0)T , s1(0) = (0, 0, 7000, 0)T , s1(0) = (0, 0, 6000, 0)T , s1(0) = (0, 0, 4000, 0)T . The
+
+trajectory proï¬les of four aircraftsâ real states and estimated states are displayed in Fig. 6, which
+
+implies that four aircraftsâ attitudes reach a consensus.
+
+C. Example Three
+
+To validate the theoretical analysis in Section IV, the consensus problem of a group of four
+
+discrete-time high-order integral agents deï¬ned by (20) is studied. The parameters in (20) are set
+
+as m = 4 and C = (1, 0, 0, 0). The switching communication topology is similar with the one in
+
+Example Two (Ï[k] = mod (k, 4) + 1, k = 0, 1, Â· Â· Â· ). The control gain vectors in (21) are set
+
+as K4 = (1/8, 5/8, 3/4, â1/2), K5 = (1/8, 3/4, 3/2, 1) and K6 = (â2, â3/2, â1/2, â1/16)T .
+
+Then, all roots of (35) are in the unit circle. The initial states of four agents are randomly selected,
+
+October 9, 2018
+
+DRAFT
+
+19
+
+and the initial estimated states are set as 04. The trajectory proï¬les of xi,1[k] (i = 1, 2, 3, 4) are
+
+given in Fig. 7, which illustrates the effectiveness of the proposed protocol deï¬ned by (21).
+
+VI. CONCLUSION
+
+This paper studies the consensus of high-order integral multi-agent systems under the switching
+
+directed topology. The state-feedback based protocol and the dynamic output-feedback based pro-
+
+tocol are proposed to solve the consensus problem, respectively. It is noted that by the proposed
+
+approaches, the consensus of the high-order integral multi-agent system can be transformed into
+
+the consensus of the ï¬rst-order integral multi-agent system if all roots of the polynomial (8) are
+
+in the open left-half complex plane. By using results in the robust consensus, it is proved that
+
+under both consensus protocols, the connectivity condition on the switching directed topology
+
+is only âuniformly jointly quasi-strongly connectedâ, which is much weaker than the existing
+
+conditions. Finally, it should be noted that one most interesting contribution of this paper is that
+
+under the proposed protocols, there exists certain âequivalenceâ between the ï¬rst-order integral
+
+multi-agent system and the high-order integral multi-agent system. Most results in the ï¬rst-order
+
+integral multi-agent system can therefore be generalized to the high-order integral case, which
+
+deserves more investigation in the future.
+
+APPENDIX: PROOF OF LEMMA 2
+
+Proof: (Sufï¬ciency) Let the roots of (8) be Î»1, Î»2, Â· Â· Â· , Î»mâ1. Without loss of generality, it
+
+is assumed that Î»1 = Â· Â· Â· = Î»k1, Î»k1+1 = Â· Â· Â· = Î»k1+k2, Â· Â· Â· , Î»Plâ1
+(l â N, 1 â¤ l â¤ m â 1, ki â N, 1 â¤ ki â¤ m â 1,
+
+i=1 ki
+l
+i=1 ki = m â 1). By the knowledge of
+
+i=1 ki+1 = Â· Â· Â· = Î»Pl
+
+differential equation, one particular solution of (7) can be written in the following form
+
+P
+
+rp(t) = eÎ»1t
+
+t
+
+Z
+0
+
+e(Î»2âÎ»1)Ï1 Â· Â· Â·
+
+Ïmâ3
+
+Z
+0
+
+e(Î»mâ1âÎ»mâ2)Ïmâ2
+
+Ïmâ2
+
+Z
+0
+
+eâÎ»mâ1Ïmâ1f (Ïmâ1)dÏmâ1dÏmâ2 Â· Â· Â· dÏ1.
+
+(42)
+
+After obtaining the particular solution rp(t), the general solution of (7) can be expressed as
+
+follows
+
+r(t) = rp(t) +
+
+l
+
+kj
+
+Xj=1
+
+Xi=1
+
+CPjâ1
+
+p=1 kp+iRji(t), Rji(t) = tiâ1e
+
+tÎ»
+
+P
+
+jâ1
+p=1
+
+kp+1,
+
+(43)
+
+where C1, Â· Â· Â· , Cmâ1 are coefï¬cients to be determined by the initial state.
+
+October 9, 2018
+
+DRAFT
+
+Next, let us study the limitation property of eÎ»t
+
+0 eâÎ»sg(s)ds where Î» is a complex constant
+R
+with negative real part and g(t) is a continuous function satisfying limtââ g(t) = gâ. Since
+limtââ g(t) = gâ, for any Ç« > 0, there exists t1 > 0 such that |g(t) â gâ| < Ç«, ât > t1. In
+
+t
+
+addition, there exists a constant M < â such that |g(t)| < M, ât â¥ 0. Then
+
+20
+
+eÎ»(tâs)g(s)ds +
+
+â¤ eÎ»tM
+
+gâ
+Î» (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:18)
+
++
+
+1 â eâÎ»t1
+Î»
+eÎ»(tât1)
+
++
+
+Î» (cid:19)
+
+1 â eâÎ»t1
+Î»
+
++ Ç«
+
+â
+
+1
+Î»
+
++
+
+t
+
+Z
+0
+
+eâÎ»sg(s)ds +
+
+gâ
+Î» (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+eÎ»(tâs)(g(s) â gâ)ds
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+eÎ»(tât1)
+
+=
+
++
+
+eÎ»(tâs)g(s)ds
+
+t1
+
+t
+
+eÎ»(tâs)gâds +
+
+(cid:12)
+Z
+0
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+Z
+(cid:12)
+(cid:12)
+(cid:12)
+
+t1
+
++
+
+(cid:12)
+(cid:12)
+(cid:12)
+gâ
+(cid:12)
+Î» (cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+
+t
+
+t1
+
+(cid:12)
+Z
+(cid:12)
+(cid:12)
+(cid:12)
+â¤ eÎ»tM
+
+t
+
+eÎ»t
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+(cid:12)
+Z
+(cid:12)
+(cid:12)
+(cid:12)
+gâ
+
+t1
+
+(cid:18)
+
+Î» (cid:19)
+
+.
+
+Since Î» has the negative real part, (44) leads to
+
+t
+
+eÎ»t
+
+lim
+tââ
+
+Z
+
+0
+
+eâÎ»sg(s)ds = â
+
+gâ
+Î»
+
+.
+
+(44)
+
+(45)
+
+If Î»1, Â· Â· Â· , Î»mâ1 are all in the open left-half complex plane and limtââ f (t) = f â, applying
+
+(45) to (42) by (m â 1) times obtains that
+
+rp(t) =
+
+lim
+tââ
+
+f â
+mâ1
+i=1 (âÎ»i)
+
+=
+
+f â
+a1
+
+.
+
+(46)
+
+In addition, if Î»1, Â· Â· Â· , Î»mâ1 are all in the open left-half complex plane, then Rji(t) in (43)
+
+Q
+
+has the property that limtââ Rji(t) = 0. Then it can be obtained that whatever the coefï¬cients
+C1, Â· Â· Â· , Cmâ1 are, r(t) in (43) always satisï¬es that limtââ r(t) = f â/a1. Furthermore, r(1)(t) =
+
+d
+
+rp(t) +
+
+l
+j=1
+
+kj
+i=1 CPjâ1
+
+p=1 kp+iRji(t)
+
+/dt. And
+
+(cid:16)
+drp(t)
+dt
+
+P
+
+P
+
+= Î»1eÎ»1t
+
+t
+
+Z
+0
+
+(cid:17)
+Ïmâ2
+
+e(Î»2âÎ»1)Ï1 Â· Â· Â·
+
+Z
+0
+t
+
+eâÎ»mâ1Ïmâ1f (Ïmâ1)dÏmâ1 Â· Â· Â· dÏ1
+
++ eÎ»2t
+
+Z
+0
+
+e(Î»3âÎ»2)Ï1 Â· Â· Â·
+
+Ïmâ3
+
+Z
+0
+
+eâÎ»mâ1Ïmâ2f (Ïmâ2)dÏmâ2 Â· Â· Â· dÏ1.
+
+(47)
+
+Therefore, if Î»1, Â· Â· Â· , Î»mâ1 all have the negative real parts, then limtââ drp(t)/dt = (âÎ»1)f â
+i=1 (âÎ»i)
+f â
+= 0. And it can also be obtained that limtââ dRji(t)/dt = 0, which leads to
+Qmâ1
+i=2 (âÎ»i)
+that limtââ r(1)(t) = 0. By the same analysis, it can be proved that limtââ r(i)(t) = 0,
+i = 1, Â· Â· Â· , m â 2. Hence limtââ(r(t), r(1)(t), Â· Â· Â· , r(mâ2)(t)) = (f â/a1, 0, Â· Â· Â· , 0).
+
+Qmâ1
+
+â
+
+(Necessity) Let rg(t) = (r(t), r(1)(t), Â· Â· Â· , r(mâ2)(t))T , then (7) can be rewritten in the follow-
+
+ing form
+
+October 9, 2018
+
+DRAFT
+
+21
+
+Ërg(t) =
+
+0
+...
+0
+
+1
+...
+0
+
+Â· Â· Â·
+. . .
+
+Â· Â· Â·
+
+0
+...
+1
+
+âa1 âa2
+
+Â· Â· Â· âamâ1
+
+rg(t) +
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+0
+...
+ï£«
+ï£¬
+ï£¬
+0
+ï£¬
+ï£¬
+1
+ï£¬
+ï£­
+
+ï£¶
+
+ï£·
+ï£·
+ï£·
+ï£·
+ï£·
+ï£¸
+
+ï£«
+
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£¬
+ï£­
+
+f (t) â¡ Arrg(t) + Brf (t).
+
+(48)
+
+Let the state transition matrix of (48) be Î¦r(t, s) = exp(Ar(t â s)). Then rg(t) can be solved
+
+as rg(t) = Î¦r(t, 0)rg(0) +
+
+t
+0 Î¦r(t, s)Brf (s)ds. If some roots of (8) are not in the open left-
+R
+half complex plane, by the knowledge of linear system, there exists at least one initial state
+
+such that rg(t) = Î¦r(t, 0)rg(0) +
+
+g(0) such that Î¦r(t, 0)r1
+r1
+initial state r1
+
+g(0) is not convergent as t goes to inï¬nity. Assume that under this
+g(0), we can still ï¬nd a continuous function f1(t) satisfying limtââ f1(t) = f â
+1
+0 Î¦r(t, s)Brf1(s)ds is convergent to râ
+g. From the other side,
+R
+let us consider another continuous function f2(t) = 2f1(t). Then under the same initial state
+g(0), rg(t) + Î¦r(t, 0)r1
+r1
+Î¦r(t, 0)r1
+
+g. Since
+g(0) is not convergent, rg(t) with f (t) = f2(t) in (48) is not convergent. This contradicts
+g(0).(cid:4)
+
+0 Î¦r(t, s)Brf2(s)ds is convergent to 2râ
+R
+
+with that rg(t) is convergent for any initial state r1
+
+g(0) = 2Î¦r(t, 0)r1
+
+g(0) +
+
+t
+
+t
+
+APPENDIX: PROOF OF LEMMA 3
+
+Proof: This proof is similar with the one of Lemma 1. Note that one particular solution to
+
+(34) is
+
+rp[k] = Âµk
+
+mâ1
+
+kâ1
+
+Ximâ1=0
+
+Âµâimâ1â1
+mâ1
+
+Âµimâ1
+mâ2
+
+imâ1â1
+
+Ximâ2=0
+
+Âµâimâ2â1
+mâ2
+
+Â· Â· Â· Âµi3
+2
+
+i3â1
+
+Xi2=0
+
+Âµâi2â1
+2
+
+Âµi2
+1
+
+i2â1
+
+Xi1=0
+
+Âµâi1â1
+1
+
+f [i1],
+
+(49)
+
+i=1 hi+1 = Â· Â· Â· = ÂµPl
+
+where {Âµ1, Â· Â· Â· , Âµmâ1} are the roots of (35). Assume that Âµ1 = Â· Â· Â· = Âµh1, Âµh1+1 = Â· Â· Â· = Âµh1+h2,
+l
+Â· Â· Â· , ÂµPlâ1
+i=1 hi =
+m â 1). Then the general solution r[k] to (34) can be written as a combination of rp[k] and
+Dji[k] = Ci
+k
+
+(l â N, 1 â¤ l â¤ m â 1, hi â N, 1 â¤ hi â¤ m â 1,
+
+(1 â¤ j â¤ l; 1 â¤ i â¤ hj).
+
+i=1 hi
+
+P
+
+kâi
+
+ÂµPjâ1
+
+(cid:16)
+
+p=1 hp+1
+
+(cid:17)
+
+From one hand, the following property holds for rp[k]
+
+Âµk
+
+lim
+kââ
+
+kâ1
+
+Xi=0
+
+Âµâiâ1f [i] = f â/(1 â Âµ),
+
+â|Âµ| < 1.
+
+Since all roots of (34) are in the unit circle, it follows that
+
+rp[k] =
+
+lim
+kââ
+
+f â
+(1 â Âµi)
+
+mâ1
+i
+
+Q
+
+= f â/(bmâ1 + Â· Â· Â· + b1 + 1).
+
+October 9, 2018
+
+(50)
+
+(51)
+
+DRAFT
+
+From the other hand, it is easy to prove that limkââ Dji[k] = 0 (1 â¤ j â¤ l; 1 â¤ i â¤ hj) if
+
+all roots of (35) are in the unit circle.
+
+Therefore, the general solution to (34) is convergent to f â/(bmâ1 + Â· Â· Â· + b1 + 1) regardless
+
+of the initial state. (cid:4)
+
+22
+
+October 9, 2018
+
+DRAFT
+
+REFERENCES
+
+23
+
+[1] Y. Zhao, B. Li, J. Qin, H. Gao, and H. Karimi, âhâ consensus and synchronization of nonlinear systems based on a novel
+
+fuzzy model,â IEEE Transactions on Cybernetics, DOI: 10.1109/TCYB.2013.2242197, in press.
+
+[2] Z.-G. Hou, L. Cheng, and M. Tan, âDecentralized robust adaptive control for the multiagent system consensus problem
+
+using neural networks,â IEEE Transactions on Systems, Man and Cybernetics, Part B: Cybernetics, vol. 39, no. 3, pp.
+
+636â647, 2009.
+
+[3] Z. Chen and H.-T. Zhang, âAnalysis of joint connectivity condition for multi agents with boundary constraints,â IEEE
+
+Transactions on Cybernetics, vol. 43, no. 2, pp. 437â444, 2013.
+
+[4] W.-S. Zhong, G.-P. Liu, and C. Thomas, âGlobal bounded consensus of multiagent systems with nonidentical nodes and
+
+time delays,â IEEE Transactions on Systems, Man and Cybernetics, Part B: Cybernetics, vol. 42, no. 5, pp. 1480â1488,
+
+2012.
+
+[5] Z. Meng, W. Ren, Y. Cao, and Z. You, âLeaderless and leader-following consensus with communication and input delays
+
+under a directed network topology,â IEEE Transactions on Systems, Man and Cybernetics, Part B: Cybernetics, vol. 41,
+
+no. 1, pp. 75â88, 2011.
+
+[6] F. Xiao and L. Wang, âConsensus problems for high-dimensional multi-agent systems,â IET Control Theory & Applications,
+
+vol. 1, no. 3, pp. 830â837, 2007.
+
+[7] C.-Q. Ma and J.-F. Zhang, âNecessary and sufï¬cient conditions for consensusability of linear multi-agent systems,â IEEE
+
+Transactions on Automatic Control, vol. 55, no. 10, pp. 1263â1268, 2010.
+
+[8] L. Cheng, Z.-G. Hou, Y. Lin, M. Tan, and W. Zhang, âSolving a modiï¬ed consensus problem of linear multi-agent systems,â
+
+Automatica, vol. 47, no. 10, pp. 2218â2223, 2011.
+
+[9] H. Kim, H. Shim, and J. Seo, âOutput consensus of heterogeneous uncertain linear multi-agent systems,â IEEE Transactions
+
+on Automatic Control, vol. 56, no. 1, pp. 200â206, 2011.
+
+[10] H. Zhang and F. Lewis, âAdaptive cooperative tracking control of higher-order nonlinear systems with unknown dynamics,â
+
+Automatica, vol. 48, no. 7, pp. 1432â1439, 2012.
+
+[11] H. Zhang, F. Lewis, and A. Das, âOptimal design for synchronization of cooperative systems: state feedback, observer
+
+and output feedback,â IEEE Transactions on Automatic Control, vol. 56, no. 8, pp. 1948â1952, 2011.
+
+[12] Z. Li, Z. Duan, G. Chen, and L. Huang, âConsensus of multiagent systems and synchronization of complex networks: a
+
+uniï¬ed viewpoint,â IEEE Transactions on Circuits and Systems I: Regular Papers, vol. 57, no. 1, pp. 213â224, 2010.
+
+[13] W. Yu, G. Chen, W. Ren, J. Kurths, and W. Zheng, âDistributed higher order consensus protocols in multiagent dynamical
+
+systems,â IEEE Transactions on Circuits and Systems I: Regular Papers, vol. 58, no. 8, pp. 1924â1932, 2011.
+
+[14] L. Cheng, Z.-G. Hou, and M. Tan, âA mean square consensus protocol for linear multi-agent systems with communication
+
+noises and ï¬xed topologies,â conditionally accepted by IEEE Transactions on Automatic Control, 2013.
+
+[15] Y.-P. Tian and Y. Zhang, âHigh-order consensus of heterogeneous multi-agent systems with unknown communication
+
+delays,â Automatica, vol. 48, no. 6, pp. 1205â1212, 2012.
+
+[16] K. You and L. Xie, âNetwork topology and communication data rate for consensusability of discrete-time multi-agent
+
+systems,â IEEE Transactions on Automatic Control, vol. 56, no. 10, pp. 2262â2275, 2011.
+
+[17] J. Wang, D. Cheng, and X. Hu, âConsensus of multi-agent linear dynamic systems,â Asian Journal of Control, vol. 10,
+
+no. 2, pp. 144â155, 2008.
+
+[18] F. Jiang and L. Wang, âConsensus seeking of high-order dynamic multi-agent systems with ï¬xed and switching topologies,â
+
+International Journal of Control, vol. 83, no. 2, pp. 404â420, 2010.
+
+October 9, 2018
+
+DRAFT
+
+24
+
+[19] W. Ni and D. Cheng, âLeader-following consensus of multi-agent systems under ï¬xed and switching topologies,â Systems
+
+& Control Letters, vol. 59, no. 3â4, pp. 209â217, 20102.
+
+[20] J. Xu, L. Xie, T. Li, and K. Lum, âConsensus of multi-agent systems with general linear dynamics via dynamic output
+
+feedback control,â IET Control Theory and Applications, vol. 7, no. 1, pp. 108â115, 2013.
+
+[21] Y. Su and J. Huang, âStability of a class of linear switching systems with applications to two consensus problems,â IEEE
+
+Transactions on Automatic Control, vol. 57, no. 6, pp. 1420â1430, 2012.
+
+[22] ââ, âTwo consensus problems for discrete-time multi-agent systems with switching network topology,â Automatica,
+
+vol. 48, no. 9, pp. 1988â1997, 2012.
+
+[23] ââ, âCooperative output regulation with application to multi-agent consensus under switching network,â IEEE Transac-
+
+tions on Systems, Man and Cybernetics, Part B: Cybernetics, vol. 42, no. 3, pp. 864â875, 2012.
+
+[24] W. Ren and R. Beard, âConsensus seeking in multiagent systems under dynamically changing interaction topologies,â
+
+IEEE Transactions on Automatic Control, vol. 50, no. 5, pp. 655â661, 2005.
+
+[25] G. Shi and K. Johansson, âMulti-agent robust consensus convergence analysis and application,â arXiv:1108.3226v2, 2012.
+
+[26] R. Olfati-Saber and R. Murray, âConsensus problems in networks of agents with switching topology and time-delays,â
+
+IEEE Transactions on Automatic Control, vol. 49, no. 9, pp. 1520â1533, 2004.
+
+[27] W. Ren, R. Beard, and T. McLain, âCoordination variables and consensus building in multiple vehicle systems,â in
+
+Cooperative Control Series, Springer Lecture Notes in Control and Information Sciences, V. Kumar, N. Leonard, and
+
+A. Morse, Eds. New York: Springer-Verlag, 2004, pp. 171â188.
+
+[28] E. Seneta, Non-Negative Matrices and Markov Chains, 2nd ed. New York: Springer-Verlag, 1981.
+
+[29] L. Wang and Z. Liu, âRobust consensus of multi-agent systems with noise,â Science in China Series F: Information
+
+Sciences, vol. 52, no. 2, pp. 824â834, 2009.
+
+[30] J.-J. E. Slotine and W. Li, Applied Nonlinear Control. New Jersey: Prentice Hall, 1991.
+
+October 9, 2018
+
+DRAFT
+
+LIST OF FIGURES
+
+25
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+A sketch of a single-link ï¬exible-joint robot.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+. 26
+
+Three possible communication topologies of the multi-agent system in Example
+
+One: (a) G1; (b) G2; and (c) G3.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+. 26
+
+The joint proï¬les of ï¬ve single-link ï¬exible-joint robots: (a) qi,1(t); (b) qi,2(t) i =
+
+1, Â· Â· Â· , 5.
+
+.
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+A schematic diagram of an aircraft.
+
+.
+
+.
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+.
+
+.
+
+. .
+
+. .
+
+.
+
+.
+
+. .
+
+. 27
+
+. .
+
+. 27
+
+Four possible communication topologies of the multi-agent system in Examples
+
+Two and Three: (a) G1; (b) G2; (c) G3; (d) G4. . .
+
+.
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+. .
+
+. 28
+
+The trajectory proï¬les of four aircraftsâ real attitudes and estimated attitudes: (a)
+
+the proï¬les of the real attitudes; (b) the proï¬les of the estimated attitudes.
+
+.
+
+The trajectory proï¬les of four agentsâ ï¬rst-dimensional states.
+
+.
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+.
+
+.
+
+. .
+
+. 29
+
+. .
+
+. 30
+
+October 9, 2018
+
+DRAFT
+
+26
+
+Fig. 1. A sketch of a single-link ï¬exible-joint robot.
+
+1
+
+1
+
+1
+
+2
+
+3
+
+2
+
+3
+
+2
+
+3
+
+4
+
+5
+
+4
+
+5
+
+4
+
+5
+
+(a)
+
+(b)
+
+(c)
+
+Fig. 2. Three possible communication topologies of the multi-agent system in Example One: (a) G1; (b) G2; and (c) G3.
+
+October 9, 2018
+
+DRAFT
+
+10
+
+5
+
+0
+
+â5
+
+â10
+
+PSfrag replacements
+
+â15
+
+â20
+
+â25
+
+0
+
+15
+
+10
+
+5
+
+0
+
+â5
+
+â10
+
+PSfrag replacements
+
+â15
+
+â20
+
+â25
+
+0
+
+27
+
+q1,1(t)
+q2,1(t)
+q3,1(t)
+q4,1(t)
+q5,1(t)
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+20
+
+Time (second)
+
+(a)
+
+q1,2(t)
+q2,2(t)
+q3,2(t)
+q4,2(t)
+q5,2(t)
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+20
+
+Time (second)
+
+(b)
+
+Fig. 3. The joint proï¬les of ï¬ve single-link ï¬exible-joint robots: (a) qi,1(t); (b) qi,2(t) i = 1, Â· Â· Â· , 5.
+
+PSfrag replacements
+
+Î±
+
+horizontal
+
+LW
+
+CG
+
+wing
+
+CL
+
+d
+
+l
+
+elevator
+
+E
+
+LE
+
+Fig. 4. A schematic diagram of an aircraft.
+
+October 9, 2018
+
+DRAFT
+
+ 
+ 
+ 
+ 
+28
+
+1
+
+3
+
+1
+
+3
+
+(a)
+
+2
+
+4
+
+2
+
+4
+
+1
+
+3
+
+1
+
+3
+
+(b)
+
+2
+
+4
+
+2
+
+4
+
+(c)
+
+(d)
+
+Fig. 5.
+
+Four possible communication topologies of the multi-agent system in Examples Two and Three: (a) G1; (b) G2; (c)
+
+G3; (d) G4.
+
+October 9, 2018
+
+DRAFT
+
+29
+
+the real attitude of aircraft 1
+
+the real attitude of aircraft 2
+
+the real attitude of aircraft 3
+
+the real attitude of aircraft 4
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Time (second)
+
+(a)
+
+the estimated attitude of aircraft 1
+
+the estimated attitude of aircraft 2
+
+the estimated attitude of aircraft 3
+
+the estimated attitude of aircraft 4
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Time (second)
+
+(b)
+
+10000
+
+9000
+
+8000
+
+7000
+
+6000
+
+5000
+
+PSfrag replacements
+
+4000
+
+0
+
+10000
+
+9000
+
+8000
+
+7000
+
+6000
+
+5000
+
+4000
+
+0
+
+PSfrag replacements
+
+Fig. 6. The trajectory proï¬les of four aircraftsâ real attitudes and estimated attitudes: (a) the proï¬les of the real attitudes; (b)
+
+the proï¬les of the estimated attitudes.
+
+October 9, 2018
+
+DRAFT
+
+ 
+ 
+ 
+ 
+30
+
+x1,1[k]
+x2,1[k]
+x3,1[k]
+x4,1[k]
+
+5
+
+10
+
+15
+
+20
+
+25
+
+30
+
+35
+
+40
+
+45
+
+50
+
+Step (k)
+
+(a)
+
+10
+
+8
+
+6
+
+4
+
+2
+
+0
+
+PSfrag replacements
+
+â2
+
+â4
+
+â6
+
+0
+
+Fig. 7. The trajectory proï¬les of four agentsâ ï¬rst-dimensional states.
+
+October 9, 2018
+
+DRAFT
+
+ 
+ 
+

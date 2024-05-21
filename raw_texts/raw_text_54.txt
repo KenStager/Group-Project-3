@@ -1,0 +1,1373 @@
+A Message Passing Strategy for Decentralized
+Connectivity Maintenance in Agent Removal
+
+Derya Aksaray, A. Yasin YazÄ±cÄ±oËglu, Eric Feron, and Dimitri N. Mavris
+
+1
+
+3
+1
+0
+2
+
+v
+o
+N
+1
+
+]
+
+Y
+S
+.
+s
+c
+[
+
+1
+v
+4
+4
+2
+0
+.
+1
+1
+3
+1
+:
+v
+i
+X
+r
+a
+
+AbstractâIn a multi-agent system, agents coordinate to achieve
+global tasks through local communications. Coordination usually
+requires sufï¬cient information ï¬ow, which is usually depicted by
+the connectivity of the communication network. In a networked
+system, removal of some agents may cause a disconnection. In
+order to maintain connectivity in agent removal, one can design
+a robust network topology that tolerates a ï¬nite number of
+agent losses, and/or develop a control strategy that recovers
+connectivity. This paper proposes a decentralized control scheme
+based on a sequence of replacements, each of which occurs
+between an agent and one of its immediate neighbors. The
+replacements always end with an agent, whose relocation does not
+cause a disconnection. We show that such an agent can be reached
+by a local rule utilizing only some local information available in
+agentsâ immediate neighborhoods. As such, the proposed message
+passing strategy guarantees the connectivity maintenance in
+arbitrary agent removal. Furthermore, we signiï¬cantly improve
+the optimality of the proposed scheme by incorporating d -
+criticality (i.e. the criticality of an agent in its d -neighborhood).
+
+I. INTRODUCTION
+
+OVER the last decade, advances in networking and com-
+puting technologies along with new manufacturing techniques
+have created a new paradigm shift towards multi-agent systems
+(MAS) in engineering applications. A MAS involves a set of
+agents. In most cases, some information ï¬ow among the agents
+via local communications. Recently, there is a signiï¬cant in-
+terest in using multiple unmanned vehicles over large areas for
+target tracking (e.g. [1], [2]), environmental monitoring (e.g.
+[3], [4]), persistent surveillance (e.g. [5], [6]), formation and
+coverage (e.g. [7], [8]), and several others. In these missions, it
+is often desirable to have a connected communication network.
+However, an agent removal may cause a disconnection.
+
+Multi-agent health management problems emphasize that
+there is an inherent possibility of agent removal in a MAS
+due to failure or refueling (e.g. [9]â[11]). In such cases,
+connectivity maintenance can be achieved through proactive
+(e.g. [12]â[14]) or reactive (e.g. [15], [16]) approaches. In
+proactive approaches, a robust network topology is designed a
+priori to mission such that the network can tolerate a ï¬nite
+number of agent losses. In reactive approaches, a control
+strategy is developed such that the network self-repairs itself in
+the case of agent removal. Note that relying only on proactive
+
+D. Aksaray, E. Feron, and D.N. Mavris are with the Department of
+Aerospace Engineering, Georgia Institute of Technology, Atlanta, GA, 30332
+USA (e-mails: daksaray@gatech.edu, eric.feron@aerospace.gatech.edu, dim-
+itri.mavris@aerospace@gatech.edu).
+
+A.Y. YazÄ±cÄ±oËglu is with the Department of Electrical and Computer Engi-
+neering, Georgia Institute of Technology, Atlanta, GA, 30332 USA (e-mail:
+yasin@gatech.edu).
+
+approaches, by adding redundant edges to the graph for strong
+connectivity, can be impractical in missions that have limited
+resources for communication and a possibility of losing large
+number of agents.
+
+Recently, there is a growing interest in the recovery pro-
+cesses for connectivity maintenance of networked systems.
+These processes can be characterized as centralized or de-
+centralized with respect to the available information of the
+overall or local network structure, respectively. In a large scale
+system, the availability of the overall network is not a realistic
+assumption. Therefore, a decentralized strategy is preferable
+over a centralized one due to practicality and scalability
+concerns.
+
+This paper introduces a decentralized recovery scheme
+that is applicable to any scale of networked systems. The
+decentralized scheme is based on a sequence of replacements
+occurring between an agent and one of its neighbors. Each
+agent is assumed to have a unique ID, which is known to
+its immediate neighbors. Before an agent leaves the group
+(e.g. due to reaching to a critical power threshold), it creates
+a message with its individual ID and passes it to one of
+its neighbors as a request for that neighbor to replace itself.
+Whenever an agent receives a message, it adds its own ID
+to the bottom of the message and sends it
+to one of its
+other neighbors, whose ID is not included in the message,
+i.e. a neighbor who has not received the message earlier.
+Accordingly, some consecutive replacements are executed. A
+message passing strategy is similar to token-based techniques
+used in various algorithms, such as in [17] and [18], to record
+the nodes visited by the token. In this paper, we use such a
+token-based idea, and we show that the resulting replacement
+sequences guarantee connectivity in any agent removal. The
+proposed strategy is a decentralized scheme that leverages
+only local information (e.g. agent IDs) for the connectivity
+maintenance, hence it is applicable to networks of any scale.
+The organization of this paper is as follows: Section II
+presents some related work in the literature. Section III depicts
+some mathematical preliminaries. Section IV motivates and
+deï¬nes the problem. Sections V and VI elaborate on the re-
+placement control problem and introduce the message passing
+strategies. Section VII presents the Monte Carlo simulations
+for the analysis of proposed control scheme and its comparison
+to an optimal (minimum number of replacements) centralized
+method. Finally, Section VIII concludes the paper.
+
+II. RELATED WORK
+
+Recently, a great amount of interest has been devoted to
+the analysis of multi-agent systems via the graph theory. In
+
+ 
+ 
+ 
+ 
+ 
+ 
+these studies, the nodes of a graph represent the agents (such
+as robots, sensors or individuals), and edges represent the
+direct interactions between them. For such a representation,
+a fundamental graph property related to the system robustness
+is graph connectivity (e.g. [19]â[21] and the literature cited
+within). As such, the robustness of a system is related to
+the total number of edges/nodes, whose removal will cause a
+network disconnection. For the graph theoretical connectivity
+control of mobile systems against edge failure, the literature is
+including, but not limited to, optimization based connectivity
+control (e.g. [21]), continuous feedback connectivity control
+(e.g. [22]), and control based on the estimation of the algebraic
+connectivity (e.g. [23]). In these studies, the authors mainly
+consider uncertainty in edges and assume a constant number
+of nodes.
+
+Maintaining connectivity against the removal of multiple
+agents is a more challenging problem than maintaining con-
+nectivity against multiple edge removal [12]. In the last few
+years, there has been a signiï¬cant interest in addressing agent
+loss problem in networked systems. In [12] and [13], the
+main focus is on the design of robust network topologies
+that can tolerate a ï¬nite number of agent removals. In [13]
+and [24], the authors propose self-repair strategies that create
+new connections among the neighbors of the failing agent.
+In addition, a connectivity maintenance strategy based on
+decentralized estimation of algebraic connectivity is presented
+in [25]. Based on their estimations, agents increase or decrease
+their broadcast radii for satisfying connectivity requirements.
+
+Different from the previous studies, [15], [26], [27] and [16]
+consider mobile agents and propose some agent movements
+for connectivity restoration of wireless sensor networks in
+agent failure. In [15], a distributed control algorithm is in-
+troduced for connectivity maintenance. Before any failure, the
+algorithm runs and identiï¬es all critical agents, whose failure
+will cause network disconnection. Then, it assigns required
+actions to each agent in advance. The studies in [26] and [27]
+differ from [15] by maintaining connectivity through some
+agent relocations initiated by the failing agent. In [27], the
+authors present a centralized algorithm as an alternative to
+the decentralized scheme given in [26], which is not always
+feasible in general graphs. Finally, the authors of [16] use the
+shortest path routing table in their algorithm, and they propose
+a distributed recovery mechanism that maintains the network
+connectivity with minimal topology change, i.e. not increasing
+the length of the shortest path between any arbitrary two agents
+after the reconï¬guration.
+
+In this paper, we present a decentralized recovery mech-
+anism to maintain network connectivity in arbitrary agent
+removal. The replacement control problem has been initially
+introduced in [28], and replacements by minimum degree
+neighbors have been presented as a solution. Here, we gen-
+eralize the connectivity maintenance scheme as the message
+passing strategy, and we show that this method maintains
+connectivity even in the case of agents sharing minimum
+amount of information, i.e. only node IDs. Moreover, we show
+that utilizing d -criticality information in the message passing
+strategy signiï¬cantly improves the optimality of the solution.
+
+2
+
+III. MATHEMATICAL PRELIMINARIES
+An undirected graph, G = (V, E), consists of a set of nodes,
+V , and a set of undirected edges, E. A k-length path, p, is a
+sequence of nodes (p0, p1, ..., pk) such that any {pi, pi+1} â E.
+Here, pi is the ith element of p, which corresponds to a node v j.
+A path in G is called simple if it does not have any repeated
+nodes. The distance between any two nodes is equal to the
+length of the shortest path between them. The diameter of G ,
+, is deï¬ned as the largest distance between any two nodes of
+G . An undirected graph, G , is connected if there exists a path
+between any two nodes of the graph.
+
+In a graph, the unweighted adjacency matrix, A â RnÃn, is
+
+Aij =
+
+1
+0
+
+(cid:26)
+
+if (vi, v j) â E,
+otherwise.
+
+(1)
+
+The neighbor set, Nvi, of vi is the set including all adjacent
+
+nodes that are connected to vi.
+
+Nvi = {v j | (vi, v j) â E}.
+
+(2)
+
+The degree of vi is the number of nodes adjacent to vi, in
+
+other words the cardinality of Nvi .
+
+IV. PROBLEM FORMULATION
+
+Given a networked system with no control strategy for the
+connectivity maintenance, the overall network will eventually
+become disconnected as more agents are removed. In fact, it
+is possible to observe graph disconnection after the removal
+of a small set of randomly selected agents. We demonstrate
+this claim by conducting Monte Carlo simulations with ErdËos-
+RÂ´enyi graphs [31]. Let a connected graph, G , have 50 nodes
+that have a probability of 0.04 to connect with other nodes.
+Suppose that a randomly selected node and its incident edges
+are iteratively removed until the occurrence of the ï¬rst graph
+disconnection. When the graph is disconnected for the ï¬rst
+time, we record the corresponding iteration number (idis). Then
+we repeat this process for 1000 cases that are initiated with
+different random graphs. The results of the simulations are
+displayed as an empirical cumulative distribution function of
+idis illustrated in Figure 1. To provide insight into the randomly
+generated graphs, Figure 1 also displays the average degree
+distribution. As it is seen from the ï¬gure, the removal of 10
+nodes most likely cause disconnection in random graphs with
+50 nodes and an approximate average degree of 2.5.
+
+As the degrees of nodes increase in a graph, the robustness
+to agent failure increases. However, there is a compromise
+between improving the robustness and increasing the total edge
+number. While a robust graph is tolerant to a ï¬nite number of
+agent removals, it involves many redundant edges that increase
+the overall communication cost of the network. Alternative to
+designing a network with a large number of redundant links,
+a control strategy can be utilized to maintain connectivity.
+Such a control strategy may provide self-reconï¬guration on the
+graph whenever an agent removal occurs. For static networked
+systems, the removal of an agent will trigger to have new
+connections in the neighborhood of the removed agent. For
+
+D
+3
+
+the edges of G correspond the required interactions if a pair
+of agents are assigned on the corresponding nodes (tasks).
+the communication network of agents is
+In this setting,
+the sub-graph of G based on the agent assignments. Here,
+our main objective is to maintain the connectivity of the
+communication network in the arbitrary agent removal by
+properly assigning agents to the feasible points. One way to
+maintain the network connectivity in these problems is to
+replace the removed agent by one of the remaining agents.
+For instance, if the removal of an agent causes disconnection
+in the network, then one of its neighbors may replace it
+to recover the connectivity. If the replacement also causes
+a disconnection, then another replacement is also required.
+In this manner, the replacements can be executed until a
+connected network is obtained. Accordingly, we introduce the
+replacement control problem as follows:
+
+Replacement Control (RC) problem: Given a set of agents
+with a connected communication network, design a decen-
+tralized control scheme such that the agents realize minimum
+number of node replacements to maintain connectivity in the
+presence of agent removal.
+
+V. MESSAGE PASSING STRATEGY
+
+For any solution of the RC problem,
+
+the sequence of
+replacements needs to end with a noncritical node since the
+removal of such nodes does not require any replacements.
+Deï¬nition 1. (Node Criticality) A node, vi, is critical in G if
+the graph, G â = G â (vi, Ei), obtained by removing vi and Ei
+is disconnected; otherwise, vi is noncritical.
+
+Note that a connected graph always has a ï¬nite number of
+
+noncritical nodes [38].
+Proposition 1. (Existence of noncritical nodes): [38] Let G be
+a connected undirected graph. Suppose that each of its nodes
+has a degree at least k. Then G has at least k + 1 noncritical
+nodes.
+
+For any connected graph, there are always at least two
+noncritical nodes, and the goal of the RC problem is to ï¬nd
+one. The following remark presents a condition for a trivial
+noncritical node in a graph.
+Remark 1. Given a connected graph G = (V, E), let vi â V be
+a leaf node such that |Nvi| = 1. Then, vi is noncritical in G
+because any simple path involving vi either starts or ends with
+vi. Hence, its removal will not cause a disconnection between
+any two nodes.
+
+In the RC problem, a replacement is assumed to occur
+in between a node and one of its neighbors. Therefore, the
+sequence of replacements can also be deï¬ned as a path from
+the removed node to a noncritical node.
+Remark 2. Let G be a connected undirected graph. It follows
+from Proposition 1 that there always exists a path from any
+node in G to a noncritical node.
+
+Note that a centralized controller can solve the RC problem
+by ï¬nding a shortest path between the removed node and a
+
+Fig. 1.
+(a) The empirical CDF for the iteration number when a graph
+disconnection is observed for the ï¬rst time. (b) The average degree distribution
+for the generated ErdËos-RÂ´enyi graphs in the Monte Carlo simulations.
+
+mobile networked systems, the removal of an agent will induce
+some agent movements until the connectivity is maintained.
+
+In many distributed systems, network connectivity plays an
+important role in achieving a desired system performance.
+For instance, connectivity is required for the propagation of
+local data to achieve coordinated tasks. As such, formation
+of connected networks are emphasized in spacecraft studies
+(e.g. [32], [33]), where multiple spacecrafts synchronize their
+attitudes with each other via local interactions. Alternatively,
+a peer-to-peer network (e.g. Gnutella) is a distributed system,
+where individual computers communicate directly with each
+other and share information and resources without using
+centralized servers. In these systems, network protocols are
+designed to achieve various objectives, one of which is the
+ability to operate in a dynamic environment (e.g. [34], [35]). In
+this manner, when a host computer leaves a network, utilizing
+a connectivity maintenance strategy avoids network partition-
+ings and prevents the performance degradation. Moreover,
+a group of sensors can be deployed in an area of interest
+to achieve distributed estimation in a harsh environment. In
+these systems, the network topology is dynamic due to the
+possibility of sensor failures or efï¬cient energy management.
+As such, the sensors may increase or decrease their sensing
+radii to achieve desired connectivity requirements [25]. Fi-
+nally, connectivity is crucial in surveillance missions, where
+a group of heterogeneous agents or unmanned aerial vehicles
+(UAV) operate around a base. For example, an efï¬cient task
+assignment, which also satisï¬es a connected communication
+network, provides agents to stream back the surveillance data
+back to the base [36]. Similarly, a group of UAVs can monitor
+a desired region to track radar data and a base process the
+individually gathered data to estimate the position of a target
+[37]. In such problems, a UAV can go further away from
+the group to investigate unmonitored areas, or an agent can
+return to the base. The removal of an agent/UAV may cause a
+disconnection in the communication network, which leads to a
+base not to collect data from the disconnected agent(s)/UAV(s).
+In this study, we consider an undirected connected graph,
+G , where the nodes of G represent the feasible points that
+agents can be assigned to. Here, a feasible point can be
+(tasks among peers in a computer network) or
+abstract
+physical (areas of interest in robotic networks). Furthermore,
+
+noncritical node. Here, the optimal solution is obtained by
+assuming the availability of the overall graph structure. The
+goal driving this work is to ï¬nd a decentralized scheme that
+can perform close to optimal.
+
+Deï¬nition 2. (Maximal simple path) Let G = (V, E) be a
+connected undirected graph, and let Nvi denote the neighbors
+of vi â V . Suppose that p = (p0, p1, ..., pk) is a simple path
+with a length of k. Then p is a maximal simple path if
+Npk â {p0, p1, ..., pk}.
+
+[28] Given a connected undirected graph G ,
+Theorem 1.
+a maximal simple path on G always ends with a noncritical
+node.
+
+Corollary 1. A sequence of replacements along a maximal
+simple path, (p0, p1, ..., pk), on G , such that p0 represents any
+arbitrary removed node and any pi+1 â Npi \ {p0, p1, ..., pi},
+maintains the graph connectivity.
+
+Proof. The maximal simple path (p0, p1, ..., pk) is the replace-
+ment path where p0 is any arbitrary removed node and for
+0 â¤ i â¤ k â 1 any pi is replaced by pi+1. After the replacements
+are realized, the graph will have a new structure as if pk is
+removed from the system. From Theorem 1, we know that pk
+is noncritical so its removal does not cause any disconnection
+in G .
+
+In light of the preceding facts, we introduce a decentral-
+ized connectivity maintenance scheme called message passing
+strategy (MPS). Let p0 be any arbitrary node that will be
+removed from G . The objective of MPS is to ï¬nd a sequence
+of replacements, which is initiated by p0 and ending with a
+noncritical node, by using only some local information. In this
+manner, the replacements will result in a graph reconï¬guration
+as if the ï¬nal node in the replacement sequence, which is
+noncritical, is removed from G instead of p0.
+
+The outline of MPS is as follows: Before the removal
+of p0, ï¬rst p0 creates a message including its own node
+ID as {p0} and checks whether it is a leaf node. If it is
+a leaf node, then it is noncritical (from Remark 1) and its
+removal will not cause a disconnection. Otherwise, it selects
+a node, p1, from Np0 \ {p0}. Then, p0 sends the message to
+p1, which will replace p0. In this respect, whenever a node,
+pi, receives a message, {p0, ..., piâ1}, from piâ1, before pi
+replaces piâ1, it adds its individual node ID to the bottom of
+the message as {p0, ..., piâ1, pi}, and it sends the message to
+one of its neighbors from the set Npi \ {p0, ..., pi}. Eventually,
+the message passing process, whose pseudo-code is displayed
+in Algorithm 1, stops when Npi \ {p0, ..., pi} = /0 or p0 is a
+leaf node.
+
+4
+
+no replacements required;
+
+Npi â Np0; message â (p0);
+
+Algorithm 1: Message Passing Strategy (MPS)
+Input : An arbitrary node, p0, from G
+Out put : Connectivity maintenance in the removal of p0
+Assumption : Each node shares its unique node ID with its neighbors.
+1 : initialization: pi â p0;
+2 : if |Np0| = 1
+3 :
+4 : else
+5 :
+7 :
+8 :
+9 :
+10 :
+6 :
+11 :
+12 : end if
+
+s.t.
+pi+1 â v
+pi sends message to pi+1;
+pi replaces the second last node in the message;
+pi â pi+1; Npi â Npi+1;
+message â (message, pi) ;
+
+while Npi \ message 6= /0
+
+v â Npi \ message;
+
+end while
+
+Proposition 2. The message obtained from MPS results in a
+set of ordered nodes, which represents either a leaf node or a
+maximal simple path.
+
+Proof. The message obtained from MPS is either {p0} or
+{p0, ..., pi, ..., pk}. If it is {p0}, then |Np0| = 1 implying that
+p0 is a leaf node. If the message is {p0, ..., pi, ..., pk},
+it
+involves consecutive pairs of nodes, (pi, pi+1) â E, thus the
+message always represents a path in G . Additionally, the
+message never involves repeated nodes because each pi selects
+pi+1 from Npi \ {p0, ..., pi}. Thus, the path is always simple.
+Finally, MPS stops whenever Npk \ {p0, ..., pi, ..., pk} = /0.
+From Deï¬nition 2, the ordered nodes in the message is a
+maximal simple path.
+
+Corollary 2. MPS always stops at a noncritical node. Hence,
+MPS guarantees connectivity maintenance in the removal of
+any arbitrary node from G = (V, E).
+
+Proof. Let p0 â V be any arbitrary node that will be removed
+from G . If p0 is a leaf node, MPS stops at p0, and the
+connectivity maintenance is an immediate result. Otherwise,
+p0 generates a message as {p0}, and the message is mod-
+iï¬ed as {p0, ..., pi} whenever it is received by pi â V . Let
+N + 1 be the total number of nodes in G . In this respect,
+as i â N, {p0, ..., pi} â {p0, ..., pN} = V . Eventually, there
+exist an instant k = i â¤ N, at which Npk â {p0, ..., pk}.
+From Theorem 1, pk is a noncritical node because it satisï¬es
+Npk \ {p0, ..., pk} = /0. Consequently, MPS always stops at a
+noncritical node. Moreover, from Corollary 1 the replacements
+based on MPS always guarantee connectivity maintenance
+because the graph is reconï¬gured as if pk is removed from
+G instead of p0.
+
+An illustration for MPS is displayed in Figure 2, where
+there is an initially connected graph with 7 nodes. As it
+is seen from Figure 2(b), the removal of v0 will create a
+disconnection in the graph. If each node runs MPS,
+then
+a replacement path is generated as {v0, v2, v4} such that v2
+replaces v0, and v4 replaces v2. Note that {v0, v2, v4} is not
+the only replacement path, i.e. {v0, v1, v5}. Consequently, the
+system reconï¬gures itself to maintain connectivity, and, in
+the resulting conï¬guration, it is guaranteed to observe the
+removal of a noncritical node (e.g. v4) instead of the removal
+an arbitrarily removed node (e.g. v0).
+
+v4
+
+v3
+
+v2
+
+v0
+
+v1
+
+(a)
+
+v6
+
+v4
+
+v2
+
+v6
+
+v4
+
+v6
+
+v5
+
+v3
+
+v1
+
+v5
+
+v3
+
+(b)
+
+v2
+
+v1
+
+(c)
+
+v5
+
+v3
+
+v6
+
+v5
+
+v4
+
+v2
+
+v1
+
+(d)
+
+Fig. 2. An illustration for MPS. (a) Initially connected graph. (b) v0 will
+leave the system. Since it is not a leaf node, it creates a message as {v0} and
+selects a neighbor from Nv0 \ {v0} = {v1,v2} to replace itself. (c) v2 receives
+the message and modiï¬es it as {v0,v2}. Then, it selects a neighbor from Nv2 \
+{v0,v2} = {v4,v6} to replace itself. (d) v4 receives the message and modiï¬es
+it as {v0,v2,v4}. It attempts to select a neighbor from Nv4 \ {v0,v2,v4} = /0
+for its replacement. Since Nv4 \ {v0,v2,v4} = /0, v4 cannot send the message
+to any node and the algorithm stops.
+
+A. Performance of MPS
+
+Given a networked system, reactive schemes for connectiv-
+ity maintenance result in some changes in the graph topology.
+While maintaining the graph connectivity, an important aspect
+is not to cause signiï¬cant changes in the graph properties such
+as the total number of edges or the maximum node degree.
+Note that the total number of edges and the maximum node
+degree can be directly related to the overall communication
+cost, whose increase is not desirable for a networked system
+containing agents with limited power capacity.
+
+Proposition 3. A sequence of replacements along a maximal
+simple path, (p0, p1, ..., pk), on G , such that every pi+1 â Npi \
+{p0, p1, ..., pi}, guarantees no increase in the total number
+of edges and maximum node degree in the presence of any
+arbitrary node removal.
+Proof. Let p = (p0, p1, ..., pk) be the replacement path, G â
+be the new graph structure after the replacements. Then, this
+corollary is proven in two parts: (1) In the removal of an
+arbitrary node, p0, p results in G â, which corresponds to the
+removal of pk and its adjacent edges from G . As a result, the
+total number of edges decrease as the agents are removed. (2)
+Let p0 in p be the agent that has the maximum degree dmax
+in G . If p0 is removed, then p1 replaces p0. Now, if k = 1,
+then p1 is the noncritical node that will not be replaced. As
+a consequence, the degree of p1 becomes dmax â 1 after the
+replacement. If k 6= 1, then p1 will be replaced by p2. Hence,
+the degree of p1 becomes dmax after the replacements. In both
+cases, p1 becomes the node with the maximum degree in G â
+after replacing p0. Finally, in the removal of an arbitrary node,
+which does not correspond to the maximum degree node Ëv,
+either no replacements occur in the neighborhood of Ëv, or the
+replacements in the neighborhood of Ëv may cause at most one
+reduction in dmax. As a result, the maximum node degree in
+G â becomes either dmax or dmax â 1.
+
+The optimal solution satisfying the minimum number of
+replacements for the RC problem can be obtained by a
+centralized controller by ï¬nding the shortest path between the
+removed node and a noncritical node on the graph. Note that
+such a centralized controller requires the complete information
+about the graph. The objective of MPS is to solve the RC
+
+5
+
+problem only by using some local and partial information.
+Due to utilizing limited information, MPS may not necessarily
+guarantee the optimal solution for any graphs. In this section,
+we will discuss the performance of MPS for various graph
+structures.
+
+Proposition 4. In any undirected connected graph, G =
+(V, E), the maximum number of replacements that can occur
+via MPS is (|V | â 1).
+
+Proof. From Proposition 2, MPS results in a message that
+is the sequence of replacements represented as a maximal
+simple path, p. Let |p| â¥ |V | + 1, then at least one node
+appears multiple times in p, thus p is not simple. This is
+a contradiction, hence |p| â¤ |V | implying an upper bound for
+the number of replacements as |V | â 1.
+
+Deï¬nition 3. A tree graph is an undirected graph in which
+any two nodes are connected by exactly one simple path.
+
+Proposition 5. In tree graphs, G = (V, E),
+the maximum
+number of replacements that can happen via MPS is (D â 1),
+where D
+
+is the diameter of G .
+
+Proof. Note that a noncritical node in a tree graph is always a
+leaf node, and a critical node always has a degree of 2. In this
+manner, the diameter of a tree graph corresponds to the length
+of the longest maximal simple path. Let {p0, p1, ...., pD â1, pD }
+denote to the longest maximal simple path. In this path, both
+p0 and pD
+are leaf nodes (noncritical), and the nodes in
+between are critical. If p0 is the removed node, then MPS
+does not initiate replacements. If p1 is the removed node,
+then the maximum number of replacements based on MPS
+may occur along the sequence {p1, ...., pD â1, pD } resulting in
+(D â 1) replacements.
+
+Deï¬nition 4. A biconnected graph is a connected graph that
+does not have any critical nodes.
+
+Proposition 6. In biconnected graphs, MPS cannot achieve
+optimal solution for connectivity maintenance.
+
+Proof. In a biconnected graph, G = (V, E), each node is
+noncritical. However, based on MPS, any arbitrary node, v â V ,
+that will be removed from G always initiates the replacements.
+In this manner, the graph is reconï¬gured with |V | â 1 node
+replacements even though the removal of v does not cause
+any disconnection in G .
+
+Note that MPS may not always result in the minimum
+number of replacements in agent removal. For instance, if
+the removed agent is not a leaf node, but noncritical, MPS
+still
+initiates the sequence of replacements as depicted in
+Proposition 6. From a centralized perspective, understanding
+the criticality of a node is feasible. However, the node criti-
+cality may not be determined locally. As shown in Figure 3,
+let G1 and G2 be an inï¬nite cycle and inï¬nite path graphs,
+respectively. Suppose that any node in G knows its d -hop
+neighborhood. Let v0 be the removed node. As seen from
+Figure 3, v0 is noncritical in G1, but critical in G2. Note that
+for any ï¬nite d , v0 has the same neighborhood in G1 and G2,
+
+hence it can not differentiate its criticality by just looking at
+its d -neighborhood.
+
+v1
+
+v0
+
+v2
+
+v1
+
+v0
+
+v2
+
+(a) Inï¬nite cycle graph (G1)
+
+(b) Inï¬nite path graph (G2)
+
+Fig. 3. Examples to graphs with inï¬nite nodes.
+
+Since the criticality cannot be always determined locally,
+MPS may sometimes initiate a sequence of replacements when
+a noncritical node is removed. Such an optimality gap is due
+to the limitation of local information in the computations.
+However, it is important to emphasize that, for any undirected
+connected graph, connectivity maintenance in the presence
+of any node removal is guaranteed by MPS by using only
+some local information. As depicted, MPS always stops at
+a noncritical node. Thus, the graph reconï¬gures itself as if
+a noncritical node is removed from the system instead of
+an arbitrary node, p0. In this respect, pi selects the node,
+pi+1, which will replace itself, from Npi \ {p0, ...., pi}. Here,
+a question arises as which node from Npi \ {p0, ...., pi} should
+be selected to increase the efï¬ciency of MPS. For instance, a
+random selection scheme requires very little information to
+be shared among nodes, or a node selection based on the
+minimum degree, [28], may capture the leaf node neighbors.
+Consequently, as the information possessed by a node and
+shared in the neighborhood increases, the solution approaches
+the optimal solution.
+
+VI.
+
+d -CRITICALITY MPS
+
+In this section, we introduce a variant of MPS, which uses
+d -hop criticality information for each node. Here, the d -hop
+criticality is deï¬ned as Deï¬nition 5.
+
+Deï¬nition 5. (d -hop criticality) A node, vi, is d -hop critical
+the subgraph, induced by the d -neighborhood of vi,
+is
+if
+is d -hop
+disconnected by the removal of vi; otherwise, vi
+noncritical.
+
+Remark 3. Let G = (V, E) be a connected graph, and let vi â V
+be d -hop noncritical. Then, vi is noncritical in G . Suppose
+that a simple path, pnm, connects any arbitrary two nodes
+vn, vm â V and includes vi as an intermediate node. In pnm,
+vi appears between two of its neighbors. In the removal of vi,
+there exist another path, pi, consisting of some nodes within
+d hops of vi since vi is d -hop noncritical by deï¬nition. Hence,
+the removal of vi does not cause a disconnection between vn
+and vm because vi can be replaced by pi. Consequently, a
+d -hop noncritical node is always a noncritical node in G .
+
+In light of Remark 3, d -hop criticality is used in MPS as in
+Algorithm 2. In this respect, each node knows whether itself
+and immediate neighbors are d -hop critical.
+
+6
+
+no replacements required;
+
+while Npi \ message 6= /0
+
+Npi â Np0; message â (p0);
+
+Agorithm 2: d -criticality MPS
+Input : An arbitrary node, p0, from G
+Out put : Connectivity maintenance in the removal of p0
+Assumption : Each node shares both its unique node ID and d -criticality with its neighbors.
+1 : initialization: pi â p0;
+2 : if |Np0| = 1
+3 :
+4 : else
+5 :
+7 :
+8 :
+9 :
+10 :
+11 :
+12 :
+13 :
+14 :
+6 :
+15 :
+16 : end if
+
+end if
+pi sends message to pi+1;
+pi replaces the second last node in the message;
+pi â pi+1; Npi â Npi+1;
+message â (message, pi) ;
+
+any v â Npi \ message is d -noncritical;
+pi+1 â v s.t. v is one of the d -noncritical nodes;
+
+pi+1 â v s.t. v is randomly selected from Npi \ message;
+
+end while
+
+else
+
+if
+
+In d -criticality MPS, whenever a node, pi, receives a message,
+it adds its own individual ID likewise MPS. Then, it selects
+a neighbor from the candidate set, Npi \ {p0, ..., pi}, based
+on d -criticality. In the case, where the candidate set does not
+contain a d -hop noncritical node, pi selects a random node
+from the candidate set.
+
+It has been shown in Remark 3 that a d -noncritical node
+is globally noncritical in G . Now, a question arises as when
+a d -critical node assures global criticality. In this respect,
+Proposition 7 presents a sufï¬cient condition that guarantees
+global node criticality by relating d
+Deï¬nition 6. A chordless cycle in G is a cycle such that no
+two nodes of the cycle are connected by an edge that does not
+itself belong to the cycle.
+
+to a graph structure.
+
+Proposition 7. Let cmax be the length of the longest chordless
+cycle in G . If d â¥ cmax
+2 , then a d -critical node is globally
+critical in G .
+Proof. Let v be a noncritical node in G , and let N d be the
+d -neighborhood of v for some d â¥ cmax
+2 , where cmax is the
+length of the longest chordless cycle in G . Suppose that v is
+a d -critical node, then the graph, G â², induced by the nodes in
+N d
+is disconnected. Now, since v is noncritical, there exist
+a shortest path between the nodes (u, w) â N d , which are
+not connected in G â² but connected in G â v. Moreover, there
+always exist a shortest path, (u, pâ, w), where no elements on
+pâ is connected to v (in other words, no elements on pâ is
+in N d ). Note that (u, pâ, w, v, u) is a chordless cycle and its
+length, c, cannot be larger than cmax. However, v does not
+know the existence of such a path, so c > 2d , which is a
+contradiction because 2d â¥ cmax â¥ c.
+
+d â¥ cmax
+2 ,
+
+then the replacement sequence
+Corollary 3. If
+generated via d -MPS involves only one noncritical node,
+which is the last node on the replacement sequence.
+Proof. Based on Algorithm 2, a message travels from a d -
+critical node to a neighboring d -critical node until ï¬nding
+a d -noncritical node. In the case of d â¥ cmax
+2 , Proposition 7
+shows that a d -critical node is globally critical. Hence, the
+replacement sequence generated via d -MPS contains only one
+noncritical node, which is the last node on the sequence.
+Remark 4. Suppose that there is no chordless cycle in G . A
+d -critical node for any d â¥ 1 is globally critical in G because
+
+G is a tree graph where each noncritical node is a leaf node.
+
+Remark 5. If d
+is selected properly based on the graph
+topology (based on Proposition 7 and Remark 4), a d -critical
+node is always a critical node. Hence, a resulting replacement
+sequence does not contain any redundant replacements since
+only the ï¬nal node of the sequence is non-critical.
+
+As it is seen, if d
+
+is selected properly such that a d -
+critical node is globally critical, then d -MPS does not cause
+any unnecessary agent replacements to maintain connectivity,
+and the resulting sequence approaches the optimal solution.
+Note that avoiding any unnecessary replacements is crucial
+for networked systems with limited power capacity. In some
+graph structures, there might not necessarily exist a unique
+replacement sequence. As such, if d -noncritical nodes are
+beyond the immediate neighborhood of a node v, then v selects
+a d -critical neighbor randomly for its replacement. Due to the
+randomized nature of selecting replacing agent, d -MPS may
+not always guarantee the shortest path to a noncritical node.
+In Figure 4, a line graph involving 7 nodes is presented. In
+this example, let d = 1, then v1, v0, v3, v4, v5 are 1-critical nodes
+whereas v2 and v6 are noncritical nodes. Since the graph does
+not contain a chordless circle, from Remark 4, a 1-critical node
+is globally critical. Here, we illustrate that d -MPS may result
+in a sequence of necessary replacements, but a longer route,
+for connectivity maintenance. In this manner, assume that v0 is
+removed from the graph. From the perspective of v0, selecting
+v1 or v3 is indifferent because v0 can only see N d =1, which
+contains the highlighted nodes. Hence, d -MPS results in either
+(v0, v1, v2) or (v0, v3, v4, v5, v6) as a replacement sequence.
+
+P r = 0.5
+
+P r = 0.5
+
+v2
+
+v1
+
+v0
+
+v3
+
+v4
+
+v5
+
+v6
+
+In the case of v0 is removed, 1-MPS generates either (v0,v1,v2) or
+
+Fig. 4.
+(v0,v3,v4,v5,v6) as a replacement sequence.
+
+Consequently, the optimality of d -MPS depends on the
+lengths of the shortest paths from a removed node to one of
+the noncritical nodes. If the lengths does not signiï¬cantly vary
+from each other, then the solution of d -MPS is close to the
+optimal one.
+
+VII. SIMULATION STUDIES
+
+In order to elaborate on the performance of the message
+passing strategy, the Monte Carlo simulations are conducted
+to understand how close MPS is to the centralized solution. For
+the simulations, we use the MATLAB simulation environment
+and consider the canonical scenario depicted in the following
+section.
+
+A. Canonical Scenario
+
+Consider an indoor reconnaissance and surveillance mis-
+sion, where a set of robots (i.e, small unmanned vehicles)
+gather data from critical points and share the gathered data
+
+7
+
+to increase their situational awareness. In such a mission, an
+undirected connected graph, G , associates with the critical
+viewpoints of the environment (i.e. the viewpoints are the
+feasible points that a robot can be located on) as in Figure 5,
+where the nodes are the viewpoints and the dashed edges
+represent the communication links if two robots are located
+on the corresponding nodes.
+
+Fig. 5. An indoor environment associated with an undirected connected graph,
+whose nodes represent the critical viewpoints and edges represent the possible
+communication capability if agents are located on the corresponding nodes.
+
+In this scenario, let each robot have limited energy capacity
+and different energy consumption. Then, it is likely to observe
+that the robots have variable energy levels. In this respect, a
+robot leaves the group when it reaches an energy threshold.
+Here, the removal of an agent may cause a disconnection
+in the communication network. For example, let 13 agent
+be assigned to points such that a connected communication
+network is obtained as in (a) of Figure 6. Then the removal of
+v4 causes a disconnection in the communication network as in
+(b) of Figure 6. Consequently, the objective in this scenario is
+to maintain a connected communication network among the
+remaining agents with minimum agent replacements.
+
+v5
+
+v4
+
+v2
+
+v3
+
+v1
+
+v12
+
+v6
+
+v7
+
+v8
+
+v10
+
+v9
+
+v13
+
+v11
+
+v1
+
+v12
+
+v5
+
+v2
+
+v3
+
+v6
+
+v7
+
+v8
+
+v10
+
+v11
+
+v9
+
+v13
+
+(a) Connected communication network
+
+(b) Disconnected communication network
+
+Fig. 6.
+(a) Thirteen agents assigned to the feasible tasks and having
+a connected communication network. (b) The removal of v4 causes four
+partitioning in the communication network.
+
+B. Monte Carlo Simulations
+
+Based on the canonical scenario, the objective of the Monte
+Carlo simulations is to provide a statistical understanding for
+the optimality of MPS and d -criticality MPS with respect
+to the centralized solution. In all simulations, we consider
+20 assignments, which associate with a randomly generated
+undirected connected graph. Initially, we assume 20 agents
+individually assigned to each node. At an instant, a randomly
+
+8
+
+Fig. 8. Distributions pertaining to the graph properties and replacement
+solutions. As the graph diameter decreases and the average node degree
+increases, the replacement sequence driven by MPS diverges from the cen-
+tralized solution.
+
+selected arbitrary agent is removed from the network. To
+maintain the connectivity, we solve the RC problem via
+centralized controller, MPS, and d -criticality MPS.
+
+The results of the Monte Carlo simulations show that
+the optimality of MPS signiï¬cantly improves as d -criticality
+information is incorporated to the decision scheme for the re-
+placements. For example, as illustrated in Table I, an increase
+in d
+leads to the total number of replacements induced from
+d -criticality MPS to approach the number of replacements
+resulted from the centralized solution. Note that the huge
+cost difference between MPS and d -criticality MPS is due to
+the fact that MPS is using a randomized decision mechanism
+for the replacements while d -criticality MPS incorporates d -
+criticality of a node in the decision mechanism. Furthermore,
+the optimality of MPS also varies with respect to the graph
+topology. For example, in the case of the graph diameter
+decreases and the average node degree increases, the perfor-
+mance of MPS degrades while the performance of d -criticality
+MPS improves greatly.
+
+TABLE I
+BASED ON 500 SIMULATIONS, MEAN COSTâ OF VARIOUS STRATEGIES FOR
+CONNECTIVITY MAINTENANCE IN GRAPHS WITH 20 NODES
+
+Mean diameter
+9.2
+6.7
+4.0
+ânumber of agent replacements
+
+Mean avg. node degree
+3.1
+4.3
+7.3
+
+centralized
+0.498
+0.186
+0.028
+
+MPS
+4.960
+7.224
+12.574
+
+1-criticality MPS
+0.626
+0.302
+0.068
+
+2-criticality MPS
+0.556
+0.240
+0.030
+
+Fig. 9. Distributions pertaining to the graph properties and replacement solu-
+tions. As the graph diameter decreases and the average node degree increases,
+the performance of d -criticality MPS improves greatly and converges to the
+performance of centralized controller.
+
+removed agent. The beneï¬ts of the proposed control scheme
+are guaranteeing the connectivity maintenance by using only
+some local information and not increasing the total number
+of edges and the maximum node degree of a network as the
+agents are removed.
+
+The optimality gap of the proposed strategy has been
+discussed through Monte Carlo simulations by comparing
+the performance of the proposed decentralized strategy with
+respect to the centralized solution, which results in the min-
+imum number of replacements. While the message passing
+strategy maintains the graph connectivity even in the case
+of replacements by randomly selected agents, it has been
+observed that incorporating d -criticality information to the
+decision mechanism signiï¬cantly improves the resulting per-
+formance. As such, a variant of MPS has been introduced as d -
+criticality MPS, which demonstrates a signiï¬cant performance
+improvement.
+
+Fig. 7. Distributions pertaining to the graph properties and replacement
+solutions. As d - criticality is utilized,
+the number of replacements for
+preserving connectivity approaches to the number induced by a centralized
+controller.
+
+VIII. CONCLUSIONS
+
+In this study, the connectivity issue of networked systems
+in the presence of agent removal has been discussed, and
+a decentralized connectivity maintenance strategy, which is
+applicable to any scale of network, has been proposed. We
+showed that the message passing strategy (MPS) proposed in
+this paper maintains the graph connectivity for any initially
+connected network until the removal of all agents. This is
+achieved by a sequence of replacements initiated by the
+
+9
+
+[21] M. M. Zavlanos, M. B. Egerstedt, and G. J. Pappas, âGraph-theoretic
+connectivity control of mobile robot networks,â Proceedings of the IEEE,
+vol. 99, no. 9, pp. 1525â1540, 2011.
+
+[22] L. Sabattini, N. Chopra, and C. Secchi, âOn decentralized connectivity
+maintenance for mobile robotic systems,â in 50th IEEE Conference on
+Decision and Control and European Control Conference (CDC-ECC).
+IEEE, 2011, pp. 988â993.
+
+[23] L. Sabattini, C. Secchi, and N. Chopra, âDecentralized connectivity
+maintenance for networked lagrangian dynamical systems,â in IEEE
+International Conference on Robotics and Automation (ICRA).
+IEEE,
+2012, pp. 2433â2438.
+
+[24] D. Bauso, L. Giarre, and R. Pesenti, âQuantized dissensus in networks
+to death and duplication,â IEEE Transactions on
+
+of agents subject
+Automatic Control, vol. 57, no. 3, pp. 783â788, 2012.
+
+[25] F. Knorn, R. Stanojevic, M. Corless, and R. Shorten, âA framework for
+decentralised feedback connectivity control with application to sensor
+networks,â International Journal of Control, vol. 82, no. 11, pp. 2095â
+2114, 2009.
+
+[26] A. A. Abbasi, M. Younis, and K. Akkaya, âMovement-assisted con-
+nectivity restoration in wireless sensor and actor networks,â IEEE
+Transactions on Parallel and Distributed Systems, vol. 20, no. 9, pp.
+1366â1379, 2009.
+
+[27] S. Wang, X. Mao, S.-J. Tang, X. Li, J. Zhao, and G. Dai, âOn
+âmovement-assisted connectivity restoration in wireless sensor and actor
+networksâ,â IEEE Transactions on Parallel and Distributed Systems,
+vol. 22, no. 4, pp. 687â694, 2011.
+
+[28] D. Aksaray and D. Mavris, âMaintaining connectivity for networked
+loss,â in AIAA Guidance,
+
+mobile systems in the presence of agent
+Navigation, and Control Conference, Boston, MA, 2013.
+
+[29] C. D. Godsil and G. Royle, Algebraic graph theory.
+
+Springer New
+
+York, 2001, vol. 8.
+
+[30] A. Jamakovic and S. Uhlig, âOn the relationship between the algebraic
+connectivity and graphâs robustness to node and link failures,â in 3rd
+EuroNGI Conference on Next Generation Internet Networks.
+IEEE,
+2007, pp. 96â102.
+
+[31] P. ErdËos and A. RÂ´enyi, âOn the evolution of random graphs,â Magyar
+
+Tud. Akad. Mat. KutatÂ´o Int. KÂ¨ozl, vol. 5, pp. 17â61, 1960.
+
+[32] R. Dai, J. Maximo, and M. Mesbahi, âFormation of connected networks
+for fractionated spacecraft,â in AIAA Guidance, Navigation, and Control
+Conference, Minneapolis, MN, 2012.
+
+[33] J. Zhou, Q. Hu, and M. I. Friswell, âDecentralized ï¬nite time attitude
+synchronization control of satellite formation ï¬ying,â Journal of Guid-
+ance, Control, and Dynamics, vol. 36, no. 1, pp. 185â195, 2013.
+[34] G. Pandurangan, P. Raghavan, and E. Upfal, âBuilding low-diameter
+peer-to-peer networks,â IEEE Journal on Selected Areas in Communi-
+cations, vol. 21, no. 6, pp. 995â1002, 2003.
+
+[35] M. Ripeanu, I. Foster, and A. Iamnitchi, âMapping the gnutella network:
+Properties of large-scale peer-to-peer systems and implications for
+system design,â arXiv preprint cs/0209028, 2002.
+
+[36] S. S. Ponda, L. B. Johnson, H.-L. Choi, and J. P. How, âEnsuring net-
+work connectivity for decentralized planning in dynamic environments,â
+in Proceedings of the AIAA Infotech@ Aerospace Conference, St. Louis,
+MO, 2011.
+
+[37] D. W. Casbeer, A. L. Swindlehurst, and R. Beard, âConnectivity in a
+UAV multi-static radar network,â in AIAA Guidance, Navigation, and
+Control Conference, Keystone, CO, 2006.
+
+[38] S. V. Savchenko, âOn the number of noncritical vertices in strongly
+connected digraphs,â Mathematical Notes, vol. 79, no. 5, pp. 687â696,
+2006.
+
+Some interesting aspects requiring further investigation in-
+clude the development of a strategy for simultaneous agent
+removals, a throughout study for a more general communi-
+cation problem involving the delays and uncertainty, and the
+introduction of a more general mission, in which some of the
+removed agents return to the mission area.
+
+REFERENCES
+
+[1] S. MartÂ´Ä±nez and F. Bullo, âOptimal sensor placement and motion
+coordination for target tracking,â Automatica, vol. 42, no. 4, pp. 661â
+668, 2006.
+
+[2] R. Olfati-Saber, âDistributed tracking for mobile sensor networks with
+information-driven mobility,â in American Control Conference, 2007.
+ACC â07, 2007, pp. 4606â4612.
+
+[3] N. E. Leonard, D. A. Paley, F. Lekien, R. Sepulchre, D. M. Fratantoni,
+and R. E. Davis, âCollective motion, sensor networks, and ocean
+sampling,â Proceedings of the IEEE, vol. 95, no. 1, pp. 48â74, 2007.
+
+[4] B. White, A. Tsourdos, I. Ashokaraj, S. Subchan, and R. Zbikowski,
+âContaminant cloud boundary monitoring using network of UAV sen-
+sors,â Sensors Journal, IEEE, vol. 8, no. 10, pp. 1681â1692, 2008.
+[5] R. W. Beard, T. W. McLain, D. B. Nelson, D. Kingston, and D. Jo-
+hanson, âDecentralized cooperative aerial surveillance using ï¬xed wing
+miniature UAVs,â Proceedings of the IEEE, vol. 94, no. 7, pp. 1306â
+1324, 2006.
+
+[6] B. Bethke, J. P. How, and J. Vian, âMulti-UAV persistent surveil-
+lance with communication constraints and health management,â in
+Proceedings of the AIAA Guidance, Navigation and Control Conference,
+Chicago, IL, 2009.
+
+[7] J. Fax and R. Murray, âInformation ï¬ow and cooperative control of
+vehicle formations,â IEEE Transactions on Automatic Control, vol. 49,
+no. 9, pp. 1465â1476, 2004.
+
+[8] X. Li and Y. Xi, âDistributed connected coverage control for groups
+of mobile agents,â International Journal of Control, vol. 83, no. 7, pp.
+1347â1363, 2010.
+
+[9] J. Redding, Z. Dydek, J. P. How, M. A. Vavrina, and J. Vian, âProac-
+tive planning for persistent missions using composite model-reference
+adaptive control and approximate dynamic programming,â in American
+Control Conference (ACC), 2011, pp. 2332â2337.
+
+[10] M. Valenti, B. Bethke, J. P. How, D. P. de Farias, and J. Vian,
+âEmbedding health management into mission tasking for UAV teams,â
+IEEE, 2007, pp. 5777â5783.
+in American Control Conference, (ACC).
+[11] M. Valenti, D. Dale, and J. How, âMission health management for 24/7
+persistent surveillance operations,â in AIAA Guidance, Navigation, and
+Control Conference, 2007.
+
+[12] S. A. Motevallian, C. Yu, and B. D. Anderson, âRobustness to the loss
+of multiple nodes in the localizability of sensor networks,â in IFAC WC,
+2011.
+
+[13] T. H. Summers, C. Yu, and B. Anderson, âAddressing agent
+
+loss
+in vehicle formations and sensor networks,â International Journal of
+Robust and Nonlinear Control, vol. 19, no. 15, pp. 1673â1696, 2009.
+
+[14] A. Y. YazÄ±cÄ±oËglu, M. Egerstedt, and J. S. Shamma, âDecentralized degree
+regularization for multi-agent networks,â in 52nd IEEE Conference on
+Decision and Control.
+
+IEEE, 2013.
+
+[15] K. Akkaya, A. Thimmapuram, F. Senel, and S. Uludag, âDistributed
+recovery of actor failures in wireless sensor and actor networks,â in
+IEEE Wireless Communications and Networking Conference, WCNC
+2008.
+
+IEEE, 2008, pp. 2480â2485.
+
+[16] A. A. Abbasi, M. Younis, and U. Baroudi, âRecovering from a node fail-
+ure in wireless sensor-actor networks with minimal topology changes,â
+IEEE Transactions on Vehicular Technology, vol. 62, no. 1, pp. 256â271,
+2013.
+
+[17] A. Petcu and B. Faltings, âDistributed generator maintenance schedul-
+ing,â in Proceedings of the First International ICSC Symposium on
+Artiï¬cial Intelligence in Energy Systems and Power: AIESP 06, 2006.
+[18] P. Corke, S. Hrabar, R. Peterson, D. Rus, S. Saripalli, and G. Sukhatme,
+âDeployment and connectivity repair of a sensor net with a ï¬ying robot,â
+Experimental Robotics IX, pp. 333â343, 2006.
+
+[19] M. Ji and M. Egerstedt, âDistributed coordination control of multia-
+gent systems while preserving connectedness,â IEEE Transactions on
+Robotics, vol. 23, no. 4, pp. 693â703, 2007.
+
+[20] M. M. Zavlanos, A. Jadbabaie, and G. J. Pappas, âFlocking while
+preserving network connectivity,â in 46th IEEE Conference on Decision
+and Control.
+
+IEEE, 2007, pp. 2919â2924.
+
+

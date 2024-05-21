@@ -1,0 +1,463 @@
+7
+1
+0
+2
+c
+e
+D
+2
+2
+
+]
+I
+
+A
+.
+s
+c
+[
+
+1
+v
+6
+6
+2
+8
+0
+.
+2
+1
+7
+1
+:
+v
+i
+X
+r
+a
+
+Federated Control with Hierarchical Multi-Agent
+Deep Reinforcement Learning
+
+Saurabh Kumarâ
+Georgia Tech
+skumar311@gatech.edu
+
+Pararth Shahâ
+Google
+pararth@google.com
+
+Dilek Hakkani-TÃ¼r
+Google
+dilekh@ieee.org
+
+Larry Heck
+Google
+larry.heck@ieee.org
+
+Abstract
+
+We present a framework combining hierarchical and multi-agent deep reinforce-
+ment learning approaches to solve coordination problems among a multitude of
+agents using a semi-decentralized model. The framework extends the multi-agent
+learning setup by introducing a meta-controller that guides the communication be-
+tween agent pairs, enabling agents to focus on communicating with only one other
+agent at any step. This hierarchical decomposition of the task allows for efï¬cient
+exploration to learn policies that identify globally optimal solutions even as the
+number of collaborating agents increases. We show promising initial experimental
+results on a simulated distributed scheduling problem.
+
+1
+
+Introduction
+
+Multi-agent reinforcement learning [3] can be applied to many real-world coordination problems, e.g.
+network packet routing or urban trafï¬c control, to ï¬nd decentralized policies that jointly optimize the
+private value functions of participating agents. However, multi-agent RL algorithms scale poorly with
+problem size. Since communication possibilities increase quadratically as the number of agents, the
+agents must explore a larger combined action space before receiving feedback from the environment.
+In a separate line of research, hierarchical reinforcement learning (HRL) [4] has enabled learning
+goal-directed behavior from sparse feedback in complex environments. HRL divides the overall task
+into independent goals and trains a meta-controller to pick the next goal, while a controller learns to
+reach individual goals. Consequently, HRL requires the task to be divisible into independent subtasks
+that can be solved sequentially. Multi-agent problems do not directly ï¬t this criteria as a subtask
+would entail coordination between multiple agents, each having partial observability on the global
+state. Recently, [5] trained a pair of agents to negotiate and agree upon a joint action, but they do not
+explore scaling to settings with many agents.
+
+We propose Federated Control with Reinforcement Learning (FCRL), a framework for combining
+hierarchical and multi-agent deep RL to solve multi-agent coordination problems with a semi-
+decentralized model. Similar to HRL, the model consists of a meta-controller and controllers, which
+are hierarchically organized deep reinforcement learning modules that operate at separate time scales.
+In contrast to HRL, we modify the notion of a controller to characterize a decentralized agent which
+receives a partial view of the state and chooses actions that maximize its private value function. The
+model supports a variable number of controllers, where each controller is intrinsically motivated
+
+âEqual contribution. Work done while Saurabh Kumar interned at Google Research.
+
+Hierarchical Reinforcement Learning Workshop at the 31st Conference on Neural Information Processing
+Systems (HRL@NIPS 2017), Long Beach, CA, USA.
+
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 1: Federated control model
+
+to negotiate with another controller and agree upon a joint action under some constraints, e.g. a
+division of available resources or a consistent schedule. The meta-controller chooses a sequence
+of pairs of controllers that must negotiate with each other as well as a constraint provided to each
+pair, and it is rewarded by the environment for efï¬ciently surfacing a globally consistent set of
+controller actions. Since a controller needs to communicate with a single other controller at any step,
+the controllerâs policy can be trained separately via self-play to maximize expected future intrinsic
+reward with gradient descent. As the details of individual negotiations are abstracted away from the
+meta-controller, it can efï¬ciently explore the space of choices of controller pairs even as number of
+controllers increases, and it is trained to maximize expected future extrinsic reward with gradient
+descent.
+
+FCRL can be applied to a variety of real-world coordination problems where privacy of agentsâ data
+is paramount. An example is multi-task dialogue with an automated assistant, where the assistant
+must help a user to complete multiple interdependent tasks, for example making a plan to take a train
+to the city, watch a movie and then get dinner. Each task requires querying a separate third-party
+Web service which has a private database of availabilities, e.g. a train ticket purchase, a movie ticket
+purchase or a restaurant table reservation service. Each Web service is a decentralized controller
+which aims to maximize its utilization, while the assistant is a meta-controller which aims to obtain a
+globally viable schedule for the user. Another example is urban trafï¬c control, where each vehicle is
+a controller having a destination location that it desires to keep private. A meta-controller guides the
+trafï¬c ï¬ow through a grid of intersections, aiming to maintain a normal level of trafï¬c on all roads
+in the grid. The meta-controller iteratively picks a pair of controllers and road segments, and the
+controllers must negotiate with each other and assign different road segments among themselves.
+
+In the next section, we formally describe the Federated RL model, and in Section 3 we mention
+related work. In Section 4 we present preliminary experiments with a simulated multi-task dialogue
+problem. We conclude with a discussion and present directions for future work in Section 5.
+
+2 Model
+
+Reinforcement Learning (RL) problems are characterized by an agent interacting with a dynamic
+environment with the objective of maximizing a long term reward [10]. The basic RL model casts
+the task as a Markov Decision Process (MDP) deï¬ned by the tuple {S, A, T, R, Î³} of states, actions,
+transition function, reward, and discount factor.
+
+Agents As in the h-DQN setting [4], we construct a two-stage hierarchy with a meta-controller and a
+controller that operate at different temporal scales. However, rather than utilizing a single controller
+which learns to complete multiple subtasks, FCRL employs multiple controllers, each of which learns
+to communicate with another controller to collectively complete a prescribed subtask.
+
+Temporal Abstractions As shown in Figure 1, the meta-controller receives a state st from the
+environment and selects a subtask gt from the set of all subtasks and a constraint ct from the set
+of all constraints. Constraints ensure that individual subtasks focus on disjoint parts of the overall
+problem, allowing each problem to be solved independently by a subset of the controllers. The
+meta-controllerâs goal is to pick a sequence of subtasks and associated constraints to maximize the
+
+2
+
+cumulative discounted extrinsic reward provided by the environment. A subtask gt is associated with
+two controllers, Ci and Cj, who must communicate with each other to complete the task. Ci and Cj
+receive separate partial views of the environment state through states it and jt. For K â 1 time steps,
+the subtask gt and constraint ct remain ï¬xed while Ci and Cj negotiate to decide on a set of output
+actions, ai and aj, which are outputted at the Kth time step. The controllers are trained with an
+intrinsic reward provided by an internal critic. The reward is shared between the controller pairs that
+communicated with each other, and they are rewarded for choosing actions that satisfy the constraints
+provided by the environment as well as the meta-controller.
+
+3 Related Work
+
+Multi-agent communication with Deep RL Multi-agent RL involves multiple agents that must
+either cooperate or compete in order to successfully complete a task. A number of recent works have
+demonstrated the success of this approach and have applied it to tasks in which agents communicate
+with one another [2, 7, 9]. Two agents learned to communicate in natural language with one another
+in order to complete a negotiation task in [5] and an image guessing task in [1]. The demonstrated
+success of multi-agent communication is promising, but it may be difï¬cult to scale to greater numbers
+of agents. In our work, we combine multi-agent RL with a meta-controller that selects subsets of
+agents to communicate so that the overall task is optimally completed.
+
+Hierarchical Deep RL The h-DQN algorithm [4] splits an agent into two components: a meta-
+controller that selects subtasks to complete and a controller that selects primitive actions given a
+subtask as input from the meta-controller. FCRL uses multiple controllers and extends the notion of a
+subtask to involve a subset of the controllers that must collectively communicate to satisfy certain
+constraints. Therefore, each controller can be pre-trained to complete a distinct goal and may receive
+information only relevant for that particular goal. This is in contrast to the work by [4], which trains
+a single controller to complete multiple subtasks.
+
+Hierarchical Deep RL for dialogue In task-oriented dialogues, a dialogue agent assists a user in
+completing a particular task, such as booking movie tickets or making a restaurant reservation.
+Composite tasks are those in which multiple tasks must be completed by the dialogue agent. Recent
+work by [8] applies the h-DQN technique to composite task completion. While this work successfully
+trains agents on composite task dialogues, a drawback with the straightforward application of h-DQN
+to dialogue is that only one goal is in focus at any given time, which must be completed prior to
+another goal being addressed. This prevents the dialogue agent from handling cross-goal constraints.
+The FCRL algorithm addresses cross-goal constraints by modeling a subtask as a negotiation between
+two controllers that must simultaneously complete their individual goals.
+
+4 Experiments
+
+We present a preliminary experiment applying our method to a simulated distributed scheduling
+problem. The goal is to validate our approach against baseline approaches in a controlled setup. We
+plan to run further experiments on realistic scenarios in future work.
+
+4.1 Environment
+
+We consider a distributed scheduling problem which is inspired by the multi-domain dialogue
+management setup described in the introduction. Formally, this consists of N agents, each having
+a private database of available time entries, who must each pick a time such that the relative order
+of times chosen by all agents is consistent with the order speciï¬ed by the environment. At the start
+of an episode, the environment randomly chooses m agents and provides an ordering2 of agents
+C1, C2, . . . , Cm and agent databases D1, . . . , Dm, where Di is a bit vector of size B specifying the
+times that are available to agent i. The agents can communicate amongst each other for K â 1 rounds,
+after which each agent must output an action 0 â¤ ai < B. The environment emits a reward R = 1 if
+
+2We model this directly as a sequence of agent IDs, but an extension is to generate or sample crowd-sourced
+utterances for the constraints (âI want to watch a movie and get dinner. Also Iâll need a cab to get there.â) and
+train the agents to parse the natural language into an agent order.
+
+3
+
+the actions a1, . . . am are such that a1 < a2 < . . . < am, and ai â Di âi, else it emits a reward of
+R = 0. In our setup we used N = 20, B = 8, and experimented with m â {2, 4, 6}.
+
+4.2 Agents
+
+We evaluate three approaches for solving the distributed scheduling problem. Our proposed approach
+(FCRL) consists of a meta-controller that picks a pair of controllers and a constraint vector, and
+controller agents which communicate in pairs and output times that satisfy their private databases
+as well as the meta-controllerâs constraint. The two baselines, Multi-agent RL (MARL) and Hierar-
+chical RL (HRL), compare our approach with the settings without a meta-controller or multi-agent
+communication, respectively.
+
+Federated Control (FCRL) We use an FCRL agent with K = 2 communication steps between
+the controllers. Note that this means they communicate for K â 1 steps and then produce the
+output actions at the Kth time step. The controller and meta-controller Q-networks have the same
+structure with two hidden layers of sizes 100, 50, each followed by a tanh nonlinearity, and a ï¬nal
+fully-connected layer outputting Q-values for each action. The controller has B actions, one for
+each possible time value, and the meta-controller has B â 1 actions, corresponding to constraint
+windows of sizes B/2j, j â [0, logB]. (We assume that B is a power of 2.) The meta-controller
+iterates through agent pairs in the order expected by the environment, and for the pair selected at time
+t, it chooses a constraint vector ct. This constraint is applied to the two agentsâ databases, and the
+controllers then communicate with each other for K = 2 rounds. If the controllers are able to come
+up with a valid order, they are rewarded by the intrinsic critic, and the meta-controller moves on to
+the next pair. Otherwise, the meta-controller retries the same pair of controllers. The meta-controller
+is given a maximum of 10 total invocations of controller pairs, after which the episode is terminated
+with reward R = 0.
+
+For a controller Ci communicating with another controller Cj, Ciâs state is a concatenation of the
+database vector Di from the environment, a one-hot vector of size 2 denoting the position of that
+agent in the relative order between Ci and Cj, and a communication vector of size B which is a
+one-hot vector denoting Cjâs output in the previous round. (In the ï¬rst round the communication
+vector is zeroed out.) The meta-controllerâs state is a concatenation of a one-hot vector of size B
+denoting the latest time entry that has been selected so far, and a multi-hot vector of size B â 1,
+denoting the constraints that have been tried for the current controller pair.
+
+Multi-agent RL (MARL) As a baseline, we consider a setup without a meta-controller, which is the
+standard multi-agent setup where agents communicate with each other and emit individual actions.
+The controller agent is same as that in FCRL, except that the position vector is a one-hot vector of
+size m, denoting Ciâs position in the overall order, and the communication vector is an average of the
+outputs of all other agents in the previous round, similar to CommNet described in [9].
+
+Hierarchical RL (HRL) We also consider a Hierarchical RL baseline as described in [4]. The
+controllers do not communicate with each other but instead independently achieve the task of emitting
+a time value that is consistent with their database and the meta-controllerâs constraint. The meta-
+controller is the same as FCRL, except that it picks one agent at a time and assigns it a constraint
+vector.
+
+4.3 FCRL Training
+
+Below, we present the pseudocode for training the FCRL agent.
+
+All controllers share the same replay buffer and the same weights. Additionally, by randomly
+sampling meta-controller constraints, the controllers can be pre-trained to communicate and complete
+subtasks prior to the joint training as described above. In this case, Q2 will start with these pre-trained
+weights rather than being initialized to be random in the above algorithm.
+
+For the distributed scheduling task as described in the experiments, the Critic provides an intrinsic
+reward rintrinsic = 1.0 only if (i) the controllersâ actions are valid according to their constrained
+databases (ai â Di â§ ct and aj â Dj â§ ct), and (ii) the actions are in the correct order (ai < aj). For
+N extControllerP air, we use the heuristic of emitting controller pairs in the order expected by the
+environment: {(C1, C2), . . . , (CN â1, CN )}. Alternatively, a separate Q-network could be trained
+
+4
+
+Algorithm 1 Learning algorithm for FCRL agent
+1: Initialize experience replay buffer RM for meta-controller and RC for the controllers
+2: Intialize meta-controllerâs Q-network, Q1, and controllersâ Q-network, Q2, with random weights
+3: for episode = 1:N do
+4:
+5:
+
+Environment selects m controllers C1, C2, ..., Cm with databases D1, D2, ..., Dm
+s â {dp, dt, tc} â {Ï, Ï Ï}
+
+(cid:46) Meta-controller state is: done pairs (dp), done times (dt),
+
+tried constraints (tc)
+
+t â 0
+while s is not terminal do
+
+Ci, Cj â N extControllerP air(s)
+ct â epsilon_greedy(Ï(ct|s), (cid:15)M )
+sCi â {Di, ct, Ï}
+sCj â {Dj, ct, Ï}
+for communication turn = 1:K do
+
+ai â epsilon_greedy(Ï(ai|sCi), (cid:15)Ci)
+aj â epsilon_greedy(Ï(aj|sCj), (cid:15)Cj)
+s(cid:48)
+Ci â {Di, ct, aj}
+s(cid:48)
+Cj â {Dj, ct, ai}
+rintrinsic â Critic(s, ai, aj)
+Store transition (sCi, ai, rintrinsic, s(cid:48)
+Store transition (sCj, aj, rintrinsic, s(cid:48)
+sCi â s(cid:48)
+Ci
+sCj â s(cid:48)
+
+Cj
+
+Ci) in RC
+Cj) in RC
+
+Sample minibatch of transitions from RC and update Q2 weights
+if rintrinsic > 0 then
+
+(cid:46) Controller pair found a valid schedule
+
+dp â append(dp, (Ci, Cj))
+dt â append(dt, ai, aj)
+tc â Ï
+
+else
+
+tc â append(tc, ct)
+
+s(cid:48) â {dp, dt, tc}
+re â extrinsic reward from environment
+Store transition (s, ct, re, s(cid:48)) in RM
+Sample minibatch of transitions from RM and update Q1 weights
+s â s(cid:48)
+t â t + 1
+
+6:
+7:
+8:
+9:
+10:
+11:
+12:
+13:
+14:
+15:
+16:
+17:
+18:
+19:
+20:
+21:
+
+22:
+23:
+24:
+25:
+26:
+27:
+28:
+29:
+30:
+31:
+32:
+33:
+34:
+
+to select controller pairs, which would be useful in domains where a sequencing of controllers for
+pairwise communication is not manifest from the task description.
+
+4.4 Results
+
+We alternate training and evaluation for 1000 episodes each. Figure 2 plots the average reward on the
+evaluation episodes over the course of training. Each curve is the average of 5 independent runs with
+the same conï¬guration. We ran three experiments by varying m, i.e. the number of agents that are
+part of the requested schedule and must communicate to come up with a valid plan.
+
+For m = 2, all three approaches are able to ï¬nd the optimal policy as it requires only two agents
+to communicate. For m = 4, HRL performs poorly as there is no inter-agent communication and
+the meta-controller must do all the work of picking the right sequence of constraints to surface a
+valid schedule. MARL does better as agents can communicate their preferences and get a chance to
+update their choices based on what other agents picked. FCRL does better than both baselines, as
+the meta-controller learns to guide the communications by constraining each pair of agents to focus
+on disjoint slices of the database, while the controllers have to only communicate with one other
+controller making it easy to agree upon a good pair of actions.
+
+For m = 6, both HRL and MARL are unable to see a positive reward, as ï¬nding a valid schedule
+requires signiï¬cantly more exploration for the meta-controller and controller, respectively. FCRL is
+
+5
+
+Figure 2: Comparing FCRL with baselines MARL and HRL, on three environments: (a) easy (m=2),
+(b) medium (m=4), and (c) hard (m=6).
+
+able to do better by dividing the problem into disjoint subtasks and leveraging temporal abstractions.
+However, the meta-controllerâs optimal policy is more intricate in this case, as it needs to learn to
+start with smaller constraint windows and try larger ones if the smaller one fails, so that the earlier
+agent pairs do not choose farther apart times when closer ones are possible.
+
+5 Discussion
+
+We presented a framework for combining hierarchical and multi-agent RL to beneï¬t from temporal
+abstractions to reduce the communication complexity for ï¬nding globally consistent solutions with
+distributed policies. Our experimental results show that this approach scales better than baseline
+approaches as the number of communicating agents increases.
+
+Future work The effect of increasing the size of the database or number of communication rounds
+will be interesting to study. Multi-agent training creates a non-stationary environment for the agent
+as other agentsâ policies change over the course of training. While we employ the standard DQN
+algorithm [6] to train the meta-controller, the controllers can be trained using recent policy gradient
+based methods (eg. counterfactual gradients [3] ) which address this problem.
+
+References
+
+[1] A. Das, S. Kottur, J. Moura, and D. Batra. Learning cooperative visual dialog agents with deep
+
+reinforcement learning. In International Conference on Computer Vision, 2017.
+
+[2] J. Foerster, Y. Assael, N. Freitas, and S. Whiteson. Learning to communicate with deep
+
+multi-agent reinforcement learning. arXiv:1605.06676, 2016.
+
+[3] J. Foerster, G. Farquhar, T. Afouras, N. Nardelli, and S. Whiteson. Counterfactual multi-agent
+
+policy gradients. arXiv preprint arXiv:1705.08926, 2017.
+
+[4] T. D. Kulkarni, K. Narasimhan, A. Saeedi, and J. Tenenbaum. Hierarchical deep reinforcement
+learning: Integrating temporal abstraction and intrinsic motivation. In Advances in Neural
+Information Processing Systems, pages 3675â3683, 2016.
+
+[5] M. Lewis, D. Yarats, Y. Dauphin, D. Parikh, and D. Batra. Deal or no deal? end-to-end learning
+of negotiation dialogues. In Proceedings of the 2017 Conference on Empirical Methods in
+Natural Language Processing, pages 2433â2443, 2017.
+
+[6] V. Mnih, K. Kavukcuoglu, D. Silver, A. Graves, I. Antonoglou, D. Wierstra, and M. Riedmiller.
+
+Playing atari with deep reinforcement learning. arXiv:1312.5602, 2013.
+
+[7] I. Mordatch and P. Abbeel. Emergence of compositional language in multi-agent populations.
+
+arXiv:1703.04908, 2017.
+
+[8] B. Peng, X. Li, L. Li, J. Gao, A. Celikyilmaz, S. Lee, and K.-F. Wong. Compos-
+ite task-completion dialogue policy learning via hierarchical deep reinforcement learning.
+arXiv:1704.03084, 2017.
+
+[9] S. Sukhbaatar, R. Fergus, et al. Learning multiagent communication with backpropagation. In
+
+Advances in Neural Information Processing Systems, pages 2244â2252, 2016.
+
+[10] R. S. Sutton and A. G. Barto. Reinforcement learning: An introduction, volume 1. MIT press
+
+Cambridge, 1998.
+
+6
+
+

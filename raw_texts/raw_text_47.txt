@@ -1,0 +1,763 @@
+BGC: Multi-Agent Group Belief with Graph Clustering
+
+Tianze Zhou,1 Fubiao Zhang, 1 Pan Tang 1 Chenfei Wang 2
+1 Beijing Institute of Technology
+2 Boston University
+tianzezhou@bit.edu.cn, wang1029@bu.edu.cn
+
+1
+2
+0
+2
+
+n
+u
+J
+
+3
+
+]
+I
+
+A
+.
+s
+c
+[
+
+4
+v
+8
+0
+8
+8
+0
+.
+8
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+Abstract
+
+Recent advances have witnessed that value decomposed-
+based multi-agent reinforcement learning methods make an
+efï¬cient performance in coordination tasks. Most current
+methods assume that agents can make communication to as-
+sist decisions, which is impractical in some situations. In
+this paper, we propose a semi-communication method to en-
+able agents can exchange information without communica-
+tion. Speciï¬cally, we introduce a group concept to help agents
+learning a belief which is a type of consensus. With this con-
+sensus, adjacent agents tend to accomplish similar sub-tasks
+to achieve cooperation. We design a novel agent structure
+named Belief in Graph Clustering(BGC), composed of an
+agent characteristic module, a belief module, and a fusion
+module. To represent each agent characteristic, we use an
+MLP-based characteristic module to generate agent unique
+features. Inspired by the neighborhood cognitive consistency,
+we propose a group-based module to divide adjacent agents
+into a small group and minimize in-group agentsâ beliefs
+to accomplish similar sub-tasks. Finally, we use a hyper-
+network to merge these features and produce agent actions.
+To overcome the agent consistent problem brought by GAT,
+a split loss is introduced to distinguish different agents. Re-
+sults reveal that the proposed method achieves a signiï¬cant
+improvement in the SMAC benchmark. Because of the group
+concept, our approach maintains excellent performance with
+an increase in the number of agents.
+
+Introduction
+The multi-agent system is widely applied in many real-life
+applications, including sensor networks, aircrafts formation
+ï¬ight, multi-robot cooperative control (HÂ¨uttenrauch, Sosic,
+and Neumann 2017), and networked autonomous vehicles.
+In these systems, cooperative multi-agents aim to com-
+plete a speciï¬c task via cooperating (Busoniu, Babuska, and
+De Schutter 2008). Most methods assume that agents can
+communicate in cooperation, which is impractical in some
+situations. Even though agents can communicate, the con-
+nection is unreliable due to interferences in environments.
+In this situation, the solution will be sub-optimal.
+
+Many animal populations tend to work in groups to exe-
+cute tasks, such as ants and geese. This hints that the agents
+in the same group may achieve better performance with less
+
+Copyright Â© 2021, Association for the Advancement of Artiï¬cial
+Intelligence (www.aaai.org). All rights reserved.
+
+Figure 1: The process in SMAC via the Graph Clustering
+method. In this 8m vs 9m map, agents are divided into three
+groups to complete the corresponding sub-tasks.
+
+communication or even no communication. The reason is
+that agents in the same group tend to achieve similar tasks.
+Moreover, by dividing all agents into speciï¬c groups, the
+relationship between all agents is decomposed into the con-
+nection between groups, signiï¬cantly reducing the complex-
+ity. Inspired by these, we propose a group concept for multi-
+agent reinforcement learning (MARL) to handle coopera-
+tive tasks without communication. Speciï¬cally, we assume
+that each agent has a belief to assist in decision making, and
+agents in the same group tend to generate similar beliefs.
+
+In the large-scale multi-agents scenario, it is challenging
+to model all agents in a limited time efï¬ciently. A simple
+way is to use a bidirectional recurrent neural network to
+represent all agents as a group explicitly. Nevertheless, it
+ignores the second-order relationship information between
+agents and is limited by the sequence of agents. In this paper,
+we propose a straightforward approach to map agents. In-
+spired by the neighborhood cognitive consistency (Mao et al.
+2019), we propose to use the k-Nearest Neighbor (kNN)
+method to map agent via agent-relative position. The idea
+is that agents in adjacent positions will have similar obser-
+vation features, which leads to a similar decision.
+
+Our contribution has four parts. (1) We design a novel
+modular agent structure that can achieve the Centralised
+Training and Decentralised Execution (CTDE), compared
+to the communication-based method. (2) We propose to use
+the agent belief to represent the approximate group feature
+which is optimized via the GAT module and achieve approx-
+imate performance without communication. (3) We propose
+an explicit method to mapping agents to achieve similar be-
+
+ 
+ 
+ 
+ 
+ 
+ 
+liefs in adjacent agents. (4) To overcome the consistent prob-
+lem brought by GAT, we introduce a split loss to distinguish
+agents.
+
+The proposed group-based method is evaluated on several
+unit micromanagement tasks based on StarCraft II (Vinyals
+et al. 2017). The results indicate that our algorithm performs
+better than traditional ones in the literature. The performance
+of the method scales well with the number of agents. To
+observe the correlation between group features and agentâs
+topology information, the t-SNE method (Laurens and Hin-
+ton 2008) is used. The experimental result reveals that the
+feature of agents in adjacent positions are also adjacent.
+
+Related Work
+Over the past years, deep multi-agent reinforcement learn-
+ing has made a considerable breakthrough, widely used in
+games, trafï¬c control, and other ï¬elds. This research con-
+centrates on cooperative MARL with a value function-based
+method. In this setting, all teams receive a global team re-
+ward, so it is essential to divide the global team reward
+into individual rewards. Sunehag et al. (2017) decomposes
+the joint Q value into the individual Q value of each agent.
+Rashid et al. (2018) presents the constraint in which the joint
+Q value and the individual Q value have a monotonous set-
+ting based on the VDN algorithm. The suboptimal problem
+and decentralization in multi-agents are balanced by Son
+et al. (2019) via an L2-penalty term.
+
+Among current multi-agent algorithms, communication is
+a crucial point. The communication-based approaches as-
+sume that multiple agents can make essential information
+interactions to assist in deciding. Foerster et al. (2016) ap-
+plies a deep feedforward neural network to generate com-
+munication vectors for agentsâ communication. Peng et al.
+(2017) utilizes a bidirectional recurrent neural network for
+communication between multiple agents. Ding, Huang, and
+Lu (2020) proposes a selectable point-to-point communica-
+tion method adopted to determine whether agents communi-
+cate with each other by constructing a belief vector. Unlike
+these methods, Jiang, Dun, and Lu (2018) employs graph
+convolution network and multi-head dot-product attention to
+aggregate agent features. Because agents generate their ac-
+tions based on other agentsâ beliefs or relative features, these
+methods always need centralized execution that follows the
+CTCE framework. However, when the actual scenario re-
+stricts some agents from being difï¬cult to communicate, the
+agent may obtain inaccurate beliefs or wrong beliefs, lead-
+ing to sub-optimal actions.
+
+Current researches on agent mapping always focus on the
+attention mechanism. (Liu et al. 2020) utilizes two-stage at-
+tention to build an adjacent matrix. Hard attention is de-
+voted to delete related weak edges, and soft attention gen-
+erates the weight coefï¬cients of the retained graph structure.
+EPC-MADDPG (?) uses the scalar dot product attention to
+fuse the variable entity features to achieve a global mapping.
+However, simply using the attention mechanism to capture
+the association between agents for mapping will cause the
+algorithm to fall into a locally optimal solution. If the ini-
+tial attention mechanism considers that two far apart agents
+are similar and tend to similar tasks, all agents will behave
+
+the same. All agents will consistent and lose the meaning of
+grouping.
+
+Background
+In the present research, the problem is regarded as a fully
+cooperative multi-agent
+task viewed as a Dec-POMDP
+(Oliehoek, Amato et al. 2016) comprising of a tuple
+(cid:104)I, S, U, Z, P, R, O, n, Î³(cid:105), where s â S depicts the global
+state of the environment. At any time, each agent i â I â¡
+{1, ..., n} interacts with the environment by generating cor-
+responding actions ui â U through the observation vec-
+tor zi â Z according to the observation function O(s, i).
+Agents learn to maximize the reward R for environmental
+feedback. This process is based on a state transition function
+P (s(cid:48) | s, a). Moreover, n signiï¬es the number of agents, and
+Î³ represents a discount factor.
+
+Interaction-based MARL algorithms are generally imple-
+mented via the centralized training with centralized execu-
+tion (CTCE) framework. Agentâs strategy Ïi(ui|Ïi) is gen-
+erated based on the observation sequence Ï , the global state
+s, and the interactive features of other agents. Via introduc-
+ing the modular mechanism, our framework is designed as
+the distributed and applying a regularization tool to generate
+representative group features without interaction.
+
+Graph Attention Network
+Graph Attention Network (GAT) can correlate similar fea-
+tures between agents using masked self-attentional layers.
+To better correlate similar features between agents, GAT
+uses masked self-attentional layers. By introducing the at-
+tention mechanism, the neural network can focus on the
+most relevant parts of the input, which helps learn the cor-
+relation features adaptively between nodes (VeliËckoviÂ´c et al.
+2017). Besides, GAT can capture relative features between
+disconnect nodes by stacking GAT layers. GAT has two at-
+tention mechanism types, the Global Graph Attention and
+Masked Graph Attention. The former builds the attention
+operation between each one node and all the other, while
+the latter only performs the same operation on neighboring
+nodes.
+
+Distant agents may bring a negative effect on the cur-
+rent agent. Also, it is very computationally expensive to
+calculate the relationship between all agents, which causes
+the Global Graph Attention-based method unreasonable in
+large-scale scenarios. While Masked Graph Attention-based
+method only captures the relationship between the adjacent
+agents, which leads neighbor agents to hold similar actions.
+Besides, agents can capture the unconnected agent features
+via stacking the Masked Graph Attention layers and broaden
+the receptive ï¬eld of agents.
+
+Method
+In this section, we introduce the group concept into the
+multi-agent algorithm and propose the Belief in Graph Clus-
+tering (BGC) methods. The overall framework of the algo-
+rithm is shown in Figure 2. To obtain a distributed frame-
+work, a modular approach is applied to build an algo-
+rithm network and generate groups and individual features
+
+(a) The schematics of our approach
+
+(b) The schematics of our approach base on the dis-
+tributed framework
+
+Figure 2: (a) The Encoder generates individual features and Gaussian distributionâs group features. Then group features are
+sampled via reparameterization trick and are fed into the GAT network to make feature aggregation. The hypernetwork merges
+the group features and the individual features into the individual Q value to generate the total Q value via QMIX. The black line
+indicates the route of gradient propagation of the split loss. (b) Our algorithm can be decomposed into modules. Speciï¬cally,
+we use a new group feature network instead of the original group network to achieve the purpose of distributed exection. The
+new group feature network is independent of other agents. This new network is trained through minimizing the KL divergence
+between the group feature networkâs output and the original group networkâs output.
+
+of agents separately. Due to the idea of modular construc-
+tion, we utilize a new group feature network to represent
+agent group features via minimizing the difference of orig-
+inal group features without agent intersection. We use the
+group features to approximate the effect of communication
+to implement the distributed execution.
+
+In the overall pipeline, each agent generates an individ-
+ual Q value via its local observation and then passes it into
+a mixed network (such as QMIX) for generating the global
+Q value. Speciï¬cally, each agent encodes its local observa-
+tion sequence via a GRU network to produce agent group
+features and individual features. The group features are ob-
+tained via exercising the multivariate Gaussian distribution
+condition on the observation sequence. The reparameteriza-
+tion trick is practiced for sampling to ensure the continuity
+of the gradient. Then, to cluster group features and obtain re-
+lationship features from adjacency agents, a GAT network is
+adopted. Group and individual features are feeds into a hy-
+per network (Ha, Dai, and Le 2016) to generate individual Q
+Value. Besides, to prevent all group features from converg-
+ing together, we introduce a split loss to distinguish non-
+adjacent agents.
+
+Adjacent Matrix via kNN
+
+In this section, we introduce a k-Nearest Neighbor (kNN)
+method to represent agent relationships on topology and
+construct the adjacency matrix for the masked attention-
+based GAT network. Due to the centralized training setting,
+it is easy to get all agentsâ position information from agent
+observation. Agent adjacency graph is constructed by deï¬n-
+ing the agent with the k nearest agents as the same type.
+
+Then we take the Laplace transform and regularization of
+adjacent graphs to produce the agent adjacency matrix.
+
+In our setting, the hyperparameter k in kNN is two. In
+this setting, all agents will be divided into several groups,
+as shown in Figure 5(d). The non-information exchange be-
+tween the group level leading different groups to achieve
+different sub-tasks to realize group diversity. Besides, when
+all agents are adjacent, it leads the group-level information
+transfer, which helps accomplish the ï¬nished task via group
+coordination.
+
+Belief in Graph Clustering
+In this part, we introduce the details on how to generate
+agent belief via graph clustering. First, we embed agent
+observation via an MLP network. To capture the relevant
+features on time series, we introduce the GRU module. To
+add the uncertainty to agent group features and enhance the
+exploration ability, we use a Gaussian Sampling module,
+which takes the condition on the embedding features of the
+GRU module. This module uses MLP networks to gener-
+ate the mean and variance (take the exponential function on
+the logarithmic variance term) to construct the independent
+Gaussian distribution. Besides, we introduce the reparame-
+terization trick to sample the actual group features for the
+gradientâs continuity.
+
+(Âµgi, Ïgi, si) = f (Ïi; Î¸i)
+
+gi = Âµgi + Ïgi (cid:12) Îµi
+
+Îµi â¼ N (0, 1)
+
+(1a)
+(1b)
+
+where Î¸i represents parameters of network, Âµgi and Ïgi sig-
+nify the mean and standard deviation of group features, si
+
+IndividualFeatureReparameterizationHyper-NetworkSplitLossð!",ð¢!#$"ð"ð",ð¢!"ð&ð&,ð¢â&ð(ð(,ð¢â(ðâ&,ð¢â)&&ðâ(,ð¢â)&(â!#$"â!"MixingNetworkðâ+âð,ð¢ð âGroupFeatureGroupFeatureGroupFeatureMeanGroupFeatureStdGRUNetworkMLPNetworkGATNetworkAgent1AgentNOtherAgentgroupfeaturesModuleFeatureModuleFeatureIndividualFeatureReparameterizationHyper-Networkð!",ð¢!#$"ð"ð",ð¢!"â!#$"â!"GroupFeatureGroupFeatureGroupFeatureMeanGroupFeatureStdGRUNetworkMLPNetworkGATNetworkðð«ð¨ð®ð©ðððð­ð®ð«ð!ðð«ð¨ð®ð©Fððð­ð®ð«ððððð!ðð«ð¨ð®ð©Fððð­ð®ð«ððð­ð!GRUNetwork!MLPððð­ð°ð¨ð«ð¤!ð!",ð¢!#$"â%!#$"â%!"KLlossOtherAgentgroupfeaturesrepresents individual features, gi signiï¬es the actual group
+feature, and Îµi is noise.
+
+In centralized training, agents can use some adjacent
+agent features to assist in deciding. After getting the adja-
+cency matrix, we utilize the GAT module to cluster the rele-
+vant features into group features. Under this setup, the agent
+interacts with agents in the adjacent position via the attention
+mechanism and generates the correlation weight between
+agents. This weight is used to calculate the agent relation-
+ship features for the current agent, and the agent fuses these
+features to produce ï¬nal group features.
+
+ï£«
+
+ï£¶
+
+g(cid:48)
+i = Ï
+
+ï£­
+
+(cid:88)
+
+Î±ijgj
+
+ï£¸
+
+jâNi
+
+(2)
+
+where Ï(Â·) is the ReLu activation function, and Î± is the
+
+clustering coefï¬cient calculated via the function.
+
+eij = a ([W gi(cid:107)W gj]) , j â Ni
+exp (LeakyReLU (eij))
+
+Î±ij =
+
+(cid:80)
+
+exp (LeakyReLU (eik))
+
+kâNi
+
+(3a)
+
+(3b)
+
+Finally, we use a hyper network module to fuse group fea-
+tures and individual features to generation agent action. In
+this module, the group features are utilized to generate the
+MLP network weight, multiplying individual features to get
+the ï¬nal action.
+
+Split Loss
+
+Although mask attention-based GAT network can prevent all
+agents from forming a single group, current agentsâ features
+will still extend to all other agents due to the time perspec-
+tive. Therefore, we propose a split loss to alleviate this issue.
+We use Kullback-Leibler (KL) divergence to measure dif-
+ferences between agentsâ group features and keep the non-
+adjacent agents at a ï¬xed distance.
+
+max
+ÏâÎ 
+
+EÏ â¼ÏÏ
+
+(cid:35)
+
+r (st, at)
+
+(cid:34) T
+
+(cid:88)
+
+t=0
+
+(4a)
+
+s.t. KL(gi||gj) â¥ Î´, â edge(i, j) = Ï
+
+(4b)
+
+where gi represents agent group features and edge(i, j)
+determines whether there is a connection between agent i
+and agent j.
+
+Therefore, a split loss is introduced to separate the agent:
+
+Lsplit = â
+
+N
+(cid:88)
+
+N
+(cid:88)
+
+i
+
+j
+
+min(KL(gi||gj) â Î´, 0),
+
+â edge(i, j) = Ï, i (cid:54)= j
+
+(5)
+
+The hyperparameter Î´ is employed to keep agents at the Î´
+
+distance, changing with the scenario.
+
+Decentralization Execution
+
+To realize the complete decentralized execution without
+agent interaction, we apply a new sub-network to learn the
+new group features and use the KL divergence to minimize
+the distance between the new group features and the original
+group features learned by the GAT network. Then, the gradi-
+ent will ï¬ow through the new sub-network and train the new
+sub-network. This frame can be view as a teacher-student
+structure.
+
+Experiment
+
+Starcraft II
+
+In the experiment part, we test our algorithm in the SMAC
+benchmark. The difference between SMAC and the tradi-
+tional Starcraft II environment is that it focuses on unit
+micromanagement. It leverages the natural multi-agent mi-
+crostructure by proposing a modiï¬ed version of the problem
+designed speciï¬cally for decentralized control. To test the
+algorithm robustness, we run our algorithm in 6 to 10 mil-
+lion steps in 4 random seeds. Besides, to estimate the perfor-
+mance of the method, we experiment in ï¬ve scenarios, three
+standard maps of 5m vs 6m (very hard), 8m vs 9m (very
+hard), and 10m vs 11m (very hard), and two custom maps
+of 12m vs 14m (very hard) and 15m vs 17m (very hard).
+
+Except
+
+Figure 3 illustrates the performance difference between
+the proposed algorithm and other benchmark algorithms in
+ï¬ve scenarios. We ï¬rst compare our method with the ori-
+gin QMIX algorithm. The result shows that BGC-QMIX
+is outperforming the origin algorithm on the ï¬nal test win
+rate and the performance variance, as shown in Figure 3
+(BGC+QMIX vs. QMIX).
+for
+
+the scenario with a small number of
+5m vs 6m(very hard), our algorithm demonstrates a signif-
+icant improvement compared to the baseline methods. In the
+5m vs 6m scenario, the proposed algorithm has excellent
+advantages over other ones in terms of convergence speed. In
+this scenario set, the small number of agents causes agentsâ
+group features to be consistent, leading to less than ideal per-
+formance. To check the inï¬uence of the number of agents,
+we further perform our method in other scenarios. 3 (bottom
+right) shows that it can maintain an excellent performance
+with the number of agents increases while QMIX does not.
+The results show that the mask attention-based GAT method
+and the split loss performance.
+
+Furthermore, our algorithm is compared with G2ANet,
+which is also based on the attention mechanism. G2ANet
+practices the hard attention to determine the communica-
+tion target and soft attention to complete the communica-
+tion. G2ANet overlooks agent with topology informationâs
+association using a bi-LSTM network to construct the hard
+attention operation. Further, the G2ANet is tested based on
+the QMIX framework, and the empirical result shows that
+our graph clustering-based algorithm performs better. (As
+the tests were under the hardware condition of RTX 2080Ti,
+12m vs 14m and 15m vs 17m scenarios can cause cuda
+memory exhausted. Thus, only three standard scenes are
+tested.)
+
+Figure 3: Result of starcraft II. The comparison between the group-based method and other algorithms with the number of agents
+increasing from 5 to 15. Empirical results show that as the number of agents increases, our algorithm show more superiority
+comparing with the baseline algorithm. Due to the limitation of graphics card memory(RTX2080Ti), we did not test the actual
+effect of G2ANet in the 12m vs 14m map and 15m vs 17m map.
+
+Representation
+To demonstrate the superiority of our proposed algorithm,
+the t-SNE algorithm is used to reduce the group featuresâ
+dimension for visually illustrating the effect of agent group-
+ing. Pictures show the representation after compressing the
+group feature of the agent to two dimensions in multiple map
+scenarios. Pictures include various scenarios from the begin-
+ning of the game, the middle of the game, and the agentâs
+death in the later stage. Figure 5(c) shows that BGC-QMIX
+ï¬rst divides the agent group features into three groups at
+the beginning. Agentsâ group features are divided into two
+groups without any information interaction between groups
+with the game running. Figure 5(h) indicates that group fea-
+tures of the dead agents can be divided into a speciï¬c group
+that demonstrates the rationality of the algorithm. Moreover,
+we ï¬nd that the agent mapping becomes more straightfor-
+ward and more representative as the number of agents in-
+creases.
+
+Ablation
+To check the robustness of our proposed algorithm, an abla-
+tion experiment is conducted. The VDN network is used in-
+stead of the QMIX network to aggregate the independent Q
+values of the agent. Experimental results in 8m vs 9m map,
+10m vs 11m map, and 12m vs 14m map are compared. In
+two scenarios, where the number of agents is small, the
+group clustering-based method has a certain degree of im-
+
+provement compared with the VDN and even the QMIX al-
+gorithm. In the more signiï¬cant number 12m vs 14m sce-
+nario, the VDN algorithm is better than that of QMIX; the
+VDN method based on graph clustering is still better than
+these two.
+
+Distributed Execution
+
+The introduced algorithm is tested within the distributed
+framework. The KL divergence method is used for the
+agents trained based on the CTCE framework to minimize
+the new group feature and the group feature after graph clus-
+tering. The overall algorithm training is about 0.5M steps,
+and the original network error on the test battle win mean
+index is within Â±1%.
+
+Conclusion
+This paper introduces the group concept into multi-agent re-
+inforcement learning to achieve excellent performance in the
+non-communication setup. We design a novel agent struc-
+ture to realize this non-communication goal via an individual
+agent module to generate individual features and an agent
+belief module to produce group features. Apply a fusion
+module to fuse these features to generate agent actions. In
+the agent belief module, we take the GAT network to merge
+the adjacent agent features and use a split loss to prevent all
+agents from being consistent.
+
+0.00.20.40.60.81.0Time Steps1e7020406080Test Win % 5m6mgc+qmixqmixqtranvdncomag2a0123456Time Steps1e6020406080100Test Win % 8m9mgc+qmixqmixqtranvdncomag2a0123456Time Steps1e6020406080100Test Win % 10m11mgc+qmixqmixcomaqtranvdng2a012345678Time Steps1e6020406080100Test Win % 12m14mgc+qmixqmixqtranvdn012345678Time Steps1e6020406080100Test Win % 15m17mgc+qmixqmixqtranvdn5m_vs_6m8m_vs_9m10m_vs_11m12m_vs_14m15m_vs_17m020406080100Test Win % gc+qmix vs qmixgc+qmixqmixFigure 4: Ablation test. we test the our graph clustering-based method base on the VDN framework. The result shows its
+superiority.
+
+(a) 8m vs 9m(a)
+
+(b) 8m vs 9m(b)
+
+(c) 10m vs 11m(a)
+
+(d) 10m vs 11m(b)
+
+(e) 12m vs 14m(a)
+
+(f) 12m vs 14m(b)
+
+(g) 15m vs 17m(a)
+
+(h) 15m vs 17m(b)
+
+Figure 5: Group feature representation base on t-SNE.
+
+Empirical results show that the proposed algorithmâs ef-
+fect is vastly improved compared to the current baseline al-
+gorithms, and this improvement increases with the increase
+in the number of agents. The t-SNE method is applied to
+verify that the group features of adjacent agents are more
+similar, indicating the agent group features representability
+under the graph attention network and the split loss. Ad-
+ditionally, the overall algorithm is integrated into the VDN
+network, and results show the performance improved com-
+pared to the original VDN network, even the QMIX method.
+In future work, we will consider apply intrinsic rewards
+
+to group agents more efï¬ciently and feasibly.
+
+Acknowledgments
+The work has been supported by grant number:
+Z181100003218013
+Sci-
+ence&Technology Commission.
+
+from Beijing Municipal
+
+References
+Agarwal, A.; Kumar, S.; and Sycara, K. P. 2019. Learning
+Transferable Cooperative Behavior in Multi-Agent Teams.
+CoRR abs/1906.01202.
+URL http://arxiv.org/abs/1906.
+01202.
+Busoniu, L.; Babuska, R.; and De Schutter, B. 2008. A
+comprehensive survey of multiagent reinforcement learning.
+IEEE Transactions on Systems, Man, and Cybernetics, Part
+C (Applications and Reviews) 38(2): 156â172.
+Chung, J.; Gulcehre, C.; Cho, K.; and Bengio, Y. 2014. Em-
+pirical evaluation of gated recurrent neural networks on se-
+quence modeling. arXiv preprint arXiv:1412.3555 .
+Ding, Z.; Huang, T.; and Lu, Z. 2020. Learning Individu-
+ally Inferred Communication for Multi-Agent Cooperation.
+arXiv preprint arXiv:2006.06455 .
+Du, Y.; Han, L.; Fang, M.; Liu, J.; Dai, T.; and Tao, D.
+LIIR: Learning Individual Intrinsic Reward in
+2019.
+Multi-Agent Reinforcement Learning.
+In Wallach, H.;
+Larochelle, H.; Beygelzimer, A.; d'AlchÂ´e-Buc, F.; Fox,
+E.; and Garnett, R., eds., Advances in Neural Information
+Processing Systems 32, 4403â4414. Curran Associates,
+Inc. URL http://papers.nips.cc/paper/8691-liir-learning-
+
+0123456Time Steps1e6020406080100Test Win % 8m9m aborationgc+qmixgc+vdnqmixvdn0123456Time Steps1e6020406080100Test Win % 10m11m aborationgc+qmixgc+vdnqmixvdn012345678Time Steps1e6020406080100Test Win % 12m14m aborationgc+qmixqmixgc+vdnvdn01326547012345670135264701234567024165378901234567890241378569012345678902416537891011012345678910110913546711108012345678910110315264101178912141301234567891011121314051761301234567891011121314Sunehag, P.; Lever, G.; Gruslys, A.; Czarnecki, W. M.; Zam-
+baldi, V. F.; Jaderberg, M.; Lanctot, M.; Sonnerat, N.; Leibo,
+J. Z.; Tuyls, K.; and Graepel, T. 2017. Value-Decomposition
+Networks For Cooperative Multi-Agent Learning. CoRR
+abs/1706.05296. URL http://arxiv.org/abs/1706.05296.
+Van Erven, T.; and Harremos, P. 2014. RÂ´enyi divergence and
+Kullback-Leibler divergence. IEEE Transactions on Infor-
+mation Theory 60(7): 3797â3820.
+VeliËckoviÂ´c, P.; Cucurull, G.; Casanova, A.; Romero, A.; Lio,
+P.; and Bengio, Y. 2017. Graph attention networks. arXiv
+preprint arXiv:1710.10903 .
+Vinyals, O.; Ewalds, T.; Bartunov, S.; Georgiev, P.; Vezhn-
+evets, A. S.; Yeo, M.; Makhzani, A.; KÂ¨uttler, H.; Agapiou,
+J.; Schrittwieser, J.; Quan, J.; Gaffney, S.; Petersen, S.; Si-
+monyan, K.; Schaul, T.; van Hasselt, H.; Silver, D.; Lilli-
+crap, T. P.; Calderone, K.; Keet, P.; Brunasso, A.; Lawrence,
+D.; Ekermo, A.; Repp, J.; and Tsing, R. 2017. StarCraft
+II: A New Challenge for Reinforcement Learning. CoRR
+abs/1708.04782. URL http://arxiv.org/abs/1708.04782.
+
+Wang, T.; Wang, J.; Wu, Y.; and Zhang, C. 2019.
+arXiv preprint
+Inï¬uence-based multi-agent exploration.
+arXiv:1910.05512 .
+Wang, W.; Yang, T.; Liu, Y.; Hao, J.; Hao, X.; Hu, Y.; Chen,
+Y.; Fan, C.; and Gao, Y. 2020. From Few to More: Large-
+Scale Dynamic Multiagent Curriculum Learning. In AAAI,
+7293â7300.
+
+individual-intrinsic-reward-in-multi-agent-reinforcement-
+learning.pdf.
+
+Dudani, S. A. 1976.
+neighbor rule.
+Cybernetics (4): 325â327.
+
+The distance-weighted k-nearest-
+IEEE Transactions on Systems, Man, and
+
+Foerster, J. N.; Assael, Y. M.; de Freitas, N.; and Whiteson,
+S. 2016. Learning to Communicate with Deep Multi-Agent
+Reinforcement Learning. CoRR abs/1605.06676. URL http:
+//arxiv.org/abs/1605.06676.
+
+Ha, D.; Dai, A.; and Le, Q. V. 2016. Hypernetworks. arXiv
+preprint arXiv:1609.09106 .
+
+Hausknecht, M.; and Stone, P. 2015. Deep recurrent q-
+learning for partially observable mdps. In 2015 AAAI Fall
+Symposium Series.
+
+HÂ¨uttenrauch, M.; Sosic, A.; and Neumann, G. 2017. Guided
+Deep Reinforcement Learning for Swarm Systems. CoRR
+abs/1709.06011. URL http://arxiv.org/abs/1709.06011.
+
+Jiang, J.; Dun, C.; and Lu, Z. 2018. Graph Convolutional Re-
+inforcement Learning for Multi-Agent Cooperation. CoRR
+abs/1810.09202. URL http://arxiv.org/abs/1810.09202.
+
+Kraemer, L.; and Banerjee, B. 2016. Multi-agent reinforce-
+ment learning as a rehearsal for decentralized planning. Neu-
+rocomputing 190(may 19): 82â94.
+
+Kusner, M. J.; Paige, B.; and HernÂ´andez-Lobato, J. M.
+2017. Grammar variational autoencoder. arXiv preprint
+arXiv:1703.01925 .
+
+Laurens, V. D. M.; and Hinton, G. 2008. Visualizing
+Data using t-SNE. Journal of Machine Learning Research
+9(2605): 2579â2605.
+
+Liu, Y.; Wang, W.; Hu, Y.; Hao, J.; Chen, X.; and Gao, Y.
+2020. Multi-Agent Game Abstraction via Graph Attention
+Neural Network. In AAAI, 7211â7218.
+
+Mao, H.; Liu, W.; Hao, J.; Luo, J.; Li, D.; Zhang, Z.; Wang,
+J.; and Xiao, Z. 2019. Neighborhood Cognition Consis-
+tent Multi-Agent Reinforcement Learning. arXiv preprint
+arXiv:1912.01160 .
+
+Oliehoek, F. A.; Amato, C.; et al. 2016. A concise introduc-
+tion to decentralized POMDPs, volume 1. Springer.
+
+Peng, P.; Yuan, Q.; Wen, Y.; Yang, Y.; Tang, Z.; Long, H.;
+and Wang, J. 2017. Multiagent Bidirectionally-Coordinated
+Nets for Learning to Play StarCraft Combat Games. CoRR
+abs/1703.10069. URL http://arxiv.org/abs/1703.10069.
+
+Rashid, T.; Samvelyan, M.; de Witt, C. S.; Farquhar, G.;
+Foerster, J. N.; and Whiteson, S. 2018. QMIX: Mono-
+tonic Value Function Factorisation for Deep Multi-Agent
+Reinforcement Learning. CoRR abs/1803.11485. URL
+http://arxiv.org/abs/1803.11485.
+
+Son, K.; Kim, D.; Kang, W. J.; Hostallero, D.; and Yi,
+Y. 2019. QTRAN: Learning to Factorize with Transfor-
+mation for Cooperative Multi-Agent Reinforcement Learn-
+ing. CoRR abs/1905.05408. URL http://arxiv.org/abs/1905.
+05408.
+
+

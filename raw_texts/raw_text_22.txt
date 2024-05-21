@@ -1,0 +1,3836 @@
+Decentralized linear quadratic systems with major
+and minor agents and non-Gaussian noise
+
+Mohammad Afshari, Student Member, IEEE, and Aditya Mahajan, Senior Member, IEEE
+
+1
+
+2
+2
+0
+2
+
+l
+u
+J
+
+1
+
+]
+
+Y
+S
+.
+s
+s
+e
+e
+[
+
+2
+v
+6
+5
+8
+1
+1
+.
+4
+0
+0
+2
+:
+v
+i
+X
+r
+a
+
+AbstractâA decentralized linear quadratic system with a
+major agent and a collection of minor agents is considered.
+The major agent affects the minor agents, but not vice versa.
+The state of the major agent is observed by all agents. In
+addition, the minor agents have a noisy observation of their local
+state. The noise processes is not assumed to be Gaussian. The
+structures of the optimal strategy and the best linear strategy
+are characterized. It is shown that major agentâs optimal control
+action is a linear function of the major agentâs MMSE (minimum
+mean squared error) estimate of the system state while the minor
+agentâs optimal control action is a linear function of the major
+agentâs MMSE estimate of the system state and a âcorrection
+termâ which depends on the difference of the minor agentâs
+MMSE estimate of its local state and the major agentâs MMSE
+estimate of the minor agentâs local state. Since the noise is non-
+Gaussian, the minor agentâs MMSE estimate is a non-linear
+function of its observation. It is shown that replacing the minor
+agentâs MMSE estimate by its LLMS (linear least mean square)
+estimate gives the best linear control strategy. The results are
+proved using a direct method based on conditional independence,
+common-information-based splitting of state and control actions,
+and simplifying the per-step cost based on conditional indepen-
+dence, orthogonality principle, and completion of squares.
+
+Index TermsâDecentralized stochastic control, decentralized
+linear quadratic systems, dynamic team theory, non-Gaussian
+noise, separation of estimation and control.
+
+I. INTRODUCTION
+
+In many modern decentralized control systems such as self
+driving cars, robotics, unmanned aerial vehicles, and others,
+the environment is sensed using vision and Lidar sensors; the
+raw sensor observations are ï¬ltered through a deep neural
+network based object classiï¬er and the classiï¬er outputs are
+used as the inputs to the controllers. In such systems the
+assumption that the observation noise is Gaussian breaks down.
+Therefore, the optimal design of such decentralized systems
+requires understanding the structure of optimal controllers when
+the observation noise is non-Gaussian.
+
+For centralized control of linear systems with quadratic per-
+step cost, the classical two way separation between estimation
+and control continues to hold even when the observation
+(and the process noises) are non-Gaussian. In particular, the
+optimal control action is a linear function of the MMSE
+(minimum mean-squared error) estimator of the state given the
+observations and the past actions at the controller. Moreover,
+
+The
+
+authors
+
+are with
+
+and
+Computer Engineering, McGill University, Montreal, QC, H3A-0E9,
+mohammad.afshari2@mail.mcgill.ca,
+Canada.
+aditya.mahajan@mcgill.ca
+
+the Department
+
+Electrical
+
+Emails:
+
+of
+
+This work was supported in part by Natural Sciences and Engineering
+Research Council of Canada (NSERC) Discovery Grant GPIN-2016-05165.
+
+the MMSE estimator does not depend on the choice of the
+control strategy. See [1]â[3] for details.
+
+Although the optimal control action is a linear function of the
+MMSE estimate, the MMSE estimate is, in general, a non-linear
+function of the past observations and actions. Thus, the optimal
+control action is a non-linear function of the past observations
+and the action. In certain applications, it is desirable to restrict
+attention to linear control strategies. The best linear strategy is
+similar to the optimal strategy where the MMSE estimate is
+replaced by the LLMS (linear least mean squares) estimate.1
+Moreover, the LLMS estimate does not depend on the choice
+of the control strategy. See [4, section 15.5.3] for details.
+
+In summary, in centralized control of linear quadratic systems
+with non-Gaussian noise, there is a two way separation of
+estimation and control; the optimal control action is a linear
+function of the MMSE estimate of the state given the data at
+the controller. The best linear controller has the same structure
+except the MMSE estimate of the state is replaced by the
+LLMS estimate. Both the MMSE and LLMS estimators can
+be computed as functions of sufï¬cient statistics that can be
+recursively updated.2 In contrast, the current state of the art in
+decentralized systems is signiï¬cantly limited.
+
+In the literature on optimal decentralized control of linear
+quadratic systems, most papers assume that the noise processes
+are Gaussian. Even with Gaussian noise, non-linear policies
+may outperform the best linear policies [5]; linear strategies
+are globally optimal only for speciï¬c information structures
+(e.g., partially nested [6] and its variants). Even for systems
+with Gaussian noise and partially nested information structures,
+there is no general method to identify sufï¬cient statistics for
+the optimal controller; the optimal strategy is known to have a
+ï¬nite-dimensional sufï¬cient statistic only for speciï¬c models
+(e.g., the one-step delayed sharing information structure [?], [7];
+asymmetric one-step delayed sharing [8]; chain structures [9];
+two-agent problem [10]). As far as we are aware, there are no
+existing results on sufï¬cient statistics for optimal decentralized
+control of linear quadratic systems with output feedback and
+non-Gaussian noise.
+
+If attention is restricted to linear strategies, the problem
+of ï¬nding the best linear control strategy for a decentralized
+linear quadratic system is not convex in general but can be
+converted to a convex problem when the controller and the plant
+have speciï¬c sparsity pattern (funnel causality [11], quadratic
+
+1For linear models driven by uncorrelated noise, the LLMS estimate is the
+
+best linear unbiased estimator of the state.
+
+2MMSE estimator is the mean of the conditional density, which can be
+recursively updated via Bayesian ï¬ltering; LLMS estimator can be recursively
+updated via recursive least squares ï¬ltering.
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+invariance [12], and their variants). Even for such models, the
+best linear control strategy may not have a ï¬nite dimensional
+sufï¬cient statistic [13]; the best linear strategy is known to
+have a ï¬nite-dimensional sufï¬cient statistic only for speciï¬c
+models (e.g., poset causality [14], two-agent problem [15]â[22]
+and its variants [23]â[25]). A general method for identifying
+sufï¬cient statistics for the best linear strategy in linear quadratic
+systems with partial history sharing was proposed in [26], but
+this method did not provide an efï¬cient algorithm to compute
+all the gains at the controllers.
+
+In this paper, we investigate a decentralized control system
+with a major agent and a collection of minor agents. The agents
+are coupled in their dynamics as well as cost. In particular,
+the dynamics are linear; the state and the control actions of
+the major agent affect the state evolution of all the minor
+agents but the state and control actions of the minor agents
+do not affect the state evolution of the major or other minor
+agents. The cost is an arbitrarily coupled quadratic cost. The
+information structure is partially nested with partial output
+feedback. In particular, the major agent perfectly observes its
+own state while each minor agent perfectly observes the state
+of the major agent and partially observes its own state. We
+assume that the process and the observation noises have zero
+mean and ï¬nite variance but do not impose any restrictions
+on the distribution of the noise processes. We are interested in
+identifying both the optimal and the best linear control strategy
+for this model.
+
+There are two motivations for considering this speciï¬c model.
+First, such systems arise in certain applications in decentralized
+control of unmanned aerial vehicles (UAVs) and for that reason
+there has been considerable interest in understanding special
+cases of such models [15]â[25]. Variations of this model with
+weak coupling between the agents have also been considered
+in the literature on mean-ï¬eld games [27]â[30]. Second, the
+information structure may be viewed as a âstar networkâ, where
+the major agent is the central hub and the minor agents are
+on the periphery. Understanding the optimal design of such
+systems is an important intermediate step in understanding
+the optimal design of decentralized systems where agents are
+connected over a general graph.
+
+Even though the information structure of our model is
+partially nested, we cannot use the results of [6] because the
+noise processes are not Gaussian. There is information that is
+commonly known to all agents in our model, so the information
+structure is partial history sharing [31]. However, we cannot
+directly use the dynamic programming decomposition of [31]
+as it was derived for models with ï¬nite state and ï¬nite action
+spaces. In addition, the local information at the minor agents
+is increasing with time. So, we cannot use the method of [26]
+to identify sufï¬cient statistics.
+
+When there is only one minor agent, our model is similar
+to the two agent problem considered in [10], [15]â[20], [22].
+However, none of these results are directly applicable: [15]â
+[17] restrict attention to state feedback; [19], [20], [22] consider
+output or partial output feedback in continuous time systems but
+restrict attention to linear feedback strategies; [10] considers
+output feedback but assumes that the noise is Gaussian. A
+model similar to ours has been considered in [18], [25]. In [25],
+
+a continuous time system with major and minor agents with
+output feedback is considered but it is assumed that there is no
+cost coupling between the minor agents, the system dynamics
+is stable, and attention is restricted to linear strategies. In [18],
+a discrete time system with a major and a single minor agent
+is considered but it is assumed that the system dynamics is
+stable and attention is restricted to linear strategies.
+
+Our ï¬rst main result is to show that the qualitative features
+of centralized control of linear quadratic control continue to
+hold for decentralized control of linear systems with major and
+minor agents. In particular, we show that:
+
+â¢ The optimal control action of the major agent is a linear
+function of the major agentâs MMSE estimate of the
+state of the entire system. The corresponding gains are
+determined by the solution of a single âglobalâ Riccati
+equation that depends on the dynamics and the cost of
+the entire system.
+
+â¢ The optimal control action of the minor agent is a linear
+function of the minor agentâs MMSE estimate of its local
+state and the major agentâs MMSE estimate of the local
+state of the minor agent. The corresponding gains are
+determined by the solution of two Riccati equation: a
+âglobalâ Riccati equation that depends on the dynamics
+and the cost of the entire system and a âlocalâ Riccati
+equation that depends on the dynamics and the cost of
+the minor agent.
+
+Moreover, there is a separation between estimation and control.
+The MMSE estimation strategies of both the major and the
+minor agents do not depend on the choice of the control
+strategies. In addition, the choice of the controller gains does
+not depend on the estimation strategies used by the agents. See
+Theorem 2 for a precise statement of these results. Note that
+the MMSE estimator of the major agent is a linear function of
+the data while the MMSE estimator of the minor agent is a
+non-linear function of the data.
+
+Our second main result is to show that the best linear strategy
+has the same structure as the optimal strategy where the MMSE
+estimate is replaced by the LLMS estimate. Moreover, the
+LLMS estimate does not depend on the choice of the control
+strategy.
+
+We show that both the MMSE and the LLMS estimates
+can be computed as a function of sufï¬cient statistics that
+can be updated recursively. In particular, we show that the
+is the mean of the
+the minor agent
+MMSE estimate at
+conditional density of the state of the minor agent given the
+past observations. The conditional density can be recursively
+updated using (non-linear) Bayesian ï¬ltering. The LLMS
+estimates at the minor agent can be updated using recursive
+least squares ï¬ltering. Note that unlike the results of [10],
+[22], the recursive update of both the MMSE and the LLMS
+estimates do not depend on the Riccati gains.
+
+Finally, we believe that our proof technique might be consid-
+ered a contribution in its own right. The two most commonly
+used techniques in decentralized control of linear systems are:
+(i) time-domain dynamic programming decomposition which is
+used to identify optimal strategies; and (ii) frequency domain
+decomposition using Youla parameterization which is used
+to identify the best linear control strategy. In this paper, we
+
+present a uniï¬ed approach to identify both the optimal and
+the best linear control strategies. Our approach is based on:
+(i) conditional independence of the states of the minor agents
+given the common information; and (ii) splitting the state
+and the control actions based on the common information;
+and (iii) simplifying the per-step cost based on conditional
+independence, orthogonality principle, and completion of
+squares. Our approach side steps the technical difï¬culties
+related to measurability and existence of value functions in
+dynamic programming. At the same time, unlike the spectral
+factorization methods, it can be used to identify both the optimal
+and the best linear control strategy. Given the paucity of positive
+results in decentralized control, we believe that a new solution
+approach is of interest.
+
+A. Notation
+
+Given a matrix A, Aij denotes its (i, j)-th block element,
+A(cid:124) denotes its transpose, vec(A) denotes the column vector
+of A formed by vertically stacking the columns of A. Given
+a square matrix A, Tr(A) denotes the sum of its diagonal
+elements. In denotes an n Ã n identity matrix. We simply
+use I when the dimension is clear for context. Given any
+vector valued process {y(t)}tâ¥1 and any time instances t1,
+t2 such that t1 â¤ t2, y(t1:t2) is a short hand notation for
+vec(y(t1), y(t1 + 1), . . . , y(t2)).
+
+Given random vectors x, y, and z, E[x] denotes the mean
+of x, E[x|y] denotes the conditional mean of random variable
+x given random variable y, cov(x, y) denotes the covariance
+between x and y, and x â¥â¥ y|z denotes that x and y are
+conditionally independent given z.
+
+Superscript index agents and local, common, and stochastic
+components of state and control. Subscripts denote components
+of vectors and matrices. The notation Ëx(t|i) denotes the
+estimate of variable x at time t conditioned on the information
+available at agent i at time t.
+
+Given matrices A, B, C, Q, R, Î£, Î£(cid:48), and P of appropriate
+
+dimensions, we use the following operators:
+
+R(P, A, B, Q, R) = Q + A(cid:124)P A
+
+â A(cid:124)P B(R + B(cid:124)P B)â1B(cid:124)P A,
+
+G(P, A, B, R) = (R + B(cid:124)P B)â1B(cid:124)P A.
+
+K(P, A, C, Î£, Î£(cid:48)) = (AP A(cid:124)C (cid:124) + Î£C (cid:124))
+
+(CAP A(cid:124)C (cid:124) + CÎ£C (cid:124) + Î£(cid:48))â1,
+
+and
+F(P, A, C, Î£, Î£(cid:48)) = AP A(cid:124) + Î£
+
+â K(CAP A(cid:124)C (cid:124) + CÎ£C (cid:124) + Î£(cid:48))K (cid:124),
+
+where K = K(P, A, C, Î£, Î£(cid:48)).
+
+II. MODEL AND PROBLEM FORMULATION
+
+A. Problem formulation
+
+Consider a decentralized control system with one major
+and n minor agents that evolves in discrete time over a ï¬nite
+horizon T . We use index 0 to indicate the major agent and
+use index i, i â N := {1, . . . , n}, to indicate a minor agent.
+We also deï¬ne N0 := {0, 1, . . . , n} as the set of all agents.
+
+3
+
+Let xi(t) â Rdi
+input of agent i â N0.
+
+x and ui(t) â Rdi
+
+u denote the state and control
+
+1) System dynamics: All agents have linear dynamics. The
+dynamics of the major agent is not affected by the minor agents.
+In particular, the initial state of the major agent is given by
+x0(1), and for t â¥ 1, the state of the major agent evolves
+according to
+
+x0(t + 1) = A00x0(t) + B00u0(t) + w0(t),
+
+(1)
+
+where {w0(t)}tâ¥1, w0(t) â Rd0
+
+x, is a noise process.
+
+In contrast, the dynamics of the minor agents are affected by
+the state of the major agent. For agent i â N , the initial state
+is given by xi(1), and for t â¥ 1, the state evolves according to
+
+xi(t+1) = Aiixi(t)+Ai0x0(t)+Biiui(t)+Bi0u0(t)+wi(t),
+(2)
+where {wi(t)}tâ¥1, wi(t) â Rdi
+x , is a noise process. Further-
+more, the minor agent i â N generates an output yi(t) â Rdi
+y
+given by
+
+yi(t) = Ciixi(t) + vi(t)
+
+i â N,
+
+(3)
+
+y , is a noise process.
+
+where {vi(t)}tâ¥1, vi(t) â Rdi
+Assumption 1 We assume that all primitive random variablesâ
+states {x0(1), x1(1), . . . , xn(1)},
+the process
+the initial
+noises {wi(1), . . . , wi(T )}iâN0 , and the observation noises
+{vi(1), . . . , vi(T )}iâN are deï¬ned on a common probability
+space, are independent and have zero mean and ï¬nite variance.
+i to denote the variance of the initial state xi(1), Î£w
+We use Î£x
+i
+to denote the variance of the process noise wi(t) and Î£v
+i to
+denote the variance of the observation noise vi(t).
+
+Note that we do not assume that the primitive random variables
+have a Gaussian distribution. For some of the results, we impose
+an additional assumption that the primitive random variables
+have a density.
+
+Assumption 2 All primitive random variables (which deï¬ned
+on a common probability space) have a joint density. We denote
+the marginal density of xi(1), wi(t), and vi(t) by Ïxi(1), Ïi,t,
+and Î½i,t respectively.
+
+Let x(t) = vec(x0(t), . . . , xn(t)) denote the state of the
+system, u(t) = vec(u0(t), . . . , un(t)) denote the control
+actions of all controllers, and w(t) = vec(w0(t), . . . , wn(t))
+denote the system disturbance. Then the dynamics (1) and (2)
+can be written in vector form as
+
+x(t + 1) = Ax(t) + Bu(t) + w(t),
+
+(4)
+
+where
+
+and
+
+A =
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+A00
+0
+A10 A11
+0
+A20
+...
+...
+0
+An0
+
+B =
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+B00
+0
+B10 B11
+0
+B20
+...
+...
+0
+Bn0
+
+0
+0
+A22
+. . .
+Â· Â· Â·
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+Â· Â· Â·
+0
+Â· Â· Â·
+0
+Â· Â· Â·
+0
+...
+. . .
+0 Ann
+
+0
+0
+B22
+. . .
+Â· Â· Â·
+
+Â· Â· Â·
+0
+Â· Â· Â·
+0
+Â· Â· Â·
+0
+...
+. . .
+0 Bnn
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£º
+ï£º
+ï£»
+
+.
+
+Note that A and B are sparse block lower triangular matrices.
+2) Information structure: The system has partial output
+feedback: the major agent observes its own state while minor
+agent i, i â N , observes the state of the major agent and its
+own output. Thus, the information I0(t) available to the major
+agent is given by
+
+Problem 1 is non-linear. In certain applications, it is desirable
+to restrict attention to linear strategies. For that reason, we also
+consider the following optimization problem.
+
+Problem 2 In the system described above, choose an afï¬ne
+strategy (g0, . . . , gn) â GA to minimize the total expected cost
+given by (9).
+
+4
+
+I0(t) := {x0(1:t), u0(1:t â 1)},
+
+(5)
+
+while the information Ii(t) available to minor agent i, i â N ,
+is given by
+
+Ii(t) := {x0(1:t), yi(1:t), u0(1:t â 1), ui(1:t â 1)}.
+
+(6)
+
+3) Admissible control strategies: At time t, controller i â N0
+chooses control action ui(t) as a function of the information
+Ii(t) available to it, i.e.,
+
+ui(t) = gi,t(Ii(t)),
+
+i â N0.
+
+The function gi,t is called the control law of controller i, i â N0,
+at time t. The collection gi := (gi,1, . . . , gi,T ) is called the
+control strategy of controller i and (g0, . . . , gn) is called the
+control strategy of the system.
+
+Let L2(Rn) denote the family of all square integrable
+random variables, i.e., random variables Z â Rn such that
+E[|Z|2] < â. We consider two classes of control strategies.
+The ï¬rst, which we call general control strategies and denote
+by G , is where gi,t is a measurable function that maps Ii(t) to
+ui(t) that satisï¬es the property that for any Ii(t) â L2(Rdi
+I ),
+where di
+I = t Ã (d0
+u), i â N , we
+have E[|gi,t(Ii(t))|2] < â.
+
+y) + (t â 1) Ã (d0
+
+u + di
+
+x + di
+
+The second, which we call afï¬ne control strategies and
+denote by GA, is where gi,t is an afï¬ne function that maps
+Ii(t) to ui(t).
+
+4) System performance and control objective: At time t â
+
+{1, . . . , T â 1}, the system incurs a per-step cost of
+c(x(t), u(t)) = x(t)(cid:124)Qx(t) + u(t)(cid:124)Ru(t)
+
+and at the time T , the system incurs a terminal cost of
+
+C(x(T )) = x(cid:124)(T )QT x(T ).
+
+(7)
+
+(8)
+
+It is assumed that Q and QT are positive semi-deï¬nite and R
+is positive deï¬nite.
+
+The performance of any strategy (g0, . . . , gn) is given by
+
+J(g0, . . . , gn) = E
+
+(cid:20) T â1
+(cid:88)
+
+t=1
+
+c(x(t), u(t)) + C(x(T ))
+
+(cid:21)
+,
+
+(9)
+
+where the expectation is with respect to the joint measure on
+all the system variables induced by the choice of the strategy
+(g0, . . . , gn) â G.
+
+We are interested in the following optimization problems.
+
+Problem 1 In the system described above, choose a general
+control strategy (g0, . . . , gn) â G to minimize the total
+expected cost given by (9).
+
+The information structure of the model is partially nested [6],
+but the noise is not Gaussian. So we cannot assert that there is
+no loss of optimality in restricting attention to linear strategies.
+In fact, our main result shows that the optimal policy of
+
+B. Roadmap of the solution approach
+
+The rest of the paper is organized as follows. In Section III
+we present several preliminary results to simplify the analysis.
+These include a common-information based splitting of state
+and control actions, a static reduction of the information
+structure, and establishing conditional independence of the
+various components of the state. We combine these results to
+split the per-step cost and then use completion of squares to
+rewrite the total cost as sum of three terms: the ï¬rst depends
+on the common component of the state and control action, the
+second depends on the local component of the state and control
+action, and the third depends on the stochastic component of
+the state. A key feature of this decomposition is that the third
+term does not depend on the choice of the control strategy. So
+we can focus on the ï¬rst two terms to ï¬nd the optimal or the
+best linear strategy.
+
+Our next step is to use orthogonal projection to simplify
+the ï¬rst two terms. In Section IV, we simplify these terms
+using orthogonality properties of the MMSE estimate and the
+estimation error; in Section V, we simplify these terms using
+orthogonality properties of LLMS estimate and the estimation
+error. The ï¬nal expression of the total cost in both cases is
+such that the optimal and best linear strategies can be identiï¬ed
+by inspection.
+
+III. PRELIMINARY RESULTS
+
+A. Common information based state and control splitting
+
+Following [31], we split the information at each agent into
+common and local information. The common information is
+deï¬ned as:
+
+I c(t) :=
+
+(cid:92)
+
+iâN0
+
+Ii(t) = {x0(1:t), u0(1:t â 1)} = I0(t).
+
+(10)
+
+The local information is the remaining information at each
+agent. Thus,
+
+0(t) := I0(t) \ I c(t) = â,
+I (cid:96)
+i (t) := Ii(t) \ I c(t) = {yi(1:t), ui(1:t â 1)}.
+I (cid:96)
+
+(11a)
+
+(11b)
+
+Thus, although there is common information among the agents,
+the system does not have partially history sharing information
+structure [31] because the local information at agent i â N is
+increasing with time. Hence the approach of [26], [31] cannot
+be used directly.
+
+Instead, we combine the idea of common information with
+a standard idea in linear systems and split the state and
+the control actions into different components based on the
+common information. First, we split the control action into
+two components: u(t) = uc(t) + u(cid:96)(t), where
+
+uc(t) = E[u(t)|I c(t)],
+
+u(cid:96)(t) = u(t) â uc(t).
+
+(12)
+
+We refer to uc(t) and u(cid:96)(t) as the common control and the
+local control, respectively.
+
+Based on the above splitting of control actions, we split
+the state into three components: x(t) = xc(t) + x(cid:96)(t) + xs(t),
+where
+
+xc(1) = 0,
+x(cid:96)(1) = 0,
+xs(1) = x(1),
+
+xc(t + 1) = Axc(t) + Buc(t),
+x(cid:96)(t + 1) = Ax(cid:96)(t) + Bu(cid:96)(t),
+xs(t + 1) = Axs(t) + w(t).
+
+(13a)
+
+(13b)
+
+(13c)
+
+i (t) and to replace a linear function of Ii(t) by a linear
+i (t). As a ï¬rst implication, we derive the following
+
+on I s
+function of I s
+additional properties of the split components of the state.
+
+Lemma 3 For any strategy g â G , the split components of
+the state and the control action satisfy the following additional
+properties: for any i â N ,
+(P7) For any Ï â¤ t, E[u(cid:96)
+(P8) For any Ï â¤ t, E[x(cid:96)
+
+i (Ï )|I c(t)] = 0.
+i (Ï )|I c(t)] = 0.
+
+5
+
+We refer to xc(t), x(cid:96)(t), xs(t) as the common, local, and
+stochastic components of the state, respectively. Note that the
+stochastic component is control free (i.e., does not depend on
+the control actions).
+
+Based on the above splitting of state, we split the ob-
+servations of agent i â N into three components as well:
+yi(t) = yc
+i (t), where
+
+i (t) + y(cid:96)
+
+For any matrix M of appropriate dimensions:
+
+(P9) E[x(cid:96)
+(P10) E[x(cid:96)
+(P11) E[u(cid:96)
+
+i (t)(cid:124)M xs
+0(t)] = 0.
+i (t)(cid:124)M xc(t)] = 0.
+i (t)(cid:124)M xs
+0(t)] = 0.
+
+The proof is presented in Appendix C.
+
+i (t) + ys
+yc
+i (t) = Ciixc
+i (t) = Ciix(cid:96)
+y(cid:96)
+i (t) = Ciixs
+ys
+i (t), and ys
+
+i (t),
+i (t),
+i (t) + vi(t).
+
+i (t).
+
+i (t), y(cid:96)
+
+i (t) is control free, so is ys
+
+We refer to yc
+i (t) as the common, local, and
+stochastic components of the observation, respectively. Note
+that since xs
+Lemma 1 For any strategy g â G the split components of the
+state and the control actions satisfy the following properties:
+(P1) u(cid:96)
+(P2) x(cid:96)
+(P3) E[u(cid:96)
+(P4) E[uc(t)(cid:124)M u(cid:96)(t)] = 0, where M is any matrix of
+
+i (t)|I c(t)] = 0, i â {1, . . . , n}.
+
+0(t) = 0.
+0(t) = 0.
+
+compatible dimensions.
+
+i (t)] = 0, i â {1, . . . , n}.
+
+(P5) E[u(cid:96)
+(P6) E[xc(t)|I c(t)] = xc(t).
+
+The proof is presented in Appendix A.
+
+B. Static reduction
+
+We deï¬ne the following information structure which does
+
+not depend on the control strategy.
+
+(14a)
+
+(14b)
+
+(14c)
+
+C. Conditional independence and split of per-step cost
+Lemma 4 For any strategy g â G and any i, j â N , i (cid:54)= j,
+we have the following:
+
+1) (xi(1:t), ui(1:t)) â¥â¥ (xj(1:t), uj(1:t)) | I c(t).
+2) xs
+3) (x(cid:96)
+
+j(1:t) | I s
+i (1:t)) â¥â¥ (x(cid:96)
+
+i (1:t) â¥â¥ xs
+i (1:t), u(cid:96)
+
+j(1:t)) | I c(t).
+
+j(1:t), u(cid:96)
+
+0 (t).
+
+The proof is presented in Appendix D.
+
+For ease of notation, we consider the following combinations
+
+of different components of the state:
+
+zc(t) = xc(t) + xs(t),
+
+i (t) = x(cid:96)
+z(cid:96)
+
+i (t) + xs
+
+i (t).
+
+(16)
+
+Due to the conditional independence of Lemma 4, the per-
+
+step cost simpliï¬es as follows.
+
+Lemma 5 The per-step cost simpliï¬es as follows:
+
+E(cid:2)x(t)(cid:124)Qx(t)(cid:3) = E
+
+(cid:104)
+zc(t)(cid:124)Qzc(t)
+
++
+
+n
+(cid:88)
+
+i=1
+
+i (t)(cid:124)Qiiz(cid:96)
+z(cid:96)
+
+i (t) â
+
+i (t)Qiixs
+xs
+
+(cid:105)
+i (t)
+
+(17)
+
+n
+(cid:88)
+
+i=1
+
+and
+
+(cid:104)
+E(cid:2)u(t)(cid:124)Ru(t)(cid:3) = E
+
+uc(t)(cid:124)Ruc(t) +
+
+(cid:88)
+
+iâN
+
+i (t)(cid:124)Riiu(cid:96)
+u(cid:96)
+
+(cid:105)
+i (t)
+
+.
+
+(18)
+
+0 (t) = {xs
+I s
+i (t) = {xs
+I s
+
+0(1:t)},
+0(1:t), ys
+
+i (1:t)},
+
+i â N.
+
+(15a)
+(15b)
+
+The proof is presented in Appendix E.
+
+We now show that the above information structure may be
+viewed as the static reduction of the original information
+structure [6], [32].
+Lemma 2 For any arbitrary but ï¬xed strategy g â G ,
+
+Ii(t) â¡ I s
+
+i (t),
+
+i â N0,
+
+D. Completion of squares
+
+Lemma 6 For random variables (x, u, w) such that w is zero-
+mean and independent of (x, u), and given matrices A, B, R,
+and S of appropriate dimensions, we have
+
+i.e., both sets generate the same sigma-algebra or, equivalently,
+they are functions of each other. Moreover, if g â GA then Ii(t)
+and I s
+i (t), i â N0, are linear functions of each other.
+
+E[u(cid:124)Ru + (Ax + Bu + w)(cid:124)S(Ax + Bu + w)]
+
+= E[(u + Lx)(cid:124)â(u + Lx)] + E[x(cid:124) ËSx] + E[w(cid:124)Sw],
+
+The proof is presented in Appendix B. In the sequel, we use
+Lemma 2 to replace conditioning on Ii(t) by conditioning
+
+where â = [R + B(cid:124)SB], L = ââ1B(cid:124)SA, and ËS = A(cid:124)SA â
+L(cid:124)âL.
+
+Proof: Since w is zero mean and independent of (x, u):
+
+Proof: We start by rewriting the total cost using the result
+
+6
+
+E[(Ax + Bu + w)(cid:124)S(Ax + Bu + w)]
+
+= E[(Ax + Bu)(cid:124)S(Ax + Bu) + w(cid:124)Sw].
+
+Now we can show
+
+u(cid:124)Ru+(Ax+Bu)(cid:124)S(Ax+Bu) = (u+Lx)(cid:124)â(u+Lx)+x(cid:124) ËSx
+
+by expanding both sides and combining the coefï¬cients. The
+proof follows by combining both the equations.
+
+Let Sc(1:T ) and S(cid:96)
+
+Riccati equations: Initialize Sc(T ) = QT and S(cid:96)
+i â N . Then, for t â {T â 1, . . . , 1}, recursively deï¬ne
+
+i (1:T ) denote the solution to the following
+i (T ) = [QT ]ii,
+
+Sc(t) = R(Sc(t + 1), A, B, Q, R),
+i (t) = R(S(cid:96)
+S(cid:96)
+
+i (t + 1), Aii, Bii, Qii, Rii),
+
+i â N.
+
+Deï¬ne the gains
+
+Lc(t) = G(Sc(t + 1), A, B, R),
+L(cid:96)
+
+i (t) = G(S(cid:96)
+
+i (t + 1), Aii, Bii, Rii),
+
+i â N,
+
+(19)
+
+(20)
+
+(21)
+
+(22)
+
+and the matrices
+
+âc(t) = [R + B(cid:124)Sc(t + 1)B],
+â(cid:96)
+
+i (t) = [Rii + B
+
+i (t + 1)Bii].
+
+(cid:124)
+iiS(cid:96)
+
+Lemma 7 For any strategy g â G , the total cost may be split
+as
+
+J(g) = J c(g) +
+
+(cid:88)
+
+iâN
+
+i (g) + J s,
+J (cid:96)
+
+(23)
+
+where J c(g) is given by
+
+(cid:104)T â1
+(cid:88)
+
+E
+
+t=1
+
+(uc(t) + Lc(t)zc(t))(cid:124)âc(t)(uc(t) + Lc(t)zc(t))
+
+(cid:105)
+,
+
+and J (cid:96)
+
+i (g), i â N , is given by
+
+(cid:104)T â1
+(cid:88)
+
+(u(cid:96)
+
+i (t) + L(cid:96)
+
+i (t)z(cid:96)
+
+i (t))(cid:124)â(cid:96)
+
+i (t)(u(cid:96)
+
+i (t) + L(cid:96)
+
+i (t)z(cid:96)
+
+i (t))
+
+E
+
+t=1
+
+and J s is given by
+
+(cid:20)
+x(1)(cid:124)Sc(1)x(1) +
+
+E
+
+n
+(cid:88)
+
+xi(1)(cid:124)S(cid:96)
+
+i (1)xi(1)
+
+i=1
+
+T â1
+(cid:104)
+(cid:88)
+
+w(t)(cid:124)Sc(t + 1)w(t) +
+
+wi(t)(cid:124)S(cid:96)
+
+i (t + 1)wi(t)
+
+(cid:105)
+
+n
+(cid:88)
+
+i=1
+
+(Ai0xs
+
+0(t))(cid:124)S(cid:96)
+
+i (t + 1)(Ai0xs
+
+0(t) + 2Aiixs
+
+i (t))
+
+(cid:105)
+
+t=1
+T â1
+(cid:88)
+
+i=1
+n
+(cid:88)
+
+t=1
+
+i=1
+
+i (t)Qiixs
+xs
+
+i (t) â
+
+i (T )[QT ]iixs
+xs
+
+i (T )
+
+(cid:21)
+.
+
+n
+(cid:88)
+
+i=1
+
+t=1
+T â1
+(cid:88)
+
+n
+(cid:104)
+(cid:88)
+
++
+
++
+
+â
+
+of Lemma 5. In particular, J(g) can be written as
+
+(cid:104) T â1
+(cid:88)
+
+E
+
+t=1
+
+(cid:105)
+zc(t)(cid:124)Qzc(t) + uc(t)(cid:124)Ruc(t) + zc(T )(cid:124)QT zc(T )
+
+(cid:104) T â1
+(cid:88)
+
+n
+(cid:88)
+
++ E
+
+t=1
+
+i=1
+
+i (t)(cid:124)Qiiz(cid:96)
+z(cid:96)
+
+i (t) + u(cid:96)
+
+i (t)(cid:124)Riiu(cid:96)
+
+i (t)
+
++
+
+n
+(cid:88)
+
+i=1
+
+i (T )(cid:124)[QT ]iiz(cid:96)
+z(cid:96)
+
+i (T )
+
+(cid:105)
+
+(cid:104) T â1
+(cid:88)
+
+n
+(cid:88)
+
+â E
+
+t=1
+
+i=1
+
+i (t)(cid:124)Qiixs
+xs
+
+i (t) â
+
+i (T )(cid:124)[QT ]iixs
+xs
+
+(cid:105)
+i (T )
+
+.
+
+n
+(cid:88)
+
+i=1
+
+The dynamics of zc(t) and z(cid:96)(t) may be written as
+
+zc(t + 1) = Azc(t) + Buc(t) + w(t),
+i (t + 1) = Aiiz(cid:96)
+z(cid:96)
+
+i (t) + Ai0xs
+
+0(t) + Biiu(cid:96)
+
+i (t) + wi(t).
+
+Note that w(t) is zero mean and independent of (zc(t), uc(t))
+(because both zc(t) and uc(t) depend on w(1:t â 1) which is
+independent of w(t)). Similarly, w(t) is zero mean and inde-
+pendent of (vec(xs
+i (t)). The result then follows
+from recursively applying Lemma 6, (P9) and (P11).
+
+i (t)), u(cid:96)
+
+0(t), z(cid:96)
+
+Remark 1 The term J s is control-free and depends on only
+the primitive random variables. Hence minimizing J(g) is
+equivalent to minimizing J c(g) + (cid:80)
+
+iâN J (cid:96)
+
+i (g).
+
+In the next two sections, we simplify J c(g) + (cid:80)
+
+i (g)
+using orthogonality properties of MMSE/ LLMS estimates and
+the corresponding estimation error.
+
+iâN J (cid:96)
+
+IV. MAIN RESULTS FOR PROBLEM 1
+
+A. Orthogonal Projection
+
+As explained in Remark 1, minimizing J(g) is equivalent
+i (g) deï¬ned in Lemma 7. To
+
+to minimizing J c(g) + (cid:80)
+simplify J c(g) + (cid:80)
+iâN J (cid:96)
+
+iâN J (cid:96)
+i (g), deï¬ne
+
+Ëz(t|c) := E[zc(t)|I c(t)],
+i (t|i) := E[z(cid:96)
+Ëz(cid:96)
+
+i (t)|Ii(t)] â E[z(cid:96)
+
+i (t)|I0(t)].
+
+(24a)
+
+(24b)
+
+Deï¬ne the âestimation errorsâ
+
+Ëzc(t) = zc(t) â Ëz(t|c),
+
+(cid:105)
+
+,
+
+i (t) = z(cid:96)
+Ëz(cid:96)
+
+i (t) â Ëz(cid:96)
+
+i (t|i).
+
+Lemma 8 For any strategy g â G , the variables deï¬ned above
+satisfy the following properties:
+(C1) Ëzc(t) and Ëz(cid:96)
+
+i (t) are control-free and may be written just
+
+in terms of the primitive random variables.
+
+(C2) E[Ëzc(t)|I c(t)] = 0.
+
+For any matrix M of appropriate dimensions:
+(C3) E[Ëzc(t)(cid:124)M Ëz(t|c)] = 0.
+(C4) E[uc(t)(cid:124)M Ëzc(t)] = 0.
+i (t)(cid:124)M Ëz(cid:96)
+(C5) E[Ëz(cid:96)
+i (t)(cid:124)M Ëz(cid:96)
+(C6) E[u(cid:96)
+
+i (t|i)] = 0.
+i (t)] = 0.
+
+The proof is presented in Appendix F.
+
+An implication of the above is the following.
+
+Furthermore, the optimal performance is given by
+
+7
+
+Lemma 9 The per-step terms in J c(g) and J (cid:96)
+follows:
+E(cid:2)(uc(t) + Lc(t)zc(t))(cid:124)âc(t)(uc(t) + Lc(t)zc(t))(cid:3)
+
+i (g) simplify as
+
+= E(cid:2)(uc(t) + Lc(t)Ëz(t|c))(cid:124)âc(t)(uc(t) + Lc(t)Ëz(t|c))(cid:3)
+(25)
+
++ E(cid:2)Ëzc(t)(cid:124)Lc(t)(cid:124)âc(t)Lc(t)Ëzc(t)(cid:3)
+
+and
+E(cid:2)(u(cid:96)
+
+i (t))(cid:3)
+i (t)z(cid:96)
+i (t) + L(cid:96)
+
+i (t))(cid:124)â(cid:96)
+i (t)Ëz(cid:96)
+i (t)(cid:124)â(cid:96)
+
+i (t)z(cid:96)
+i (t) + L(cid:96)
+i (t)(cid:124)L(cid:96)
+
+i (t) + L(cid:96)
+= E(cid:2)(u(cid:96)
++ E(cid:2)Ëz(cid:96)
+
+i (t) + L(cid:96)
+i (t)(u(cid:96)
+i (t)(cid:3).
+
+i (t)(u(cid:96)
+i (t|i))(cid:124)â(cid:96)
+i (t)L(cid:96)
+Proof: Eq. (25) follows from (C2) and is equivalent to
+E[uc(t)(cid:124)âc(t)Lc(t)Ëzc(t)] = 0,
+E[Ëz(t|c)(t)(cid:124)Lc(t)(cid:124)âc(t)Lc(t)Ëzc(t)] = 0,
+
+i (t)Ëz(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t|i))(cid:3)
+(26)
+
+(27)
+
+(28)
+
+which is the direct result of (C3) and (C4).
+
+Eq. (26) is equivalent to
+i (t)(cid:124)â(cid:96)
+
+E[u(cid:96)
+i (t)(cid:124)L(cid:96)
+
+E[Ëz(cid:96)
+
+i (t)L(cid:96)
+
+i (t)Ëz(cid:96)(t)] = 0,
+
+i (t)(cid:124)â(cid:96)
+
+i (t)L(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t|i)] = 0,
+
+(29)
+
+(30)
+
+which is a direct result of (C5) and (C6).
+An immediate implication of Lemma 9 is the following.
+Lemma 10 For any strategy g â G , the cost J c(t) and J (cid:96)
+deï¬ned in Lemma 7 may be further split as
+i (g) = ËJ (cid:96)
+J (cid:96)
+
+J c(g) = ËJ c(g) + ËJ c,
+
+i (g) + ËJ (cid:96)
+i ,
+
+i (t)
+
+J â := inf
+gâG
+
+J(g) = ËJ c +
+
+ËJ (cid:96)
+i ,
+
+(cid:88)
+
+iâN
+
+where ËJ c and ËJ (cid:96)
+
+i are deï¬ned in Lemma 10.
+
+Proof: As argued in Remark 2, minimizing J(g) is
+equivalent to minimizing ËJ c(g) + (cid:80)
+ËJ i(g). By assumption,
+R is symmetric and positive deï¬nite and therefore so is Rii. It
+can be shown recursively that Sc(t) and S(cid:96)
+i (t) are symmetric
+and positive-semideï¬nite. Hence both âc(t) and â(cid:96)
+i (t) are
+symmetric and positive deï¬nite. Therefore
+
+iâN
+
+ËJ c(g) +
+
+(cid:88)
+
+iâN
+
+ËJ (cid:96)
+i (g) â¥ 0,
+
+with equality if and only if the strategy g is given by (31).
+The optimal control strategy in Theorem 1 is described in terms
+of the common and local components of the control. We can
+write it in terms of the control actions of the agents as follows.
+Let
+
+Ëx(t|c) = E[x(t) | I c(t)]
+
+and
+
+Ëx(t|i) = E[x(t) | Ii(t)]
+
+denote the major and i-th minor agentâs MMSE estimate of
+the state. Eq. (16) and (24) imply the following.
+
+Lemma 11 The common and local information based esti-
+mates Ëz(t|c) and Ëz(cid:96)
+i (t|i) are related to the major and minor
+agentsâ MMSE estimates as follows:
+
+Ëz(t|c) = Ëx(t|c) and
+
+Ëz(cid:96)
+i (t|i) = Ëxi(t|i) â Ëxi(t|c).
+
+where ËJ c(g) is given by
+
+(cid:104)T â1
+(cid:88)
+
+(uc(t) + Lc(t)Ëz(t|c))(cid:124)âc(t)(uc(t) + Lc(t)Ëz(t|c))
+
+E
+
+Proof: (P8) implies that Ëx(t|c) = Ëz(t|c). Moreover, since
+i (t) is a function of I c(t) (and, therefore, a function of Ii(t)),
+xc
+we have
+
+(cid:105)
+,
+
+t=1
+
+and ËJ c is given by
+
+(cid:104)T â1
+(cid:88)
+
+(Lc(t)Ëzc(t))(cid:124)âc(t)Lc(t)Ëzc(t)
+
+(cid:105)
+,
+
+E
+
+t=1
+
+and ËJ (cid:96)
+
+i (g), i â N , is given by
+
+(cid:104)T â1
+(cid:88)
+
+(u(cid:96)
+
+i (t) + L(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t|i))(cid:124)â(cid:96)
+
+i (t)(u(cid:96)
+
+i (t) + L(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t|i))
+
+E
+
+t=1
+and ËJ (cid:96)
+
+i , i â N , is given by
+(cid:104)T â1
+(cid:88)
+
+E
+
+t=1
+
+(L(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t))(cid:124)â(cid:96)
+
+i (t)L(cid:96)
+
+i (t)Ëz(cid:96)
+
+i (t)
+
+Remark 2 Property (C1) implies that the terms ËJ c and ËJ (cid:96)
+i are
+control-free and depend only on the primitive random variables.
+Combined with Remark 1, this implies that minimizing J(g)
+is equivalent to minimizing ËJ c(g) + (cid:80)
+
+ËJ i(g).
+
+iâN
+
+Theorem 1 The optimal control strategy of Problem 1 is
+unique and is given by
+
+Ëxi(t|i) â Ëxi(t|c) = xc
+
+i (t) + E[x(cid:96)
+â xc
+i (t|i)(t).
+
+i (t) â E[x(cid:96)
+
+= Ëz(cid:96)
+
+i (t) + xs
+
+i (t) | Ii(t)]
+
+i (t) + xs
+
+i (t) | I0(t)]
+
+Let Ëxi(t|c) and Ëxi(t|i) denote the i-th element of Ëx(t|c) and
+Ëx(t|i), respectively. Moreover, let fi,t denote the conditional
+density of xi(t) given Ii(t). Note that Ëxi(t|i) is the mean
+of fi,t.
+
+Theorem 2 The optimal control strategy of Problem 1 is
+unique and is given by
+
+(cid:105)
+,
+
+(cid:105)
+.
+
+u0(t) = âLc
+
+0(t)Ëx(t|c),
+
+and for all i â N ,
+
+(32a)
+
+(32b)
+
+ui(t) = âLc
+
+i (t)Ëx(t|c) â L(cid:96)
+
+i (t)(Ëxi(t|i) â Ëxi(t|c)),
+
+where Lc
+i (t) denote the i-th row of Lc(t). The major agentâs
+MMSE estimate can be recursively updated as follows:
+Ëx(1|c) = vec(x1(1), 0, . . . , 0) and
+ï£®
+ï£®
+
+ï£®
+
+ï£¹
+
+ï£¹
+
+ï£¹
+
+x0(t)
+Ëx1(t|c)
+...
+Ëxn(t|c)
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
++ B
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+u0(t)
+uc
+1(t|c)
+...
+uc
+n(t|c)
+
++
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+w0(t)
+0
+...
+0
+
+, (33)
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+uc(t) = âLc(t)Ëz(t|c)
+i (t) = âL(cid:96)
+u(cid:96)
+i (t|i).
+
+i (t)Ëz(cid:96)
+
+Ëx(t + 1|c) = A
+
+(31a)
+
+(31b)
+
+where
+
+w0(t) = x0(t + 1) â A00x0(t) â B00u0(t),
+
+i (t|c) = âLc
+
+and uc
+the i-th minor agentâs MMSE estimate is given by
+
+i (t)Ëx(t|c). Furthermore, under Assumption 2,
+
+Ëxi(t|i) = xc
+
+i (t) + x(cid:96)
+
+i (t) +
+
+(cid:90)
+
+i (t)fi,t(xs
+xs
+
+i,t)dxs
+
+i (t)
+
+(34)
+
+where the conditional density fi,t may be updated using the
+following Bayesian ï¬lter: for any xs
+
+i (t),
+
+fi,t(xs
+
+i (t))
+Î²i(t) (cid:82) Î³i(t)Î³0(t)fi,tâ1(xs
+
+=
+
+(cid:82) Î²i(t) (cid:82) Î³i(t)Î³0(t)fi,tâ1(xs
+
+i (t â 1))dxs
+
+i (t â 1))dxs
+
+i (t â 1)
+i (t â 1)dxs
+
+i (t)
+
+Finally, to compute Ëxi(t|i) we use the state split in (13b).
+
+We have
+
+8
+
+Ëxi(t|i) = E[xi(t)|Ii(t)]
+= E[xc
+i (t) + x(cid:96)
+(a)
+= xc
+(b)
+= xc
+
+i (t) + x(cid:96)
+i (t) + x(cid:96)
+
+i (t) + xs
+i (t) + E[xs
+i (t) + E[xs
+
+i (t)|Ii(t)]
+
+i (t)|Ii(t)]
+i (t)|I s
+
+i (t)],
+
+i (t) and x(cid:96)
+
+where in (a) we use the fact that xc
+i (t) are measurable
+functions of Ii(t) and in (b) we use Lemma 2. Now, we con-
+sider the update of the conditional density. With a slight abuse
+of notation, we use P(ys
+i (t)|xs
+i (t)) to denote the conditional
+density of ys
+i (t) given xs
+i (t) and similar interpretations hold
+for other terms. Consider
+
+(35)
+
+fi,t(xs
+
+i (t)) = P(xs
+
+(cid:90)
+
+i (t)|I s
+P(xs
+
+i (t))
+i (t), xs
+
+where
+
+=
+
+i (t â 1)|I s
+
+i (t))dxs
+
+i (t â 1).
+
+(38)
+
+i (t) â Ciixs
+Î²i(t) = Î½i,t(ys
+(cid:0)xs
+0(t) â A00xs
+Î³0(t) = Ï0,t
+(cid:0)xs
+i (t) â Aiixs
+Î³i(t) = Ïi,t
+
+i (t)),
+0(t â 1)(cid:1),
+i (t â 1) â Ai0xs
+
+0(t â 1)(cid:1),
+
+and Ïi,t and Î½i,t are the distributions of the noise variables
+wi(t) and vi(t), respectively.
+
+Proof: The structure of optimal policies follows from
+
+Lemma 11 and Theorem 1.
+
+We establish the update of the major agentâs MMSE estimate
+
+in two steps. First note that
+
+Ëx0(t + 1|c) = E[x0(t + 1)|I c(t + 1)] = x0(t + 1)
+
+(36)
+
+because x0(t + 1) is part of I c(t + 1). This proves the zeroth
+component of (33). Next, for any i â N ,
+
+Ëxi(t + 1|c) = E[xi(t + 1)|I c(t + 1)]
+
+(a)
+= E[Ai0x0(t) + Bi0u0(t) + Aiixi(t) + Biiui(t)|I c(t + 1)]
+(b)
+= Ai0x0(t) + Bi0u0(t) + E[Aiixi(t) + Biiui(t)|I c(t)]
+= Ai0x0(t) + Aii Ëxi(t|c) + Bi0u0(t) + Biiuc
+
+(37)
+
+i (t),
+
+where (a) is because wi(t) is zero mean and independent of
+I c(t + 1) and (b) follows from the following:
+
+â¢ x0(t) and u0(t) are part of I c(t + 1) so can be taken out
+
+of the expectation,
+
+â¢ I c(t + 1) is equivalent to (I c(t), u0(t), x0(t + 1)) which,
+
+in turn, is equivalent to (I c(t), u0(t), w0(t)). Now,
+
+E[Aiixi(t) + Biiui(t)|I c(t), u0(t), w0(t)]
+
+= E[Aiixi(t) + Biiui(t)|I c(t)]
+
+Substituting I s
+Bayes rule, we get that fi,t(xs
+
+i (t) = (I s
+
+i (t â 1), ys
+
+0(t)) in (38) and using
+
+(cid:82) P(ys
+
+i (t), xs
+
+i (t), xs
+
+0(t)|I s
+
+(cid:82)(cid:82) P(ys
+
+i (t), xs
+
+i (t), xs
+
+0(t)|I s
+
+i (t))dxs
+
+i (t â 1)
+i (t â 1)dxs
+
+i (t)
+
+.
+
+(39)
+
+i (t), xs
+i (t)) is equal to
+i (t))dxs
+
+Now consider
+
+0(t)|I s
+
+i (t))
+
+i (t), xs
+
+P(ys
+= P(ys
+
+i (t)|xs
+
+i (t), xs
+i (t))
+i (t)|xs
+0(t)|xs
+
+Ã P(xs
+Ã P(xs
+
+0(t â 1), xs
+0(t â 1)) Ã P(xs
+
+i (t â 1))
+
+i (t â 1)|I s
+
+i (t â 1)).
+
+(40)
+
+Substituting (40) in (39) gives the update equation (35).
+
+B. Implementation of the optimal control strategy
+
+Based on Theorem 2, the optimal control strategy can be
+
+implemented as follows.
+
+1) Computation of the gains: Before the system starts
+
+running, the agents perform the following computations:
+
+â¢ All agents solve the Riccati equation (19) and compute
+the gains Lc(t) using (21). The major agent stores the
+row Lc
+0(t) while minor agent i stores the row Lc
+i (t). For
+ease of reference, we repeat the equations here:
+
+Sc(t) = R(Sc(t + 1), A, B, Q, R),
+Lc(t) = G(Sc(t + 1), A, B, R).
+
+Note that these are global equations which depend on the
+dynamics and the cost of the complete system.
+
+â¢ Minor agent i solves the Riccati equation (20) and
+i (t) using (22). For ease
+
+computes and stores the gains L(cid:96)
+of reference, we repeat them here:
+
+because u0(t) can be removed from the conditioning since
+it is a function of I c(t) and w0(t) can be removed from
+the conditioning because it is independent of xi(t) and
+ui(t).
+
+This proves the i-th component of (33).
+
+S(cid:96)
+i (t) = R(S(cid:96)
+i (t) = G(S(cid:96)
+L(cid:96)
+
+i (t + 1), Aii, Bii, Qii, Rii),
+i (t + 1), Aii, Bii, Rii).
+
+Note that these are local equations which depend on the
+local dynamics and the cost of the minor agent i.
+
+2) Filtering and tracking of different components of the
+state: Once the system is running, the agents keep track of
+the following components of the state and their estimates:
+
+â¢ All agents keep track of the major agentâs MMSE
+estimate using (33), which we repeat here: Ëx(1|c) =
+vec(x1(0), 0, . . . , 0) and
+
+V. MAIN RESULTS FOR PROBLEM 2
+
+The main idea of this section is same as that of Section IV;
+however instead of deï¬ning Ëz(t|c) and Ëz(cid:96)
+i (t|i) in terms of
+expectation (which can be nonlinear), we deï¬ne them in terms
+of Hilbert space projections which are linear. We ï¬rst start
+with an overview of basic results for Hilbert space projections.
+
+9
+
+Ëx(t + 1|c) = A
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+x0(t)
+Ëx1(t|c)
+...
+Ëxn(t|c)
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£»
+
++ B
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£»
+
++
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+u0(t)
+uc
+1(t|c)
+...
+uc
+n(t|c)
+
+ï£®
+
+ï£¯
+ï£¯
+ï£¯
+ï£°
+
+ï£¹
+
+ï£º
+ï£º
+ï£º
+ï£»
+
+w0(t)
+0
+...
+0
+
+.
+
+â¢ Agent i keeps track of the density fi,t of xi(t) given I s
+
+i (t)
+using the Bayesian ï¬lter (35) and computes the mean
+Ëxi(t|i) of this density. Note that the Bayesian ï¬lter (35)
+does not depend on the control strategy.
+
+3) Implementation of the control strategies: Finally, the
+
+agents choose the control actions as follows:
+
+â¢ The major agent chooses u0(t) using (32a), which we
+
+repeat below:
+
+u0(t) = uc
+
+0(t) = âLc
+
+0(t)Ëx(t|c).
+
+â¢ The minor agent chooses ui(t) using (32b), which we
+
+repeat below:
+
+ui(t) = uc
+
+i (t) + u(cid:96)
+= âLc
+
+i (t)
+
+i (t)Ëx(t|c) â L(cid:96)
+
+i (t)(Ëxi(t|i) â Ëxi(t|c)).
+
+C. The special case of state feedback
+
+Consider the special case of the model when each minor
+agent observes its state perfectly. This corresponds to Cii = I
+and vi(t) = 0. The information structure remains the same
+as before. In this case, the result of Theorem 2 simpliï¬es as
+follows. The optimal control action of the major agent is
+
+u0(t) = Lc
+
+0(t)Ëx(t|c),
+
+and that of the i-th minor agent, i â N , is
+
+ui(t) = Lc
+
+i (t)Ëx(t|c) + L(cid:96)
+
+i (t)(xi(t) â Ëxi(t|c)),
+
+(41)
+
+(42)
+
+where Ëx(t|c) = E[x(t)|I0(t)]. A similar result for only one
+minor agent was derived in [16].
+
+The following remarks are in order:
+â¢ The major agent observes its local state and the minor
+agents observer their local state and the state of the major
+agent. Nonetheless, the optimal control strategy involves
+the major agentâs MMSE estimate of the global state.
+â¢ As argued before, the major agentâs MMSE estimate of
+the state of the system evolves according to a linear ï¬lter.
+Therefore, the optimal control action is a linear function
+of the data.
+
+â¢ In light of the above result, we may view the optimal
+solution for partial output feedback as a certainty equiv-
+alence solution. In particular, the optimal strategy (32b)
+of the minor agent in partial output feedback is the same
+as the optimal strategy in state feedback where the state
+xi(t) is replaced by the MMSE estimate of the state.
+
+A. Preliminaries of Hilbert space projections
+
+Given zero mean random variables x and y deï¬ned on
+a common probability space, the least linear mean square
+estimate (LLMS) L[x | span(y)] is the projection of x on to
+Y = span(y) and satisï¬es the orthogonal projection property:
+for any z â Y ,
+
+E[(x â L[x | Y ])z(cid:124)] = 0 and E[(x â L[x | Y ])(cid:124)z] = 0. (43)
+
+For any arbitrary but ï¬xed strategy g â GA and any agent i â
+i (t)}.
+
+N0, deï¬ne Hi(t) = span{Ii(t)} and H s
+We can split Hi(t) and H s
+
+i (t) = span{I s
+i (t) into orthogonal subspaces
+0 (t) â ËH s
+i (t) = H s
+
+and H s
+
+Hi(t) = H0(t) â ËHi(t)
+
+i (t),
+
+where ËHi(t) is the orthogonal complement of H0(t) with
+respect to Hi(t) and a similar interpretation holds for ËH s
+i (t).
+Thus, Hence, for any random variable v,
+
+L[v | Hi(t)] = L[v | H0(t)] + L[v | ËHi(t)].
+
+(44)
+
+and similar interpretations holds for projections on H s
+
+i (t).
+
+Now, deï¬ne W0(t) = span{x0(1), w0(1:tâ1)}, and, for any
+minor agent i â N , Wi(t) = span{xi(1), wi(1:t â 1), vi(1:t)}.
+An immediate implication of Lemma 2 is the following.
+Lemma 12 For any g â GA and i â N0, Hi(t) = H s
+therefore, ËHi(t) = ËH s
+1) H0(t) = H s
+2) Hi(t) = H s
+3) ËHi(t) = ËH s
+
+i (t),
+i (t). Furthermore, for all t and i â N ,
+
+0 (t) = W0(t).
+i (t) â W0(t) â Wi(t).
+i (t) â Wi(t).
+
+Proof: By construction, xs
+
+0(t) â W0(t) and, it is easy
+to show that w0(t â 1) â H s(t). Hence, H s
+0 (t) = W0(t).
+Similarly, by construction, ys
+i (t) â W0(t) â Wi(t). Hence,
+H s
+i (t) â W0(t) â Wi(t). Finally, consider any vector bi â
+ËH s
+i (t). Then bi â W s
+is a speciï¬c
+linear function of Wi(t) due to linear dynamics of the system.
+
+i (t) as each elements of ËH s
+
+i
+
+Lemma 13 For any strategy g â GA,
+
+uc(t) = E[u(t) | I c(t)] â H s
+i (t) = ui(t) â uc(t) â ËH s
+u(cid:96)
+Proof: For any strategy g â GA, ui(t) â Hi(t) = H s
+
+0 (t),
+i (t).
+
+i (t) =
+H s
+i (t). Thus, by Lemma 12, ui(t) â W0(t) â Wi(t),
+which are independent subspaces. Therefore, the result follows
+from orthogonal projection (43) and independence of W0(t)
+and Wi(t).
+
+0 (t) â ËH s
+
+Proof: For any strategy g â GA, ui(t) â Hi(t) = H s
+
+i (t). Hence there exist unique vectors ai(t) â H s
+
+i (t) =
+0 (t)
+
+0 (t)â ËH s
+H s
+and bi(t) â ËH s
+
+i (t), such that ui(t) = ai(t) + bi(t).
+
+We have
+
+E[ui(t) | I c(t)]
+
+(a)
+= E[ai(t) + bi(t) | I c(t)]
+(b)
+= E[ai(t) | I c(t)]
+
+(c)
+= ai(t),
+
+where (a) uses the unique orthogonal decomposition ui(t) =
+ai(t) + bi(t), (b) uses E[bi(t) | I c(t)] = 0 from Lemma 12,
+Part 3, and (c) uses E[ai(t) | I c(t)] = ai(t) from Lemma 12,
+Part 2. Hence, uc(t) = ai(t) â H s
+i (t) =
+u(t) â uc(t) = u(t) â ai(t) = bi(t) â ËH s
+Lemma 14 For any g â GA, we have the following:
+(S1) For any Ï < t, uc(Ï ) â H0(Ï ) â H0(t).
+(S2) For any Ï â¤ t, xc(Ï ) â H0(t).
+(S3) For any Ï â¤ t, L[x(cid:96)
+
+0 (t). Moreover, u(cid:96)
+
+i (Ï )|H0(t)] = 0.
+
+i (t).
+
+Proof: Using (13) we have,
+
+(S1) From the results of Lemma 13, for any Ï < t, uc(Ï ) â
+
+H0(Ï ) where H0(Ï ) â H0(t).
+
+(S2) For any Ï â¤ t, by construction xc(Ï ) is a linear function of
+uc(1:Ï â 1). Hence by (S1) xc(Ï ) â H0(Ï â 1) â H0(t).
+
+(S3) For any Ï â¤ t, by construction x(cid:96)
+
+i (Ï ) is a linear function
+i (1:Ï â 1). Hence it belongs to ËHi(t) by Lemma 13.
+
+of u(cid:96)
+
+B. Orthogonal projection
+
+We use the same notation as in Section IV with the
+understanding that the terms are deï¬ned differently. We do not
+use any result from Section IV here, so the overlap of notation
+should not cause any confusion.
+
+As explained in Remark 1, minimizing J(g) is equivalent
+i (g) deï¬ned in Lemma 7. To
+
+iâN J (cid:96)
+i (g), deï¬ne
+
+to minimizing J c(g) + (cid:80)
+simplify J c(g) + (cid:80)
+iâN J (cid:96)
+Ëz(t|c) := L[zc(t)|H0(t)],
+i (t|i) := L[z(cid:96)
+Ëz(cid:96)
+Equation (44) and (46) imply that
+i (t|i) = L[z(cid:96)
+Ëz(cid:96)
+
+i (t)|Hi(t)] â L[z(cid:96)
+
+i (t)|H0(t)].
+
+Deï¬ne the estimation errors
+
+Ëzc(t) = zc(t) â Ëz(t|c),
+
+i (t) = z(cid:96)
+Ëz(cid:96)
+
+i (t) â Ëz(cid:96)
+
+i (t|i).
+
+Lemma 15 For any strategy g â GA the properties (C1) and
+(C3)â(C6) hold for Ëz(t|c), Ëz(cid:96)
+i (t) deï¬ned
+above.
+
+i (t|i), Ëzc(t), and Ëz(cid:96)
+
+The proof is presented in Appendix G. An implication of the
+above is the following.
+Lemma 16 For any strategy g â GA, the results of Lemma 9,
+holds with Ëz(t|c) and Ëz(cid:96)
+
+i (t|i) deï¬ned by (45) and (46).
+
+Proof: As mentioned in the proof of Lemma 9, (25)
+follows from (C3) and (C4) and is equivalent to (27) and (28).
+Eq. (26) follows from (C5) and (C6) and is equivalent to (29)
+
+and (30).
+
+An immediate implication of Lemma 16 is the following.
+
+10
+
+i (t|i) deï¬ned by (45) and (46).
+
+Lemma 17 For any strategy g â GA, the results of Lemma 10
+holds with Ëz(t|c) and Ëz(cid:96)
+Remark 3 The terms ËJ c and ËJ (cid:96)
+i are control-free and depend
+only on the primitive random variables. Combined with
+Remark 1, this implies that minimizing J(g) is equivalent
+to minimizing ËJ c(g) + (cid:80)
+
+ËJ i(g).
+
+iâN
+
+C. Main results
+
+Theorem 3 The optimal control strategy of Problem 2 is
+unique and is given by
+
+uc(t) = âLc(t)Ëz(t|c)
+i (t) = âL(cid:96)
+u(cid:96)
+i (t|i).
+Furthermore, the optimal performance is given by
+
+i (t)Ëz(cid:96)
+
+(48a)
+
+(48b)
+
+J â
+A := inf
+gâGA
+
+J(g) = ËJ c +
+
+ËJ (cid:96)
+i ,
+
+(cid:88)
+
+iâN
+
+where ËJ c and ËJ (cid:96)
+Ëz(cid:96)
+i (t|i) deï¬ned by (45) and (46).
+
+i are deï¬ned in Lemma 10 with Ëz(t|c) and
+
+Proof: The proof relies on symmetric property and positive
+i (t) and is same as that of
+
+deï¬niteness of both âc(t) and â(cid:96)
+Theorem 1.
+Now let
+
+Ëx(t|c) = L[x(t) | I c(t)]
+
+and
+
+Ëx(t|i) = L[x(t) | Ii(t)]
+
+denote the major and the i-th minor agentâs LLMS estimate
+of the state. Let Ëxi(t|c) and Ëxi(t|i) denote the i-th element of
+Ëx(t|c) and Ëx(t|i), respectively. Eq. (16), (45), and (46) imply
+the following.
+
+Lemma 18 The common and local information based esti-
+mates Ëz(t|c) and Ëz(cid:96)
+i (t|i) are related to the major and minor
+agentsâ LLMS estimates as follows:
+
+(45)
+
+(46)
+
+Ëz(t|c) = Ëx(t|c) and
+
+Ëz(cid:96)
+i (t|i) = Ëxi(t|i) â Ëxi(t|c).
+
+Proof: First observe that (P8) implies Ëx(t|c) = Ëz(t|c) â
+
+H0(t). Now consider that
+
+(a)
+= xc
+
+i (t) + L[x(cid:96)
+â xc
+
+i (t) â L[x(cid:96)
+i (t) | ËHi(t)] + L[x(cid:96)
+i (t) | H0(t)]
+
+i (t) + xs
+
+i (t) | Hi(t)]
+
+i (t) + xs
+i (t) + xs
+
+i (t) | H0(t)]
+
+i (t) | H0(t)]
+
+(b)
+= L[x(cid:96)
+
+i (t) + xs
+
+i (t) + xs
+
+â L[x(cid:96)
+i (t|i),
+
+= Ëz(cid:96)
+
+where (a) follows from (S2) and (b) uses (44).
+
+Theorem 4 The optimal control strategy of Problem 2 is
+unique and is given by
+
+u0(t) = âLc
+
+0(t)Ëx(t|c),
+
+and for all i â N ,
+
+ui(t) = âLc
+
+i (t)Ëx(t|c) â L(cid:96)
+
+i (t)(Ëxi(t|i) â Ëxi(t|c)),
+
+(49a)
+
+(49b)
+
+where Lc
+i (t) denote the i-th row of Lc(t). The major agentâs
+LLMS estimate follow the same recursive update rule (33) as
+the major agentâs MMSE estimate. Furthermore, the i-th minor
+
+i (t)| ËHi(t)].
+
+(47)
+
+Ëx(t|i) â Ëx(t|c)
+
+agentâs LLMS estimate is given as follows: Ëxi(t|0) = 0 and
+for t > 1:
+
+Ëxi(t|i) = Aii Ëxi(t â 1|i) + Ai0x0(t â 1)
+
++ Biiui(t â 1) + Bi0u0(t â 1) + Ki(t)Ëyi(t),
+
+(50)
+
+where
+
+Ëyi(t) = yi(t) â Cii
+
+(cid:0)Ai0x0(t â 1) + Aii Ëxi(t â 1|i)
+
++ Bi0u0(t â 1) + Biiui(t â 1)(cid:1)
+
+and Ki(t) is computed by the following standard recursive
+least square equations: Ki(1) = 0, and for t > 1,
+
+Ki(t) = K(Pi(t â 1), Aii, Cii, Î£w
+
+i , Î£v
+
+i ).
+
+(51)
+
+Finally in the above equation, Pi(t) = var(xi(t) â Ëxi(t|i)) and
+can be recursively updated as follows. Pi(1) = Î£x
+i , and for
+t > 1,
+
+Pi(t) = F(Pi(t â 1), Aii, Cii, Î£w
+
+i , Î£v
+
+i ),
+
+Proof: The structure of optimal policies for the major
+
+agent follows from Lemma 18 and Theorem 3.
+
+The update of the major agentâs MMSE estimate in Theo-
+rem 2 is linear. Hence, the major agentâs LLMS estimate is
+same as the MMSE estimate and follows the same recursive
+equations.
+
+To prove the update of the i-th agentâs LLMS estimate,
+we split the state of agent i into two components: xi(t) =
+xg
+i (t) + xw
+
+i (t), where
+xg
+i (t + 1) = Aiixg
+i (t + 1) = Aiixw
+xw
+
+i (t) + Ai0x0(t) + Biiui(t) + Bi0u0(t),
+i (t) + wi(t).
+
+Based on this splitting of state, we split the observation of agent
+i â N into two components as follows: yi(t) = yg
+i (t),
+where
+
+i (t) + yw
+
+i (t) = Ciixg
+yg
+
+i (t),
+
+and yw
+
+i (t) = Ciixw
+
+i (t) + vi(t).
+
+Observe that xw
+actions at agent i â N . Now we have
+
+i (t) and yw
+
+i (t) do not depend on the control
+
+(a)
+= xg
+
+i (1:t)]
+
+i (t)|Ii(t)]
+
+i (t)|xw
+i (t)|yw
+
+i (t) + L[xw
+0 (1:t), yw
+
+Ëxi(t|i) = L[xi(t)|Ii(t)]
+(b)
+= xg
+i (t) + L[xw
+(c)
+= xg
+i (t) + L[xw
+where (a) follows from the state split to xg
+i (t),
+(b) follows from static reduction argument similar to the one
+presented in Lemma 2, and (c) follows from Assumption 1.
+Let us deï¬ne Ëxw
+i (1:t)]. Observe that
+Ëxw
+i (t|i) can be recursively updated using the standard LLMS
+updates [4] as follows
+
+i (t|i) = L[xw
+
+i (t) and xw
+
+i (t)|yw
+
+i (1:t)],
+
+(52)
+
+i (t|i) = Aii Ëxw
+Ëxw
+
+i (t â 1|i) + Ki(t)Ëyw
+
+i (t),
+
+(53)
+
+where
+
+i (t) = yw
+Ëyw
+
+i (t) â CiiAii Ëxw
+
+i (t â 1|i)
+
+and Ki(t) is given by (51) where Pi(t) = var(xw
+i (t) â
+Ëxw
+i (t|i)) = var(xi(t)â Ëxi(t|i)), which follows from (52). Note
+that (52) also implies that
+i (t) = yi(t) â yg
+Ëyw
+
+i (t) â CiiAii Ëxw
+i (t) + Aii Ëxw
+
+i (t â 1|i)
+i (t â 1|i))
+
+= yi(t) â Cii(xg
+= Ëyi(t)
+where we use the dynamics of xg
+last step.
+
+i (t) and (52) to simplify the
+
+11
+
+(54)
+
+Finally, to show the recursive form of Ëxi(t|i), substitute (53)
+
+in (52), to get
+Ëxi(t|i) = xg
+
+i (t) + Ëxw
+
+i (t|i)
+
+= Aiixg
+
+i (t â 1) + Ai0x0(t â 1) + Biiui(t â 1)
+i (t â 1|i) + Ki(t)Ëyw
+= Aii Ëxi(t â 1|i) + Ai0x0(t â 1) + Biiui(t â 1)
+
++ Bi0u0(t â 1) + Aii Ëxw
+
+i (t)
+
++ Bi0u0(t â 1) + Ki(t)Ëyw
+
+i (t).
+
+The result then follows from substituting (54) in the above
+equation.
+
+Remark 4 The best linear strategies derived in Theorem 4
+have a similar structure to the best linear strategies derived
+in [18] using spectral factorization techniques for a model with
+only one minor agent and stable A.
+
+Remark 5 Due to the separation of estimation and control,
+the difference in performance J â of the optimal policy derived
+in Theorem 2 and the performance J â
+A of the best linear
+policy derived in Theorem 4 depends on the difference in
+error covariance between MMSE and LLMS ï¬lters. This
+error covariance depends on the exact distribution of the non-
+Gaussian noise. There is evidence to suggest that MMSE ï¬lters
+can perform signiï¬cantly better than LLMS ï¬lters in some
+settings (low signal-to-noise ratio with a noise that differs
+signiï¬cantly from Guassian) [33].
+
+D. Implementation of the optimal control strategy
+
+Remarkably, the implementation of the best linear control
+strategy is exactly same as that of the optimal strategy with
+one difference: the minor agents use a recursive least squares
+ï¬lter instead of a Bayesian ï¬lter to update the estimate Ëxi(t|i).
+The rest of the implementation is the same as described in
+Sec. IV-B.
+
+VI. DISCUSSION AND CONCLUSION
+
+We consider a decentralized linear quadratic system with a
+major agent and a collection of minor agents with a partially
+nested information structure and partial output feedback. The
+key feature of our model is that we do not assume that the noise
+has a Gaussian distribution. Therefore, the optimal strategy is
+not necessarily linear. Nonetheless, we show that the optimal
+strategy has an elegant structure and the following salient
+features:
+
+â¢ The common component uc(t) of the control actions is a
+linear function of the major agentâs MMSE estimate Ëx(t|c)
+of the system state. The MMSE estimate Ëx(t|c) can
+
+be updated using a linear ï¬lter and the corresponding
+gains Lc(t) are computed from the solution of a âglobalâ
+Riccati equation.
+
+â¢ The local component u(cid:96)
+
+i (t) of the control action at minor
+agent i is a linear function of offset between the minor
+agentâs MMSE estimate Ëxi(t|i) of the minor agentâs state
+and the major agentâs estimate Ëxi(t|c) of the minor agentâs
+state. The corresponding gains L(cid:96)
+i (t) are computed from
+the solution of a âlocalâ Riccati equation.
+
+â¢ The minor agentâs MMSE estimate Ëxi(t|i) is, in general,
+a non-linear function of the data Ii(t). Thus, the optimal
+strategy of the minor agent is a non-linear function of
+its data. Nonetheless, the update (35) of the conditional
+density does not depend on the control strategy. Thus,
+there is a separation between estimation and control.
+Interestingly, the optimal strategy is closely related to the
+best linear strategy. The best linear strategy has the following
+salient features:
+
+â¢ Since the major agentsâ MMSE estimate Ëx(t|c) is a linear
+function of the data, the major agentâs LLMS estimate is
+the same as the MMSE estimate. Therefore, the common
+component uc(t) of the control actions remains the same
+as the optimal controller.
+
+â¢ The minor agentâs LLMS estimate Ëxi(t|i) is updated
+according to the recursive least squares ï¬lter rather than
+the Bayesian ï¬lter used for updating MMSE estimates.
+â¢ Therefore, the structure of the best linear controller is
+the same as the structure of the optimal control with the
+exception that the minor agentâs MMSE estimate of its
+local state are replaced by its LLMS estimates!
+
+In light of the results presented in this paper, a natural
+question is whether these salient features are speciï¬c to the
+model presented in this paper or they hold for more general
+models with delayed sharing of information and coupling
+between minor agents as well. We hope to be able to address
+these questions in the future.
+
+APPENDIX A
+PROOF OF LEMMA 1
+
+We prove each property separately.
+
+(P1) u0(t) is a function of I0(t) which, by (10), equals I c(t).
+
+Thus, uc
+
+0(t) = u(t) and hence u(cid:96)
+
+0(t) = 0.
+
+(P2) This follows from (P1) and the fact that A and B matrices
+
+are block lower triangular.
+
+(P3) This follows from the deï¬nition of u(cid:96)
+
+i (t).
+
+(P4) This follows from the following:
+
+E[uc(t)(cid:124)M u(cid:96)(t)]
+
+(a)
+= E[E[uc(t)(cid:124)M u(cid:96)(t)|I c(t)]]
+(b)
+= E[uc(t)(cid:124)M E[u(cid:96)(t)|I c(t)]] = 0,
+
+where (a) uses the towering property and (b) uses (P3).
+
+(P5) This follows from (P4) and the smoothing property of
+
+conditional expectation.
+
+(P6) By construction, xc(t) is a function of uc(1:tâ1), which,
+
+by deï¬nition, is a function of I c(t).
+
+12
+
+APPENDIX B
+PROOF OF LEMMA 2
+For notational convenience, we use SA (cid:32) SB to denote that
+set SA is a function of set SB. Note that the relation (cid:32) is
+transitive.
+
+We consider the cases i = 0 and i (cid:54)= 0 separately. For both
+
+cases, we will show that Ii(t) (cid:32) I s
+
+i (t) and I s
+
+i (t) (cid:32) Ii(t).
+
+For i = 0, ï¬rst note that (P2) implies
+
+x0(t) = xc
+
+0(t) + xs
+
+0(t).
+
+(55)
+
+0(1). Thus, I0(1) (cid:32) I s
+
+0(t) (cid:32) u0(1:t â 1) â I0(t). Thus, xs
+0(t) =
+0(t), both of which are functions of I0(t). Hence,
+
+By construction uc
+x0(t) â xc
+0 (t) (cid:32) I0(t).
+I s
+We prove the reverse implication by induction. Note that
+x0(1) = xs
+0 (1). This forms the basis of
+induction. Now assume that I0(t) (cid:32) I s
+0 (t) and consider I0(t +
+1) = {I0(t), x0(t+1), u0(t)}. Since u0(t) (cid:32) I0(t) and, by the
+induction hypothesis, I0(t) (cid:32) I s
+0 (t).
+Moreover, by (55), xc(t) = x0(t)âxs
+0(t) and, therefore, by the
+induction hypothesis, xc(t) (cid:32) I s
+0 (t)
+and xc(t) (cid:32) I s
+0 (t), we have xc
+0 (t) and hence
+0(t + 1) (cid:32) I0(s). By (55), x0(t + 1) = xc
+xc
+0(t + 1).
+Hence x0(t + 1) (cid:32) I s
+0 (t + 1). Thus, we have shown that each
+components of I0(t+1) = {I0(t), x0(t+1), u0(t)} (cid:32) I s
+0 (t+1).
+Thus, by induction, I0(t) (cid:32) I s
+We have thus shown that I s
+0 (t).
+
+0 (t). Since both u0(t) (cid:32) I s
+0(t + 1) (cid:32) I s
+
+0 (t).
+0 (t) (cid:32) I0(t) and I0(t) (cid:32) I s
+
+0 (t), we have u0(t) (cid:32) I s
+
+This proves that I0(s) â¡ I s
+
+0(t + 1) + xs
+
+i (t) + y(cid:96)
+
+i (t) + x(cid:96)
+
+i (t) â y(cid:96)
+
+Now consider i (cid:54)= 0. By construction, xc
+
+i (t) (cid:32)
+i (t) (cid:32) Ii(t)
+i (t) is a function of
+0(1:t) (cid:32) x0(1:t). Thus,
+
+i (1) = 0. Thus, yi(1) = ys
+0(1). Thus, Ii(1) (cid:32) I s
+
+{u0(1:t â 1), ui(1:t â 1)} â Ii(t). Thus, yc
+and, hence ys
+i (t) = yi(t) â yc
+Ii(t). We have already shown that xs
+i (t) (cid:32) Ii(t).
+I s
+We prove the reverse implication by induction. Note that
+yc
+i (1) = y(cid:96)
+i (1) and, as shown before
+x0(1) = xs
+i (1). This forms the basis of
+induction. Now assume that Ii(t) (cid:32) I s
+i (t) and consider Ii(t +
+1) = {Ii(t), x0(t + 1), u0(t), yi(t + 1), ui(t)}. We have already
+shwon that x0(t + 1) and u0(t) are functions of I s
+0 (t + 1) â
+i (t + 1). For ui(t), observe that ui(t) (cid:32) Ii(t) and therefore,
+I s
+by the induction hypothesis , ui(t) (cid:32) I s
+i (t). As was the case
+i (t + 1) (cid:32) I s
+for i = 0, we can argue that xc
+i (t)
+and therefore yc
+i (t). Thus, from (14),
+yi(t + 1) (cid:32) I s
+
+i (t + 1) (cid:32) I s
+i (t + 1) + y(cid:96)
+i (t + 1). Thus, by induction Ii(t) (cid:32) I s
+
+i (t + 1) + x(cid:96)
+
+0 (t).
+
+i (t).
+i (t) (cid:32) Ii(t) and Ii(t) (cid:32) I s
+
+i (t).
+
+We have thus shown that I s
+i (t).
+
+This proves that Ii(s) â¡ I s
+
+Finally, if g â GA, all the relationships (cid:32) in the above
+i (t) are linear
+
+argument are linear functions. Thus, Ii(t) and I s
+functions of each other.
+
+APPENDIX C
+PROOF OF LEMMA 3
+
+We prove each property separately.
+
+(P7) For Ï = t, the result is same as (P4). Now consider
+
+Ï < t. Recall that I c(t) = I0(t). Thus, by Lemma 2,
+
+E[u(cid:96)
+
+i (t)|I c(t)] = E[u(cid:96)
+
+i (t)|I s
+
+0 (t)].
+
+Now observe that,
+
+0 (t) = {xs
+I s
+
+0(1:t)} â¡ {xs
+= {I s
+
+0(1:Ï ), w0(Ï :t â 1)}
+0 (Ï ), w0(Ï :t â 1)}.
+
+Thus,
+
+E[u(cid:96)
+
+i (Ï )|I s
+(a)
+= E[u(cid:96)
+
+0 (t)] = E[u(cid:96)
+i (Ï )|I s
+
+i (Ï )|I s
+(b)
+= E[u(cid:96)
+
+0 (Ï ), w0(Ï :t â 1)]
+(c)
+= 0,
+
+i (Ï )|I0(Ï )]
+
+0 (Ï )]
+
+where (a) holds because u(cid:96)
+0(Ï ) is independent of future
+noise w0(Ï :t â 1), (b) uses Lemma 2, and (c) follows
+from (P4).
+
+(P8) Combining (13b) and (P1), we get
+
+x(cid:96)
+i (Ï ) =
+
+Ï â1
+(cid:88)
+
+Ï=1
+
+AÏâ1
+
+ii Biiu(cid:96)
+
+i (Ï â Ï).
+
+Hence, the result follows from (P7).
+
+(P9) By the smoothing property of conditional expectation,
+
+we have
+
+E[(x(cid:96)
+
+i (t))(cid:124)M xs
+
+0(t)] = E(cid:2)E[(x(cid:96)
+= E(cid:2)E[(x(cid:96)
+
+i (t))(cid:124)M xs
+i (t))(cid:124)|I s
+
+0(t)|I s
+0 (t)] M xs
+
+0 (t)](cid:3)
+0(t)(cid:3)
+
+(a)
+
+(b)
+= 0,
+
+where (a) follows because xs
+follows from Lemma 2 and (P8).
+
+0(t) is part of I s
+
+0 (t) and (b)
+
+(P10) By the smoothing property of conditional expectation,
+
+we have
+
+E[(x(cid:96)
+
+i (t))(cid:124)M xc(t)] = E(cid:2)E[(x(cid:96)
+= E(cid:2)E[(x(cid:96)
+
+(a)
+
+i (t))(cid:124)M xc(t)|I c(t)](cid:3)
+i (t))(cid:124)|I c(t)] M xc(t)(cid:3)
+
+13
+
+It follows from Assumption 1 that {Fi(t)}iâN are condi-
+tionally independent given F0(t). From an argument sim-
+ilar to the one used in the proof of Lemma 2, we can show
+that xi(t) is function (which may depend on the strategy
+g) of (x0(1), xi(1), w0(1:t â 1), wi(1:t â 1)). Thus, for
+any Borel measurable subset Di(t) of Rt(di
+u) the
+event Ei(t) = {(xi(1:t), ui(1:t)) â Di(t)} is Fi(t)
+measurable.
+Similarly, from an argument similar to Lemma 2, we can
+show that Ï(I c(t)) = Ï(I s
+
+0 (t)) = F0(t). Thus,
+
+x+di
+
+P({(xi(1:t), ui(1:t)) â Di(t)}iâN |I c(t))
+
+= P({Ei(t)}iâN |F0(t)) =
+
+n
+(cid:89)
+
+i=1
+
+P(Ei(t)|F0(t)),
+
+2) We prove this by induction. For t = 1, xs
+
+where the last equality follows from the fact
+that
+{Fi(t)}iâN are conditionally independent given F0(t).
+i (1) = xi(1)
+and I s
+0(1)} = {x0(1)}. By Assumption 1,
+xi(1) â¥â¥ xj(1) | x0(1). Thus, xs
+0(1).
+This forms the basis of induction. Now assume that
+xs
+i (1:t) â¥â¥ xs
+0 (t). From the dynamics (13c), we
+have
+
+0 (1) = {xs
+
+i (1) â¥â¥ xs
+
+j(1:t) | I s
+
+j(1) | xs
+
+xs
+0(t + 1) = A00xs
+i (t + 1) = Aiixs
+xs
+
+0(t) + w0(t),
+i (t) + Ai0xs
+
+0(t) + wi(t),
+
+i â N.
+
+By Assumption 1, w0(t) â¥â¥ wi(t) â¥â¥ wj(t). This,
+combined with the induction hypothesis implies that
+xs
+i (1:t + 1) â¥â¥ xs
+0 (t + 1). Hence, the result
+holds by induction.
+
+j(1:t + 1) | I s
+
+i (t) = xi(t) â xc
+
+i (t) and u(cid:96)
+3) Recall that x(cid:96)
+i (t) =
+ui(t) â uc
+i (t) and uc
+i (t) are functions of
+I c(t), the result follows from the result of the previous
+two parts.
+
+i (t). Since xc
+
+i (t) â xs
+
+(b)
+= 0,
+
+where (a) follows because xc(t) is a function of I c(t)
+and (b) follows from (P8).
+
+(P11) By the smoothing property of conditional expectation,
+
+we have
+
+APPENDIX E
+PROOF OF LEMMA 5
+First consider (17). Since x(t) = zc(t) + x(cid:96)(t), we have
+
+(cid:104)
+E(cid:2)x(t)(cid:124)Qx(t)(cid:3) = E
+
+zc(t)(cid:124)Qzc(t) + x(cid:96)(t)(cid:124)Qx(cid:96)(t)
+
+E[(u(cid:96)
+
+i (t))(cid:124)M xs
+
+0(t)] = E(cid:2)E[(u(cid:96)
+= E(cid:2)E[(u(cid:96)
+
+i (t))(cid:124)M xs
+i (t))(cid:124)|I c(t)] M xs
+
+0(t)|I c(t)](cid:3)
+0(t)(cid:3)
+
+(a)
+
+(b)
+= 0,
+
+(cid:105)
++ 2x(cid:96)(t)(cid:124)Qzc(t)
+
+.
+
+Now from (P2) and Lemma 4 we have
+E[x(cid:96)(t)(cid:124)Qx(cid:96)(t)] =
+
+E[x(cid:96)
+
+(cid:88)
+
+i (t)(cid:124)Qiix(cid:96)
+
+i (t)].
+
+where (a) follows because xs
+a function of I c(t) and (b) follows from (P4).
+
+0(t) is in I s
+
+0 (t) and therefore
+
+From (P10), we have
+
+iâN
+
+E[x(cid:96)(t)(cid:124)Qzc(t)] = E[x(cid:96)(t)(cid:124)Qxs(t)]
+
+APPENDIX D
+PROOF OF LEMMA 4
+
+=
+
+(cid:88)
+
+iâN
+
+E[x(cid:96)
+
+i (t)(cid:124)Qiixs
+
+i (t)],
+
+(56)
+
+(57)
+
+(58)
+
+We prove each part separately.
+1) Arbitrarily ï¬x a strategy g â G and deï¬ne the following
+
+Ï-algebras:
+
+where the last equality follows from (P2), (P9), and Lemma 4.
+Substituting (57) and (58) in (56) and completing the squares,
+
+we get (17).
+
+F0(t) = Ï(x0(1), w0(1:t â 1)),
+Fi(t) = Ï(x0(1), xi(1), w0(1:t â 1), wi(1:t â 1)),
+
+Now consider (18). From (P4), we get
+E(cid:2)u(t)(cid:124)Ru(t)(cid:3) = E(cid:2)uc(t)(cid:124)Ruc(t) + u(cid:96)(t)(cid:124)Ru(cid:96)(t)(cid:3).
+
+i â N.
+
+(59)
+
+From (P1) and Lemma 4, we get
+
+E[u(cid:96)(t)(cid:124)Ru(cid:96)(t)] =
+
+(cid:88)
+
+iâN
+
+E[u(cid:96)
+
+i (t)(cid:124)Riiu(cid:96)
+
+i (t)].
+
+(60)
+
+Substituting (60) in (59), we get (18).
+
+APPENDIX F
+PROOF OF LEMMA 8
+
+We prove each property separately.
+
+(C1) For Ëzc(t), observe that
+
+Ëz(t|c) = E[xc(t)+xs(t)|I c(t)] = xc(t)+E[xs(t)|I s
+
+0 (t)].
+
+where the second equality uses (P6) and Lemma 2. Thus,
+
+Ëzc(t) := zc(t) â Ëz(t|c) = xs(t) â E[xs(t)|I s
+
+0 (t)],
+
+which is control-free and depends only on the primitive
+random variables.
+For Ëz(cid:96)
+
+i (t), observe that
+i (t|i) = E[z(cid:96)
+Ëz(cid:96)
+
+i (t)|I0(t)]
+
+i (t) + E[xs
+â E[x(cid:96)
+
+i (t)|Ii(t)] â E[z(cid:96)
+i (t)|Ii(t)]
+i (t)|I0(t)] â E[xs
+i (t)|I s
+
+i (t) + E[xs
+
+= x(cid:96)
+
+(a)
+= x(cid:96)
+
+i (t)|I0(t)]
+2(t)|I s
+
+i (t)] â E[xs
+
+0 (t)],
+
+where (a) uses Lemma 2 and (P8). Thus,
+
+i (t) = z(cid:96)
+Ëz(cid:96)
+= xs
+
+i (t) â Ëz(cid:96)
+i (t|i)
+i (t) â E[xs
+
+i (t)|I s
+
+i (t)] + E[xs
+
+i (t)|I s
+
+0 (t)],
+
+14
+
+E[(Ëz(cid:96)
+
+From the orthogonality principle, Ëd1(t) â¥ Ëd1(t) and
+Ëd2(t) â¥ Ëd2(t). Since I0(t) is a subset of Ii(t), Ëd1(t) â¥
+Ëd2(t). Then we have
+i (t))(cid:124) Ëz(cid:96)
+
+i (t|i)] = E[( Ëd1(t) + Ëd2(t))(cid:124)( Ëd1(t) â Ëd2(t))]
+= E[ Ëd2(t)(cid:124)( Ëd1(t) â Ëd2(t))]
+= E[ Ëd2(t)(cid:124)( Ëd2(t) â Ëd1(t))]
+= 0.
+
+(61)
+
+(C6) Recall the deï¬nitions of Ëd1(t) and Ëd2(t) from the proof
+
+i (t) = Ëd1(t) + Ëd2(t), we have
+
+i (t)] = E[u(cid:96)
+
+i (t)(cid:124)M Ëd1(t)]+E[u(cid:96)
+
+i (t)(cid:124)M Ëd2(t)].
+
+of (C5). Since Ëz(cid:96)
+i (t)(cid:124)M Ëz(cid:96)
+
+E[u(cid:96)
+
+E[u(cid:96)
+
+Now, we show that both terms are zero. Consider
+i (t)(cid:124)M Ëd1(t) | Ii(t)]]
+i (t)(cid:124)M E[ Ëd1(t) | Ii(t)]]
+
+i (t)(cid:124)M Ëd1(t)] = E[E[u(cid:96)
+(a)
+= E[u(cid:96)
+(b)
+= 0,
+
+where (a) follows because u(cid:96)
+i (t) is a function of Ii(t) and
+(b) follows from the deï¬nition of Ëd1(t). Now consider
+
+E[u(cid:96)
+
+i (t)(cid:124)M Ëd2(t)] = E[E[u(cid:96)
+(c)
+= E[E[u(cid:96)
+(d)
+= 0,
+
+i (t)(cid:124)M Ëd2(t) | I0(t)]]
+i (t)(cid:124) | I0(t)]M Ëd2(t)]
+
+where (c) follows from the deï¬nition of Ëd2(t) and (d)
+follows from (P4).
+
+which is control-free and depends only on the primitive
+random variables.
+
+APPENDIX G
+PROOF OF LEMMA 15
+
+(C2) Observe that
+
+E[Ëzc(t)|I c(t)] = E[zc(t) â Ëz(t|c)|I c(t)] = 0.
+
+We prove each property separately.
+
+(C1) For Ëzc(t), observe that
+
+(C3) This follows immediately from the fact that error of a
+
+mean-squared estimator is orthogonal to the estimate.
+
+(C4) Using the smoothing property we have,
+
+E[uc(t)M Ëzc(t)] = E[E[uc(t)M Ëzc(t)|I c(t)]]
+
+(a)
+= E[uc(t)M E[Ëzc(t)|I c(t)]]
+
+(b)
+= 0.
+
+where (a) uses the fact that uc(t) is measurable with
+respect to the common information and (b) uses (C2).
+
+(C5) For ease of notation, deï¬ne
+
+Ëd1(t) = E[z(cid:96)
+Ëd2(t) = E[z(cid:96)
+
+i (t)|Ii(t)],
+i (t)|I0(t)],
+
+Ëd1(t) = z(cid:96)
+Ëd2(t) = z(cid:96)
+
+i (t) â Ëd1(t),
+i (t) â Ëd2(t).
+
+So, we can write
+
+i (t) = Ëd1(t) + Ëd1(t) = Ëd2(t) + Ëd2(t),
+z(cid:96)
+i (t|i) = Ëd1(t) â Ëd2(t),
+Ëz(cid:96)
+i (t) = z(cid:96)
+Ëz(cid:96)
+
+i (t) â Ëd1(t) + Ëd2(t) = Ëd1(t) + Ëd2(t).
+
+Ëz(t|c) = L[xc(t)+xs(t)|H0(t)] = xc(t)+L[xs(t)|H s
+
+0 (t)].
+
+where the second equality uses (S2) and Remark 12.
+Thus,
+
+Ëzc(t) := zc(t) â Ëz(t|c) = xs(t) â L[xs(t)|H s
+
+0 (t)],
+
+which is control-free and depends only on the primitive
+random variables.
+For Ëz(cid:96)
+
+i (t)| ËHi(t)]
+i (t) â L[x(cid:96)
+
+i (t) + xs
+
+i (t)| ËHi(t)]
+
+i (t), observe that
+i (t) â L[z(cid:96)
+i = z(cid:96)
+Ëz(cid:96)
+i (t) + xs
+= x(cid:96)
+(a)
+i (t) â L[xs
+= xs
+(b)
+i (t) â L[xs
+= xs
+
+i (t)| ËHi(t)]
+i (t)| ËH s
+where (a) uses (S3) and (b) uses Remark 12. Thus, Ëz(cid:96)
+i (t)
+is control-free and depends only on the primitive random
+variables.
+
+i (t)],
+
+(C3) By deï¬nition, M Ëz(t|c) is a linear function of I c(t).
+
+Hence, E[Ëzc(t)(cid:124)M Ëz(t|c)] = 0 by (43).
+
+(C4) M (cid:124)uc(t) is a linear function of uc(t) and hence by (S1)
+belongs to H0(t). Hence, E[Ëzc(t)(cid:124)M (cid:124)uc(t)] = 0 by (43).
+Therefore E[uc(t)(cid:124)M Ëzc(t)] = 0.
+
+(C5) Again by deï¬nition, M Ëz(cid:96)
+i (t)(cid:124)M Ëz(cid:96)
+ËIi(t). Hence, E[Ëz(cid:96)
+
+i (t|i) is a linear function of
+i (t|i)] = 0 by (43).
+
+(C6) M (cid:124)u(cid:96)
+
+i (t) is a linear function of u(cid:96)
+
+i (t) which belongs to
+ËHi(t) by Lemma 13, and hence is a linear function of
+i (t)(cid:124)M (cid:124)u(cid:96)
+ËIi(t). Therefore E[Ëz(cid:96)
+i (t)] = 0 by (43) which
+results in E[u(cid:96)
+i (t)] = 0.
+
+i (t)(cid:124)M Ëz(cid:96)
+
+REFERENCES
+
+[1] W. M. Wonham, âOn the separation theorem of stochastic control,â SIAM
+
+Journal on Control, vol. 6, no. 2, pp. 312â326, 1968.
+
+[2] J. G. Root, âOptimum control of non-Gaussian linear stochastic systems
+with inaccessible state variables,â SIAM Journal on Control, vol. 7, no. 2,
+pp. 317â323, 1969.
+
+[3] D. P. Bertsekas, Dynamic Programming and Optimal Control, 2nd ed.
+
+Athena Scientiï¬c, 2000.
+
+[4] T. Kailath, A. H. Sayed, and B. Hassibi, Linear estimation. Prentice
+
+Hall, 2000.
+
+[5] H. S. Witsenhausen, âA counterexample in stochastic optimum control,â
+
+SIAM Journal on Control, vol. 6, no. 1, pp. 131â147, 1968.
+
+[6] Y.-C. Ho and K.-C. Chu, âTeam decision theory and information
+structures in optimal control problemsâpart I,â IEEE Trans. Autom.
+Control, vol. 17, no. 1, pp. 15â22, Feb 1972.
+
+[7] P. Varaiya and J. Walrand, âOn delayed sharing patterns,â IEEE Trans.
+
+Autom. Control, vol. 23, no. 3, pp. 443â445, Jun 1978.
+
+[8] N. Nayyar, D. Kalathil, and R. Jain, âOptimal decentralized control with
+asymmetric one-step delayed information sharing,â IEEE Trans. Control
+Netw. Syst., vol. 5, no. 1, pp. 653â663, March 2018.
+
+[9] H. R. Feyzmahdavian, A. Alam, and A. Gattami, âOptimal distributed
+controller design with communication delays: Application to vehicle
+formations,â in IEEE Conf. on Decision and Control, 2012, pp. 2232â
+2237.
+
+[10] L. Lessard and A. Nayyar, âStructural results and explicit solution for
+two-player LQG systems on a ï¬nite time horizon,â in IEEE Conf. on
+Decision and Control, 2013, pp. 6542â6549.
+
+[11] B. Bamieh and P. G. Voulgaris, âA convex characterization of distributed
+control problems in spatially invariant systems with communication
+constraints,â Systems & Control Letters, vol. 54, no. 6, pp. 575 â 583,
+2005.
+
+[12] M. Rotkowitz and S. Lall, âA characterization of convex problems in
+decentralized control,â IEEE Trans. Autom. Control, vol. 51, no. 2, pp.
+274â286, 2006.
+
+[13] P. Whittle and J. Rudge, âThe optimal linear solution of a symmetric
+team control problem,â Journal of Applied Probability, vol. 11, no. 2,
+pp. 377â381, 1974.
+
+[14] P. Shah and P. A. Parrilo, âH2-optimal decentralized control over
+posets: A state-space solution for state-feedback,â IEEE Transactions on
+Automatic Control, vol. 58, no. 12, pp. 3084â3096, Dec 2013.
+
+[15] J. Swigart and S. Lall, âAn explicit state-space solution for a decentralized
+two-player optimal linear-quadratic regulator,â in Proceedings of the 2010
+American Control Conference, June 2010, pp. 6385â6390.
+
+[16] ââ, âAn explicit dynamic programming solution for a decentralized
+two-player optimal linear-quadratic regulator,â In Proceedings of Mathe-
+matical Theory of Networks and Systems,, 2010.
+
+[17] J. Swigart and S. Lall, âOptimal synthesis and explicit state-space
+solution for a decentralized two-player linear-quadratic regulator,â in
+IEEE Conference on Decision and Control, Dec 2010, pp. 132â137.
+
+[18] J. Swigart and S. Lall, âOptimal controller synthesis for a decentralized
+two-player system with partial output feedback,â in Proceedings of the
+2011 American Control Conference, June 2011, pp. 317â323.
+
+[19] L. Lessard and S. Lall, âA state-space solution to the two-player
+decentralized optimal control problem,â in Annual Allerton Conference
+on Communication, Control, and Computing (Allerton), Sep. 2011, pp.
+1559â1564.
+
+[20] L. Lessard and S. Lall, âOptimal controller synthesis for the decentralized
+two-player problem with output feedback,â in 2012 American Control
+Conference (ACC), June 2012, pp. 6314â6321.
+
+[21] L. Lessard, âOptimal control of a fully decentralized quadratic regula-
+tor,â in Annual Allerton Conference on Communication, Control, and
+Computing (Allerton), Oct 2012, pp. 48â54.
+
+15
+
+[22] L. Lessard and S. Lall, âOptimal control of two-player systems with
+output feedback,â IEEE Transactions on Automatic Control, vol. 60,
+no. 8, pp. 2129â2144, Aug 2015.
+
+[23] J. H. Kim and S. Lall, âA unifying condition for separable two player
+optimal control problems,â in IEEE Conference on Decision and Control
+and European Control Conference, Dec 2011, pp. 3818â3823.
+
+[24] ââ, âSeparable optimal cooperative control problems,â in American
+
+Control Conference (ACC), June 2012, pp. 5868â5873.
+
+[25] L. Lessard, âDecentralized LQG control of systems with a broadcast
+architecture,â in IEEE Conference on Decision and Control, Dec 2012,
+pp. 6241â6246.
+
+[26] A. Mahajan and A. Nayyar, âSufï¬cient statistics for linear control
+strategies in decentralized systems with partial history sharing,â IEEE
+Trans. Autom. Control, vol. 60, no. 8, pp. 2046â2056, Aug 2015.
+[27] M. Huang, âLarge-population LQG games involving a major player: The
+Nash certainty equivalence principle,â SIAM Journal on Control and
+Optimization, vol. 48, no. 5, pp. 3318â3353, Jan. 2010.
+
+[28] P. E. Caines and A. C. Kizilkale, â(cid:15)-Nash equilibria for partially observed
+LQG mean ï¬eld games with a major player,â IEEE Trans. Autom. Control,
+vol. 62, no. 7, pp. 3225â3234, Jul. 2017.
+
+[29] D. Firoozi and P. E. Caines, â(cid:15)-Nash equilibria for major minor LQG
+mean ï¬eld games with partial observations of all agents,â Oct. 2018,
+arxiv:1810.04369v3.
+
+[30] J.-M. Lasry and P.-L. Lions, âMean-ï¬eld games with a major player,â
+Comptes Rendus Mathematique, vol. 356, no. 8, pp. 886â890, Aug. 2018.
+[31] A. Nayyar, A. Mahajan, and D. Teneketzis, âDecentralized stochastic
+control with partial history sharing: A common information approach,â
+IEEE Trans. Autom. Control, vol. 58, no. 7, pp. 1644â1658, July 2013.
+[32] H. S. Witsenhausen, âEquivalent stochastic control problems,â Mathe-
+
+matics of Control Signals and Systems, vol. 1, pp. 3â11, 1988.
+
+[33] B. S. Rao and H. F. Durrant-Whyte, âFully decentralised algorithm for
+multisensor kalman ï¬ltering,â IEE Proceedings D - Control Theory and
+Applications, vol. 138, no. 5, pp. 413â420, Sept 1991.
+
+Mohammad Afshari (Sâ12) received the B.S. and
+the M.S. degrees in Electrical Engineering from the
+Isfahan University of Technology, Isfahan, Iran, in
+2010 and 2012, respectively. He received his Ph.D.
+degree in Electrical and Computer Engineering from
+McGill University, Montreal, Canada in 2021. His
+current area of research is decentralized stochastic
+control, team theory, and reinforcement learning.
+
+Mr. Afshari is member of the McGill Center
+of Intelligent Machines (CIM) and member of the
+Research Group in Decision Analysis (GERAD).
+
+Aditya Mahajan (Sâ06-Mâ09-SMâ14)
+received
+B.Tech degree from the Indian Institute of Tech-
+nology, Kanpur, India, in 2003, and M.S. and Ph.D.
+degrees from the University of Michigan, Ann Arbor,
+USA, in 2006 and 2008. From 2008 to 2010, he was
+a Postdoctoral Researcher at Yale University, New
+Haven, CT, USA. He has been with the department
+of Electrical and Computer Engineering, McGill
+University, Montreal, Canada, since 2010 where he is
+currently Associate Professor. He currently serves as
+Associate Editor of IEEE Transactions of Automatic
+Control, IEEE Control System Letters, and Mathematics of Control, Signal,
+and Systems. He was an Associate Editor of the IEEE Control Systems Society
+Conference Editorial Board from 2014 to 2017. He is the recipient of the
+2015 George Axelby Outstanding Paper Award, 2014 CDC Best Student Paper
+Award (as supervisor), and the 2016 NecSys Best Student Paper Award (as
+supervisor). His principal research interests include learning and control of
+decentralized multi-agent systems, multi-armed bandits, and reinforcement
+learning.
+
+

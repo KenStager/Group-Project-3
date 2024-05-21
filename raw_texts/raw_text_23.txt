@@ -1,0 +1,5638 @@
+2
+2
+0
+2
+
+p
+e
+S
+1
+2
+
+]
+
+M
+P
+.
+n
+i
+f
+-
+q
+[
+
+1
+v
+8
+5
+4
+0
+1
+.
+9
+0
+2
+2
+:
+v
+i
+X
+r
+a
+
+Model-Free Reinforcement Learning
+for Asset Allocation
+
+Practicum Final Report
+
+Authors:
+Adebayo Oshingbesan
+Eniola Ajiboye
+Peruth Kamashazi
+Timothy Mbaka
+
+Industry Advisor & Client:
+Mahmoud Mahfouz
+Srijan Sood
+
+Faculty Supervisor:
+David Vernon
+
+September 22, 2022
+
+ 
+ 
+ 
+ 
+ 
+ 
+Acknowledgments
+
+This work would not have been possible without the advice and support of several
+people. First and foremost, we would like to express our gratitude to Mahmoud
+Mahfouz, Vice President of AI and Research at J.P. Morgan and Chase Co., and his
+colleague Sood Srijan for providing us with resources and valuable guidance during
+this project. We would also like to thank our advisor, Prof. David Vernon, for his
+guidance and constant support.
+
+1
+
+Table of Contents
+
+1 Introduction
+
+1.1 Background . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.2 Problem Deï¬nition . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.3 Aim and Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.4 Research Questions . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.5 Signiï¬cance of Study . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.6 Limitations of Study . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.7 Structure of Report . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+6
+6
+6
+7
+7
+7
+7
+8
+
+2 Portfolio Management
+
+9
+9
+2.1 Portfolio Optimization . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.2 Markowitz Model
+9
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.3 Modern Portfolio Theory . . . . . . . . . . . . . . . . . . . . . . . . . 10
+2.4 Post-modern Portfolio Theory . . . . . . . . . . . . . . . . . . . . . . 10
+
+3 Survey of Machine Learning in Finance
+
+12
+Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+. . . . . . . . . . . . . . . 16
+
+3.1
+3.2 RL Applications in Portfolio Management
+
+4 Financial Environment
+
+18
+4.1 Assumptions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+4.2 Description . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+4.3 State Space . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+4.4 Action Space
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+4.5 Reward functions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+
+5 Survey of Reinforcement Learning Techniques
+Introduction to Reinforcement Learning
+
+21
+5.1
+. . . . . . . . . . . . . . . . 21
+5.2 Reinforcement Learning Approaches . . . . . . . . . . . . . . . . . . . 24
+
+6 Trading Agents
+
+25
+6.1 Baseline Agents . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+6.2 Selection Criteria for RL Agents . . . . . . . . . . . . . . . . . . . . . 26
+6.3 Theoretical Description of Selected RL Agents . . . . . . . . . . . . . 26
+6.3.1 Normalized Advantage Function (NAF) . . . . . . . . . . . . . 26
+6.3.2 REINFORCE . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+6.3.3 Deep Deterministic Policy Gradient (DDPG) . . . . . . . . . . 29
+6.3.4 Twin Delayed Deep Deterministic Policy Gradient (TD3) . . . 31
+
+2
+
+6.3.5 Advantage Actor Critic (A2C) . . . . . . . . . . . . . . . . . . 32
+6.3.6
+Soft Actor Critic(SAC) . . . . . . . . . . . . . . . . . . . . . . 34
+6.3.7 Trust Region Policy Optimization (TRPO) . . . . . . . . . . . 35
+6.3.8 Proximal Policy Optimization (PPO) . . . . . . . . . . . . . . 39
+
+7 Experiments
+
+42
+7.1 Data - Dow Jones 30 . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+7.2 Experiment Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+7.2.1 Environment Parameters . . . . . . . . . . . . . . . . . . . . . 42
+7.2.2 RL Agent Hyper-parameters . . . . . . . . . . . . . . . . . . . 43
+7.3 Metrics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+
+8 Results & Discussion
+
+47
+8.1 Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 47
+8.2 Discussion . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 55
+8.2.1 RL vs. Baselines
+. . . . . . . . . . . . . . . . . . . . . . . . . 55
+8.2.2 Value-Based RL vs. Policy-Based RL . . . . . . . . . . . . . . 55
+8.2.3 On-Policy vs. Oï¬-Policy . . . . . . . . . . . . . . . . . . . . . 55
+
+9 Conclusion
+
+57
+9.1 Contributions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+9.2 Future Work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+
+A Raw Metric Scores for All Experiments
+
+References
+
+59
+
+64
+
+3
+
+List of Figures
+
+3.1 Taxonomy of Common Applications of Machine Learning in Finance . 12
+
+5.1 Components of an RL System (D. Silver, 2015)
+5.2 Taxonomy of RL Agents (Weng, 2018)
+
+. . . . . . . . . . . . 21
+. . . . . . . . . . . . . . . . . 22
+
+6.1 Actor Critic Algorithm Framework (Sutton & Barto, 2018) . . . . . . 33
+
+8.1 Graph of Final Average Rank of All Agents . . . . . . . . . . . . . . . 50
+. . . . . . . 50
+8.2 Graph of Cumulative Returns Plot at No Trading Costs
+8.3 Graph of Mean of Portfolio Weights For Each Stock at No Trading
+
+Costs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51
+
+8.4 Graph of Mean of Portfolio Weights For Each Stock at No Trading
+
+Costs
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51
+. . . . . . 52
+
+8.5 Graph of Cumulative Returns Plot at 0.6% Trading Costs
+8.6 Graph of Mean of Portfolio Weights For Each Stock at 0.6% Trading
+
+Costs
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 52
+
+8.7 Graph of Mean of Portfolio Weights For Each Stock at 0.6% Trading
+
+Costs
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 53
+. . . . . . . 53
+
+8.8 Graph of Cumulative Returns Plot at 1% Trading Costs
+8.9 Graph of Mean of Portfolio Weights For Each Stock at 1% Trading
+
+Costs
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+
+8.10 Graph of Mean of Portfolio Weights For Each Stock at 1% Trading
+
+Costs
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+
+4
+
+List of Tables
+
+3.1 Table of Previous ML Research in Finance. . . . . . . . . . . . . . . . 13
+
+5.1 Table of Model-Free RL Methods. . . . . . . . . . . . . . . . . . . . . 23
+. . 23
+5.2 Table of Model-Free RL Methods and Their Learning Mechanics.
+
+8.1 Table of Rank Comparison at No Trading Cost
+8.2 Table of Rank Comparison at 0.1% Trading Cost
+8.3 Table of Rank Comparison at 1% Trading Cost
+
+. . . . . . . . . . . . 48
+. . . . . . . . . . . 48
+. . . . . . . . . . . . 49
+
+A.1 Table of Mean Performance at No Trading Cost & Log Returns Reward 59
+A.2 Table of Mean Performance at No Trading Cost & Sharpe Ratio Reward 60
+A.3 Table of Peak Performance at No Trading Cost
+. . . . . . . . . . . . 60
+A.4 Table of Mean Performance at 0.1% Trading Costs & Log Returns
+
+Reward . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+
+A.5 Table of Mean Performance at 0.1% Trading Costs & Sharpe Ratio
+
+Reward . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+A.6 Table of Peak Performance at 0.1% Trading Costs . . . . . . . . . . . 62
+A.7 Table of Mean Performance at 1% Trading Costs & Log Returns Reward 62
+A.8 Table of Mean Performance at 1% Trading Costs & Sharpe Ratio
+
+Reward . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 63
+A.9 Table of Peak Performance at 1% Trading Costs & Sharpe Ratio Reward 63
+
+5
+
+Chapter 1
+
+Introduction
+
+1.1 Background
+
+Asset allocation (or portfolio management) is the task of determining how to opti-
+mally allocate funds of a ï¬nite budget into a range of ï¬nancial instruments/assets
+such as stocks (Filos, 2019). Coming up with a proï¬table trading strategy involves
+making critical decisions on allocating capital into diï¬erent stock options. Usually,
+this allocation should maximize the expected return while minimizing the investment
+risks involved (Gao et al., 2021). There are several existing portfolio management
+strategies, and the state-of-the-art portfolio management frameworks are broadly
+classiï¬ed into baseline models, follow the winner, follow the loser, pattern-matching,
+and meta-learning(B. Li & Hoi, 2014).
+
+While many of these state-of-the-art models achieve good results, there are some
+limitations. First, they are overly reliant on using predictive models (AdÃ¤mmer &
+SchÃ¼ssler, 2020). These predictive models are not usually too successful at predicting
+the ï¬nancial markets since these markets are highly stochastic and thus are very
+diï¬cult to predict accurately(Belousov, Abdulsamad, Klink, Parisi, & Peters, 2021).
+Similarly, many of these models make simplistic and usually unrealistic assumptions
+around the ï¬nancial signalsâ second-order and higher-order statistical moments (Gao
+et al., 2021). Finally, these models are usually limited to discrete action spaces to
+make the resulting models tractable to solve (Filos, 2019).
+
+Reinforcement learning (RL) has become increasingly popular in ï¬nancial portfolio
+management (J. Huang, Chai, & Cho, 2020). Reinforcement learning is the sub-ï¬eld
+of machine learning concerned with how intelligent machines ought to make deci-
+sions in an environment to maximize the cumulative reward over time (Contributors,
+2021). The addition of deep neural networks have been one of the breakthrough con-
+cepts in reinforcement learning in recent years, achieving superhuman performance
+in several tasks such as playing chess (D. Silver et al., 2018).
+
+1.2 Problem Deï¬nition
+
+While there are a lot of tools currently available for portfolio management, they
+are limited in their abilities because of inherent assumptions about the ï¬nancial
+
+6
+
+markets. Techniques that reduce the number of simplifying assumptions made could
+yield better results. Thus, there may be a signiï¬cant gap between what is possible
+and what is currently available in the ï¬eld.
+
+1.3 Aim and Objectives
+
+This study investigates the eï¬ectiveness of model-free deep reinforcement learning
+agents with portfolio management. The speciï¬c objectives are:
+
+â¢ Training RL agents on real-world prices of a ï¬nite set of stocks to optimally
+
+allocate a ï¬nite cash budget into a range of securities in a portfolio.
+
+â¢ Comparing the performance of RL agents to baseline agents.
+
+â¢ Comparing the performance of value-based RL agents to policy-based RL
+
+agents.
+
+â¢ Comparing the performance of oï¬-policy RL agents to on-policy RL agents.
+
+1.4 Research Questions
+
+At the end of this report, we should be able to answer the following questions:
+
+1. How well can RL agents perform the task of portfolio management?
+
+2. Are RL agents markedly better than the classical state-of-the-art portfolio
+
+management techniques?
+
+3. Are there certain classes of RL agents that are consistently better at portfolio
+
+management?
+
+1.5 Signiï¬cance of Study
+
+Since Harry Markowitz proposed the idea of portfolio formation in 1952 to improve
+expected rewards and reduce the investment risk, portfolio trading has been the
+dominant strategy for many traders. Any technique that helps improve this strategy
+will have many positive ripple eï¬ects (LeviÅ¡auskait, 2010). Reinforcement learning
+has shown that it is capable of improving performance in certain tasks substantially.
+An excellent example of this is the game of chess where AlphaZero and LeelaZero,
+two RL agents, beat state-of-the-art chess engines. These RL agents won by using
+the strategy of long-term positional advantage over materialism leading many chess
+players to modify their playing styles (D. Silver et al., 2018). This study aims to
+understand if RL can uncover strategies for portfolio management that yield better
+results than the current state of the art methods.
+
+1.6 Limitations of Study
+
+While this study will not be making any strong assumptions regarding the ï¬nancial
+signals obtained from the market, it will make some reasonable assumptions around
+
+7
+
+the impact of the RL agent on the market. However, these assumptions are generally
+considered reasonable and should not impact the portability of this study into the
+real world.
+
+1.7 Structure of Report
+
+The remainder of this report is structured as follows:
+
+â¢ Chapter 2: Portfolio Management - This chapter provides an overview of the
+
+ï¬eld of portfolio management.
+
+â¢ Chapter 3: Survey of Machine Learning in Finance - This chapter provides an
+overview of the diï¬erent applications of machine learning in ï¬nance, especially
+in reinforcement learning for portfolio management.
+
+â¢ Chapter 4: Financial Environment - This chapter describes how the trading
+
+environment is modeled as a reinforcement learning environment.
+
+â¢ Chapter 5: Survey of Reinforcement Learning Techniques - This chapter pro-
+
+vides an overview of the ï¬eld of reinforcement learning.
+
+â¢ Chapter 6: Trading Agents - This chapter describes the baseline and RL agents
+
+considered in this work.
+
+â¢ Chapter 7: Experiments - This chapter describes all the experiments that were
+
+carried in this study.
+
+â¢ Chapter 8: Results and Discussion - This chapter documents and discusses
+
+the results of this study.
+
+â¢ Chapter 9: Conclusion - This chapter summarizes the results, answers the ini-
+tial research questions, ensures that the study aim & objectives were achieved,
+and recommends future directions for the study.
+
+8
+
+Chapter 2
+
+Portfolio Management
+
+Portfolio management involves selecting and managing a collection of assets in order
+to meet long-term ï¬nancial goals while adhering to a risk tolerance level. Diversiï¬-
+cation and portfolio optimization are critical components of eï¬cient portfolio man-
+agement. Diversiï¬cation is a risk management approach that involves combining a
+wide range of investments in a portfolio. A diversiï¬ed portfolio comprises various
+asset types and investment vehicles to reduce exposure to any particular asset or
+risk (Hayes, 2021).
+
+2.1 Portfolio Optimization
+
+A portfolio is a collection of several ï¬nancial assets. Portfolio optimization is the
+process of determining the optimum portfolio from a set of all possible portfolios
+with a speciï¬c goal in mind. An optimum portfolio mixes candidate assets so that
+the chance of the portfolio generating a positive return is maximized for a given
+level of risk (Yiu, 2020). Portfolio optimization systematically solves the asset allo-
+cation problem by constructing and optimizing an objective function expressing the
+investorâs preferences concerning the portfolio vector (Filos, 2019).
+
+One method for accomplishing this is to assign equal weights to each asset. When the
+returns across the assets are random and there is no historical data, assigning equal
+weights is considered the most basic type of asset allocation and can be eï¬ective.
+This strategy, however, is ineï¬cient since it does not take into account past data.
+Thus, more eï¬cient methods have been developed. One of these methods is the
+Markowitz Model.
+
+2.2 Markowitz Model
+
+The Markowitz model (Markowitz, 1952) is regarded as one of the ï¬rst eï¬orts to
+codify and propose an optimization strategy for portfolio management mathemati-
+cally. The Markowitz model formulates portfolio allocation as discovering a portfolio
+vector w among a universe of M assets. The Markowitz model gives the optimal
+portfolio vector wâ which minimizes volatility for a given return level, such that
+
+9
+
+(Filos, 2019):
+
+M
+(cid:88)
+
+i=1
+
+wâ,i = 1, wx â R
+
+(2.1)
+
+The Markowitz model assumes that the investor is risk-averse and thus determines
+the optimal portfolio by selecting a portfolio that gives a maximum return for a
+given risk or minimum risk for given returns. Therefore, the optimal portfolio is
+selected as follows:
+
+â¢ From a set of portfolios with the same return, the investor will prefer the
+
+portfolio with the lower risk.
+
+â¢ From a set of portfolios with the same risk, the investor will choose the portfolio
+
+with the highest return.
+
+The Markowitz model also presupposes that the analysis is based on a one-period
+investment model and is thus only applicable in a one-period situation. This means
+that the choice to distribute assets is made only at the start of the term. As a
+result, the repercussions of this decision can only be seen after the term, and no
+additional action may be taken during that time. This makes the model a static
+model. However, since the Markowitz model is simple to grasp, it is frequently
+utilized as the cornerstone for current portfolio optimization strategies due to its
+simplicity and eï¬ciency. However, because it is based on a single-period investment
+model, it is not ideal for continuous-time situations.
+
+2.3 Modern Portfolio Theory
+
+The Markowitz model serves as the foundation for the modern portfolio theory
+(MPT). MPT is a mathematical framework for constructing a portfolio of assets
+to maximize the expected return for a given amount of risk. Diversiï¬cation is an
+essential component of the MPT. Diversiï¬cation refers to the concept that having
+a variety of ï¬nancial assets is less hazardous than owning only one type (C. Silver,
+2021).
+
+A core principle of the modern portfolio theory is that an assetâs risk should be
+measured not by itself but by how it contributes to the total risk and return of
+the portfolio. Modern portfolio theory uses the standard deviation of all returns to
+assess the risk of a speciï¬c portfolio (E. & E., 2021). Modern portfolio theory may
+be used to diversify a portfolio in order to get a higher overall return with less risk.
+The eï¬cient frontier is a key concept in MPT. It is the line indicating the investment
+combination that will deliver the best level of return for the lowest degree of risk
+(C. Silver, 2021).
+
+2.4 Post-modern Portfolio Theory
+
+The post-modern portfolio theory (PMPT) extends the modern portfolio theory
+(MPT). PMPT is an optimization approach that uses the downside risk of returns
+rather than the expected variance of investment returns employed by MPT. The
+diï¬erence in risk between the PMPT and the MPT, as measured by the standard
+
+10
+
+deviation of returns, is the most important aspect of portfolio creation. The MPT
+is based on symmetrical risk, whereas the PMPT is based on asymmetrical risk.
+The downside risk is quantiï¬ed by target semi-deviation, also known as downside
+deviation, and it reï¬ects what investors dread the most: negative returns (J. Chen,
+2021).
+
+11
+
+Chapter 3
+
+Survey of Machine Learning in
+Finance
+
+3.1 Introduction
+
+Machine learning has become increasingly important in the ï¬nance industry across
+several tasks. Figure 3.1 shows a taxonomy of some of the typical applications of
+machine learning in ï¬nance.
+
+Figure 3.1: Taxonomy of Common Applications of Machine Learning in Finance
+
+For ï¬nancial tasks, diï¬erent classes of machine learning algorithms have been fre-
+quently used. These classes include generalized linear models, tree-based models,
+kernel-based models, and neural networks. Similarly, the data has widely varied
+
+12
+
+from structured data such as tables to unstructured data such as text. Table 3.1
+itemizes various ï¬nance research articles where some of these models were used.
+
+Table 3.1: Table of Previous ML Research in Finance.
+
+Reference
+
+Task
+
+Data
+
+(AdÃ¤mmer & SchÃ¼ssler, 2020)
+
+News articles
+
+Information
+extraction and
+Risk assessment
+(equity risk
+premium
+prediction)
+
+(Albanesi & Vamossy, 2019)
+
+Credit default
+behavior
+
+Credit bureau
+data
+
+(Amel-Zadeh, Calliess, Kaiser, &
+Roberts, 2020)
+
+Abnormal Stock
+Returns
+
+(Ang, Chia, & Saghaï¬an, 2020)
+
+(Antweiler & Frank, 2004)
+
+(W. Bao, Yue, & Rao, 2017)
+
+(Y. Bao, Ke, Li, Yu, & Zhang,
+2020)
+(Bari & Agah, 2020)
+
+(BjÃ¶rkegren & Grissen, 2020)
+
+Start-ups
+Valuations and
+Probability of
+Success
+
+Stock market
+sentiment
+analysis
+Stock prices
+forecasting
+
+Accounting
+Fraud
+Trading signal
+generations
+Payment of bills
+â credit risk
+prediction
+
+13
+
+Financial
+Statement
+Variables
+
+Start-up
+funding data
+and descriptions
+from
+Crunchbase over
+ten years,
+Yahoo Finance
+message board
+
+Technical
+Indicators
+
+Raw ï¬nancial
+statement
+Tweets and
+Financial News
+Mobile phone
+metadata
+
+ML
+Algorithm(s)
+Correlated
+Topic Model
+(CTM), LASSO,
+Support Vector
+Regression,
+Ridge
+Regression,
+Elastic Net,
+Decision Trees,
+Random
+Forests, Boosted
+Trees
+Boosted Trees
+and Deep
+Neural
+Networks
+LASSO,
+Random
+Forests, Neural
+Networks
+LDA and
+Gradient
+Boosting
+Regressor
+
+NaÃ¯ve Bayes
+and SVM
+
+LSTM and
+Stacked
+Autoencoders
+Boosted Trees
+
+LSTMs and
+GRUs
+Random Forests
+
+(L. Chen, Pelger, & Zhu, 2020)
+
+Stochastic
+discount factor
+
+(Colombo & Pelagatti, 2020)
+
+(Croux, Jagtiani, Korivi, &
+Vulanovic, 2020)
+
+The direction of
+changes in
+exchange rates
+Loan Default
+
+(Gomes, Carvalho, & Carvalho,
+2017)
+
+Anomaly
+detection
+
+(Goumagias, Hristu-Varsakelis,
+& Assael, 2018)
+
+Tax evasion
+prediction
+
+(Gu, Kelly, & Xiu, 2020)
+
+Stock returns
+forecasting
+
+(Gulen, Jens, & Page, 2020)
+
+(Y. Huang et al., 2016)
+
+(Iwasaki & Chen, 2018)
+
+(Jiang & Liang, 2017)
+
+Estimation of
+heterogeneous
+treatment
+eï¬ects of debt
+covenant
+violations on
+ï¬rmsâ
+investment
+levels.
+Price direction
+prediction
+Stock price
+prediction
+Cryptocurrency
+portfolio
+management
+
+14
+
+Firm
+characteristics,
+historical
+return, and
+macroeconomic
+indicators.
+Marker
+uncertainty
+indicator data
+Loan data,
+borrowersâ
+characteristics,
+macroeconomic
+indicators
+Chamber of
+Deputies open
+data,
+Companies data
+from Secretariat
+of Federal
+Revenue of
+Brazil
+Empirical data
+from Greek
+ï¬rms
+Firm
+characteristics,
+Historical
+returns,
+Macroeconomic
+indicator
+Firms
+characteristic
+data
+
+Generative
+Adversarial
+Networks
+
+Support Vector
+Machines
+
+LASSO
+
+Deep
+Autoencoders
+
+Deep
+Q-Learning
+
+Linear
+Regression,
+Random
+Forests, Boosted
+Trees, Neural
+Networks
+Causal Forests
+
+Tweets
+
+Analyst Report
+
+Cryptocurrency
+price data
+
+Neural
+Networks
+LSTM, CNN,
+Bi-LSTM
+RNN, LSTM,
+CNN
+
+Convolutional
+Neural
+Networks and
+Random Forest
+Neural networks
+
+RNN, LSTM,
+GRU
+Deep
+Reinforcement
+Learning
+Deep Belief
+Network and
+Restricted
+Boltzmann
+Machines
+SVM, Deep
+Belief Network,
+LSTM
+MLP and CNN
+
+Deep
+Autoencoders
+
+Elastic Nets and
+Random Forests
+
+Deep Belief
+Network
+Regression Trees
+
+(Kvamme, Sellereite, Aas, &
+Sjursen, 2018)
+
+(Lahmiri & Bekiros, 2019)
+
+(H. Li, Shen, & Zhu, 2018)
+
+(Liang, Chen, Zhu, Jiang, & Li,
+2018)
+
+(Luo, Wu, & Wu, 2017)
+
+Mortgage
+default
+prediction
+
+Corporate
+Bankruptcy
+
+Stock price
+prediction
+Portfolio
+Allocation
+
+Mortgage data
+from Norwegian
+ï¬nancial service
+group, DNB
+Firmsâ ï¬nancial
+statements,
+market data,
+and general risk
+indicators
+Stocks data
+
+Stocks data
+
+Corporate credit
+rating
+
+CDS data
+
+Financial News
+
+Credit scores
+data
+Databases of
+foreign trade of
+the Secretariat
+of Federal
+Revenue of
+Brazil
+Bond
+transactions and
+characteristics
+data
+Financial
+Statements
+Investor
+characteristics
+
+(Ozbayoglu, Gudelek, & Sezer,
+2020)
+
+(Damrongsakmethee & Neagoe,
+2017)
+(Paula, Ladeira, Carvalho, &
+Marzagao, 2016)
+
+Financial
+distress
+prediction
+Credit score
+classiï¬cation
+Financial fraud
+and money
+laundering
+
+(Reichenbacher, Schuster, &
+Uhrig-Homburg, 2020)
+
+future bond
+liquidity
+
+(Antunes, Ribeiro, & Pereira,
+2017)
+(Rossi & Utkus, 2020)
+
+(Ozbayoglu et al., 2020)
+
+Bankruptcy
+Prediction
+Investors
+portfolio
+allocation and
+performance
+and eï¬ects of
+Robo-advising
+Credit card
+default
+
+15
+
+Account data
+and
+macroeconomic
+indicators
+
+Decision Trees,
+Random Forest,
+Boosted Trees
+
+(Taghian, Asadi, & Safabakhsh,
+2020)
+
+Trading Signal
+Generation
+
+Market data
+
+(Spilak, 2018)
+
+(Ozbayoglu et al., 2020)
+
+(Tian, Yu, & Guo, 2015)
+
+(Vamossy, 2021)
+
+(Deng, Ren, Kong, Bao, & Dai,
+2016)
+
+Dynamic
+portfolio
+allocation
+Stock
+classiï¬cation
+
+Corporate
+Bankruptcy
+
+Investorâs
+emotions
+Stock price
+prediction and
+trading signal
+generation.
+
+Neural Network,
+Genetic
+Programming,
+and
+Reinforcement
+Learning
+LSTM, RNN,
+MLP
+
+Deep RBM
+Encoder-
+Classiï¬er
+Network
+LASSO
+
+Cryptocurrency
+data
+
+Stocks data
+
+Firmsâ ï¬nancial
+statements and
+market data
+StockTwits post Deep Neural
+
+Stock price data Fuzzy Deep
+
+Networks
+
+Direct
+Reinforcement
+Learning
+
+3.2 RL Applications in Portfolio Management
+
+As seen in table 3.1, reinforcement learning has been applied in stock price predic-
+tion, portfolio management/allocation, tax evasion prediction, and trading signal
+generation, among others.
+In the following paragraphs, we will be providing an
+overview of several signiï¬cant works that have been done in the domain of reinforce-
+ment learning for portfolio management in the past few years.
+
+A study proposed an extendable reinforcement learning framework for handling a
+generic portfolio management challenge (Jiang, Xu, & Liang, 2017). At the lowest
+level, the framework is based on the Ensemble of Identical Independent Evaluators
+(EIIE) meta topology, which allows for many diï¬erent forms of weight-sharing neural
+networks. This framework was tested on the bitcoin market, and it outperformed
+other trading algorithms by a wide margin.
+
+Another study (Filos, 2019) introduced a global model-free reinforcement learning
+family of agents. Because it generalizes across assets and markets independent of
+the training environment, this methodology proved economical memory-wise and
+computation-wise. Furthermore, the author used pre-training, data augmentation,
+and simulation to ensure more robust training.
+
+A group of researchers (Huotari, Savolainen, & Collan, 2020) studied the portfolio
+performance of a trading agent based on a convolutional neural network model. The
+agentâs activity correlated with an investorâs high risk-taking behavior. Furthermore,
+
+16
+
+the agent beat benchmarks, although its performance did not diï¬er statistically
+substantially from the S&P 500 index.
+
+In deep reinforcement learning for portfolio management (Hieu, 2020), the authors
+examined three cutting-edge continuous policy gradient algorithms - deep determin-
+istic policy gradient (DDPG), generalized deterministic policy gradient (GDPG),
+and proximal policy optimization (PPO). The authors concluded that the ï¬rst two
+performed signiï¬cantly better than the third.
+
+A research work (Gao et al., 2021) suggested a hierarchical reinforcement learn-
+ing framework that can manage an arbitrary number of assets while accounting for
+transaction fees. On real-world market data, the framework performs admirably.
+However, since just four equities were evaluated, there is some doubt on the frame-
+workâs capacity to deal with enormous amounts of data.
+
+17
+
+Chapter 4
+
+Financial Environment
+
+4.1 Assumptions
+
+The real-world ï¬nancial market is a highly complex system. In this work, we model
+the ï¬nancial environment as a discrete-time, stochastic dynamic system with the
+following simplifying assumptions:
+
+â¢ There is no dependence on explicit stock price prediction (model-free).
+
+â¢ The actions of the RL agent should be continuous.
+
+â¢ There will be zero slippage.
+
+â¢ The RL agents have zero market impact.
+
+â¢ Short-selling is prohibited.
+
+â¢ The environment is a partially observable system.
+
+These simplifying assumptions are consistent with similar works in literature ((Filos,
+2019), (Gao et al., 2021), (Betancourt & Chen, 2021), (Jiang & Liang, 2017), (Hu
+& Lin, 2019)).
+
+4.2 Description
+
+The environment takes in the following inputs:
+
+â¢ Data: This is either a dataframe or a list of stock tickers. If a dataframe is
+provided, the index of the dataframe must be of type datetime (or can be
+cast to datetime). Each column should contain the prices of the stock name
+provided in the header over the time period.
+
+â¢ Episode Length: This refers to how long (in days) the agent is allowed to
+
+interact with the environment.
+
+â¢ Returns: The environment has two reward signals (see section 4.4). The
+returns variable is a boolean ï¬ag used to choose between these reward signals.
+When set to true, the environment uses the log-returns as the reward signal.
+When set to false, the environment used the diï¬erential Sharpe ratio.
+
+18
+
+â¢ Trading Cost Ratio: This is the percentage of the stock price that will be
+
+attributed to the cost of either selling or buying a unit stock.
+
+â¢ Lookback Period: This is a ï¬xed-sized window used to control how much
+historical data to return to the agent as the observation at each timestep.
+
+â¢ Initial Investment: This refers to the initial amount available to the agent to
+
+spend on all the available stocks in the environment.
+
+â¢ Retain Cash: This is a boolean ï¬ag value used to inform the environment
+
+whether the agent can keep a cash element or not.
+
+â¢ Random Start Range: The agent is encouraged to start from a random range
+
+to avoid over-ï¬tting. This value controls what that range should be.
+
+â¢ DSR Constant: This is a smoothing parameter for the diï¬erential Sharpe ratio.
+
+â¢ Add Softmax: This is a boolean ï¬ag that controls whether the environment
+should perform the softmax operation or not. This is required to support the
+out-of-the-box RL agents from other libraries.
+
+â¢ Start Date: If a list of tickers was provided instead of a dataframe, this start
+
+date parameter is used for the yahoo ï¬nance data download.
+
+â¢ End Date: If a list of tickers was provided instead of a dataframe, this end
+
+date parameter is used for the yahoo ï¬nance data download.
+
+â¢ Seed: This is a seed value for environment reproducibility
+
+4.3 State Space
+
+At any time step t, the agent will observe a stack of T vectors such that T is the
+amount of lookback context that the agent can observe. Each of the vectors will be
+an asset information vector denoted as Pt where:
+
+(cid:20)
+
+Pt =
+
+log
+
+(cid:18) P1,t
+P1,tâ1
+
+(cid:19)
+
+, log
+
+(cid:18) P2,t
+P2,tâ1
+
+(cid:19)
+
+, . . . , log
+
+(cid:19)(cid:21)T
+
+(cid:18) PM ,t
+PM,tâ1
+
+(cid:15) RM
+
+(4.1)
+
+4.4 Action Space
+
+The action represents the weights of the stocks in a portfolio at any time t where
+its i-th component represents the ratio of the i-th asset such that:
+
+At = [At,1 , At,2 , . . . , At,M ]T (cid:15) RM
+
+M
+(cid:88)
+
+i=1
+
+Ai,t = 1
+
+0 â¤ Ai,t â¤ 1 â i, t
+
+(4.2)
+
+(4.3)
+
+(4.4)
+
+where M is the total number of assets in the portfolio
+
+19
+
+If the agent is required to keep a cash element, the weight vectorâs size is increased
+by one yielding an extended portfolio vector that satisï¬es equations 4.2 to 4.4 with
+the cash element treated as an additional asset.
+
+4.5 Reward functions
+
+There are two reward functions Rt - log-returns and diï¬erential Sharpe ratio. The
+speciï¬c training reward returned for a particular training episode will be determined
+by the returns input value to the environment. The reward functions are deï¬ned as
+follows:
+
+â¢ Log-returns
+
+This is deï¬ned as the weighted sum of log-returns for the portfolio such that:
+
+Rt = In(1 + P t+1 â¢ At)
+
+(4.5)
+
+â¢ Diï¬erential Sharpe Ratio
+
+This is deï¬ned as an instantaneous risk-adjusted Sharpe ratio. Equations 4.6
+to 4.10 provide its mathematical formulation (Filos, 2019).
+
+Rt = (Ytâ1 â Î´Xt + 0.5Xtâ1 â Î´Yt)/(Yt â 1 â X 2
+
+tâ1)1.5
+
+Xt = Xtâ1 + Î± â Î´Xt
+
+Yt = Ytâ1 + Î± â Î´Yt
+
+Î´Xt = LRt â Xtâ1
+
+Î´Yt = LR2
+
+t â Ytâ1,
+
+where:
+LR is log-returns
+0 <= Î± <= 1; Î± is a smoothing f actor.
+
+(4.6)
+
+(4.7)
+
+(4.8)
+
+(4.9)
+
+(4.10)
+
+20
+
+Chapter 5
+
+Survey of Reinforcement Learning
+Techniques
+
+5.1 Introduction to Reinforcement Learning
+
+Reinforcement learning (RL) involves learning by interaction with an environment
+led by a speciï¬ed goal. The agent learns without being explicitly programmed,
+selecting actions based on prior experience (J. Huang et al., 2020). RL is growing
+more prominent as computer technologies such as artiï¬cial intelligence (AI) have
+advanced over the years. Machine learning (ML) is a sub-ï¬eld of AI that focuses
+on the use of data and algorithms to emulate the way humans learn, eventually
+improving its performance(Filos, 2019). There are mainly three categories of ML,
+namely supervised learning, unsupervised learning, and reinforcement learning.
+
+Supervised learning involves learning from a set of labeled training data. The objec-
+tive is to give the learning agent the capacity to generalize responses to circumstances
+not in the training set (D. Silver et al., 2018). On the other hand, unsupervised learn-
+ing is concerned with discovering hidden patterns and information in an unlabelled
+data set (Harmon & Harmon, 1996). Finally, in reinforcement learning, an agent
+learns by interacting with an unfamiliar environment. The agent receives input from
+the environment in the form of a reward (or punishment) which it then utilizes to
+gain experience and knowledge about the environment (Figure 5.1).
+
+Figure 5.1: Components of an RL System (D. Silver, 2015)
+
+The environment can be anything that processes an agentâs actions and the con-
+
+21
+
+sequences of those actions. The environmentâs input is an agentâs action A(t)
+performed in the current state S(t), and the environmentâs output is the next
+state S(t + 1) and reward R(t + 1). A state is a location or position in each
+world/environment that an agent may reach or visit. The reward function R(t)
+returns a numerical value to an agent for being in a state after performing an ac-
+tion. Rewards indicate whether or not a state is valuable and how valuable that
+state is (Contributors, 2021). According to the reward hypothesis, all objectives
+may be characterized by maximizing the predicted cumulative reward. Actions are
+anything that an agent is permitted to do in a given context within the environment.
+
+An RL agent may include one or more of three components - a policy, a value
+function, and a model. A policy directs an agentâs decision-making in each state. It
+is a mapping between a set of states and a set of actions. An optimum policy provides
+the best long-term beneï¬ts. A value function determines the quality of each state or
+state-action pair. A model is an agentâs representation of the environment, through
+which the agent predicts what the environment will do next (Filos, 2019; D. Silver
+et al., 2018). RL agents can be classiï¬ed into diï¬erent classes based on which of
+these three components they have (Figure 5.2). Model-free RL methods rely on trial
+and error to update their experience and information about the given environment
+because they lack knowledge of the transition model and reward function. Tables
+5.1 and 5.2 provides a summary of some of the common model-free RL methods.
+
+Figure 5.2: Taxonomy of RL Agents (Weng, 2018)
+
+22
+
+Table 5.1: Table of Model-Free RL Methods.
+
+Algorithm
+A2C
+
+Description
+Advantage Actor-Critic Algorithm
+
+A3C
+
+DDPG
+
+DQN
+
+Asynchronous Advantage Actor-Critic Algorithm
+
+Deep Deterministic Policy Gradient
+
+Deep Q Network
+
+Monte Carlo
+
+Every visit to Monte Carlo
+
+NAF
+
+PPO
+
+Q-Learning with Normalized Advantage Functions
+
+Proximal Policy Optimization
+
+Q-learning
+
+State-action-reward-state
+
+Q-learning - Lambda State action reward state with eligibility traces
+
+REINFORCE
+
+Monte-Carlo sampling of policy gradient methods
+
+SAC
+
+SARSA
+
+TD3
+
+TRPO
+
+Soft Actor-Critic
+
+State-action-reward-state-action
+
+Twin Delayed Deep Deterministic Policy Gradient
+
+Trust Region Policy Optimization
+
+Table 5.2: Table of Model-Free RL Methods and Their Learning Mechanics.
+
+Algorithm
+
+Policy
+
+Action Space State Space Operator
+
+Class
+
+A2C
+
+A3C
+
+DDPG
+
+DQN
+
+On-policy Continuous
+
+Continuous
+
+Advantage
+
+Actor-Critic
+
+On-policy Continuous
+
+Continuous
+
+Advantage
+
+Actor-Critic
+
+Oï¬-policy Continuous
+
+Continuous
+
+Q-value
+
+Oï¬-policy Discrete
+
+Continuous
+
+Q-value
+
+Actor-Critic
+
+Value-based
+
+Monte Carlo
+
+Either
+
+Discrete
+
+Discrete
+
+Sample means Value-based
+
+NAF
+
+PPO
+
+Oï¬-policy Continuous
+
+Continuous
+
+Advantage
+
+Value-based
+
+On-policy Continuous
+
+Continuous
+
+Advantage
+
+Actor-Critic
+
+Q-learning
+
+Oï¬-policy Discrete
+
+Q-learning - Lambda Oï¬-policy Discrete
+
+Discrete
+
+Discrete
+
+Q-value
+
+Q-value
+
+REINFORCE
+
+On-policy Continuous
+
+Continuous
+
+Q-value
+
+Value-based
+
+Value-based
+
+Policy-based
+
+Oï¬-policy Continuous
+
+Continuous
+
+Advantage
+
+Actor-Critic
+
+SARSA - Lambda
+
+On-policy Discrete
+
+On-policy Discrete
+
+Discrete
+
+Discrete
+
+Q-value
+
+Q-value
+
+Value-based
+
+Value-based
+
+Actor-Critic
+
+Oï¬-policy Continuous
+
+Continuous
+
+Q-value
+
+On-policy Continuous
+
+Continuous
+
+Advantage
+
+Actor-Critic
+
+23
+
+SAC
+
+SARSA
+
+TD3
+
+TRPO
+
+5.2 Reinforcement Learning Approaches
+
+There are mainly four common approaches to reinforcement learning - dynamic pro-
+gramming, Monte Carlo methods, temporal diï¬erence and policy gradient. Dynamic
+programming is a two-step process that uses the Bellman equation to improve the
+policy after the policy evaluation has been done. Dynamic programming is used
+when the model is fully known. Monte Carlo methods learn from raw experience
+episodes without modeling the environmental dynamics and compute the observed
+mean returns as an approximation of the predicted return. This means that learning
+can only occur when all episodes have been completed (Betancourt & Chen, 2021).
+Temporal Diï¬erence methods learn from incomplete episodes by using bootstrap-
+ping to estimate the value. Temporal diï¬erence may be thought of as a hybrid of
+dynamic programming and Monte Carlo. Unlike temporal diï¬erence approaches,
+which rely on the value estimate to establish the optimum policy, policy gradient
+methods rely directly on policy estimation. The policy, pi(a|s; theta), is parameter-
+ized by theta, and we apply gradient ascent to discover the best theta producing
+the highest return. Policy learning can take place on- or oï¬- policy. On-policy RL
+agents analyze the same policy that generated the action. Oï¬-policy RL agents, on
+the other hand, analyze a policy that is not necessarily the same as the one that
+generated the action (B. Li & Hoi, 2014).
+
+24
+
+Chapter 6
+
+Trading Agents
+
+6.1 Baseline Agents
+
+To properly benchmark our RL agents, we compared their performance to four
+baseline models. These benchmarks were chosen based on literature review and the
+clientâs recommendation. They include:
+
+â¢ Uniform Allocation
+
+This involves setting the portfolio weights such that:
+
+At,i =
+
+1
+M
+
+â i
+
+(6.1)
+
+â¢ Random Allocation
+
+This involves setting the portfolio weights such that:
+
+At,i =
+
+f (i)
+i f (i)
+
+(cid:80)M
+
+â¢ Buy And Hold
+
+where f (i) is a f unction of a random variable
+
+(6.2)
+
+This involves setting the portfolio weights such that:
+
+At,i = ci â i 0 â¤ ci â¤ 1,
+
+(6.3)
+
+where ci is a constant portfolio.
+and At,i is chosen based on the mean returns of the initial observation
+
+â¢ Markowitz Model
+
+This involves setting the portfolio weights such that:
+
+minimizeA AT (cid:88)
+
+A,
+
+(6.4)
+
+where (cid:80) is the covariance matrix
+subject to AT Âµ = Âµtarget
+and 1T
+and Ai â¥ 0 â i
+
+M A = 1
+
+25
+
+6.2 Selection Criteria for RL Agents
+
+The RL agents were chosen using three criteria. First, the RL agent must be model-
+free as the focus of this work is on model-free RL. Second, the agent must have
+been used in similar works in literature. Finally, the agent must support continuous
+action and state spaces as the ï¬nancial environment has continuous action and state
+spaces. Using table 5.2 as the starting point, ï¬fteen agents satisï¬ed the ï¬rst two
+criteria. However, only nine agents out of the ï¬fteen agents in that table satisï¬ed
+the third criterion. A3C was dropped because it is a modiï¬cation of A2C that enjoys
+the beneï¬ts of faster computational speed when the training is distributed. Since
+we do not use distributed training, an A3C agent would not have oï¬ered additional
+advantage. Thus, at the end of the selection process, we were left with the following
+eight agents - A2C, DDPG, NAF, PPO, REINFORCE, SAC, TD3, TRPO.
+
+6.3 Theoretical Description of Selected RL Agents
+
+6.3.1 Normalized Advantage Function (NAF)
+
+Q-learning is a temporal diï¬erence algorithm introduced in 1992 (Watkins & Dayan,
+1992). Algorithm 1 provides the Q-learning algorithm.
+
+Algorithm 1: Q-learning (Watkins & Dayan, 1992)
+Initialize Q(s, a) arbitrarily.
+for each episode do
+
+Initialize s
+for each step of episode do
+
+Choose a from using policy derived from Q
+Take action a and observe reward r and new state s(cid:48)
+Q(s, a) â Q(s, a) + Î±*(r + Î³*maxa(cid:48)*Q(s(cid:48), a(cid:48)) - Q(s, a))
+s â s(cid:48)
+
+end
+
+end
+
+Because Q-learning is typically computationally impractical in large action and state
+spaces, the Q-value function must be estimated. This may be accomplished by em-
+ploying a neural network (Mnih et al., 2013). This structure is known as a Deep
+Q-network (DQN), and it has served as the foundation for numerous successful ap-
+plications of reinforcement learning to various tasks in recent years. DQN addition-
+ally intends to signiï¬cantly enhance and stabilize the Q-learning training method
+through the use of two additional novel techniques:
+
+â¢ Experience Replay
+
+Over several episodes, experience tuples comprising (St, At, Rt, St+1) are kept
+in a replay memory. During Q-learning updates, samples from the replay
+memory are taken at random. This increases data utilization eï¬ciency, breaks
+down correlations in observation sequences, and smooths out variations in data
+distribution.
+
+26
+
+â¢ Periodically Updated Target
+
+A target network, which is just a clone of the original Q network, is established
+and updated on a regular basis. This improvement stabilizes the training by
+removing the short-term ï¬uctuations.
+
+However, one signiï¬cant limitation of the DQN and many of its variants is that they
+cannot be used in continuous action spaces. (Gu, Lillicrap, Sutskever, & Levine,
+2016) proposed the normalized advantage function, a continuous variant of the Q-
+learning algorithm, as an alternative to policy-gradient and actor-critic approaches
+in 2016. The NAF model for applying Q-learning with experience replay to con-
+tinuous action spaces (Algorithm 2). (Gu et al., 2016) also investigated the use of
+learned models for speeding model-free reinforcement learning and discovered that
+repeatedly updated local linear models are particularly successful. The authors
+represented the advantage function (A) such that:
+
+Q(x, u|Î¸Q) = A(x, u|Î¸A) + V (x|Î¸U )
+
+(6.5)
+
+A(x, u|Î¸A) = â0.5(u â Âµ(x|thetaÂµ))T â P (x|Î¸P ) â (u â Âµ(x|thetaÂµ))
+
+(6.6)
+
+P (x|Î¸P ) is a state-dependent, positive deï¬nite square matrix, which is parametrized
+by L(x|Î¸P ) which is a lower-triangular matrix whose entries come from a linear
+output of a neural network with the diagonal terms exponentiated.
+
+Algorithm 2: Continuous Q-Learning With NAF (Gu et al., 2016)
+Randomly initialize normalized Q network Q(x, u|Î¸Q).
+Initialize target network with weight Î¸Q(cid:48) â Î¸Q
+for episode = 1...M: do
+
+Initialize a random process N for action exploration
+Receive initial observation state x1
+for t = 1...T: do
+
+Ëp(x1)
+
+Select action ut = Âµ(xt|Î¸Âµ) + Nt
+Execute ut and observe rt and x(t + 1)
+Store transition (xt, ut, rt, x(t + 1)inR
+for iteration = 1, I do
+
+Sample a random minibatch of m transitions from R
+Set yi = ri + Î³ â V (cid:48) â (x(i + 1)|thetaQ(cid:48))
+Update Î¸Q by minimizing 1/N (cid:80)(yi â Q(xi, ui|Î¸Q))2
+Update the target network: Î¸Q(cid:48) â Ï â Î¸Q + (1 â Ï ) â Î¸Q(cid:48)
+
+end
+
+end
+
+end
+
+6.3.2 REINFORCE
+
+Policy-Gradient algorithms learn a parameterized policy that can select actions with-
+out consulting a value function. While a value function may be used to learn the
+policy parameters, it is not required for selecting actions. In equation 6.7, we can
+
+27
+
+express the policy as the probability of action a being taken at time t given that the
+environment is in state s at time t with parameter Î¸ (Sutton & Barto, 2018).
+
+Ï(a|s, Î¸) = P r{At = a|St = s, Î¸t = Î¸}
+
+(6.7)
+
+Policy gradient (PG) approaches are model-free methods that attempt to maximize
+the RL goal without using a value function. The RL goal, also known as the perfor-
+mance measure J(Î¸), is deï¬ned as the total of rewards from the beginning state to
+the terminal state for an episodic task and the average return for a continuous task
+when policy ÏÎ¸ is followed.
+
+J(Î¸)
+
+.
+= vÏÎ¸ (s0) = EÏ â¼ÏÎ¸(Ï )
+
+(cid:2)Î³tr (st, at)(cid:3)
+
+(6.8)
+
+Where the value function vÏÎ¸(s0) is the value of the expected discounted sum of
+rewards for a trajectory starting at state s0 and following policy ÏÎ¸ until the episode
+terminates. This objective can be evaluated in an unbiased manner by sampling N
+trajectories from the environment using policy ÏÎ¸:
+
+J(Î¸) â
+
+1
+N
+
+N
+(cid:88)
+
+Tiâ1
+(cid:88)
+
+i=1
+
+t=0
+
+Î³tr (si,t, ai,t)
+
+(6.9)
+
+Ti is the timestep in which trajectory Ïi terminates.
+The probability distribution ÏÎ¸(a|s) can be deï¬ned:
+
+â¢ over a discrete action space, in which case the distribution is usually categorical
+
+with a softmax over the action logits.
+
+â¢ over a continuous action space, in which case the output is the parameters of
+
+a continuous distribution (e.g. the mean and variance of a gaussian).
+
+The gradient with respect to Î¸ according to the policy gradient theorem can be
+approximated over N trajectories as:
+
+âÎ¸J(Î¸) â
+
+1
+N
+
+N
+(cid:88)
+
+(cid:34)Tiâ1
+(cid:88)
+
+i=1
+
+t=0
+
+Gi,tâÎ¸ log ÏÎ¸ [ai,t | si,t]
+
+(6.10)
+
+(cid:35)
+
+Where ai,t is the action taken at time t of episode i at state si,t, Ti is the timestep in
+which trajectory Ïi terminates and Gi,t is a function of the reward assigned to this
+action
+
+For REINFORCE, Gi,t is the sum of rewards in trajectory i
+
+Gi,t =
+
+Tiâ1
+(cid:88)
+
+t(cid:48)=0
+
+r (si,t(cid:48), ai,t(cid:48))
+
+(6.11)
+
+28
+
+Algorithm 3: REINFORCE: Monte-Carlo Policy Gradient Control (episodic)
+Initialize policy network with weights Î¸
+for each episode {s0, a0, r2 ... sT â1, aT â1, rT } sampled from policy ÏÎ¸: do
+
+for t = 0...T â 1: do
+
+Evaluate the gradient
+âÎ¸J(Î¸) â 1
+N
+
+Update the policy parameters
+
+(cid:80)N
+
+i=1
+
+(cid:104)(cid:80)Tiâ1
+
+t=0 Gi,tâÎ¸ log ÏÎ¸ [ai,t | si,t]
+
+(cid:105)
+
+Î¸ â Î¸ + Î±(cid:79)Î¸J(Î¸)
+
+end
+
+end
+
+Limitations
+
+1. The procedure of updating is ineï¬cient. The trajectory is deleted after per-
+
+forming the policy and changing the parameters.
+
+2. The gradient estimate is noisy, and there is a chance that the gathered trajec-
+
+tory does not accurately represent the policy item.
+
+3. There is no apparent credit assignment. A trajectory can contain numerous
+good or harmful activities, and whether or not these behaviours are reinforced
+is only determined by the ultimate product.
+
+Other Policy Gradient methods like A2C, DDPG, TD3, SAC, and PPO were created
+to overcome the limitations of REINFORCE.
+
+6.3.3 Deep Deterministic Policy Gradient (DDPG)
+
+Following the success of the Deep-Q Learning algorithm, which beat humans in Atari
+games, DeepMind applied the same concept to physics challenges, where the action
+space is considerably larger than in Atari games. Deep Q-Learning performed well
+in high-dimensional state spaces but not in high-dimensional action spaces (con-
+tinuous action). To cope with high-dimensional (continuous) action spaces, DDPG
+blends Deep Learning and Reinforcement Learning approaches. DDPG employs the
+concepts of an experience replay buï¬er, in which the network is trained oï¬-policy
+by sampling experience batches, and target networks, in which copies of the net-
+work are created for use in objective functions to avoid divergence and instability in
+complex and non-linear function approximators such as neural networks (Lillicrap
+et al., 2019).
+
+Aside from using a neural network to parameterize the Q-function "critic," as shown
+in DQN, we also have the policy network called "actor" to parameterize the policy
+function. The policy is simply the behaviour of the agent, "a mapping from state to
+action" in the case of a deterministic policy or "a distribution of actions" in the case
+of a stochastic policy. Since we have two networks, there are two sets of parameters
+to update:
+
+1. The parameters of the policy network have to be updated in order to maximize
+
+the performance measure J deï¬ned in the policy gradient theorem
+
+2. The parameters of the critic network are updated in order to minimize the
+
+29
+
+temporal diï¬erence loss L
+
+L(w) =
+
+1
+N
+
+(cid:88)
+
+(yi â Ëq(si, ai, w))2
+
+i
+
+(6.12)
+
+(cid:79)Î¸J(Î¸) â
+
+1
+N
+
+(cid:88)
+
+i
+
+(cid:79)a Ëq(s, a, w)|s=Si,a=Ï(Si)(cid:79)Î¸Ï(s, Î¸)|s=Si
+
+(6.13)
+
+To maximize the Q-value function while reducing the temporal diï¬erence loss, we
+must enhance the performance measure J. The actor takes the state as input and
+outputs an action, whereas the critic takes both the state and the action as input
+and outputs the value of the Q function. The critic uses gradient temporal-diï¬erence
+learning, whilst the actor parameters are discovered using the Policy gradient theo-
+rem. The essential principle of this design is that the policy network acts, resulting
+in an action, and the Q-network critiques that action.
+
+The use of non-linear function approximators such as neural networks, which are
+required to generalize on vast state spaces, means that convergence is no longer
+assured, as it was with Q learning. As a result, experience replay is required in
+order to generate independent and identically dispersed samples. In addition, target
+networks must be used to avoid divergence when upgrading the critic network. In
+DDPG, parameters are changed diï¬erently than in DQN, where the target network
+is updated every C steps. Following the "soft" update, the parameters of the target
+networks are changed at each time step as shown:
+
+wâ â Ï w + (1 â Ï )wâ
+Î¸â â Ï Î¸ + (1 â Ï )Î¸â
+
+(6.14)
+
+where Ï (cid:28) 1, wâ = weights of target Q network, Î¸â = weights of target policy
+network ((cid:28)= much less than)
+
+The weights of target networks are limited to ï¬uctuate slowly using "soft" updates,
+boosting the stability of learning and convergence outcomes. The target network is
+then utilized instead of the Q-network in the temporal diï¬erence loss. In algorithms
+such as DDPG, the problem of exploration may be addressed quite easily and in-
+dependently of the learning process. The actor policy is then supplemented with
+noise taken from a noise process N to create the exploration policy. The exploration
+policy then becomes:
+
+Ï(cid:48)(St) = Ï(St, Î¸) + v
+
+(6.15)
+
+Where v is an Ornstein-Uhlenbeck process - a stochastic method capable of pro-
+ducing temporally coordinated actions that provide smooth exploration in physical
+
+30
+
+control issues.
+
+Algorithm 4: DDPG (Lillicrap et al., 2019)
+Randomly initialize critic network Q(s, a|Î¸Q) and actor Âµ(s|Î¸Âµ) with weights Î¸Q
+and Î¸Âµ
+Initialize target network Q(cid:48) and Âµ(cid:48) with weights Î¸Q(cid:48) â Î¸Q, Î¸Âµ(cid:48) â Î¸Âµ
+Initialize replay buï¬er R
+for episode = 1...M: do
+
+Initialize a random process N for action exploration
+Receive initial observation state s1
+for t = 1...T: do
+
+Select action at = Âµ(st|Î¸Âµ) + Nt according to the current policy and
+exploration noise
+Execute action at and observe reward rt and observe new state st+1
+Store transition (st, at, rt, st+1) in R
+Sample a random minibatch of N transitions (si, ai, ri, si+1) from R
+Set yi = ri + Î³Q(cid:48)(si+1, Âµ(cid:48)(si+1|Î¸Âµ(cid:48))|Î¸Q(cid:48))
+Update critic by minimizing the loss: L(w) = 1
+N
+Update the the actor policy using the sampled policy gradient:
+
+i(yi â Ëq(si, ai, w))2
+
+(cid:80)
+
+(cid:79)Î¸ÂµJ(Î¸) â 1
+N
+
+(cid:80)
+
+i
+
+(cid:79)aQ(s, a|Î¸Q)|s=si,a=Âµ(si)(cid:79)Î¸ÂµÂµ(s|Î¸Âµ)|si
+
+Update the target networks:
+
+Î¸Q(cid:48) â Ï Î¸Q + (1 â Ï )Î¸Q(cid:48)
+Î¸Âµ(cid:48) â Ï Î¸Âµ + (1 â Ï )Î¸Âµ(cid:48)
+
+end
+
+end
+
+6.3.4 Twin Delayed Deep Deterministic Policy Gradient (TD3)
+
+The DQN method is known to exhibit overestimation bias, which means that it
+overestimates the value function. This is due to the fact that the goal Q value
+is an approximation, and choosing the maximum over an estimate implies we are
+strengthening the approximation inaccuracy. This diï¬culty prompted various en-
+hancements to the underlying DQN algorithm. TD3 uses numerous algorithmic
+methods on DDPG, a network designed to improve on the DQN, to limit the possi-
+bility of overestimation bias drastically. The algorithmic methods are clipped double
+Q-Learning, delayed policy/targets updates, and target policy smoothing.
+
+TD3 employs six neural networks: one actor, two critics, and the target networks
+that correspond to them. Clipped Double Q-Learning employs the least estimation
+between the two actor reviewers in order to favor underestimating the value function,
+which is diï¬cult to transmit through the training process. To limit the volatility
+in the value estimation, TD3 updates the policy at a reduced frequency (Delayed
+Policy and Targets Updates).
+
+The policy network remains unchanged until the value error is small enough. Fur-
+thermore, rather than just duplicating the weights after k steps, the target networks
+are updated using the Polyak averaging approach. Finally, to avoid overï¬tting, TD3
+smooths the value function by adding a little amount of clipped random noises to
+the chosen action and averaging over mini-batches. Algorithm 5 depicts the TD3
+
+31
+
+framework and the places where these algorithmic tricks were used.
+
+Algorithm 5: TD3 (Fujimoto, Hoof, & Meger, 2018)
+Initialize critic networks QÎ¸1
+parameters Î¸1, Î¸2, Ï
+Initialize target networks Î¸(cid:48)
+Initialize replay buï¬er B
+for t = 1...T: do
+
+2 â Î¸2, Ï(cid:48) â Ï
+
+1 â Î¸1, Î¸(cid:48)
+
+, QÎ¸2
+
+and actor network ÏÏ with random
+
+Select action with exploration noise a â¼ Ï(s) + (cid:15), (cid:15) â¼ N (0, Ï) and observe
+reward r and new state s(cid:48)
+Store transition tuple (s, a, r, s(cid:48)) in B
+Sample mini-batch of N transitions (s, a, r, s(cid:48)) from B
+Ëa â ÏÏ(cid:48)(s) + (cid:15),
+(s(cid:48), Ëa) ;
+y â r + Î³ mini=1,2 QÎ¸(cid:48)
+Update critics Î¸i â minÎ¸iN â1 (cid:80)(y â QÎ¸i(s, a))2
+if t mod d then
+
+// Target Policy Smoothing
+// Clipped Double Q-learning
+
+(cid:15) â¼ clip(N (0, ËÏ), âc, c) ;
+
+i
+
+/* Delayed update of target and policy networks
+Update Ï by the deterministic policy gradient:
+(cid:79)ÏJ(Ï) = N â1 (cid:80) (cid:79)aQÎ¸1(s, a)|a=ÏÏ(s)(cid:79)ÏÏÏ(s)
+Update the target networks:
+
+*/
+
+i â Ï Î¸i + (1 â Ï )Î¸(cid:48)
+Î¸(cid:48)
+i
+i â Ï Ï + (1 â Ï )Ï(cid:48)
+Ï(cid:48)
+
+end
+
+end
+
+6.3.5 Advantage Actor Critic (A2C)
+
+A2C is a policy gradient method that combines two types of reinforcement learning
+algorithms: policy-based and value-based. The actor-critic algorithm is composed
+of two distinct structures: one for storing and updating the value function and the
+other for storing the updated policy. The agent chooses the action based on the
+policy rather than the value function, where the policy component is called the
+actor, which conducts an action, changes the value of the function, and uses the
+value function to assess the action, and the value function part is called the critic.
+To lower the variance of the policy gradient, it employs an advantage (equation
+6.16). The critic network assesses the advantage function rather than the value
+function only (Tang, 2018).
+
+(cid:79)Î¸J(Î¸) â¼
+
+T â1
+(cid:88)
+
+t=0
+
+(cid:79)Î¸logÏÎ¸(at|st)A(st, at)
+
+(6.16)
+
+Thus, the evaluation of an action examines not only how excellent the action is,
+but also how the action may be improved so that the high variance of the policy
+networks is lowered and the model becomes more resilient (Konda & Gao, 2000).
+The value function of the critic component can also make use of temporal diï¬erence
+error (TD error) computed using the TD learning approach.
+
+The advantage of the actor-critic algorithm is that it separates the policy from the
+
+32
+
+value function by learning the value function and the policy function using linear
+approximation, where the critic part is the value function approximator, learning
+the estimate function, and then passing to the actor part. The actor is a policy
+approximator that learns a random strategy and selects an action using the gradient-
+based policy updating approach (Fig. 6.1).
+
+Figure 6.1: Actor Critic Algorithm Framework (Sutton & Barto, 2018)
+
+The Policy gradient is deï¬ned as follows:
+
+(6.17)
+
+(6.18)
+
+(6.19)
+
+(6.20)
+
+(6.21)
+
+(cid:79)Î¸J(Î¸) = EÏ
+
+(cid:35)
+
+(cid:79)Î¸logÏÎ¸(at|st)Gt
+
+(cid:34)T â1
+(cid:88)
+
+t=0
+
+Introducing baseline b(s):
+
+(cid:79)Î¸J(Î¸) = E
+
+(cid:34)T â1
+(cid:88)
+
+(cid:35)
+(cid:79)Î¸logÏÎ¸(at|st)(Gt â b(st))
+
+t=0
+
+Ert+1,st+1,...,rT ,sT [Gt] = Q(st, at)
+
+Plugging that in, we can rewrite the update equation as such:
+
+(cid:79)Î¸J(Î¸) = Es0,a0,...,st,at
+
+(cid:34)T â1
+(cid:88)
+
+(cid:35)
+(cid:79)Î¸logÏÎ¸(at|st)
+
+Qw(st, at)
+
+t=0
+
+(cid:34)T â1
+(cid:88)
+
+(cid:35)
+(cid:79)Î¸logÏÎ¸(at|st)Qw(st, at)
+
+= EÏ
+
+t=0
+
+Algorithm 6: Actor Critic
+Initialize parameters s, Î¸, w and learning rates Î±Î¸, Î±w sample a â¼ ÏÎ¸(a|s)
+for t â 1, 2, ...T: do
+
+Sample reward rt â¼ R(s, a) and next state s(cid:48) â¼ P (s(cid:48)|s, a)
+Then sample the next action a(cid:48) â¼ ÏÎ¸(a(cid:48)|s(cid:48))
+Update the policy parameters: Î¸ â Î¸ + Î±Î¸Qw(s, a)(cid:79)Î¸logÏÎ¸(a|s)
+Compute the correction (TD error) for action-value at time t:
+
+Î´t = rt + Î³Qw(s(cid:48), a(cid:48)) â Qw(s, a)
+
+and use it to update the parameters of Q function:
+
+w â w + Î±wÎ´t(cid:79)wQw(s, a)
+
+Move to a â a(cid:48) and s â s(cid:48)
+
+end
+
+33
+
+6.3.6 Soft Actor Critic(SAC)
+
+As a bridge between stochastic policy optimization and DDPG techniques, the Soft
+Actor-Critic Algorithm is an oï¬-policy algorithm that optimizes a stochastic pol-
+icy. Entropy regularization is the primary aspect of SAC. The policy is trained to
+optimize a trade-oï¬ between anticipated return and entropy, which is a measure of
+the policyâs unpredictability. SAC is thoroughly described by ï¬rst establishing the
+entropy regularized reinforcement learning setup and the value functions associated
+with it (Haarnoja, Zhou, Abbeel, & Levine, 2018).
+
+The SAC algorithm learns a policy as well as two Q- functions, Q1 and Q2. There
+are two basic SAC variants: one that utilizes a constant entropy regularization
+coeï¬cient and another that enforces an entropy restriction by altering the training
+process. The constant entropy regularization coeï¬cient is employed for ease in
+spinning up, although the entropy-constrained variation is more widely utilized,
+according to (Haarnoja et al., 2018). The Q-functions are taught in a manner
+similar to the TD3 mentioned in this study, with a few major modiï¬cations.
+
+In each stage, the policy should be implemented in order to maximize projected
+future returns and expected future entropy. It should aim to maximize V Ï(s), which
+we expand out into
+
+V Ï(s) = E
+aâ¼Ï
+= E
+aâ¼Ï
+
+[QÏ(s, a)] + Î±H(Ï(Â· | s))
+
+[QÏ(s, a) â Î± log Ï(a | s)]
+
+34
+
+Algorithm 7: Soft Actor Critic:
+Input: initial policy parameters Î¸, Q-function parameters Ï1, Ï2, empty replay
+
+buï¬er D
+
+Set target parameters equal to main parameters Ïtarg ,1 â Ï1, Ïtarg ,2 â Ï2
+Repeat the following steps until convergence:
+Observe state s and select action a â¼ ÏÎ¸(Â· | s)
+Execute a in the environment
+Observe next state s(cid:48), reward r, and done signal d to indicate whether s(cid:48) is
+terminal Store (s, a, r, s(cid:48), d) in replay buï¬er D
+If s(cid:48) is terminal, reset environment state.
+if itâs time to update then
+for k = 0, 1, 2, ... do
+
+Randomly sample a batch of transitions, B = {(s, a, r, s(cid:48), d)} from D
+Compute targets for the Q functions:
+
+y (r, s(cid:48), d) = r+Î³(1âd)
+
+(cid:18)
+
+min
+i=1,2
+
+QÏtarg ,i (s(cid:48), Ëa(cid:48)) â Î± log ÏÎ¸ (Ëa(cid:48) | s(cid:48))
+
+(cid:19)
+
+,
+
+Ëa(cid:48) â¼ ÏÎ¸ (Â· | s(cid:48))
+
+Update Q-functions by one step of gradient descent using
+
+âÏi
+
+1
+|B|
+
+(cid:88)
+
+(s,a,r,s(cid:48),d)âB
+
+(QÏi(s, a) â y (r, s(cid:48), d))2
+
+for i = 1, 2
+
+Update policy by one step of gradient ascent using
+
+âÎ¸
+
+1
+|B|
+
+(cid:88)
+
+sâB
+
+(cid:18)
+
+min
+i=1,2
+
+QÏi (s, ËaÎ¸(s)) â Î± log ÏÎ¸ (ËaÎ¸(s) | s)
+
+(cid:19)
+
+where ËaÎ¸(s) is a sample from ÏÎ¸(Â· | s) which is diï¬erentiable wrt Î¸ via the
+reparametrization trick. Update target networks with
+
+Ïtarg,i â ÏÏtarg,i + (1 â Ï)Ïi
+
+for i = 1, 2
+
+end
+
+6.3.7 Trust Region Policy Optimization (TRPO)
+
+TRPO is based on trust region optimization, which ensures monotonic improvement
+by adding trust region restrictions to satisfy how near the new and old policies may
+be (Schulman, Levine, Moritz, Jordan, & Abbeel, 2015). The restriction is deï¬ned
+in terms of KL divergence, which is a measure of the distance between probability
+distributions (Joyce, 2011).
+
+In TRPO, the goal is to optimize the objective function which is denoted as Î·(Ï).
+Consider an inï¬nite-horizon discounted Markov decision process (MDP), deï¬ned by
+the tuple (S, A, P, r, Ï0, Î³), where S is a ï¬nite set of states, A is a ï¬nite set of actions,
+P : S ÃAÃS â R is the transition probability distribution, r : S â R is the reward
+function, Ï0 : S â R is the distribution of the initial state s0, and Î³ â (0, 1) is the
+discount factor (Schulman et al., 2015).
+
+35
+
+Let Ï denote a stochastic policy Ï : S Ã A â [0, 1], and let Î·(Ï) denote its expected
+discounted reward:
+
+Î·(Ï) = Es0,a0,...
+
+(cid:34) â
+(cid:88)
+
+(cid:35)
+Î³tr (st)
+
+, where
+
+t=0
+
+s0 â¼ Ï0 (s0) , at â¼ Ï (at | st) , st+1 â¼ P (st+1 | st, at)
+
+In TRPO, the state-action value function QÏ, the value function VÏ, and the advan-
+tage function AÏ are deï¬ned as:
+
+QÏ (st, at) = Est+1,at+1,...
+
+(cid:34) â
+(cid:88)
+
+(cid:35)
+Î³lr (st+l)
+
+VÏ (st) = Eat,st+1,...
+
+l=0
+
+(cid:35)
+Î³lr (st+l)
+
+(cid:34) â
+(cid:88)
+
+l=0
+
+AÏ(s, a) = QÏ(s, a) â VÏ(s), where
+at â¼ Ï (at | st) , st+1 â¼ P (st+1 | st, at) for t â¥ 0
+
+The following useful identity expresses the expected return of another policy ËÏ in
+terms of the advantage over Ï, accumulated over time-steps (Schulman et al., 2015):
+
+Î·(ËÏ) = Î·(Ï) + Es0,a0,Â·Â·Â·â¼Â¯Ï
+
+(cid:35)
+
+Î³tAÏ (st, at)
+
+(cid:34) â
+(cid:88)
+
+t=0
+
+(6.22)
+
+where the notation Es0,a0,...â¼Â¯Ï[. . .] indicates that actions are sampled at â¼ ËÏ (Â· | st) .
+Let ÏÏ be the (unnormalized) discounted visitation frequencies
+
+ÏÏ(s) = P (s0 = s) + Î³P (s1 = s) + Î³2P (s2 = s) + . . .
+
+where s0 â¼ Ï0 and the actions are chosen according to Ï. 6.22 can be re-written
+with a sum over states instead of time steps:
+
+â
+(cid:88)
+
+(cid:88)
+
+t=0
+
+(cid:88)
+
+s
+â
+(cid:88)
+
+Î·(ËÏ) = Î·(Ï) +
+
+= Î·(Ï) +
+
+= Î·(Ï) +
+
+P (st = s | ËÏ)
+
+(cid:88)
+
+a
+
+ËÏ(a | s)Î³tAÏ(s, a)
+
+Î³tP (st = s | ËÏ)
+
+ËÏ(a | s)AÏ(s, a)
+
+(6.23)
+
+(cid:88)
+
+a
+
+s
+(cid:88)
+
+t=0
+
+ÏÂ¯Ï(s)
+
+s
+
+(cid:88)
+
+a
+
+ËÏ(a | s)AÏ(s, a)
+
+Equation 6.23 implies that any policy update Ï â ËÏ that has a non-negative ex-
+pected advantage at every state s, i.e., (cid:80)
+a ËÏ(a | s)AÏ(s, a) â¥ 0, is guaranteed
+to increase the policy performance Î·, or leave it constant in the case that the
+expected advantage is zero everywhere. This implies the classic result that the
+update performed by exact policy iteration, which uses the deterministic policy
+Â¯Ï(s) = arg maxa AÏ(s, a), improves the policy if there is at least one state-action pair
+with a positive advantage value and nonzero state visitation probability; otherwise,
+
+36
+
+the algorithm has converged to the optimal policy. However, in the approximate
+setting, it will typically be unavoidable, due to estimation and approximation error,
+that there will be some states s for which the expected advantage is negative, that
+is, (cid:80)
+a ËÏ(a | s)AÏ(s, a) < 0. The complex dependency of ÏÂ¯Ï(s) on ËÏ makes Equation
+6.23 diï¬cult to optimize directly. Instead, the following local approximation to Î· is
+introduced (Schulman et al., 2015):
+
+LÏ(ËÏ) = Î·(Ï) +
+
+(cid:88)
+
+s
+
+ÏÏ(s)
+
+(cid:88)
+
+a
+
+ËÏ(a | s)AÏ(s, a)
+
+(6.24)
+
+LÏ uses the visitation frequency ÏÏ rather than ÏÂ¯Ï, ignoring changes in state visi-
+tation density due to changes in the policy. However, when using a parameterized
+policy ÏÎ¸, where ÏÎ¸(a | s) is a diï¬erentiable function of the parameter vector Î¸, then
+LÏ matches Î· to ï¬rst order. That is, for any parameter value Î¸0,
+
+LÏÎ¸ (ÏÎ¸0) = Î· (ÏÎ¸0)
+
+âÎ¸LÏÎ¸0
+
+(cid:12)
+(cid:12)
+(ÏÎ¸)
+(cid:12)Î¸=Î¸0
+
+= âÎ¸Î· (ÏÎ¸)|Î¸=Î¸0
+
+(6.25)
+
+Equation 6.24 implies that a suï¬ciently small step ÏÎ¸0 â Â¯Ï that improves LÏÎ¸old
+will also improve Î·, but does not give us any guidance on how big of a step to take
+(Schulman et al., 2015).
+
+To address this issue, (Kakade & Langford, 2002) proposed a policy updating scheme
+called conservative policy iteration, for which they could provide explicit lower
+bounds on the improvement of Î·. To deï¬ne the conservative policy iteration up-
+date, let Ïold denote the current policy, and let Ï(cid:48) = arg maxÏ(cid:48) LÏold (Ï(cid:48)) . The new
+policy Ïnew was deï¬ned to be the following mixture (Schulman et al., 2015):
+
+Ïnew (a | s) = (1 â Î±)Ïold (a | s) + Î±Ï(cid:48)(a | s)
+
+(6.26)
+
+(Kakade & Langford, 2002) derived the following lower bound:
+
+Î· (Ïnew ) â¥ LÏold (Ïnew ) â
+(cid:12)Eaâ¼Ï(cid:48)(a|s) [AÏ(s, a)](cid:12)
+(cid:12)
+(cid:12)
+
+where (cid:15) = max
+
+2(cid:15)Î³
+(1 â Î³)2 Î±2
+
+s
+
+(6.27)
+
+Equation 6.27, which applies to conservative policy iteration, implies that a policy
+update that improves the right hand side is guaranteed to improve the true per-
+formance Î·. Our principal theoretical result is that the policy improvement bound
+in Equation 6.27 can be extended to general stochastic policies, rather than just
+mixture policies, by replacing Î± with a distance measure between Ï and ËÏ, and
+changing the constant (cid:15) appropriately. Since mixture policies are rarely used in
+practice, this result is crucial for extending the improvement guarantee to practical
+problems. The particular distance measure we use is the total variation divergence,
+which is deï¬ned by DT V (p(cid:107)q) = 1
+i |pi â qi| for discrete probability distributions
+2
+p, q.1 Deï¬ne Dmax
+
+(cid:80)
+
+TV (Ï, ËÏ) as
+
+37
+
+Dmax
+
+TV (Ï, ËÏ) = max
+
+s
+
+DT V (Ï(Â· | s)(cid:107)ËÏ(Â· | s))
+
+(6.28)
+
+Trust region policy optimization uses a constraint on the KL divergence rather
+than a penalty to robustly allow large updates. Thus, by performing the following
+maximization, we are guaranteed to improve the true objective Î· (Schulman et al.,
+2015):
+
+maximize
+Î¸
+
+[LÎ¸old (Î¸) â CDmax
+
+KL (Î¸old , Î¸)]
+
+(6.29)
+
+Therefore, TRPO solves the following optimization problem to generate a policy
+update (Schulman et al., 2015):
+
+maximize
+Î¸
+
+LÎ¸old (Î¸)
+subject to Â¯DÏold
+
+KL (Î¸old , Î¸) â¤ Î´
+
+(6.30)
+
+TRPO seeks to solve the following optimization problem, obtained by expanding
+LÎ¸old
+
+in Equation (2.10):
+
+maximize
+Î¸
+
+(cid:80)
+
+s ÏÎ¸old (s) (cid:80)
+
+a ÏÎ¸(a | s)AÎ¸old (s, a)
+KL (Î¸old , Î¸) â¤ Î´
+
+subject to Â¯DÏÎ¸
+
+(6.31)
+
+The optimization problem in Equation 6.31 is exactly equivalent to the following
+one, written in terms of expectations (Schulman et al., 2015):
+
+maximize
+Î¸
+
+Esâ¼ÏÎ¸old
+
+,aâ¼q
+
+(cid:20)ÏÎ¸(a | s)
+q(a | s)
+
+(cid:21)
+QÎ¸old (s, a)
+
+subject to Esâ¼ÏÎ¸old
+
+[DKL (ÏÎ¸old (Â· | s)(cid:107)ÏÎ¸(Â· | s))
+
+(6.32)
+
+38
+
+Algorithm 8: Trust Region Policy Optimization (Schulman et al., 2015)
+Input: initial policy parameters Î¸0, initial value function paramaters Ï0
+Hyperparameters: KL-divergence limit Î´, backtracking coeï¬cient Î±,
+
+maximum number of backtracking steps K
+
+for k = 0, 1, 2, ... do
+
+Collect set of trajectories Dk = {Ïi} by running policy Ïk = Ï (Î¸k) in the
+environment. Compute rewards-to-go ËRt. Compute advantage estimates,
+ËAt (using any method of advantage estimation) based on the current value
+function VÏk
+
+. Estimate policy gradient as
+
+Ëgk =
+
+1
+|Dk|
+
+(cid:88)
+
+T
+(cid:88)
+
+Ï âDk
+
+t=0
+
+(cid:12)
+(cid:12)
+(cid:12)
+âÎ¸ log ÏÎ¸ (at | st)
+(cid:12)
+(cid:12)Î¸k
+
+ËAt
+
+Use the conjugate gradient algorithm to compute
+
+Ëxk â ËH â1
+
+k Ëgk
+
+where ËHk is the Hessian of the sample average KL-divergence. Update the
+policy by backtracking line search with
+
+Î¸k+1 = Î¸k + Î±j
+
+(cid:115)
+
+2Î´
+ËHk Ëxk
+
+Ëxk
+
+ËxT
+k
+
+where j â {0, 1, 2, . . . K} is the smallest value which improves the sample
+loss and satisï¬es the sample KL-divergence constraint. Fit value function
+by regression on mean-squared error:
+
+Ïk+1 = arg min
+
+Ï
+
+1
+|Dk| T
+
+(cid:88)
+
+T
+(cid:88)
+
+(cid:16)
+
+VÏ (st) â ËRt
+
+(cid:17)2
+
+Ï âDk
+
+t=0
+
+typically via some gradient descent algorithm.
+
+end
+
+6.3.8 Proximal Policy Optimization (PPO)
+
+As stated in the original paper (Schulman, Wolski, Dhariwal, Radford, & Klimov,
+2017), PPO is an algorithm that achieves the data eï¬ciency and reliability of TRPO
+while utilizing just ï¬rst-order optimization. PPO provides a unique objective func-
+tion with clipped probability ratios that gives a pessimistic assessment (i.e., lower
+limit) of the policyâs performance. PPO alternates between collecting data from the
+policy and executing many epochs of optimization on the sampled data (Schulman
+et al., 2017) to optimize policies.
+
+PPO is a novel policy gradient technique family that alternates between sampling
+data through interaction with the environment and maximizing a "surrogate" ob-
+jective function using stochastic gradient ascent. Unlike traditional policy gradient
+approaches, which conduct one gradient update per data sample, PPO employs an
+updated objective function that allows for several epochs of mini-batch updates
+
+39
+
+(Schulman et al., 2017).
+
+This objective function of PPO can be represented as (Schulman et al., 2017):
+
+L(s, a, Î¸k, Î¸) = min
+
+(cid:18) ÏÎ¸(a|s)
+ÏÎ¸old(a|s)
+
+AÏÎ¸k(s, a), g((cid:15), AÏÎ¸k(s, a)
+
+(cid:19)
+
+(6.33)
+
+where
+
+g((cid:15), A) =
+
+(cid:26) (1 + (cid:15))A
+(1 â (cid:15))A
+
+if A â¥ 0
+if A < 0
+
+(6.34)
+
+In the implementation, PPO maintains two policy networks. The ï¬rst one is the
+current policy that needs to be reï¬ned (Schulman et al., 2017):
+
+The policy that was used last to collect samples:
+
+ÏÎ¸(at|st)
+
+ÏÎ¸k(at|st)
+
+(6.35)
+
+(6.36)
+
+PPO switches between sampling data and interacting with the environment.
+In
+order to increase sample eï¬ciency, a new policy is reviewed using samples obtained
+from an earlier policy using the concept of signiï¬cance sampling. (Schulman et al.,
+2017).
+
+maximize
+Î¸
+
+ËEt
+
+(cid:20) ÏÎ¸(at|st)
+ÏÎ¸old(at|st)
+
+(cid:21)
+
+ËAt
+
+(6.37)
+
+As the current policy gets developed, the gap between it and the previous policy
+grows bigger. The estimationâs variance grows, which leads to poor judgments due
+to inaccuracy. So, say, every four iterations, we resynchronize the second network
+with the revised policy. (Schulman et al., 2017).
+
+With clipped objective, we compute a ratio between the new policy and the old
+policy (Schulman et al., 2017):
+
+rt(Î¸) =
+
+ÏÎ¸(at|st)
+ÏÎ¸k(at|st)
+
+(6.38)
+
+This ratio compares the two policies. If the new policy is distant from the previous
+policy, a new objective function is created to clip the estimated advantage function.
+The new objective function is now (Schulman et al., 2017):
+
+LCLIP
+Î¸k
+
+(Î¸) = E
+Ï â¼Ïk
+
+(cid:34) T
+
+(cid:88)
+
+t=0
+
+(cid:104)
+min(rt(Î¸) ËAÏk
+
+t
+
+(cid:105)
+, clip(rt(Î¸), 1 â (cid:15), 1 + (cid:15)) ËAÏk
+t )
+
+(cid:35)
+
+(6.39)
+
+40
+
+The advantage function will be trimmed if the probability ratio between the new
+and old policies goes beyond the range (1 â (cid:15)) and (1 + (cid:15)). The clipping restricts the
+amount of eï¬ective change one may make at each phase to increase stability. This
+inhibits major policy changes if they are outside of our comfort zone (Schulman et
+al., 2017). As a result, the method can be expressed as shown in algorithm 9
+
+Algorithm 9: PPO with Clipped Objective (Schulman et al., 2017)
+input: initial policy parameters Î¸0, clipping threshold (cid:15)
+for k = 0, 1, 2, ... do
+
+Collect set of partial trajectories Dk on policy Ïk = Ï(Î¸k)
+Estimate advantages ËAÏk
+t
+Compute policy update
+
+using any advantage estimation algorithm
+
+Î¸k+1 = arg max
+
+(Î¸)
+by taking K steps of minibatch SGD (via Adam), where
+(cid:104)
+
+LCLIP
+Î¸k
+
+Î¸
+
+LCLIP
+Î¸k
+
+(Î¸) = E
+Ï â¼Ïk
+
+(cid:20) T
+(cid:80)
+t=0
+
+min(rt(Î¸) ËAÏk
+
+t
+
+, clip(rt(Î¸), 1 â (cid:15), 1 + (cid:15)) ËAÏk
+t )
+
+(cid:105)(cid:21)
+
+end
+
+41
+
+Chapter 7
+
+Experiments
+
+7.1 Data - Dow Jones 30
+
+The Dow Jones 30, also known as Dow Jones Industrial Average (DJIA), refers to
+the thirty blue-chip publicly-traded U.S companies1. Daily stock data from January
+2011 up to November 2021 (10 year period) was extracted and used. 70 percent of
+the data was used for training while 30 percent was used for testing the RL agents.
+
+7.2 Experiment Scope
+
+To conduct this study, we carried out experiments involving the eight agents de-
+scribed in chapter 6 using the environment described in chapter 4. We carried out
+three training runs and a hundred test runs. We then stored the peak and mean
+performances of each agent for analysis. We also ran the training for 10,000 and
+100,000 timesteps for all the RL agents. The rest of this section describes what
+parameters & hyperparameters were used for both the environment and the agents.
+
+7.2.1 Environment Parameters
+
+1. Reward Function
+
+In the experiments, we used both reward functions available in the environment
+- log returns and diï¬erential Sharpe ratio.
+
+2. Lookback Period
+
+The lookback period is the duration the agent observes the environment before
+taking action. A lookback period of 64 days was used. This was determined
+based on literature and recommendations from the industry advisors.
+
+3. Trading Costs
+
+We experimented with three diï¬erent trading costs scenarios - no trading costs,
+
+1Dow Jones stock companies are 3M, American Express, Amgen, Apple, Boeing, Caterpillar,
+Chevron, Cisco Systems, Coca-Cola, Disney, Dow, Goldman Sachs, Home Depot, Honeywell, IBM,
+Intel, Johnson and Johnson, JP Morgan Chase, McDonaldâs, Merck, Microsoft, Nike, Procter &
+Gamble, Salesforce, Travelers, UnitedHealth, Visa, Walgreens, and Walmart.
+
+42
+
+0.1% of the stockâs price, and 1% of the stockâs price.
+
+7.2.2 RL Agent Hyper-parameters
+
+We enumerate the parameters for each of the RL agents below.
+
+1. Normalized Advantage Function (NAF)
+
+â¢ layer size: 256
+
+â¢ batch size: 128
+
+â¢ buï¬er size: 10,000
+
+â¢ LR: 1e-3
+
+â¢ TAU: 1e-3
+
+â¢ GAMMA (discount factor): 0.99
+
+â¢ update_every: 2
+
+â¢ number_of_updates: 1
+
+â¢ Seed: 0
+
+2. REINFORCE
+
+â¢ Discount Factor (gamma): 0.99
+
+â¢ hidden size for linear layers: 128
+
+3. Deep Deterministic Policy Gradient (DDPG)
+
+â¢ memory capacity: 10000
+
+â¢ num_memory_ï¬ll_episodes: 10
+
+â¢ gamma (discount factor): 0.99
+
+â¢ tau: 0.005
+
+â¢ sigma: 0.2
+
+â¢ theta: 0.15
+
+â¢ actor_lr: 1e-4
+
+â¢ critic_lr: 1e-3
+
+â¢ batch_size: 64
+
+â¢ warmup_steps: 100
+
+4. Twin Delayed Deep Deterministic Policy Gradient (TD3)
+
+â¢ hidden_dim: 256
+
+43
+
+â¢ memory_dim: 100,000
+
+â¢ max_action: 1
+
+â¢ discount: 0.99
+
+â¢ update_freq: 2
+
+â¢ tau: 0.005
+
+â¢ policy_noise_std: 0.2
+
+â¢ policy_noise_clip: 0.5
+
+â¢ actor_lr: 1e-3
+
+â¢ critic_lr: 1e-3
+
+â¢ batch_size: 128
+
+â¢ exploration_noise: 0.1
+
+â¢ num_layers: 3
+
+â¢ dropout: 0.2
+
+â¢ add_lstm: False
+
+â¢ warmup_steps: 100
+
+5. Advantage Actor Critic (A2C)
+
+â¢ hidden_dim: 256
+
+â¢ entropy_beta: 0
+
+â¢ gamma (discount factor): 0.9
+
+â¢ actor_lr: 4e-4
+
+â¢ critic_lr: 4e-3
+
+â¢ max_grad_norm: 0.5
+
+6. Soft Actor Critic(SAC)
+
+â¢ hidden_dim: 256
+
+â¢ value_lr: 3e-4
+
+â¢ soft_q_lr: 3e-4
+
+â¢ policy_lr: 3e-4
+
+â¢ gamma (discount factor): 0.99
+
+â¢ mean_lambda: 1e-3
+
+â¢ std_lambda: 1e-3
+
+â¢ z_lambda: 0.0
+
+44
+
+â¢ soft_tau: 1e-2
+
+â¢ replay_buï¬er_size: 1,000,000
+
+â¢ batch_size: 128
+
+7. Trust Region Policy Optimization (TRPO)
+
+â¢ damping: 0.1
+
+â¢ episode_length: 2000
+
+â¢ ï¬sher_ratio: 1
+
+â¢ gamma (discount factor): 0.995
+
+â¢ l2_reg: 0.001
+
+â¢ lambda_: 0.97
+
+â¢ lr (learning-rate): 0.001
+
+â¢ max_iteration_number: 200
+
+â¢ max_kl (kl-divergence): 0.01
+
+â¢ val_opt_iter: 200
+
+â¢ value_memory:1
+
+8. Proximal Policy Optimization (PPO)
+
+â¢ timesteps_per_batch: 50,000
+
+â¢ max_timesteps_per_episode: 2,000
+
+â¢ n_updates_per_iteration: 5
+
+â¢ lr (learning-rate): 0.005
+
+â¢ gamma (discount factor): 0.95
+
+â¢ clip: 0.2
+
+7.3 Metrics
+
+In this work, we use the following metrics when backtesting to evaluate and compare
+the performance of the RL agents:
+
+1. Annualized Returns
+
+This is the yearly average proï¬t from the trading strategy.
+
+(1 + Return )â§(1/N ) â 1 = Annualized Return
+
+where:
+
+N = Number of periods measured
+
+45
+
+2. Cumulative Return
+
+This is the sum of returns obtained from a trading strategy over a period given
+an initial investment is known as the cumulative return.
+
+CumulativeReturn = (Pcurrent â Pinitial ) /Pinitial
+
+where:
+
+Pcurrent = Current Price
+Pinitial = Original Price
+
+3. Sharpe Ratio
+
+This is the reward/risk ratio or risk-adjusted rewards of the trading strategy.
+
+SharpeRatio =
+
+Rp â Rf
+Ïp
+
+Where:
+
+Rp = return of portfolio
+Rf = risk-free rate
+Ïp = standard deviation of the portfolioâs excess return
+
+4. Maximum Drawdown (Max DD)
+
+This is the diï¬erence between the maximum and minimum values of a portfolio
+over a time horizon used to measure the downside risk of a trading strategy.
+It is usually represented as a percentage, and lower values indicate good per-
+formance.
+
+M DD =
+
+5. Calmar Ratio
+
+Trough Value - Peak Value
+Peak Value
+
+This measures the trading strategyâs performance relative to its risk.
+It is
+calculated by dividing the average annual rate of return by the maximum
+drawdown. Similar to the Sharpe ratio, higher values indicate better risk-
+adjusted performance.
+
+Calmar Ratio =
+
+Rp â Rf
+Maximum Drawdown
+
+Where:
+
+Rp = Portfolio return
+Rf = Risk-free rate
+Rp â Rf = Annual rate of return
+
+46
+
+Chapter 8
+
+Results & Discussion
+
+8.1 Results
+
+This chapter presents the results from the experiments described in chapter 7. Tables
+8.1 to 8.3 present a comparison between the RL agentsâ mean and peak performance
+ranks at diï¬erent trading costs across both reward functions. A huge variation be-
+tween mean and peak performance shows that an agentâs portfolio management
+strategy is unstable. Figure 8.1 shows the ï¬nal average position across all experi-
+ments of all the agents from best to worse. Appendix A shows the raw metric values
+aggregated into Figure 8.1. Figures 8.2 to 8.10 show plots of cumulative returns
+and portfolio management strategies for the best performing baseline model (MPT)
+and the RL agents (A2C and SAC) that consistently outperformed MPT based on
+the average rank metric in Tables 8.1 to 8.3. The mean of portfolio weights graphs
+provide information on how an agent distributes its portfolio among the available
+stocks while the standard deviation of portfolio weights graphs provide information
+about how much an agent changes its portfolio distribution. Together, these graphs
+explain an agentâs portfolio management strategy.
+
+47
+
+Table 8.1: Table of Rank Comparison at No Trading Cost
+
+Peak Performance Rank Mean Performance Rank Diï¬erence Avg Rank
+2
+1
+2
+4
+7
+11
+8
+5
+9
+6
+12
+10
+
+1.5
+2
+3.5
+5
+5.5
+6.5
+7.5
+7.5
+8
+8.5
+10.5
+11
+
+1
+3
+5
+6
+4
+2
+7
+10
+7
+11
+9
+12
+
+1
+2
+3
+2
+3
+9
+1
+5
+2
+5
+3
+2
+
+Table 8.2: Table of Rank Comparison at 0.1% Trading Cost
+
+Peak Performance Rank Mean Performance Rank Diï¬erence Avg Rank
+1
+2
+6
+5
+4
+3
+8
+11
+7
+9
+12
+10
+
+1
+3
+4
+5
+5.5
+6.5
+7
+7
+7.5
+10
+10.5
+11
+
+1
+4
+2
+5
+7
+10
+6
+3
+8
+11
+9
+12
+
+0
+2
+4
+0
+3
+7
+2
+8
+1
+2
+3
+2
+
+TRPO
+SAC
+A2C
+MPT
+PPO
+REINFORCE
+DDPG
+TD3
+NAF
+Buy And Hold
+Random
+Uniform
+
+A2C
+SAC
+TRPO
+PPO
+MPT
+Buy And Hold
+NAF
+REINFORCE
+DDPG
+TD3
+Random
+Uniform
+
+48
+
+Table 8.3: Table of Rank Comparison at 1% Trading Cost
+
+A2C
+SAC
+PPO
+MPT
+TRPO
+Buy And Hold
+REINFORCE
+NAF
+DDPG
+TD3
+Random
+Uniform
+
+Peak Performance Rank Mean Performance Rank Diï¬erence Avg Rank
+1
+2
+4
+3
+9
+4
+11
+8
+6
+6
+12
+10
+
+1
+3.5
+4
+4.5
+5.5
+6.5
+7
+7.5
+8
+8.5
+10
+11
+
+1
+5
+4
+6
+2
+9
+3
+7
+10
+11
+8
+12
+
+0
+3
+0
+3
+7
+5
+8
+1
+4
+5
+4
+2
+
+49
+
+Figure 8.1: Graph of Final Average Rank of All Agents
+
+Figure 8.2: Graph of Cumulative Returns Plot at No Trading Costs
+
+50
+
+Figure 8.3: Graph of Mean of Portfolio Weights For Each Stock at No Trading Costs
+
+Figure 8.4: Graph of Mean of Portfolio Weights For Each Stock at No Trading Costs
+
+51
+
+Figure 8.5: Graph of Cumulative Returns Plot at 0.6% Trading Costs
+
+Figure 8.6: Graph of Mean of Portfolio Weights For Each Stock at 0.6% Trading
+Costs
+
+52
+
+Figure 8.7: Graph of Mean of Portfolio Weights For Each Stock at 0.6% Trading
+Costs
+
+Figure 8.8: Graph of Cumulative Returns Plot at 1% Trading Costs
+
+53
+
+Figure 8.9: Graph of Mean of Portfolio Weights For Each Stock at 1% Trading Costs
+
+Figure 8.10: Graph of Mean of Portfolio Weights For Each Stock at 1% Trading
+Costs
+
+54
+
+8.2 Discussion
+
+8.2.1 RL vs. Baselines
+
+From Tables 8.1 to 8.3, we see that the only two baseline agents compare favourably
+with the RL agents. These baseline agents are Buy & Hold and MPT, with the latter
+being the stronger one. Trading costs have signiï¬cant eï¬ects on the performance of
+the trading agents. Every RL agent outperforms Buy & Hold at no trading costs.
+However, when trading costs are introduced, only four RL agents outperform Buy &
+Hold. This is still signiï¬cant achievement and provides evidence that the RL agents
+are able to discover good portfolio management strategies.
+
+8.2.2 Value-Based RL vs. Policy-Based RL
+
+In this section, we compare the performance of the NAF agent (a value-based agent)
+against the REINFORCE agent (a policy-based agent). Tables 8.1 to 8.3 show that
+both NAF and REINFORCE agents are not exceptional performers, usually under-
+performing compared to the MPT and the Buy & Hold baseline agents. On mean
+performance, the NAF agent outperforms the REINFORCE agent by a small mar-
+gin regardless of what trading costs is used. However, at peak performance, the
+REINFORCE agent signiï¬cantly outperforms the NAF agent. This shows how un-
+stable the policy generated by the REINFORCE agent is. This is further illustrated
+by the fact that the mean and peak performance rank of the NAF agent across all
+trading costs vary by as most two positions while those of the REINFORCE agent
+vary by as much as nine positions. The results obtained from these two agents are
+consistent with the theoretical understanding of how they work. The REINFORCE
+agentâs policies have a high variance because of sample ineï¬ciency caused by policy
+gradient estimations from rollout. The NAF agentâs policies are much more stable,
+but its performance is sub-optimal, never outperforming two of the baseline agents.
+
+8.2.3 On-Policy vs. Oï¬-Policy
+
+In this project, there are four on-policy agents (A2C, PPO, REINFORCE, and
+TRPO) and four oï¬-policy agents (DDPG, NAF, SAC, and TD3). In this section,
+we will be analyzing the performance of these groups of agents. First, we note
+that the two agents (A2C and SAC) that consistently outperform the MPT baseline
+belong to both groups. This provides evidence that both on-policy and oï¬-policy RL
+agents can perform portfolio management. At the mean performance, SAC slightly
+outperforms A2C at no trading costs, but A2C slightly outperforms SAC when any
+form of trading costs was introduced. This is also true at peak performance. Since
+trading costs are usually involved in the real-world, A2C is better suited to real
+world portfolio management.
+
+Comparing the holding strategy of both A2C and SAC from ï¬gures 8.2 to 8.10, we
+see that the strategy changes with the trading cost. At no trading cost, the SAC
+agent put about 80% of its stock into the AXP stock on average. Furthermore, it
+spreads its portfolio primarily across three other stocks (CAT, DD, MSFT) over
+the entire testing period. However, the A2C agent took a diï¬erent strategy.
+It
+distributed its portfolio over most of the available stocks, and the spread changes by
+
+55
+
+an average of 5% across all the stocks over the testing period. It should be noted that
+A2C had similar cumulative returns as the MPT baseline, which also put 90% of its
+holdings into just three stocks - HD, UNH, and V. This conï¬rms a general theory
+in portfolio management - diï¬erent market strategies could yield similar results.
+
+When a trading cost of 0.1% is introduced, both A2C and SAC agents change their
+strategy. Rather than put 80% of its holdings into one stock only, the SAC agent
+put a similar percentage into four diï¬erent stocks (JPM, V, GS, CSCO) and kept
+its portfolio spread over them. It is interesting to note that these stocks are entirely
+diï¬erent from those it chose at no trading costs, and yet, it outperformed itself on
+most of the metrics. Similarly, rather than spread its portfolio into most of the
+available stocks, the A2C agent put about half of its portfolio into three stocks
+(MRK, GS, KO) this time. Nevertheless, it still kept its portfolio spread across all
+stocks but usually chose to trade one of CVX, GS, KO, MCD, MRK, RTX, or V.
+
+When the trading cost was 1%, the strategy landscape changed dramatically. The
+SAC agent chose a buy and hold strategy and held an almost uniform proportion
+of stocks across all the available stocks. On the other hand, the A2C agent put
+most of its stocks (about 90%) into just three stocks - KO, PFE, and RTX. Also, it
+kept the portfolio spread across just these three stocks. It is necessary to note that
+while both SAC and A2C underperformed compared to MPT at 1% trading costs
+on returns-related metrics, the A2C agentâs strategy enabled it to outperform MPT
+on risk-related metrics and overall, on average.
+
+The performance of on-policy and oï¬-policy agents seem to be similar at mean
+performance, but on-policy agents consistently signiï¬cantly outperform oï¬-policy
+agents at peak performance. Three out of the four on-policy agents (A2C, PPO,
+TRPO) are ranked in the top ï¬ve at diï¬erent trading costs, consistently outper-
+forming the Buy and Hold baseline.
+In contrast, only one of the four oï¬-policy
+agents (SAC) ranks consistently in the top 5. The SAC agentâs performance can
+be attributed its maximum entropy learning framework, which allows it to perform
+stochastic optimization of policies.
+
+While the performance of SAC shows that oï¬-policy agents can perform as well as
+on-policy agents in the task of portfolio management, the evidence of this analysis
+suggests that on-policy agents are more suited to the task of portfolio management
+in comparison to oï¬-policy agents. The good performance of on-policy agents is
+because they are better at evaluating policy and sample eï¬ciency is not a signiï¬cant
+problem in portfolio management. While unlikely, the oï¬-policy agents may get
+better with hyperparameter optimization.
+
+56
+
+Chapter 9
+
+Conclusion
+
+9.1 Contributions
+
+This study investigated the performance of RL when applied to portfolio manage-
+ment using model-free deep reinforcement learning agents. We trained several RL
+agents on real-world stock prices to learn how to perform asset allocation. We com-
+pared the performance of these RL agents against some baseline agents. We also
+compared the RL agents among themselves to understand which classes of agents
+performed better.
+
+From our analysis, RL agents can perform the task of portfolio management since
+they signiï¬cantly outperformed two of the baseline agents (random allocation and
+uniform allocation). Four RL agents (A2C, SAC, PPO, and TRPO) outperformed
+the best baseline, MPT, overall. This shows the abilities of RL agents to uncover
+more proï¬table trading strategies.
+
+Furthermore, there were no signiï¬cant performance diï¬erences between value-based
+and policy-based RL agents. Actor-critic agents performed better than other types
+of agents. Also, on-policy agents performed better than oï¬-policy agents because
+they are better at policy evaluation and sample eï¬ciency is not a signiï¬cant problem
+in portfolio management.
+
+In summary, this study shows that RL agents can substantially improve asset al-
+location since they outperform strong baselines. On-policy, actor-critic RL agents
+showed the most promise based on our analysis. The next section discusses some
+directions that future works may want to explore to build on this work.
+
+9.2 Future Work
+
+While this work has tried to do a comparative analysis of more RL agents than
+what is typically available in the literature, we have not exhausted every possible
+RL agent. A possible extension to this work is applying the same methodology to
+other potentially useful RL agents and seeing how they perform compared to the
+analysis done in this report.
+
+Due to time and compute constraints, we have chosen to stay close to the initially
+
+57
+
+proposed hyperparameters seen in the original papers. Thus, another possible ex-
+tension to this work will be to carry out extensive hyperparameter optimization for
+all the eight agents studied in this work to see how the performance of these agents
+changes.
+
+Furthermore, in this project, we focused only on using feedforward neural networks
+as the function approximator for all the agents as proposed by the initial authors.
+However, the ï¬nancial market is a time-series. Using neural networks such as recur-
+rent neural networks, convolutional neural networks, transformers, among others,
+that can take into account the temporal nature of the market could yield better
+results.
+
+Finally, while we have used the Dow Jones market as requested by the client, there
+is potential for comparative analysis across several other markets.
+It would be
+interesting to see if the RL agents perform better when the market is small (e.g.,
+just the top 5 technology companies) or large (e.g. the S&P 500 market). Similarly,
+other markets from other locations around the world (e.g., the DAX market of
+Germany, the HK50 market of Hong Kong, and the JSE market of South Africa)
+can be studied to see how the insights garnered from the Dow Jones market transfer
+to these new markets.
+
+58
+
+Appendix A
+
+Raw Metric Scores for All
+Experiments
+
+Tables A.1 to A.9 show all the trading agentsâ mean and peak performances at dif-
+ferent reward functions and trading costs. . The rank columns show an algorithmâs
+position, based on its ranks across all the metrics.
+
+Table A.1: Table of Mean Performance at No Trading Cost & Log Returns Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.61
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.41
+
+1.62
+
+1.42
+
+1.43
+
+1.37
+
+1.4
+
+1.77
+
+1.44
+
+1.59
+
+1.4
+
+0.24
+
+0.2
+
+0.17
+
+0.25
+
+0.17
+
+0.18
+
+0.15
+
+0.17
+
+0.3
+
+0.18
+
+0.24
+
+0.17
+
+0.92
+
+0.82
+
+0.76
+
+0.9
+
+0.76
+
+0.79
+
+0.69
+
+0.72
+
+0.83
+
+0.81
+
+0.94
+
+0.73
+
+0.69
+
+0.58
+
+0.52
+
+0.66
+
+0.5
+
+0.54
+
+0.46
+
+0.47
+
+0.68
+
+0.55
+
+0.69
+
+0.48
+
+34%
+
+34%
+
+33%
+
+38%
+
+34%
+
+33%
+
+33%
+
+35%
+
+33%
+
+33%
+
+34%
+
+35%
+
+2
+
+6
+
+8
+
+4
+
+9
+
+7
+
+11
+
+12
+
+1
+
+5
+
+2
+
+10
+
+59
+
+Table A.2: Table of Mean Performance at No Trading Cost & Sharpe Ratio Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.35
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.41
+
+1.62
+
+1.42
+
+1.4
+
+1.4
+
+1.4
+
+1.41
+
+1.43
+
+1.59
+
+1.4
+
+0.15
+
+0.2
+
+0.17
+
+0.25
+
+0.17
+
+0.17
+
+0.17
+
+0.17
+
+0.17
+
+0.18
+
+0.24
+
+0.17
+
+0.68
+
+0.82
+
+0.76
+
+0.9
+
+0.76
+
+0.73
+
+0.74
+
+0.72
+
+0.77
+
+0.78
+
+0.94
+
+0.73
+
+0.44
+
+0.58
+
+0.52
+
+0.66
+
+0.48
+
+0.48
+
+0.49
+
+0.47
+
+0.52
+
+0.52
+
+0.69
+
+0.48
+
+34%
+
+34%
+
+33%
+
+38%
+
+34%
+
+35%
+
+34%
+
+35%
+
+33%
+
+33%
+
+34%
+
+35%
+
+12
+
+2
+
+6
+
+4
+
+7
+
+9
+
+8
+
+11
+
+5
+
+3
+
+1
+
+9
+
+Table A.3: Table of Peak Performance at No Trading Cost
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.61
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.46
+
+1.62
+
+1.5
+
+1.59
+
+1.64
+
+1.54
+
+1.77
+
+1.44
+
+1.93
+
+1.4
+
+0.24
+
+0.2
+
+0.28
+
+0.25
+
+0.21
+
+0.24
+
+0.25
+
+0.22
+
+0.3
+
+0.26
+
+0.35
+
+0.17
+
+0.92
+
+0.82
+
+0.83
+
+0.9
+
+0.87
+
+0.96
+
+1.03
+
+0.9
+
+0.83
+
+0.81
+
+1.34
+
+0.73
+
+0.69
+
+0.58
+
+0.58
+
+0.66
+
+0.64
+
+0.7
+
+0.8
+
+0.63
+
+0.68
+
+0.55
+
+1.3
+
+0.48
+
+34%
+
+34%
+
+33%
+
+38%
+
+32%
+
+33%
+
+32%
+
+35%
+
+33%
+
+33%
+
+27%
+
+35%
+
+5
+
+11
+
+7
+
+6
+
+7
+
+4
+
+2
+
+9
+
+3
+
+10
+
+1
+
+12
+
+60
+
+Table A.4: Table of Mean Performance at 0.1% Trading Costs & Log Returns Re-
+ward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.62
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.42
+
+1.62
+
+1.41
+
+1.44
+
+1.36
+
+1.37
+
+1.82
+
+1.4
+
+1.42
+
+1.4
+
+0.25
+
+0.2
+
+0.18
+
+0.25
+
+0.17
+
+0.18
+
+0.15
+
+0.16
+
+0.31
+
+0.17
+
+0.18
+
+0.17
+
+0.88
+
+0.82
+
+0.78
+
+0.9
+
+0.76
+
+0.78
+
+0.69
+
+0.69
+
+0.99
+
+0.74
+
+0.76
+
+0.73
+
+0.68
+
+0.58
+
+0.52
+
+0.66
+
+0.5
+
+0.54
+
+0.46
+
+0.45
+
+0.9
+
+0.49
+
+0.53
+
+0.48
+
+28%
+
+34%
+
+34%
+
+38%
+
+34%
+
+34%
+
+33%
+
+35%
+
+35%
+
+34%
+
+33%
+
+35%
+
+1
+
+3
+
+7
+
+4
+
+8
+
+5
+
+11
+
+12
+
+2
+
+9
+
+6
+
+10
+
+Table A.5: Table of Mean Performance at 0.1% Trading Costs & Sharpe Ratio
+Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.5
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+1.43
+
+1.62
+
+1.41
+
+1.44
+
+REINFORCE
+
+1.4
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.37
+
+1.82
+
+1.4
+
+1.4
+
+1.4
+
+0.2
+
+0.2
+
+0.18
+
+0.25
+
+0.17
+
+0.18
+
+0.17
+
+0.16
+
+0.31
+
+0.17
+
+0.17
+
+0.17
+
+0.82
+
+0.82
+
+0.78
+
+0.9
+
+0.76
+
+0.78
+
+0.74
+
+0.69
+
+0.99
+
+0.75
+
+0.74
+
+0.73
+
+0.68
+
+0.58
+
+0.52
+
+0.66
+
+0.48
+
+0.54
+
+0.49
+
+0.45
+
+0.9
+
+0.5
+
+0.49
+
+0.48
+
+28%
+
+34%
+
+34%
+
+38%
+
+34%
+
+34%
+
+34%
+
+35%
+
+33%
+
+34%
+
+34%
+
+35%
+
+2
+
+3
+
+6
+
+4
+
+8
+
+5
+
+9
+
+12
+
+1
+
+7
+
+9
+
+11
+
+61
+
+Table A.6: Table of Peak Performance at 0.1% Trading Costs
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.97
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.48
+
+1.62
+
+1.5
+
+1.6
+
+1.64
+
+1.49
+
+1.85
+
+1.4
+
+1.84
+
+1.4
+
+0.36
+
+0.2
+
+0.2
+
+0.25
+
+0.21
+
+0.24
+
+0.25
+
+0.2
+
+0.33
+
+0.17
+
+0.32
+
+0.17
+
+1.2
+
+0.82
+
+0.86
+
+0.9
+
+0.87
+
+0.97
+
+1.03
+
+0.84
+
+1.02
+
+0.74
+
+1.14
+
+0.73
+
+0.91
+
+0.58
+
+0.6
+
+0.66
+
+0.63
+
+0.73
+
+0.8
+
+0.59
+
+0.93
+
+0.49
+
+0.97
+
+0.48
+
+29%
+
+34%
+
+33%
+
+38%
+
+32%
+
+33%
+
+32%
+
+34%
+
+35%
+
+34%
+
+33%
+
+35%
+
+1
+
+10
+
+8
+
+7
+
+6
+
+5
+
+3
+
+9
+
+4
+
+11
+
+2
+
+12
+
+Table A.7: Table of Mean Performance at 1% Trading Costs & Log Returns Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.57
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.4
+
+1.62
+
+1.41
+
+1.43
+
+1.36
+
+1.35
+
+1.49
+
+1.41
+
+1.37
+
+1.4
+
+0.23
+
+0.2
+
+0.17
+
+0.25
+
+0.17
+
+0.18
+
+0.15
+
+0.15
+
+0.2
+
+0.17
+
+0.15
+
+0.17
+
+0.86
+
+0.82
+
+0.75
+
+0.9
+
+0.75
+
+0.8
+
+0.69
+
+0.68
+
+0.87
+
+0.76
+
+0.71
+
+0.73
+
+0.85
+
+0.58
+
+0.51
+
+0.66
+
+0.5
+
+0.57
+
+0.48
+
+0.41
+
+0.61
+
+0.5
+
+0.5
+
+0.48
+
+27%
+
+34%
+
+33%
+
+38%
+
+34%
+
+31%
+
+32%
+
+36%
+
+33%
+
+34%
+
+31%
+
+35%
+
+1
+
+4
+
+6
+
+3
+
+8
+
+4
+
+11
+
+12
+
+2
+
+6
+
+9
+
+10
+
+62
+
+Table A.8: Table of Mean Performance at 1% Trading Costs & Sharpe Ratio Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.58
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+1.4
+
+1.62
+
+1.4
+
+1.39
+
+REINFORCE
+
+1.4
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.35
+
+1.43
+
+1.41
+
+1.39
+
+1.4
+
+0.23
+
+0.2
+
+0.17
+
+0.25
+
+0.17
+
+0.16
+
+0.17
+
+0.15
+
+0.18
+
+0.17
+
+0.16
+
+0.17
+
+0.97
+
+0.82
+
+0.75
+
+0.9
+
+0.75
+
+0.72
+
+0.62
+
+0.68
+
+0.79
+
+0.76
+
+0.71
+
+0.73
+
+0.85
+
+0.58
+
+0.51
+
+0.66
+
+0.46
+
+0.48
+
+0.37
+
+0.41
+
+0.54
+
+0.5
+
+0.5
+
+0.48
+
+27%
+
+34%
+
+33%
+
+38%
+
+36%
+
+34%
+
+36%
+
+36%
+
+33%
+
+34%
+
+31%
+
+35%
+
+1
+
+2
+
+5
+
+3
+
+8
+
+10
+
+11
+
+12
+
+4
+
+6
+
+9
+
+7
+
+Table A.9: Table of Peak Performance at 1% Trading Costs & Sharpe Ratio Reward
+
+Cumulative
+Returns
+
+Annualized
+Return
+
+Sharpe
+
+Calmar Max
+DD
+
+Rank
+
+A2C
+
+1.73
+
+Buy And Hold 1.48
+
+DDPG
+
+MPT
+
+NAF
+
+PPO
+
+REINFORCE
+
+Random
+
+SAC
+
+TD3
+
+TRPO
+
+Uniform
+
+1.43
+
+1.62
+
+1.5
+
+1.6
+
+1.64
+
+1.53
+
+1.49
+
+1.41
+
+1.62
+
+1.4
+
+0.28
+
+0.2
+
+0.18
+
+0.25
+
+0.2
+
+0.29
+
+0.25
+
+0.21
+
+0.29
+
+0.17
+
+0.25
+
+0.17
+
+1.02
+
+0.82
+
+0.79
+
+0.9
+
+0.86
+
+0.99
+
+1.03
+
+0.88
+
+0.86
+
+0.76
+
+1.06
+
+0.73
+
+1.19
+
+0.58
+
+0.55
+
+0.66
+
+0.63
+
+0.73
+
+0.82
+
+0.61
+
+0.61
+
+0.5
+
+0.82
+
+0.48
+
+24%
+
+34%
+
+33%
+
+38%
+
+32%
+
+33%
+
+31%
+
+35%
+
+33%
+
+34%
+
+30%
+
+35%
+
+1
+
+9
+
+10
+
+6
+
+7
+
+4
+
+3
+
+8
+
+5
+
+11
+
+2
+
+12
+
+63
+
+References
+
+AdÃ¤mmer, P., & SchÃ¼ssler, R. A. (2020). Forecasting the equity premium: mind
+
+the news! Review of Finance, 24 (6), 1313â1355.
+
+Albanesi, S., & Vamossy, D. F. (2019). Predicting consumer default: A deep learning
+approach (Tech. Rep.). None: National Bureau of Economic Research.
+Amel-Zadeh, A., Calliess, J.-P., Kaiser, D., & Roberts, S. (2020). Machine learning-
+
+based ï¬nancial statement analysis. Available at SSRN 3520684 .
+
+Ang, Y. Q., Chia, A., & Saghaï¬an, S. (2020). Using machine learning to demystify
+startups funding, post-money valuation, and success. Post-Money Valuation,
+and Success (August 27, 2020).
+
+Antunes, F., Ribeiro, B., & Pereira, F. (2017). Probabilistic modeling and visual-
+ization for bankruptcy prediction. Applied Soft Computing, 60 , 831â843.
+Antweiler, W., & Frank, M. Z. (2004). Is all that talk just noise? the information
+content of internet stock message boards. The Journal of ï¬nance, 59 (3), 1259â
+1294.
+
+Bao, W., Yue, J., & Rao, Y. (2017). A deep learning framework for ï¬nancial time
+series using stacked autoencoders and long-short term memory. PloS one,
+12 (7), e0180944.
+
+Bao, Y., Ke, B., Li, B., Yu, Y. J., & Zhang, J. (2020). Detecting accounting fraud
+in publicly traded us ï¬rms using a machine learning approach. Journal of
+Accounting Research, 58 (1), 199â235.
+
+Bari, O. A., & Agah, A.
+
+(2020). Ensembles of text and time-series models for
+automatic generation of ï¬nancial trading signals from social media content.
+Journal of Intelligent Systems, 29 (1), 753â772.
+
+Belousov, B., Abdulsamad, H., Klink, P., Parisi, S., & Peters, J. (Eds.). (2021).
+Reinforcement Learning Algorithms: Analysis and Applications (Vol. 883).
+Cham: Springer International Publishing. Retrieved 2021-10-25, from http://
+link.springer.com/10.1007/978-3-030-41188-6 doi: 10.1007/978-3-030
+-41188-6
+
+Betancourt, C., & Chen, W.-H.
+
+(2021, February). Deep reinforcement learning
+for portfolio management of markets with a dynamic number of assets. Expert
+Systems with Applications, 164 , 114002. Retrieved 2021-10-25, from https://
+doi: 10
+linkinghub.elsevier.com/retrieve/pii/S0957417420307776
+.1016/j.eswa.2020.114002
+
+BjÃ¶rkegren, D., & Grissen, D. (2020). Behavior revealed in mobile phone usage
+predicts credit repayment. The World Bank Economic Review , 34 (3), 618â
+634.
+Chen, J.
+
+(2021, May). Post-Modern portfolio theory (PMPT).
+.investopedia.com/terms/p/pmpt.asp. (Accessed: 2021-11-14)
+
+https://www
+
+64
+
+Chen, L., Pelger, M., & Zhu, J. (2020). Deep learning in asset pricing. Available at
+
+SSRN 3350138 .
+
+Colombo, E., & Pelagatti, M. (2020). Statistical learning and exchange rate fore-
+
+casting. International Journal of Forecasting, 36 (4), 1260â1289.
+
+Contributors, W.
+
+(2021, October). Reinforcement learning. Retrieved 2021-10-
+26, from https://en.wikipedia.org/w/index.php?title=Reinforcement
+_learning&oldid=1051236695 (Page Version ID: 1051236695)
+
+Croux, C., Jagtiani, J., Korivi, T., & Vulanovic, M. (2020). Important factors deter-
+mining ï¬ntech loan default: Evidence from a lendingclub consumer platform.
+Journal of Economic Behavior & Organization, 173 , 270â296.
+
+Deng, Y., Ren, Z., Kong, Y., Bao, F., & Dai, Q.
+
+Damrongsakmethee, T., & Neagoe, V.-E. (2017). Data mining and machine learning
+for ï¬nancial analysis. Indian Journal of Science and Technology, 10 (39), 1â7.
+(2016). A hierarchical fused
+fuzzy deep neural network for data classiï¬cation. IEEE Transactions on Fuzzy
+Systems, 25 (4), 1006â1012.
+
+E., S., & E., R.
+
+(2021).
+
+INVESTMENT PORTFOLIO: TRADITIONAL AP-
+
+PROACH. Norwegian Journal of Development of the International Science.
+
+Filos, A. (2019, September). Reinforcement Learning for Portfolio Management.
+arXiv:1909.09571 [cs, q-ï¬n, stat] . Retrieved 2021-10-25, from http://arxiv
+.org/abs/1909.09571 (arXiv: 1909.09571)
+
+Fujimoto, S., Hoof, H., & Meger, D. (2018). Addressing function approximation
+error in actor-critic methods. In International conference on machine learning
+(pp. 1587â1596).
+
+Gao, Y., Gao, Z., Hu, Y., Song, S., Jiang, Z., & Su, J.
+
+(2021, October). A
+In
+Framework of Hierarchical Deep Q-Network for Portfolio Management.
+(pp. 132â140). Retrieved 2021-10-25, from https://www.scitepress.org/
+PublicationsDetail.aspx?ID=0fLwyxE3WOE=&t=1
+
+Gomes, T. A., Carvalho, R. N., & Carvalho, R. S. (2017). Identifying anomalies
+in parliamentary expenditures of brazilian chamber of deputies with deep au-
+toencoders. In 2017 16th ieee international conference on machine learning
+and applications (icmla) (pp. 940â943).
+
+Goumagias, N. D., Hristu-Varsakelis, D., & Assael, Y. M. (2018). Using deep q-
+learning to understand the tax evasion behavior of risk-averse ï¬rms. Expert
+Systems with Applications, 101 , 258â270.
+
+Gu, S., Kelly, B., & Xiu, D. (2020). Empirical asset pricing via machine learning.
+
+The Review of Financial Studies, 33 (5), 2223â2273.
+
+Gu, S., Lillicrap, T., Sutskever, I., & Levine, S. (2016). Continuous deep q-learning
+with model-based acceleration. In International conference on machine learn-
+ing (pp. 2829â2838).
+
+Gulen, H., Jens, C., & Page, T. B.
+
+(2020). An application of causal forest in
+corporate ï¬nance: How does ï¬nancing aï¬ect investment? Available at SSRN
+3583685 .
+
+Haarnoja, T., Zhou, A., Abbeel, P., & Levine, S. (2018). Soft actor-critic: Oï¬-
+policy maximum entropy deep reinforcement learning with a stochastic actor.
+In International conference on machine learning (pp. 1861â1870).
+Harmon, M. E., & Harmon, S. S. (1996). Reinforcement Learning: A Tutorial.
+Hayes, A. (2021, November). Portfolio management. https://www.investopedia
+
+.com/terms/p/portfoliomanagement.asp. (Accessed: 2021-11-17)
+
+65
+
+Hieu, L. T. (2020, October). Deep Reinforcement Learning for Stock Portfolio Op-
+timization. International Journal of Modeling and Optimization, 10 (5), 139â
+144. Retrieved 2021-10-25, from http://arxiv.org/abs/2012.06325 (arXiv:
+2012.06325) doi: 10.7763/IJMO.2020.V10.761
+
+Hu, Y., & Lin, S.-J. (2019). Deep Reinforcement Learning for Optimizing Finance
+Portfolio Management. 2019 Amity International Conference on Artiï¬cial
+Intelligence (AICAI). doi: 10.1109/AICAI.2019.8701368
+
+Huang, J., Chai, J., & Cho, S. (2020, June). Deep learning in ï¬nance and banking: A
+literature review and classiï¬cation. Frontiers of Business Research in China,
+14 (1), 13. Retrieved 2021-10-25, from https://doi.org/10.1186/s11782
+-020-00082-6 doi: 10.1186/s11782-020-00082-6
+
+Huang, Y., Huang, K., Wang, Y., Zhang, H., Guan, J., & Zhou, S. (2016). Exploit-
+ing twitter moods to boost ï¬nancial trend prediction based on deep network
+models. In International conference on intelligent computing (pp. 449â460).
+
+Huotari, T., Savolainen, J., & Collan, M.
+
+(2020, December). Deep Reinforce-
+ment Learning Agent for S&amp;P 500 Stock Selection. Axioms, 9 (4),
+130. Retrieved 2021-10-25, from https://www.mdpi.com/2075-1680/9/4/
+(Number: 4 Publisher: Multidisciplinary Digital Publishing Institute)
+130
+doi: 10.3390/axioms9040130
+
+Iwasaki, H., & Chen, Y. (2018). Topic sentiment asset pricing with dnn supervised
+
+learning. Available at SSRN 3228485 .
+
+Jiang, Z., & Liang, J. (2017). Cryptocurrency portfolio management with deep
+reinforcement learning. In 2017 intelligent systems conference (intellisys) (pp.
+905â913).
+
+Jiang, Z., Xu, D., & Liang, J. (2017, July). A Deep Reinforcement Learning Frame-
+work for the Financial Portfolio Management Problem. arXiv:1706.10059
+[cs, q-ï¬n] . Retrieved 2021-10-25, from http://arxiv.org/abs/1706.10059
+(arXiv: 1706.10059)
+
+Joyce, J. M.
+
+(2011). Kullback-leibler divergence.
+
+In M. Lovric (Ed.), Inter-
+national encyclopedia of statistical science (pp. 720â722). Berlin, Heidel-
+berg: Springer Berlin Heidelberg. Retrieved from https://doi.org/10.1007/
+978-3-642-04898-2_327 doi: 10.1007/978-3-642-04898-2_327
+
+Kakade, S., & Langford, J. (2002, 01). Approximately optimal approximate rein-
+
+forcement learning. In (p. 267-274).
+
+Konda, V., & Gao, V. (2000, January). Actor-critic algorithms. None.
+Kvamme, H., Sellereite, N., Aas, K., & Sjursen, S. (2018). Predicting mortgage
+default using convolutional neural networks. Expert Systems with Applications,
+102 , 207â217.
+
+Lahmiri, S., & Bekiros, S. (2019). Can machine learning approaches predict corpo-
+rate bankruptcy? evidence from a qualitative experimental design. Quantita-
+tive Finance, 19 (9), 1569â1577.
+
+LeviÅ¡auskait, K. (2010). Investment Analysis and Portfolio Management. None,
+
+167.
+
+Li, B., & Hoi, S. C. H. (2014, January). Online portfolio selection: A survey. ACM
+Computing Surveys, 46 (3), 35:1â35:36. Retrieved 2021-10-25, from https://
+doi.org/10.1145/2512962 doi: 10.1145/2512962
+
+Li, H., Shen, Y., & Zhu, Y. (2018). Stock price prediction using attention-based
+multi-input lstm. In Asian conference on machine learning (pp. 454â469).
+
+66
+
+Liang, Z., Chen, H., Zhu, J., Jiang, K., & Li, Y. (2018). Adversarial deep reinforce-
+ment learning in portfolio management. arXiv preprint arXiv:1808.09940 .
+Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez, T., Tassa, Y., . . . Wier-
+stra, D. (2019, July). Continuous control with deep reinforcement learning.
+arXiv:1509.02971 [cs, stat] . Retrieved 2021-11-07, from http://arxiv.org/
+abs/1509.02971 (arXiv: 1509.02971)
+
+Luo, C., Wu, D., & Wu, D. (2017). A deep learning approach for credit scoring
+using credit default swaps. Engineering Applications of Artiï¬cial Intelligence,
+65 , 465â470.
+
+Markowitz, H. (1952). Portfolio selection. The Journal of Finance, 7 (1), 77â91.
+
+Retrieved from http://www.jstor.org/stable/2975974
+
+Mnih, V., Kavukcuoglu, K., Silver, D., Graves, A., Antonoglou, I., Wierstra, D., &
+Riedmiller, M. (2013). Playing atari with deep reinforcement learning. arXiv
+preprint arXiv:1312.5602 .
+
+Ozbayoglu, A. M., Gudelek, M. U., & Sezer, O. B. (2020). Deep learning for ï¬nancial
+
+applications: A survey. Applied Soft Computing, 93 , 106384.
+
+Paula, E. L., Ladeira, M., Carvalho, R. N., & Marzagao, T. (2016). Deep learning
+anomaly detection as support fraud investigation in brazilian exports and anti-
+money laundering.
+In 2016 15th ieee international conference on machine
+learning and applications (icmla) (pp. 954â960).
+Reichenbacher, M., Schuster, P., & Uhrig-Homburg, M.
+
+(2020). Expected bond
+
+liquidity. Available at SSRN 3642604 .
+
+Rossi, A. G., & Utkus, S. P. (2020). Who beneï¬ts from robo-advising? evidence
+from machine learning. Evidence from Machine Learning (March 10, 2020).
+Schulman, J., Levine, S., Moritz, P., Jordan, M. I., & Abbeel, P. (2015). Trust
+
+region policy optimization. None.
+
+Schulman, J., Wolski, F., Dhariwal, P., Radford, A., & Klimov, O.
+
+(2017, 07).
+
+Proximal policy optimization algorithms. None.
+
+Silver, C.
+
+(2021, November). Modern portfolio theory (MPT).
+
+https://
+www.investopedia.com/terms/m/modernportfoliotheory.asp. (Accessed:
+2021-11-14)
+
+Silver, D.
+
+(2015).
+
+Introduction to Reinforcement Learning with David Silver.
+Retrieved 2021-10-25, from https://deepmind.com/learning-resources/
+-introduction-reinforcement-learning-david-silver
+
+Silver, D., Hubert, T., Schrittwieser, J., Antonoglou, I., Lai, M., Guez, A., . . .
+Hassabis, D. (2018, December). A general reinforcement learning algorithm
+that masters chess, shogi, and Go through self-play. Science (New York, N.Y.),
+362 (6419), 1140â1144. doi: 10.1126/science.aar6404
+
+Spilak, B. (2018). Deep neural networks for cryptocurrencies price prediction (Un-
+
+published masterâs thesis). Humboldt-UniversitÃ¤t zu Berlin.
+
+Sutton, R. S., & Barto, A. G. (2018). Reinforcement learning: An introduction
+(Second ed.). The MIT Press. Retrieved from http://incompleteideas.net/
+book/the-book-2nd.html
+
+Taghian, M., Asadi, A., & Safabakhsh, R.
+
+(2020). Learning ï¬nancial asset-
+arXiv preprint
+
+speciï¬c trading rules via deep reinforcement learning.
+arXiv:2010.14194 .
+
+Tang, L.
+
+(2018, December). An actor-critic-based portfolio investment method
+inspired by beneï¬t-risk optimization. Journal of Algorithms & Computa-
+
+67
+
+tional Technology, 12 (4), 351â360. Retrieved 2021-10-28,
+journals.sagepub.com/doi/10.1177/1748301818779059
+1748301818779059
+
+from http://
+doi: 10.1177/
+
+Tian, S., Yu, Y., & Guo, H. (2015). Variable selection and corporate bankruptcy
+
+forecasts. Journal of Banking & Finance, 52 , 89â100.
+
+Vamossy, D. F. (2021). Investor emotions and earnings announcements. Journal of
+
+Behavioral and Experimental Finance, 30 , 100474.
+
+Watkins, C. J., & Dayan, P. (1992). Q-learning. Machine learning, 8 (3-4), 279â292.
+(2018, February). A (Long) Peek into Reinforcement Learning.
+Weng, L.
+Retrieved 2021-11-02, from https://lilianweng.github.io/2018/02/19/
+a-long-peek-into-reinforcement-learning.html
+
+Yiu, T.
+
+(2020, October). Understanding portfolio optimization.
+towardsdatascience.com/understanding-portfolio-optimization
+-795668cef596. (Accessed: 2021-11-17)
+
+https://
+
+68
+
+
